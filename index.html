@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Konsolidasi Jasa Tenaga Alih Daya – Pemerintah Kota Surakarta 2026</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-50:  #E6F1FB;
+      --blue-100: #B5D4F4;
+      --blue-600: #185FA5;
+      --blue-700: #10478A;
+      --blue-800: #0C447C;
+      --blue-900: #042C53;
+      --gray-50:  #F8F9FA;
+      --gray-100: #E9ECEF;
+      --gray-200: #DEE2E6;
+      --gray-400: #888780;
+      --gray-600: #5F5E5A;
+      --gray-800: #343A40;
+      --white:    #FFFFFF;
+      --green-50: #EAF3DE;
+      --green-700:#3B6D11;
+      --sidebar-w: 260px;
+      --sidebar-collapsed-w: 64px;
+      --header-h: 100px;
+      --transition: 0.25s ease;
+      --radius: 10px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-700) 100%);
+      color: var(--white);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 1.5rem;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-logo {
+      width: 48px; height: 48px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-logo i { color: var(--blue-800); font-size: 22px; }
+
+    .header-text h1 {
+      font-size: 1.1rem; font-weight: 700; letter-spacing: 0.3px;
+      line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .header-text p { font-size: 0.78rem; opacity: 0.85; margin-top: 2px; }
+
+    .running-text-bar {
+      background: rgba(255,255,255,0.10);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding: 3px 1.5rem; font-size: 0.78rem; overflow: hidden; white-space: nowrap;
+    }
+    .marquee { display: inline-block; animation: marquee-scroll 30s linear infinite; }
+    .marquee i { color: #FFD700; margin-right: 6px; }
+    @keyframes marquee-scroll {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .layout { display: flex; flex: 1; margin-top: var(--header-h); }
+
+    /* ===== SIDEBAR ===== */
+    aside.sidebar {
+      position: fixed; top: var(--header-h); left: 0; bottom: 0;
+      width: var(--sidebar-w); background: var(--white);
+      border-right: 1px solid var(--gray-200);
+      display: flex; flex-direction: column;
+      transition: width var(--transition);
+      z-index: 90; overflow: hidden;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+    }
+    aside.sidebar.collapsed { width: var(--sidebar-collapsed-w); }
+
+    .sidebar-toggle {
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 10px 14px; border-bottom: 1px solid var(--gray-100);
+    }
+    .sidebar-toggle button {
+      background: none; border: 1px solid var(--gray-200); border-radius: 6px;
+      padding: 5px 9px; cursor: pointer; color: var(--gray-600); font-size: 14px;
+      transition: background var(--transition);
+    }
+    .sidebar-toggle button:hover { background: var(--blue-50); color: var(--blue-600); }
+
+    nav.sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+    nav.sidebar-nav ul { list-style: none; }
+    nav.sidebar-nav li a {
+      display: flex; align-items: center; gap: 13px; padding: 11px 18px;
+      color: var(--gray-600); text-decoration: none; font-size: 0.88rem; font-weight: 500;
+      border-left: 3px solid transparent; transition: all var(--transition);
+      white-space: nowrap; overflow: hidden;
+    }
+    nav.sidebar-nav li a .nav-icon { width: 20px; text-align: center; font-size: 15px; flex-shrink: 0; }
+    nav.sidebar-nav li a .nav-label { transition: opacity var(--transition); }
+    aside.sidebar.collapsed nav.sidebar-nav li a .nav-label { opacity: 0; pointer-events: none; }
+    nav.sidebar-nav li a:hover,
+    nav.sidebar-nav li a.active {
+      background: var(--blue-50); color: var(--blue-700); border-left-color: var(--blue-600);
+    }
+
+    /* Admin menu separator */
+    .sidebar-section-label {
+      padding: 10px 18px 4px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 1px;
+      color: var(--gray-400); text-transform: uppercase;
+      white-space: nowrap;
+    }
+    aside.sidebar.collapsed .sidebar-section-label { opacity: 0; }
+
+    .sidebar-footer {
+      padding: 12px 18px; border-top: 1px solid var(--gray-100);
+      font-size: 0.75rem; color: var(--gray-400);
+      display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    }
+    aside.sidebar.collapsed .sidebar-footer span { display: none; }
+
+    /* ===== MAIN ===== */
+    main.content {
+      margin-left: var(--sidebar-w); flex: 1; padding: 28px 30px;
+      transition: margin-left var(--transition);
+      min-height: calc(100vh - var(--header-h) - 48px);
+    }
+    main.content.expanded { margin-left: var(--sidebar-collapsed-w); }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-title {
+      font-size: 1.35rem; font-weight: 700; color: var(--blue-900);
+      margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
+    }
+    .page-title i { color: var(--blue-600); }
+    .page-subtitle {
+      font-size: 0.85rem; color: var(--gray-400); margin-bottom: 22px;
+      padding-bottom: 14px; border-bottom: 2px solid var(--blue-50);
+    }
+
+    /* ===== STAT CARDS ===== */
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius); padding: 18px 20px;
+      box-shadow: var(--shadow); transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+    .stat-card .stat-icon {
+      width: 40px; height: 40px; border-radius: 10px; background: var(--blue-50);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+    }
+    .stat-card .stat-icon i { color: var(--blue-600); font-size: 18px; }
+    .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--blue-800); }
+    .stat-card .stat-label { font-size: 0.80rem; color: var(--gray-400); margin-top: 3px; }
+
+    /* ===== INFO BANNER ===== */
+    .info-banner {
+      background: var(--blue-50); border: 1px solid var(--blue-100);
+      border-left: 4px solid var(--blue-600); border-radius: var(--radius);
+      padding: 14px 18px; font-size: 0.875rem; color: var(--blue-800);
+      display: flex; gap: 10px; align-items: flex-start; margin-bottom: 22px;
+    }
+    .info-banner i { margin-top: 2px; flex-shrink: 0; }
+
+    /* ===== TIMELINE ===== */
+    .timeline { display: flex; flex-direction: column; gap: 12px; }
+    .timeline-item {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius); padding: 14px 18px;
+      display: flex; gap: 16px; align-items: center;
+      box-shadow: var(--shadow); transition: transform var(--transition);
+    }
+    .timeline-item:hover { transform: translateX(4px); }
+    .timeline-dot {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--blue-50); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .timeline-dot i { color: var(--blue-600); font-size: 16px; }
+    .timeline-dot.done { background: #EAF3DE; }
+    .timeline-dot.done i { color: #3B6D11; }
+    .timeline-dot.active-now { background: #FFF3CD; }
+    .timeline-dot.active-now i { color: #856404; }
+    .timeline-info { flex: 1; }
+    .timeline-info h4 { font-size: 0.9rem; font-weight: 600; }
+    .timeline-info p  { font-size: 0.78rem; color: var(--gray-400); margin-top: 2px; }
+    .timeline-info .tl-date {
+      font-size: 0.75rem; color: var(--blue-700); font-weight: 600; margin-top: 4px;
+    }
+
+    .badge {
+      margin-left: auto; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+    }
+    .badge-info    { background: var(--blue-50);  color: var(--blue-700); }
+    .badge-success { background: #EAF3DE; color: #3B6D11; }
+    .badge-warning { background: #FFF3CD; color: #856404; }
+
+    /* ===== SPSE SECTION (inside beranda) ===== */
+    .spse-section {
+      margin-top: 32px;
+      border-top: 2px solid var(--blue-50);
+      padding-top: 24px;
+    }
+    .section-heading {
+      font-size: 1rem; font-weight: 700; color: var(--blue-900); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-heading i { color: var(--blue-600); }
+
+    /* ===== IFRAME ===== */
+    .iframe-wrapper {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+    }
+    .iframe-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200); font-size: 0.82rem; color: var(--gray-600);
+    }
+    .iframe-wrapper iframe { width: 100%; height: 500px; border: none; display: block; }
+
+    /* ===== DOWNLOAD CARDS ===== */
+    .doc-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;
+    }
+    .doc-card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius); padding: 22px 22px 18px;
+      box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .doc-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.11); }
+    .doc-card .doc-icon {
+      width: 52px; height: 52px; border-radius: 12px; background: var(--blue-50);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .doc-card .doc-icon i { font-size: 24px; color: var(--blue-600); }
+    .doc-card h3 { font-size: 0.95rem; font-weight: 600; color: var(--blue-900); }
+    .doc-card p  { font-size: 0.80rem; color: var(--gray-400); flex: 1; }
+    .btn-download {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--blue-700); color: var(--white);
+      border: none; border-radius: 8px; padding: 9px 16px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      text-decoration: none; transition: background var(--transition);
+    }
+    .btn-download:hover { background: var(--blue-900); }
+    .doc-card .doc-link-hint {
+      font-size: 0.72rem; color: var(--gray-400); word-break: break-all;
+    }
+
+    /* ===== ZOOM PAGE ===== */
+    .zoom-card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius); padding: 36px 32px;
+      box-shadow: var(--shadow); max-width: 620px; margin: 0 auto; text-align: center;
+    }
+    .zoom-icon-wrap {
+      width: 80px; height: 80px; background: #E8F2FF; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+    }
+    .zoom-icon-wrap i { font-size: 36px; color: #0B5CFF; }
+    .zoom-card h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--blue-900); }
+    .zoom-card > p  { font-size: 0.88rem; color: var(--gray-600); margin-bottom: 22px; line-height: 1.6; }
+    .zoom-info-box {
+      background: var(--gray-50); border: 1px solid var(--gray-200);
+      border-radius: 8px; padding: 14px 18px; margin-bottom: 24px; text-align: left;
+    }
+    .zi-row { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; padding: 5px 0; color: var(--gray-600); }
+    .zi-row i { width: 18px; text-align: center; color: var(--blue-600); }
+    .btn-zoom {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #0B5CFF; color: var(--white); border: none; border-radius: 10px;
+      padding: 13px 28px; font-size: 1rem; font-weight: 700; cursor: pointer;
+      text-decoration: none; transition: background var(--transition), transform var(--transition);
+    }
+    .btn-zoom:hover { background: #0244CC; transform: scale(1.03); }
+    .btn-zoom.disabled { background: var(--gray-200); color: var(--gray-400); pointer-events: none; }
+
+    /* ===== UPLOAD FORM ===== */
+    .upload-instruction {
+      background: var(--blue-50); border: 1px solid var(--blue-100);
+      border-left: 4px solid var(--blue-600); border-radius: var(--radius);
+      padding: 16px 20px; margin-bottom: 22px;
+    }
+    .upload-instruction h3 { font-size: 0.95rem; font-weight: 700; color: var(--blue-800); margin-bottom: 10px; }
+    .upload-instruction ol { padding-left: 18px; font-size: 0.85rem; color: var(--blue-800); line-height: 1.9; }
+
+    .form-card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius); padding: 28px 28px;
+      box-shadow: var(--shadow); max-width: 700px;
+    }
+    .form-row { margin-bottom: 18px; }
+    .form-row label {
+      display: block; font-size: 0.85rem; font-weight: 600;
+      color: var(--blue-900); margin-bottom: 6px;
+    }
+    .form-row label .req { color: #C0392B; }
+    .form-row input[type="text"],
+    .form-row input[type="email"],
+    .form-row input[type="tel"],
+    .form-row select,
+    .form-row textarea {
+      width: 100%; padding: 10px 13px;
+      border: 1px solid var(--gray-200); border-radius: 8px;
+      font-size: 0.88rem; font-family: inherit;
+      color: var(--gray-800); background: var(--gray-50);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+    }
+    .form-row input:focus,
+    .form-row select:focus,
+    .form-row textarea:focus {
+      border-color: var(--blue-600);
+      box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
+      background: var(--white);
+    }
+    .form-row textarea { min-height: 90px; resize: vertical; }
+    .form-row .file-hint { font-size: 0.75rem; color: var(--gray-400); margin-top: 5px; }
+
+    .btn-submit {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: var(--blue-700); color: var(--white);
+      border: none; border-radius: 8px; padding: 12px 28px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .btn-submit:hover { background: var(--blue-900); transform: translateY(-1px); }
+    .btn-submit:disabled { background: var(--gray-200); color: var(--gray-400); pointer-events: none; }
+
+    .form-success {
+      display: none; background: #EAF3DE; border: 1px solid #B6DBA0;
+      border-left: 4px solid #3B6D11; border-radius: var(--radius);
+      padding: 18px 20px; color: #3B6D11; font-size: 0.9rem; margin-top: 18px;
+    }
+    .form-error {
+      display: none; background: #FDEDEC; border: 1px solid #F5B7B1;
+      border-left: 4px solid #C0392B; border-radius: var(--radius);
+      padding: 18px 20px; color: #922B21; font-size: 0.9rem; margin-top: 18px;
+    }
+
+    /* ===== ADMIN PANEL ===== */
+    .admin-panel {
+      background: var(--white); border: 2px solid #FFC107;
+      border-radius: var(--radius); padding: 0;
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .admin-panel-header {
+      background: linear-gradient(135deg, #856404 0%, #FFC107 100%);
+      color: var(--white); padding: 14px 20px;
+      display: flex; align-items: center; gap: 10px; font-weight: 700;
+    }
+    .admin-panel-body { padding: 22px 22px; }
+
+    .admin-login-form { max-width: 360px; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+
+    .admin-tabs {
+      display: flex; gap: 6px; margin-bottom: 22px; flex-wrap: wrap;
+    }
+    .admin-tab {
+      padding: 8px 16px; border-radius: 8px; border: 1px solid var(--gray-200);
+      background: var(--gray-50); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: all var(--transition); color: var(--gray-600);
+    }
+    .admin-tab.active, .admin-tab:hover {
+      background: var(--blue-700); color: var(--white); border-color: var(--blue-700);
+    }
+
+    .admin-form-group { margin-bottom: 14px; }
+    .admin-form-group label {
+      display: block; font-size: 0.82rem; font-weight: 600;
+      color: var(--gray-800); margin-bottom: 4px;
+    }
+    .admin-form-group input[type="text"],
+    .admin-form-group input[type="url"],
+    .admin-form-group input[type="date"],
+    .admin-form-group input[type="password"],
+    .admin-form-group select,
+    .admin-form-group textarea {
+      width: 100%; padding: 8px 11px;
+      border: 1px solid var(--gray-200); border-radius: 7px;
+      font-size: 0.85rem; font-family: inherit;
+      background: var(--gray-50); outline: none; color: var(--gray-800);
+      transition: border-color var(--transition);
+    }
+    .admin-form-group input:focus,
+    .admin-form-group select:focus,
+    .admin-form-group textarea:focus {
+      border-color: var(--blue-600); background: var(--white);
+    }
+    .btn-admin-save {
+      background: var(--blue-700); color: var(--white);
+      border: none; border-radius: 7px; padding: 9px 22px;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer;
+      transition: background var(--transition);
+    }
+    .btn-admin-save:hover { background: var(--blue-900); }
+    .btn-admin-logout {
+      background: #C0392B; color: var(--white);
+      border: none; border-radius: 7px; padding: 7px 16px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; margin-left: auto;
+    }
+    .admin-save-msg {
+      display: inline-block; margin-left: 12px; font-size: 0.8rem;
+      color: #3B6D11; opacity: 0; transition: opacity 0.4s;
+    }
+    .admin-save-msg.show { opacity: 1; }
+
+    .timeline-editor-item {
+      background: var(--gray-50); border: 1px solid var(--gray-200);
+      border-radius: 8px; padding: 14px 16px; margin-bottom: 12px;
+    }
+    .timeline-editor-item .tei-head {
+      font-size: 0.85rem; font-weight: 700; color: var(--blue-900); margin-bottom: 10px;
+    }
+    .tei-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .tei-row .admin-form-group { flex: 1; min-width: 130px; }
+
+    /* ===== UTILITY ===== */
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 7px;
+      border: 1px solid var(--blue-600); color: var(--blue-700); background: transparent;
+      border-radius: 8px; padding: 7px 14px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: all var(--transition);
+    }
+    .btn-outline:hover { background: var(--blue-50); }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--blue-900); color: rgba(255,255,255,0.75);
+      text-align: center; padding: 12px; font-size: 0.80rem;
+    }
+    footer strong { color: var(--white); }
+
+    /* ===== RESPONSIVE MOBILE ===== */
+    @media (max-width: 768px) {
+      :root { --header-h: 90px; --sidebar-w: 220px; }
+      aside.sidebar {
+        transform: translateX(-100%); width: var(--sidebar-w) !important;
+        transition: transform var(--transition);
+      }
+      aside.sidebar.mobile-open { transform: translateX(0); }
+      main.content { margin-left: 0 !important; padding: 18px 16px; }
+      .mobile-toggle { display: flex !important; }
+      .header-text h1 { font-size: 0.92rem; }
+      .header-text p  { display: none; }
+      .iframe-wrapper iframe { height: 420px; }
+      .form-card { padding: 18px 16px; }
+      .zoom-card { padding: 24px 18px; }
+    }
+
+    .mobile-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35); z-index: 89;
+    }
+    .mobile-overlay.active { display: block; }
+
+    .mobile-toggle {
+      display: none; background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3); color: var(--white);
+      border-radius: 7px; padding: 6px 10px; cursor: pointer;
+      font-size: 15px; margin-right: 10px;
+    }
+
+    /* ===== POKJA TABLE ===== */
+    .pokja-table {
+      width: 100%; border-collapse: collapse; font-size: 0.82rem;
+    }
+    .pokja-table th {
+      background: var(--blue-900); color: white; padding: 10px 12px;
+      text-align: left; white-space: nowrap; font-weight: 600;
+    }
+    .pokja-table td {
+      padding: 10px 12px; border-bottom: 1px solid var(--gray-100);
+      vertical-align: middle;
+    }
+    .pokja-table tr:hover td { background: var(--blue-50); }
+    .pokja-table tr:last-child td { border-bottom: none; }
+
+    .status-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+    }
+    .status-pending  { background:#FFF3CD; color:#856404; }
+    .status-lulus    { background:#EAF3DE; color:#3B6D11; }
+    .status-tidak_lulus { background:#FDEDEC; color:#922B21; }
+    .status-revisi   { background:#E8F2FF; color:#0C447C; }
+
+    .btn-review {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--blue-700); color: white;
+      border: none; border-radius: 6px; padding: 6px 12px;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      transition: background var(--transition);
+    }
+    .btn-review:hover { background: var(--blue-900); }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header>
+    <div class="header-top">
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Buka Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="header-logo">
+        <i class="fa-solid fa-landmark"></i>
+      </div>
+      <div class="header-text">
+        <h1>Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026</h1>
+        <p>Bagian Pengadaan Barang dan Jasa &nbsp;|&nbsp; Pemerintah Kota Surakarta</p>
+      </div>
+    </div>
+    <div class="running-text-bar">
+      <span class="marquee" id="marqueeText">
+        <i class="fa-solid fa-bullhorn"></i>
+        <strong>Pengumuman:</strong> Silakan cek jadwal konsolidasi dan segera upload dokumen penawaran sesuai ketentuan. &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
+        <i class="fa-solid fa-circle-info"></i>
+        Pastikan dokumen yang diunggah sudah lengkap dan sesuai format yang ditentukan.
+      </span>
+    </div>
+  </header>
+
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+
+  <div class="layout">
+
+    <!-- ======== SIDEBAR ======== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-toggle">
+        <button id="collapseBtn" title="Collapse/Expand Sidebar">
+          <i class="fa-solid fa-angles-left" id="collapseIcon"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="#" class="nav-link active" data-page="beranda">
+              <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
+              <span class="nav-label">Beranda</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="download">
+              <span class="nav-icon"><i class="fa-solid fa-file-arrow-down"></i></span>
+              <span class="nav-label">Download Dokumen</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="zoom">
+              <span class="nav-icon"><i class="fa-solid fa-video"></i></span>
+              <span class="nav-label">Link Zoom Anwijzing</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="upload">
+              <span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+              <span class="nav-label">Upload Dokumen</span>
+            </a>
+          </li>
+          <div class="sidebar-section-label">Admin</div>
+          <li>
+            <a href="#" class="nav-link" data-page="pokja">
+              <span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
+              <span class="nav-label">Review Pokja</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="admin">
+              <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
+              <span class="nav-label">Panel Admin</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <i class="fa-solid fa-shield-halved" style="color: var(--blue-600);"></i>
+        <span>PBJS Solo &copy; 2026</span>
+      </div>
+    </aside>
+
+    <!-- ======== MAIN ======== -->
+    <main class="content" id="mainContent">
+
+      <!-- ---- BERANDA ---- -->
+      <section class="page active" id="page-beranda">
+        <h2 class="page-title"><i class="fa-solid fa-house"></i> Beranda</h2>
+        <p class="page-subtitle">Selamat datang di portal resmi Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026.</p>
+
+        <div class="info-banner">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <div>
+            <strong>Informasi Penting:</strong> Portal ini digunakan untuk kegiatan resmi pengadaan konsolidasi jasa tenaga alih daya.
+            Pastikan Anda membaca seluruh dokumen pemilihan sebelum mengajukan penawaran. Untuk pertanyaan, hubungi Bagian PBJS Kota Surakarta.
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-building-columns"></i></div>
+            <div class="stat-value">1</div>
+            <div class="stat-label">Paket Konsolidasi</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-value" id="statPeserta">–</div>
+            <div class="stat-label">Peserta Terdaftar</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-file-contract"></i></div>
+            <div class="stat-value">2</div>
+            <div class="stat-label">Dokumen Tersedia</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="stat-value">2026</div>
+            <div class="stat-label">Tahun Anggaran</div>
+          </div>
+        </div>
+
+        <!-- Tahapan Konsolidasi -->
+        <h3 class="section-heading">
+          <i class="fa-solid fa-clock"></i> Tahapan Konsolidasi
+        </h3>
+        <div class="timeline" id="timelineContainer">
+          <!-- dirender dari JS/localStorage -->
+        </div>
+
+        <!-- SPSE section - link only -->
+        <div class="spse-section">
+          <h3 class="section-heading">
+            <i class="fa-solid fa-newspaper"></i> Pengumuman &amp; Berita SPSE
+          </h3>
+          <div class="info-banner" style="margin-bottom:0;">
+            <i class="fa-solid fa-link"></i>
+            <div>
+              Informasi resmi dari Sistem Pengadaan Secara Elektronik (SPSE) Kota Surakarta tersedia di:
+              <a href="https://spse.inaproc.id/surakarta" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:700;margin-left:4px;">
+                spse.inaproc.id/surakarta <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i>
+              </a>
+              &nbsp;— Klik untuk membuka di tab baru.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- DOWNLOAD ---- -->
+      <section class="page" id="page-download">
+        <h2 class="page-title"><i class="fa-solid fa-file-arrow-down"></i> Download Dokumen</h2>
+        <p class="page-subtitle">Unduh dokumen resmi pengadaan konsolidasi jasa tenaga alih daya di bawah ini.</p>
+
+        <div class="doc-grid" id="docGrid">
+          <!-- dirender dari JS/localStorage -->
+        </div>
+
+        <div class="info-banner" style="margin-top:24px;">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Apabila tautan unduhan belum aktif, silakan hubungi Pokja Pemilihan atau cek portal SPSE untuk dokumen terbaru.</span>
+        </div>
+      </section>
+
+      <!-- ---- ZOOM ---- -->
+      <section class="page" id="page-zoom">
+        <h2 class="page-title"><i class="fa-solid fa-video"></i> Link Zoom Anwijzing</h2>
+        <p class="page-subtitle">Rapat penjelasan pekerjaan (Anwijzing) dilaksanakan secara daring melalui Zoom Meeting.</p>
+
+        <div class="zoom-card">
+          <div class="zoom-icon-wrap">
+            <i class="fa-solid fa-video"></i>
+          </div>
+          <h2>Anwijzing Konsolidasi Jasa Tenaga Alih Daya</h2>
+          <p>Peserta wajib menghadiri rapat penjelasan (Anwijzing) sesuai jadwal berikut. Ketidakhadiran dapat memengaruhi kelengkapan penilaian dokumen penawaran.</p>
+
+          <div class="zoom-info-box">
+            <div class="zi-row"><i class="fa-solid fa-calendar-day"></i><span><strong>Hari/Tanggal:</strong> &nbsp;<span id="zoomTanggal">Akan diumumkan melalui SPSE</span></span></div>
+            <div class="zi-row"><i class="fa-solid fa-clock"></i><span><strong>Pukul:</strong> &nbsp;<span id="zoomPukul">09.00 WIB s/d selesai</span></span></div>
+            <div class="zi-row"><i class="fa-solid fa-location-dot"></i><span><strong>Platform:</strong> &nbsp;Zoom Meeting (Online)</span></div>
+            <div class="zi-row"><i class="fa-solid fa-hashtag"></i><span><strong>Meeting ID:</strong> &nbsp;<span id="zoomMeetingId"><em>Akan diinformasikan kemudian</em></span></span></div>
+            <div class="zi-row"><i class="fa-solid fa-key"></i><span><strong>Passcode:</strong> &nbsp;<span id="zoomPasscode"><em>Akan diinformasikan kemudian</em></span></span></div>
+          </div>
+
+          <a id="btnJoinZoom" href="#" class="btn-zoom disabled" target="_blank" rel="noopener">
+            <i class="fa-solid fa-video"></i> Join Zoom Meeting
+          </a>
+          <p style="margin-top:16px; font-size:0.78rem; color:var(--gray-400);">
+            Link Zoom aktif akan dikirimkan kepada peserta terdaftar melalui email dan diumumkan melalui portal SPSE Kota Surakarta.
+          </p>
+        </div>
+      </section>
+
+      <!-- ---- UPLOAD ---- -->
+      <section class="page" id="page-upload">
+        <h2 class="page-title"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</h2>
+        <p class="page-subtitle">Unggah dokumen penawaran Anda melalui formulir di bawah ini.</p>
+
+        <div class="upload-instruction">
+          <h3><i class="fa-solid fa-circle-info"></i> &nbsp;Petunjuk Pengisian</h3>
+          <ol>
+            <li>Pastikan dokumen penawaran telah ditandatangani dan distempel perusahaan.</li>
+            <li>Format file yang diterima: <strong>PDF, ZIP, atau RAR</strong> (maksimal 25 MB).</li>
+            <li>Isi semua kolom yang bertanda <strong>(*)</strong> dengan lengkap dan benar.</li>
+            <li>Periksa kembali nama perusahaan dan nomor NPWP sebelum mengirim.</li>
+            <li>Setelah berhasil submit, simpan bukti/tanda terima untuk arsip.</li>
+            <li>Upload hanya dilakukan <strong>sekali</strong>; untuk revisi hubungi Pokja Pemilihan.</li>
+          </ol>
+        </div>
+
+        <div class="form-card">
+          <div class="form-row">
+            <label>Nama Perusahaan <span class="req">*</span></label>
+            <input type="text" id="fNamaPerusahaan" placeholder="PT / CV / Koperasi …" autocomplete="organization" />
+          </div>
+          <div class="form-row">
+            <label>NPWP Perusahaan <span class="req">*</span></label>
+            <input type="text" id="fNpwp" placeholder="XX.XXX.XXX.X-XXX.XXX" maxlength="20" />
+          </div>
+          <div class="form-row">
+            <label>Nama Direktur / Pimpinan <span class="req">*</span></label>
+            <input type="text" id="fNamaDirektur" placeholder="Nama lengkap sesuai akta" />
+          </div>
+          <div class="form-row">
+            <label>Nomor Telepon / HP <span class="req">*</span></label>
+            <input type="tel" id="fTelp" placeholder="08xxxxxxxxxx" />
+          </div>
+          <div class="form-row">
+            <label>Email Perusahaan <span class="req">*</span></label>
+            <input type="email" id="fEmail" placeholder="email@perusahaan.com" />
+          </div>
+          <div class="form-row">
+            <label>Jenis Dokumen yang Diunggah <span class="req">*</span></label>
+            <select id="fJenisDok">
+              <option value="">-- Pilih jenis dokumen --</option>
+              <optgroup label="1. Tenaga Kebersihan">
+                <option value="Tenaga Kebersihan – Fasilitas Olahraga/Objek Wisata">1.1) Tenaga Kebersihan Fasilitas Olahraga/Objek Wisata</option>
+                <option value="Tenaga Kebersihan – Gedung Kantor">1.2) Tenaga Kebersihan Gedung Kantor</option>
+                <option value="Tenaga Kebersihan – Pertamanan Kota">1.3) Tenaga Kebersihan Pertamanan Kota</option>
+                <option value="Tenaga Kebersihan – Persampahan Kota">1.4) Tenaga Kebersihan Persampahan Kota</option>
+                <option value="Tenaga Kebersihan – Lingkungan Kelurahan">1.5) Tenaga Kebersihan Lingkungan Kelurahan</option>
+              </optgroup>
+              <optgroup label="2. Tenaga Keamanan">
+                <option value="Tenaga Keamanan – Ketua Regu">2.1) Tenaga Keamanan (Ketua Regu)</option>
+                <option value="Tenaga Keamanan – Anggota">2.2) Tenaga Keamanan (Anggota)</option>
+              </optgroup>
+              <optgroup label="3. Tenaga Pengemudi">
+                <option value="Tenaga Pengemudi – Kendaraan Berat &lt;3500 kg">3.1) Tenaga Pengemudi Kendaraan (Berat Kendaraan &lt;3500 kg)</option>
+                <option value="Tenaga Pengemudi – Kendaraan Berat ≥3500 kg">3.2) Tenaga Pengemudi Kendaraan (Berat Kendaraan ≥3500 kg)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Link File Dokumen <span class="req">*</span>
+              <span style="font-weight:400;color:var(--gray-400);"> (Google Drive / OneDrive – pastikan akses Publik / Anyone with link)</span>
+            </label>
+            <input type="text" id="fLinkFile" placeholder="https://drive.google.com/…" />
+            <div class="file-hint">Upload file ke Google Drive / OneDrive terlebih dahulu, lalu paste link-nya di sini.</div>
+          </div>
+          <div class="form-row">
+            <label>Keterangan Tambahan</label>
+            <textarea id="fKeterangan" placeholder="Isi jika ada catatan khusus (opsional)…"></textarea>
+          </div>
+
+          <button class="btn-submit" id="btnSubmitUpload" onclick="submitUpload()">
+            <i class="fa-solid fa-paper-plane"></i> Kirim Dokumen
+          </button>
+          <span style="font-size:0.8rem;color:var(--gray-400);margin-left:12px;" id="uploadSpinner" style="display:none;">
+            <i class="fa-solid fa-spinner fa-spin"></i> Mengirim…
+          </span>
+
+          <div class="form-success" id="uploadSuccess">
+            <i class="fa-solid fa-circle-check"></i>&nbsp;
+            <strong>Dokumen berhasil dikirim!</strong> Terima kasih. Simpan email konfirmasi sebagai bukti penerimaan.
+          </div>
+          <div class="form-error" id="uploadError">
+            <i class="fa-solid fa-circle-xmark"></i>&nbsp;
+            <strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg">Silakan coba lagi atau hubungi Pokja Pemilihan.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- POKJA REVIEW ---- -->
+      <section class="page" id="page-pokja">
+        <h2 class="page-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Review Pokja</h2>
+        <p class="page-subtitle">Login Pokja untuk melakukan review dokumen yang diunggah oleh penyedia.</p>
+
+        <!-- LOGIN POKJA -->
+        <div class="admin-panel" id="pokjaLoginPanel">
+          <div class="admin-panel-header" style="background: linear-gradient(135deg, #0C447C 0%, #185FA5 100%);">
+            <i class="fa-solid fa-shield-halved"></i> Login Pokja Pemilihan
+          </div>
+          <div class="admin-panel-body">
+            <div class="admin-login-form">
+              <div class="admin-form-group">
+                <label>Username Pokja</label>
+                <input type="text" id="pokjaUsername" placeholder="Masukkan username…" />
+              </div>
+              <div class="admin-form-group">
+                <label>Password Pokja</label>
+                <input type="password" id="pokjaPassword" placeholder="Masukkan password…" onkeydown="if(event.key==='Enter')pokjaLogin()" />
+              </div>
+              <button class="btn-admin-save" onclick="pokjaLogin()"><i class="fa-solid fa-right-to-bracket"></i> Login Pokja</button>
+              <div style="margin-top:10px;font-size:0.8rem;color:#C0392B;" id="pokjaLoginError"></div>
+              <p style="margin-top:14px;font-size:0.75rem;color:var(--gray-400);">
+                Default: username <code>pokja</code> / password <code>pokja2026</code>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- POKJA DASHBOARD -->
+        <div id="pokjaDashboard" style="display:none;">
+          <!-- Header dashboard -->
+          <div class="admin-panel" style="margin-bottom:20px;">
+            <div class="admin-panel-header" style="background: linear-gradient(135deg, #0C447C 0%, #185FA5 100%);">
+              <i class="fa-solid fa-shield-halved"></i> Dashboard Review Pokja
+              <button class="btn-admin-logout" onclick="pokjaLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+            <div class="admin-panel-body" style="padding:16px 22px;">
+              <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <div class="stat-card" style="flex:1;min-width:140px;padding:14px 16px;">
+                  <div class="stat-icon"><i class="fa-solid fa-inbox"></i></div>
+                  <div class="stat-value" id="pokjaTotalDok">0</div>
+                  <div class="stat-label">Total Dokumen Masuk</div>
+                </div>
+                <div class="stat-card" style="flex:1;min-width:140px;padding:14px 16px;">
+                  <div class="stat-icon" style="background:#EAF3DE;"><i class="fa-solid fa-circle-check" style="color:#3B6D11;"></i></div>
+                  <div class="stat-value" id="pokjaLulus" style="color:#3B6D11;">0</div>
+                  <div class="stat-label">Lulus / Memenuhi</div>
+                </div>
+                <div class="stat-card" style="flex:1;min-width:140px;padding:14px 16px;">
+                  <div class="stat-icon" style="background:#FDEDEC;"><i class="fa-solid fa-circle-xmark" style="color:#C0392B;"></i></div>
+                  <div class="stat-value" id="pokjaTolak" style="color:#C0392B;">0</div>
+                  <div class="stat-label">Tidak Memenuhi</div>
+                </div>
+                <div class="stat-card" style="flex:1;min-width:140px;padding:14px 16px;">
+                  <div class="stat-icon" style="background:#FFF3CD;"><i class="fa-solid fa-hourglass-half" style="color:#856404;"></i></div>
+                  <div class="stat-value" id="pokjaPending" style="color:#856404;">0</div>
+                  <div class="stat-label">Menunggu Review</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter & Tabel Dokumen -->
+          <div class="admin-panel">
+            <div class="admin-panel-header" style="background: linear-gradient(135deg, #0C447C 0%, #185FA5 100%);">
+              <i class="fa-solid fa-table-list"></i> Daftar Dokumen Penyedia
+            </div>
+            <div class="admin-panel-body">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+                <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;">
+                  <input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, atau jenis dokumen…" oninput="renderPokjaTable()" />
+                </div>
+                <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;">
+                  <select id="pokjaFilterStatus" onchange="renderPokjaTable()">
+                    <option value="">Semua Status</option>
+                    <option value="pending">⏳ Menunggu Review</option>
+                    <option value="lulus">✅ Lulus</option>
+                    <option value="tidak_lulus">❌ Tidak Memenuhi</option>
+                    <option value="revisi">🔄 Perlu Revisi</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="overflow-x:auto;">
+                <table class="pokja-table" id="pokjaTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Tanggal Upload</th>
+                      <th>Perusahaan</th>
+                      <th>NPWP</th>
+                      <th>Jenis Dokumen</th>
+                      <th>Kontak</th>
+                      <th>Link Dokumen</th>
+                      <th>Status</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pokjaTableBody">
+                    <tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:28px;">Belum ada data dokumen masuk.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODAL REVIEW DOKUMEN -->
+      <div id="reviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;">
+        <div style="background:var(--white);border-radius:12px;width:min(600px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+          <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-circle-check"></i> &nbsp;Review Dokumen</span>
+            <button onclick="closeReviewModal()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+          </div>
+          <div style="padding:22px 24px;">
+            <div id="reviewModalInfo" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:0.85rem;color:var(--blue-800);"></div>
+
+            <div class="admin-form-group">
+              <label>Status Review <span style="color:#C0392B;">*</span></label>
+              <select id="reviewStatus">
+                <option value="pending">⏳ Menunggu Review</option>
+                <option value="lulus">✅ Lulus / Memenuhi Syarat</option>
+                <option value="tidak_lulus">❌ Tidak Memenuhi Syarat</option>
+                <option value="revisi">🔄 Perlu Revisi / Klarifikasi</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label>Catatan Pokja</label>
+              <textarea id="reviewCatatan" rows="4" placeholder="Tuliskan catatan, alasan, atau permintaan revisi kepada penyedia…"></textarea>
+            </div>
+
+            <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+              <div style="font-size:0.85rem;font-weight:700;color:var(--gray-800);margin-bottom:12px;"><i class="fa-solid fa-bell"></i> &nbsp;Kirim Notifikasi ke Penyedia</div>
+              <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;font-weight:normal;">
+                  <input type="checkbox" id="notifEmail" checked style="width:16px;height:16px;accent-color:var(--blue-700);" />
+                  <i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> Email
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;font-weight:normal;">
+                  <input type="checkbox" id="notifWa" checked style="width:16px;height:16px;accent-color:#25D366;" />
+                  <i class="fa-brands fa-whatsapp" style="color:#25D366;font-size:16px;"></i> WhatsApp
+                </label>
+              </div>
+              <div id="notifPreview" style="margin-top:12px;background:white;border:1px solid var(--gray-200);border-radius:6px;padding:10px 12px;font-size:0.78rem;color:var(--gray-600);line-height:1.7;"></div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+              <button onclick="closeReviewModal()" style="padding:9px 20px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
+              <button onclick="simpanReview()" class="btn-admin-save"><i class="fa-solid fa-paper-plane"></i> Simpan & Kirim Notifikasi</button>
+            </div>
+            <div id="reviewModalMsg" style="margin-top:12px;display:none;padding:10px 14px;border-radius:7px;font-size:0.85rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- ADMIN ---- -->
+      <section class="page" id="page-admin">
+        <h2 class="page-title"><i class="fa-solid fa-gear"></i> Panel Admin</h2>
+        <p class="page-subtitle">Kelola konten portal: jadwal tahapan, link dokumen, Zoom, dan pengumuman berjalan.</p>
+
+        <!-- LOGIN -->
+        <div class="admin-panel" id="adminLoginPanel">
+          <div class="admin-panel-header">
+            <i class="fa-solid fa-lock"></i> Login Admin
+          </div>
+          <div class="admin-panel-body">
+            <div class="admin-login-form">
+              <div class="admin-form-group">
+                <label>Password Admin</label>
+                <input type="password" id="adminPassword" placeholder="Masukkan password…" onkeydown="if(event.key==='Enter')adminLogin()" />
+              </div>
+              <button class="btn-admin-save" onclick="adminLogin()"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+              <div style="margin-top:10px;font-size:0.8rem;color:#C0392B;" id="loginError"></div>
+              <p style="margin-top:14px;font-size:0.75rem;color:var(--gray-400);">
+                Default password: <code>admin123</code> &nbsp;(ganti setelah login pertama)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADMIN DASHBOARD -->
+        <div id="adminDashboard" style="display:none;">
+          <div class="admin-panel">
+            <div class="admin-panel-header">
+              <i class="fa-solid fa-screwdriver-wrench"></i> Dashboard Admin
+              <button class="btn-admin-logout" onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+            <div class="admin-panel-body">
+
+              <!-- Tabs -->
+              <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchAdminTab('jadwal', this)">Jadwal Tahapan</button>
+                <button class="admin-tab" onclick="switchAdminTab('download', this)">Download Dokumen</button>
+                <button class="admin-tab" onclick="switchAdminTab('zoom', this)">Zoom Anwijzing</button>
+                <button class="admin-tab" onclick="switchAdminTab('running', this)">Running Text</button>
+                <button class="admin-tab" onclick="switchAdminTab('appsscript', this)">Apps Script URL</button>
+              </div>
+
+              <!-- Tab: Jadwal -->
+              <div class="admin-section active" id="atab-jadwal">
+                <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Edit nama tahapan, tanggal, status, dan keterangan. Klik Simpan untuk memperbarui tampilan beranda.</p>
+                <div id="jadwalEditor"><!-- dirender JS --></div>
+                <button class="btn-admin-save" onclick="saveJadwal()"><i class="fa-solid fa-floppy-disk"></i> Simpan Jadwal</button>
+                <span class="admin-save-msg" id="msgJadwal">✓ Tersimpan</span>
+              </div>
+
+              <!-- Tab: Download -->
+              <div class="admin-section" id="atab-download">
+                <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Isi tautan unduhan dokumen. Kosongkan jika belum tersedia.</p>
+                <div id="downloadEditor"><!-- dirender JS --></div>
+                <button class="btn-admin-save" onclick="saveDownload()"><i class="fa-solid fa-floppy-disk"></i> Simpan Link</button>
+                <span class="admin-save-msg" id="msgDownload">✓ Tersimpan</span>
+              </div>
+
+              <!-- Tab: Zoom -->
+              <div class="admin-section" id="atab-zoom">
+                <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Atur informasi dan link Zoom Anwijzing.</p>
+                <div class="admin-form-group">
+                  <label>Tanggal Pelaksanaan</label>
+                  <input type="text" id="az-tanggal" placeholder="cth: Senin, 20 Mei 2026" />
+                </div>
+                <div class="admin-form-group">
+                  <label>Pukul</label>
+                  <input type="text" id="az-pukul" placeholder="cth: 09.00 WIB s/d selesai" />
+                </div>
+                <div class="admin-form-group">
+                  <label>Meeting ID</label>
+                  <input type="text" id="az-meetingid" placeholder="cth: 812 3456 7890" />
+                </div>
+                <div class="admin-form-group">
+                  <label>Passcode</label>
+                  <input type="text" id="az-passcode" placeholder="cth: sukarta2026" />
+                </div>
+                <div class="admin-form-group">
+                  <label>Link Join Zoom (URL)</label>
+                  <input type="url" id="az-link" placeholder="https://zoom.us/j/…" />
+                </div>
+                <button class="btn-admin-save" onclick="saveZoom()"><i class="fa-solid fa-floppy-disk"></i> Simpan Info Zoom</button>
+                <span class="admin-save-msg" id="msgZoom">✓ Tersimpan</span>
+              </div>
+
+              <!-- Tab: Running Text -->
+              <div class="admin-section" id="atab-running">
+                <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Edit teks berjalan di header.</p>
+                <div class="admin-form-group">
+                  <label>Teks Berjalan</label>
+                  <textarea id="ar-text" rows="4" placeholder="Pisahkan beberapa pengumuman dengan | (pipa)…"></textarea>
+                </div>
+                <button class="btn-admin-save" onclick="saveRunning()"><i class="fa-solid fa-floppy-disk"></i> Simpan Teks</button>
+                <span class="admin-save-msg" id="msgRunning">✓ Tersimpan</span>
+              </div>
+
+              <!-- Tab: Apps Script -->
+              <div class="admin-section" id="atab-appsscript">
+                <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">
+                  Paste URL deployment Google Apps Script Anda di sini agar form Upload Dokumen bisa menyimpan data ke Google Spreadsheet.
+                  <a href="https://developers.google.com/apps-script/guides/web" target="_blank" rel="noopener" style="color:var(--blue-600);">Panduan Apps Script ↗</a>
+                </p>
+                <div class="admin-form-group">
+                  <label>Apps Script Web App URL</label>
+                  <input type="url" id="as-url" placeholder="https://script.google.com/macros/s/…/exec" />
+                </div>
+                <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:14px;font-size:0.8rem;color:var(--gray-600);">
+                  <strong>Langkah singkat:</strong><br>
+                  1. Buat Google Spreadsheet baru.<br>
+                  2. Buka <em>Extensions → Apps Script</em>, paste kode di bawah:<br>
+                  <pre style="margin:8px 0;background:var(--gray-100);padding:10px;border-radius:6px;overflow:auto;font-size:0.75rem;">function doPost(e){
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data  = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    new Date(), data.namaPerusahaan, data.npwp,
+    data.namaDirektur, data.telp, data.email,
+    data.jenisDok, data.linkFile, data.keterangan
+  ]);
+  return ContentService.createTextOutput(
+    JSON.stringify({status:'ok'})
+  ).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+                  3. Deploy → <em>New deployment → Web App</em>, pilih <em>"Anyone"</em> untuk akses.<br>
+                  4. Copy URL deployment-nya ke kolom di atas.
+                </div>
+                <button class="btn-admin-save" onclick="saveAppsScript()"><i class="fa-solid fa-floppy-disk"></i> Simpan URL</button>
+                <span class="admin-save-msg" id="msgAppsScript">✓ Tersimpan</span>
+              </div>
+
+            </div><!-- /admin-panel-body -->
+          </div><!-- /admin-panel -->
+        </div><!-- /adminDashboard -->
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <strong>&copy; 2026 Pemerintah Kota Surakarta</strong> &nbsp;|&nbsp;
+    Bagian Pengadaan Barang dan Jasa &nbsp;|&nbsp; Semua hak dilindungi undang-undang.
+  </footer>
+
+  <!-- ============ JAVASCRIPT ============ -->
+  <script>
+    // =================== DEFAULT DATA ===================
+    const DEFAULT_JADWAL = [
+      { label:'Pengumuman Konsolidasi',           sub:'Publikasi paket pengadaan di SPSE inaproc',     status:'done',       tanggal:'', badge:'Selesai',     icon:'fa-check' },
+      { label:'Pendaftaran & Unduh Dokumen',       sub:'Peserta mengunduh dan mempelajari dokumen pemilihan', status:'active', tanggal:'', badge:'Berlangsung', icon:'fa-file-lines' },
+      { label:'Anwijzing (Penjelasan Pekerjaan)',  sub:'Rapat penjelasan via Zoom',                     status:'upcoming',   tanggal:'', badge:'Segera',       icon:'fa-video' },
+      { label:'Pemasukan Dokumen Penawaran',       sub:'Upload penawaran melalui menu "Upload Dokumen"', status:'upcoming',  tanggal:'', badge:'Akan Datang',  icon:'fa-cloud-arrow-up' },
+      { label:'Evaluasi & Penetapan Pemenang',     sub:'Pokja melakukan evaluasi dokumen penawaran',    status:'upcoming',   tanggal:'', badge:'Akan Datang',  icon:'fa-gavel' },
+    ];
+
+    const DEFAULT_DOCS = [
+      { title:'Dokumen Pemilihan',      desc:'Dokumen resmi syarat, ketentuan, dan spesifikasi teknis pengadaan.',         icon:'fa-file-pdf',         link:'' },
+      { title:'Kerangka Acuan Kerja',   desc:'Latar belakang, tujuan, ruang lingkup, dan persyaratan teknis tenaga.',      icon:'fa-file-lines',        link:'' },
+      { title:'Addendum / Berita Acara',desc:'Perubahan atau penambahan ketentuan setelah Anwijzing (jika ada).',          icon:'fa-file-circle-plus',  link:'' },
+    ];
+
+    const DEFAULT_ZOOM = { tanggal:'', pukul:'09.00 WIB s/d selesai', meetingid:'', passcode:'', link:'' };
+    const DEFAULT_RUNNING = 'Silakan cek jadwal konsolidasi dan segera upload dokumen penawaran sesuai ketentuan. | Pengumuman SPSE resmi: spse.inaproc.id/surakarta | Pastikan dokumen yang diunggah sudah lengkap dan sesuai format yang ditentukan. | Batas waktu penerimaan dokumen mengikuti jadwal yang tertera di SPSE.';
+
+    // =================== STORAGE HELPERS ===================
+    function load(key, def) {
+      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch(e) { return def; }
+    }
+    function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+    function getSubmissions() {
+      try { const v = localStorage.getItem('submissions'); return v ? JSON.parse(v) : []; } catch(e) { return []; }
+    }
+    function saveSubmissions(arr) { localStorage.setItem('submissions', JSON.stringify(arr)); }
+
+    // =================== RENDER JADWAL (BERANDA) ===================
+    const BADGE_CLASS = { done:'badge-success', active:'badge-warning', upcoming:'badge-info' };
+    const DOT_CLASS   = { done:'done', active:'active-now', upcoming:'' };
+
+    function renderTimeline() {
+      const data = load('jadwal', DEFAULT_JADWAL);
+      const el   = document.getElementById('timelineContainer');
+      el.innerHTML = data.map(item => {
+        const dotCls  = DOT_CLASS[item.status] || '';
+        const badgeCls= BADGE_CLASS[item.status] || 'badge-info';
+        const dateHtml= item.tanggal ? `<div class="tl-date"><i class="fa-regular fa-calendar"></i> ${item.tanggal}</div>` : '';
+        return `
+          <div class="timeline-item">
+            <div class="timeline-dot ${dotCls}"><i class="fa-solid ${item.icon}"></i></div>
+            <div class="timeline-info">
+              <h4>${item.label}</h4>
+              <p>${item.sub}</p>
+              ${dateHtml}
+            </div>
+            <span class="badge ${badgeCls}">${item.badge}</span>
+          </div>`;
+      }).join('');
+    }
+
+    // =================== RENDER DOWNLOAD ===================
+    function renderDownload() {
+      const data = load('docs', DEFAULT_DOCS);
+      const el   = document.getElementById('docGrid');
+      el.innerHTML = data.map((d, i) => {
+        const hasLink = d.link && d.link.trim() !== '';
+        const btn = hasLink
+          ? `<a href="${d.link}" class="btn-download" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> Unduh Dokumen</a>`
+          : `<button class="btn-download" style="background:var(--gray-200);color:var(--gray-600);cursor:not-allowed;" disabled><i class="fa-solid fa-clock"></i> Belum Tersedia</button>`;
+        const linkHint = hasLink ? `<div class="doc-link-hint">${d.link}</div>` : '';
+        return `
+          <div class="doc-card">
+            <div class="doc-icon"><i class="fa-solid ${d.icon}"></i></div>
+            <h3>${d.title}</h3>
+            <p>${d.desc}</p>
+            ${btn}
+            ${linkHint}
+          </div>`;
+      }).join('');
+    }
+
+    // =================== RENDER ZOOM ===================
+    function renderZoom() {
+      const z = load('zoom', DEFAULT_ZOOM);
+      document.getElementById('zoomTanggal').textContent  = z.tanggal  || 'Akan diumumkan melalui SPSE';
+      document.getElementById('zoomPukul').textContent    = z.pukul    || '09.00 WIB s/d selesai';
+      document.getElementById('zoomMeetingId').innerHTML  = z.meetingid || '<em>Akan diinformasikan kemudian</em>';
+      document.getElementById('zoomPasscode').innerHTML   = z.passcode  || '<em>Akan diinformasikan kemudian</em>';
+      const btn = document.getElementById('btnJoinZoom');
+      if (z.link && z.link.trim() !== '') {
+        btn.href = z.link;
+        btn.classList.remove('disabled');
+      } else {
+        btn.href = '#';
+        btn.classList.add('disabled');
+        btn.onclick = e => e.preventDefault();
+      }
+    }
+
+    // =================== RENDER RUNNING TEXT ===================
+    function renderRunning() {
+      const txt = load('running', DEFAULT_RUNNING);
+      const parts = txt.split('|').map(s => s.trim()).filter(Boolean);
+      document.getElementById('marqueeText').innerHTML =
+        parts.map(p => `<i class="fa-solid fa-bullhorn"></i> ${p} &nbsp;&nbsp;&nbsp;&nbsp;`).join('| &nbsp;&nbsp;&nbsp;&nbsp;');
+    }
+
+    // =================== SPA NAVIGATION ===================
+    const navLinks = document.querySelectorAll('.nav-link');
+    const pages    = document.querySelectorAll('.page');
+
+    function showPage(pageId) {
+      pages.forEach(p => p.classList.remove('active'));
+      navLinks.forEach(a => a.classList.remove('active'));
+      const target = document.getElementById('page-' + pageId);
+      if (target) target.classList.add('active');
+      const activeLink = document.querySelector('[data-page="' + pageId + '"]');
+      if (activeLink) activeLink.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        showPage(this.dataset.page);
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('mobile-open');
+          overlay.classList.remove('active');
+        }
+      });
+    });
+
+    // =================== SIDEBAR ===================
+    const sidebar     = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const collapseBtn = document.getElementById('collapseBtn');
+    const collapseIcon= document.getElementById('collapseIcon');
+
+    collapseBtn.addEventListener('click', function() {
+      sidebar.classList.toggle('collapsed');
+      mainContent.classList.toggle('expanded');
+      collapseIcon.className = sidebar.classList.contains('collapsed')
+        ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
+    });
+
+    const mobileToggle = document.getElementById('mobileToggle');
+    const overlay      = document.getElementById('mobileOverlay');
+    mobileToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('mobile-open');
+      overlay.classList.toggle('active');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('mobile-open');
+      overlay.classList.remove('active');
+    });
+
+    // =================== ADMIN AUTH ===================
+    const ADMIN_PASS_KEY = 'adminPass';
+
+    function adminLogin() {
+      const input = document.getElementById('adminPassword').value;
+      const stored = localStorage.getItem(ADMIN_PASS_KEY) || 'admin123';
+      if (input === stored) {
+        document.getElementById('adminLoginPanel').style.display  = 'none';
+        document.getElementById('adminDashboard').style.display   = 'block';
+        document.getElementById('loginError').textContent         = '';
+        loadAdminForms();
+      } else {
+        document.getElementById('loginError').textContent = '❌ Password salah. Coba lagi.';
+      }
+    }
+
+    function adminLogout() {
+      document.getElementById('adminLoginPanel').style.display = 'block';
+      document.getElementById('adminDashboard').style.display  = 'none';
+      document.getElementById('adminPassword').value           = '';
+    }
+
+    // =================== ADMIN TABS ===================
+    function switchAdminTab(name, btn) {
+      document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('atab-' + name).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // =================== ADMIN FORMS ===================
+    function loadAdminForms() {
+      renderJadwalEditor();
+      renderDownloadEditor();
+      // Zoom
+      const z = load('zoom', DEFAULT_ZOOM);
+      document.getElementById('az-tanggal').value   = z.tanggal   || '';
+      document.getElementById('az-pukul').value     = z.pukul     || '';
+      document.getElementById('az-meetingid').value = z.meetingid || '';
+      document.getElementById('az-passcode').value  = z.passcode  || '';
+      document.getElementById('az-link').value      = z.link      || '';
+      // Running text
+      document.getElementById('ar-text').value = load('running', DEFAULT_RUNNING);
+      // Apps Script
+      document.getElementById('as-url').value = load('appsscript', '');
+    }
+
+    // --- Jadwal Editor ---
+    function renderJadwalEditor() {
+      const data = load('jadwal', DEFAULT_JADWAL);
+      const el   = document.getElementById('jadwalEditor');
+      el.innerHTML = data.map((item, i) => `
+        <div class="timeline-editor-item">
+          <div class="tei-head">Tahapan ${i+1}: ${item.label}</div>
+          <div class="tei-row">
+            <div class="admin-form-group">
+              <label>Nama Tahapan</label>
+              <input type="text" id="tj-label-${i}" value="${item.label}" />
+            </div>
+            <div class="admin-form-group">
+              <label>Tanggal / Periode</label>
+              <input type="text" id="tj-tanggal-${i}" value="${item.tanggal || ''}" placeholder="cth: 10–15 Mei 2026" />
+            </div>
+          </div>
+          <div class="tei-row">
+            <div class="admin-form-group">
+              <label>Keterangan</label>
+              <input type="text" id="tj-sub-${i}" value="${item.sub}" />
+            </div>
+            <div class="admin-form-group">
+              <label>Status</label>
+              <select id="tj-status-${i}">
+                <option value="done"     ${item.status==='done'     ?'selected':''}>✅ Selesai</option>
+                <option value="active"   ${item.status==='active'   ?'selected':''}>⏳ Berlangsung</option>
+                <option value="upcoming" ${item.status==='upcoming' ?'selected':''}>📅 Akan Datang</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label>Badge Label</label>
+              <input type="text" id="tj-badge-${i}" value="${item.badge}" />
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function saveJadwal() {
+      const data = load('jadwal', DEFAULT_JADWAL);
+      data.forEach((item, i) => {
+        item.label   = document.getElementById(`tj-label-${i}`).value;
+        item.tanggal = document.getElementById(`tj-tanggal-${i}`).value;
+        item.sub     = document.getElementById(`tj-sub-${i}`).value;
+        item.status  = document.getElementById(`tj-status-${i}`).value;
+        item.badge   = document.getElementById(`tj-badge-${i}`).value;
+      });
+      save('jadwal', data);
+      renderTimeline();
+      flashMsg('msgJadwal');
+    }
+
+    // --- Download Editor ---
+    function renderDownloadEditor() {
+      const data = load('docs', DEFAULT_DOCS);
+      const el   = document.getElementById('downloadEditor');
+      el.innerHTML = data.map((d, i) => `
+        <div class="timeline-editor-item">
+          <div class="tei-head">Dokumen ${i+1}: ${d.title}</div>
+          <div class="tei-row">
+            <div class="admin-form-group">
+              <label>Judul Dokumen</label>
+              <input type="text" id="dd-title-${i}" value="${d.title}" />
+            </div>
+            <div class="admin-form-group">
+              <label>Deskripsi</label>
+              <input type="text" id="dd-desc-${i}" value="${d.desc}" />
+            </div>
+          </div>
+          <div class="admin-form-group">
+            <label>Link Unduhan (URL)</label>
+            <input type="url" id="dd-link-${i}" value="${d.link || ''}" placeholder="https://drive.google.com/…" />
+          </div>
+        </div>`).join('');
+    }
+
+    function saveDownload() {
+      const data = load('docs', DEFAULT_DOCS);
+      data.forEach((d, i) => {
+        d.title = document.getElementById(`dd-title-${i}`).value;
+        d.desc  = document.getElementById(`dd-desc-${i}`).value;
+        d.link  = document.getElementById(`dd-link-${i}`).value;
+      });
+      save('docs', data);
+      renderDownload();
+      flashMsg('msgDownload');
+    }
+
+    // --- Zoom ---
+    function saveZoom() {
+      const z = {
+        tanggal  : document.getElementById('az-tanggal').value,
+        pukul    : document.getElementById('az-pukul').value,
+        meetingid: document.getElementById('az-meetingid').value,
+        passcode : document.getElementById('az-passcode').value,
+        link     : document.getElementById('az-link').value,
+      };
+      save('zoom', z);
+      renderZoom();
+      flashMsg('msgZoom');
+    }
+
+    // --- Running Text ---
+    function saveRunning() {
+      save('running', document.getElementById('ar-text').value);
+      renderRunning();
+      flashMsg('msgRunning');
+    }
+
+    // --- Apps Script URL ---
+    function saveAppsScript() {
+      save('appsscript', document.getElementById('as-url').value);
+      flashMsg('msgAppsScript');
+    }
+
+    function flashMsg(id) {
+      const el = document.getElementById(id);
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    // =================== UPLOAD FORM ===================
+    async function submitUpload() {
+      const fields = {
+        namaPerusahaan: document.getElementById('fNamaPerusahaan').value.trim(),
+        npwp          : document.getElementById('fNpwp').value.trim(),
+        namaDirektur  : document.getElementById('fNamaDirektur').value.trim(),
+        telp          : document.getElementById('fTelp').value.trim(),
+        email         : document.getElementById('fEmail').value.trim(),
+        jenisDok      : document.getElementById('fJenisDok').value,
+        linkFile      : document.getElementById('fLinkFile').value.trim(),
+        keterangan    : document.getElementById('fKeterangan').value.trim(),
+      };
+
+      // Validasi wajib
+      const required = ['namaPerusahaan','npwp','namaDirektur','telp','email','jenisDok','linkFile'];
+      for (const k of required) {
+        if (!fields[k]) {
+          showFormMsg('error', 'Harap lengkapi semua kolom bertanda (*) sebelum mengirim.');
+          return;
+        }
+      }
+
+      const appsScriptUrl = load('appsscript', '');
+      if (!appsScriptUrl) {
+        showFormMsg('error', 'URL Apps Script belum dikonfigurasi. Hubungi admin untuk mengatur backend penyimpanan.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitUpload');
+      btn.disabled = true;
+      document.getElementById('uploadSpinner').style.display = 'inline';
+
+      try {
+        const resp = await fetch(appsScriptUrl, {
+          method : 'POST',
+          mode   : 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify(fields),
+        });
+        // no-cors → tidak bisa baca response, tapi jika tidak throw = sukses
+        // Simpan ke local submissions untuk review Pokja
+        const subs = getSubmissions();
+        subs.push({ ...fields, tanggal: new Date().toISOString(), reviewStatus:'pending', catatanPokja:'' });
+        saveSubmissions(subs);
+        showFormMsg('success');
+        // Reset form
+        ['fNamaPerusahaan','fNpwp','fNamaDirektur','fTelp','fEmail','fKeterangan','fLinkFile'].forEach(id => {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('fJenisDok').value = '';
+      } catch(err) {
+        showFormMsg('error', 'Gagal mengirim: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        document.getElementById('uploadSpinner').style.display = 'none';
+      }
+    }
+
+    function showFormMsg(type, msg) {
+      document.getElementById('uploadSuccess').style.display = 'none';
+      document.getElementById('uploadError').style.display   = 'none';
+      if (type === 'success') {
+        document.getElementById('uploadSuccess').style.display = 'block';
+      } else {
+        document.getElementById('uploadErrorMsg').textContent  = msg || '';
+        document.getElementById('uploadError').style.display   = 'block';
+      }
+    }
+
+    // =================== POKJA ===================
+    const POKJA_CREDS = { username: 'pokja', password: 'pokja2026' };
+    let currentReviewIdx = null;
+
+    function pokjaLogin() {
+      const u = document.getElementById('pokjaUsername').value.trim();
+      const p = document.getElementById('pokjaPassword').value;
+      if (u === POKJA_CREDS.username && p === POKJA_CREDS.password) {
+        document.getElementById('pokjaLoginPanel').style.display = 'none';
+        document.getElementById('pokjaDashboard').style.display  = 'block';
+        renderPokjaTable();
+        renderPokjaStats();
+      } else {
+        document.getElementById('pokjaLoginError').textContent = '❌ Username atau password salah.';
+      }
+    }
+
+    function pokjaLogout() {
+      document.getElementById('pokjaLoginPanel').style.display = 'block';
+      document.getElementById('pokjaDashboard').style.display  = 'none';
+      document.getElementById('pokjaUsername').value = '';
+      document.getElementById('pokjaPassword').value = '';
+      document.getElementById('pokjaLoginError').textContent = '';
+    }
+
+    function renderPokjaStats() {
+      const data = getSubmissions();
+      document.getElementById('pokjaTotalDok').textContent = data.length;
+      document.getElementById('pokjaLulus').textContent    = data.filter(d=>d.reviewStatus==='lulus').length;
+      document.getElementById('pokjaTolak').textContent    = data.filter(d=>d.reviewStatus==='tidak_lulus').length;
+      document.getElementById('pokjaPending').textContent  = data.filter(d=>!d.reviewStatus||d.reviewStatus==='pending').length;
+    }
+
+    function renderPokjaTable() {
+      const data   = getSubmissions();
+      const q      = (document.getElementById('pokjaSearch').value||'').toLowerCase();
+      const fStat  = document.getElementById('pokjaFilterStatus').value;
+      const tbody  = document.getElementById('pokjaTableBody');
+
+      const filtered = data.filter((d,i)=> {
+        const matchQ = !q ||
+          (d.namaPerusahaan||'').toLowerCase().includes(q) ||
+          (d.npwp||'').toLowerCase().includes(q) ||
+          (d.jenisDok||'').toLowerCase().includes(q);
+        const matchS = !fStat || (d.reviewStatus||'pending') === fStat;
+        return matchQ && matchS;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:28px;">Tidak ada data ditemukan.</td></tr>`;
+        renderPokjaStats(); return;
+      }
+
+      const statusLabel = {
+        pending:'<span class="status-badge status-pending">⏳ Menunggu</span>',
+        lulus:'<span class="status-badge status-lulus">✅ Lulus</span>',
+        tidak_lulus:'<span class="status-badge status-tidak_lulus">❌ Tidak Memenuhi</span>',
+        revisi:'<span class="status-badge status-revisi">🔄 Revisi</span>',
+      };
+
+      tbody.innerHTML = filtered.map((d, fi) => {
+        const origIdx = data.indexOf(d);
+        const tgl     = d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-';
+        const stat    = statusLabel[d.reviewStatus||'pending'] || statusLabel.pending;
+        return `<tr>
+          <td>${origIdx+1}</td>
+          <td style="white-space:nowrap;">${tgl}</td>
+          <td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td>
+          <td style="font-family:monospace;">${d.npwp||'-'}</td>
+          <td style="max-width:180px;">${d.jenisDok||'-'}</td>
+          <td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br>
+            <i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td>
+          <td>${d.linkFile ? `<a href="${d.linkFile}" target="_blank" rel="noopener" style="color:var(--blue-700);font-size:0.78rem;word-break:break-all;"><i class="fa-solid fa-link"></i> Lihat</a>` : '-'}</td>
+          <td>${stat}</td>
+          <td><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button></td>
+        </tr>`;
+      }).join('');
+      renderPokjaStats();
+    }
+
+    function openReviewModal(idx) {
+      const data = getSubmissions();
+      const d    = data[idx];
+      if (!d) return;
+      currentReviewIdx = idx;
+
+      document.getElementById('reviewModalInfo').innerHTML = `
+        <strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br>
+        <span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br>
+        <span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} &nbsp;/&nbsp; ${d.email||'-'}</span>
+        ${d.linkFile ? `<br><a href="${d.linkFile}" target="_blank" rel="noopener" style="color:var(--blue-700);"><i class="fa-solid fa-link"></i> Buka Dokumen</a>` : ''}`;
+
+      document.getElementById('reviewStatus').value    = d.reviewStatus || 'pending';
+      document.getElementById('reviewCatatan').value   = d.catatanPokja || '';
+      document.getElementById('notifEmail').checked    = true;
+      document.getElementById('notifWa').checked       = true;
+      updateNotifPreview();
+
+      const modal = document.getElementById('reviewModal');
+      modal.style.display = 'flex';
+      document.getElementById('reviewModalMsg').style.display = 'none';
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').style.display = 'none';
+      currentReviewIdx = null;
+    }
+
+    function updateNotifPreview() {
+      const status  = document.getElementById('reviewStatus').value;
+      const catatan = document.getElementById('reviewCatatan').value;
+      const statusTxt = {
+        pending:'⏳ Menunggu Review',
+        lulus:'✅ Lulus / Memenuhi Syarat',
+        tidak_lulus:'❌ Tidak Memenuhi Syarat',
+        revisi:'🔄 Perlu Revisi / Klarifikasi',
+      };
+      const data = getSubmissions();
+      const d    = currentReviewIdx !== null ? data[currentReviewIdx] : {};
+      document.getElementById('notifPreview').innerHTML = `
+        <strong>Contoh isi notifikasi:</strong><br>
+        Yth. <em>${d.namaPerusahaan||'[Nama Perusahaan]'}</em>,<br>
+        Dokumen penawaran Anda untuk paket <em>Konsolidasi Jasa Tenaga Alih Daya 2026</em> telah dievaluasi oleh Pokja Pemilihan.<br>
+        Status: <strong>${statusTxt[status]||status}</strong><br>
+        ${catatan ? `Catatan: ${catatan}<br>` : ''}
+        — Pokja Pemilihan, Bagian PBJS Kota Surakarta`;
+    }
+
+    // Live preview saat status/catatan berubah
+    document.addEventListener('change', function(e) {
+      if (['reviewStatus','reviewCatatan','notifEmail','notifWa'].includes(e.target.id)) updateNotifPreview();
+    });
+    document.addEventListener('input', function(e) {
+      if (e.target.id === 'reviewCatatan') updateNotifPreview();
+    });
+
+    function simpanReview() {
+      if (currentReviewIdx === null) return;
+      const data    = getSubmissions();
+      const d       = data[currentReviewIdx];
+      const status  = document.getElementById('reviewStatus').value;
+      const catatan = document.getElementById('reviewCatatan').value;
+      const doEmail = document.getElementById('notifEmail').checked;
+      const doWa    = document.getElementById('notifWa').checked;
+
+      d.reviewStatus  = status;
+      d.catatanPokja  = catatan;
+      d.reviewTanggal = new Date().toISOString();
+      saveSubmissions(data);
+      renderPokjaTable();
+
+      const statusTxt = {
+        pending:'Menunggu Review', lulus:'Lulus / Memenuhi Syarat',
+        tidak_lulus:'Tidak Memenuhi Syarat', revisi:'Perlu Revisi / Klarifikasi'
+      };
+      let notifLog = [];
+      if (doEmail && d.email) {
+        const mailBody = encodeURIComponent(`Yth. ${d.namaPerusahaan},\n\nDokumen penawaran Anda untuk paket Konsolidasi Jasa Tenaga Alih Daya 2026 telah dievaluasi oleh Pokja Pemilihan.\nStatus: ${statusTxt[status]||status}\n${catatan ? 'Catatan: '+catatan+'\n' : ''}\n— Pokja Pemilihan, Bagian PBJS Kota Surakarta`);
+        const mailSubj = encodeURIComponent(`[Konsolidasi 2026] Hasil Review Dokumen – ${d.namaPerusahaan}`);
+        window.open(`mailto:${d.email}?subject=${mailSubj}&body=${mailBody}`, '_blank');
+        notifLog.push('Email');
+      }
+      if (doWa && d.telp) {
+        const waNum = d.telp.replace(/\D/g,'').replace(/^0/,'62');
+        const waMsg = encodeURIComponent(`Yth. ${d.namaPerusahaan},\n\nDokumen penawaran Anda untuk paket *Konsolidasi Jasa Tenaga Alih Daya 2026* telah dievaluasi oleh Pokja Pemilihan.\nStatus: *${statusTxt[status]||status}*\n${catatan ? 'Catatan: '+catatan+'\n' : ''}\n— Pokja Pemilihan, Bagian PBJS Kota Surakarta`);
+        window.open(`https://wa.me/${waNum}?text=${waMsg}`, '_blank');
+        notifLog.push('WhatsApp');
+      }
+
+      const msgEl = document.getElementById('reviewModalMsg');
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#EAF3DE';
+      msgEl.style.color = '#3B6D11';
+      msgEl.style.border = '1px solid #B6DBA0';
+      msgEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> &nbsp;Review tersimpan! ${notifLog.length ? 'Notifikasi dikirim via '+notifLog.join(' & ')+'. Tab baru mungkin terbuka.' : 'Tidak ada notifikasi dikirim.'}`;
+      setTimeout(closeReviewModal, 2200);
+    }
+
+    // Hook: saat form Upload berhasil, simpan ke submissions juga
+    const _origSubmitUpload = submitUpload;
+    window._patchedSubmit = true;
+
+    // =================== INIT ===================
+    renderTimeline();
+    renderDownload();
+    renderZoom();
+    renderRunning();
+  </script>
+
+</body>
+</html>
