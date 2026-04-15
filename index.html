@@ -64,13 +64,16 @@
     }
 
     .header-logo {
-      width: 48px; height: 48px;
-      background: var(--white);
-      border-radius: 50%;
+      height: 56px;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .header-logo i { color: var(--blue-800); font-size: 22px; }
+    .header-logo img {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+    }
 
     .header-text h1 {
       font-size: 1.1rem; font-weight: 700; letter-spacing: 0.3px;
@@ -546,7 +549,7 @@
         <i class="fa-solid fa-bars"></i>
       </button>
       <div class="header-logo">
-        <i class="fa-solid fa-landmark"></i>
+        <img src="data:image/jpeg;base64,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" alt="Logo BPBJ Kota Surakarta" />
       </div>
       <div class="header-text">
         <h1>Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026</h1>
@@ -619,7 +622,7 @@
 
       <div class="sidebar-footer">
         <i class="fa-solid fa-shield-halved" style="color: var(--blue-600);"></i>
-        <span>PBJS Solo &copy; 2026</span>
+        <span>BPBJ Kota Surakarta &copy; 2026</span>
       </div>
     </aside>
 
@@ -635,7 +638,7 @@
           <i class="fa-solid fa-circle-exclamation"></i>
           <div>
             <strong>Informasi Penting:</strong> Portal ini digunakan untuk kegiatan resmi pengadaan konsolidasi jasa tenaga alih daya.
-            Pastikan Anda membaca seluruh dokumen pemilihan sebelum mengajukan penawaran. Untuk pertanyaan, hubungi Bagian PBJS Kota Surakarta.
+            Pastikan Anda membaca seluruh dokumen pemilihan sebelum mengajukan penawaran. Untuk pertanyaan, hubungi BPBJ Kota Surakarta.
           </div>
         </div>
 
@@ -743,6 +746,7 @@
             <li>Pastikan dokumen penawaran telah ditandatangani dan distempel perusahaan.</li>
             <li>Format file yang diterima: <strong>PDF, ZIP, atau RAR</strong> (maksimal 25 MB).</li>
             <li>Isi semua kolom yang bertanda <strong>(*)</strong> dengan lengkap dan benar.</li>
+            <li>Pilih file dokumen dari komputer Anda pada kolom <strong>Upload Dokumen</strong>.</li>
             <li>Periksa kembali nama perusahaan dan nomor NPWP sebelum mengirim.</li>
             <li>Setelah berhasil submit, simpan bukti/tanda terima untuk arsip.</li>
             <li>Upload hanya dilakukan <strong>sekali</strong>; untuk revisi hubungi Pokja Pemilihan.</li>
@@ -792,11 +796,17 @@
             </select>
           </div>
           <div class="form-row">
-            <label>Link File Dokumen <span class="req">*</span>
-              <span style="font-weight:400;color:var(--gray-400);"> (Google Drive / OneDrive – pastikan akses Publik / Anyone with link)</span>
+            <label>Upload Dokumen <span class="req">*</span>
+              <span style="font-weight:400;color:var(--gray-400);"> (PDF, ZIP, atau RAR – maks. 25 MB)</span>
             </label>
-            <input type="text" id="fLinkFile" placeholder="https://drive.google.com/…" />
-            <div class="file-hint">Upload file ke Google Drive / OneDrive terlebih dahulu, lalu paste link-nya di sini.</div>
+            <input type="file" id="fFileDok" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" />
+            <div class="file-hint">Pilih file dari komputer Anda. File akan diunggah ke Google Drive secara otomatis.</div>
+            <div id="fUploadProgress" style="display:none;margin-top:8px;">
+              <div style="background:var(--gray-200);border-radius:4px;height:8px;overflow:hidden;">
+                <div id="fProgressBar" style="height:100%;background:var(--blue-600);width:0%;transition:width 0.3s;"></div>
+              </div>
+              <span id="fProgressText" style="font-size:0.75rem;color:var(--blue-700);margin-top:4px;display:block;"></span>
+            </div>
           </div>
           <div class="form-row">
             <label>Keterangan Tambahan</label>
@@ -915,13 +925,14 @@
                       <th>NPWP</th>
                       <th>Jenis Dokumen</th>
                       <th>Kontak</th>
-                      <th>Link Dokumen</th>
+                      <th>File Dokumen</th>
                       <th>Status</th>
+                      <th>Catatan Pokja</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody id="pokjaTableBody">
-                    <tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:28px;">Belum ada data dokumen masuk.</td></tr>
+                    <tr><td colspan="10" style="text-align:center;color:var(--gray-400);padding:28px;">Belum ada data dokumen masuk.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -950,8 +961,11 @@
               </select>
             </div>
             <div class="admin-form-group">
-              <label>Catatan Pokja</label>
-              <textarea id="reviewCatatan" rows="4" placeholder="Tuliskan catatan, alasan, atau permintaan revisi kepada penyedia…"></textarea>
+              <label style="color:var(--blue-900);font-weight:700;">
+                <i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja
+                <span style="font-weight:400;font-size:0.78rem;color:var(--gray-400);"> (akan ditampilkan di tabel & dikirim ke penyedia)</span>
+              </label>
+              <textarea id="reviewCatatan" rows="5" placeholder="Tuliskan catatan evaluasi, alasan keputusan, atau permintaan revisi kepada penyedia…" style="border-left:3px solid var(--blue-600);background:#F8FBFF;"></textarea>
             </div>
 
             <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
@@ -1089,18 +1103,8 @@
                   <strong>Langkah singkat:</strong><br>
                   1. Buat Google Spreadsheet baru.<br>
                   2. Buka <em>Extensions → Apps Script</em>, paste kode di bawah:<br>
-                  <pre style="margin:8px 0;background:var(--gray-100);padding:10px;border-radius:6px;overflow:auto;font-size:0.75rem;">function doPost(e){
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data  = JSON.parse(e.postData.contents);
-  sheet.appendRow([
-    new Date(), data.namaPerusahaan, data.npwp,
-    data.namaDirektur, data.telp, data.email,
-    data.jenisDok, data.linkFile, data.keterangan
-  ]);
-  return ContentService.createTextOutput(
-    JSON.stringify({status:'ok'})
-  ).setMimeType(ContentService.MimeType.JSON);
-}</pre>
+                  <pre style="margin:8px 0;background:var(--gray-100);padding:10px;border-radius:6px;overflow:auto;font-size:0.75rem;">// Lihat file code.gs yang disertakan untuk kode lengkap.</pre>
+                  <p style="font-size:0.78rem;color:var(--gray-600);margin:6px 0;">Kode lengkap tersedia di file <strong>code.gs</strong> yang disertakan bersama portal ini.</p>
                   3. Deploy → <em>New deployment → Web App</em>, pilih <em>"Anyone"</em> untuk akses.<br>
                   4. Copy URL deployment-nya ke kolom di atas.
                 </div>
@@ -1442,24 +1446,29 @@
 
     // =================== UPLOAD FORM ===================
     async function submitUpload() {
-      const fields = {
-        namaPerusahaan: document.getElementById('fNamaPerusahaan').value.trim(),
-        npwp          : document.getElementById('fNpwp').value.trim(),
-        namaDirektur  : document.getElementById('fNamaDirektur').value.trim(),
-        telp          : document.getElementById('fTelp').value.trim(),
-        email         : document.getElementById('fEmail').value.trim(),
-        jenisDok      : document.getElementById('fJenisDok').value,
-        linkFile      : document.getElementById('fLinkFile').value.trim(),
-        keterangan    : document.getElementById('fKeterangan').value.trim(),
-      };
+      const namaPerusahaan = document.getElementById('fNamaPerusahaan').value.trim();
+      const npwp           = document.getElementById('fNpwp').value.trim();
+      const namaDirektur   = document.getElementById('fNamaDirektur').value.trim();
+      const telp           = document.getElementById('fTelp').value.trim();
+      const email          = document.getElementById('fEmail').value.trim();
+      const jenisDok       = document.getElementById('fJenisDok').value;
+      const keterangan     = document.getElementById('fKeterangan').value.trim();
+      const fileInput      = document.getElementById('fFileDok');
+      const file           = fileInput.files[0];
 
-      // Validasi wajib
-      const required = ['namaPerusahaan','npwp','namaDirektur','telp','email','jenisDok','linkFile'];
-      for (const k of required) {
-        if (!fields[k]) {
-          showFormMsg('error', 'Harap lengkapi semua kolom bertanda (*) sebelum mengirim.');
-          return;
-        }
+      // Validasi field teks
+      if (!namaPerusahaan || !npwp || !namaDirektur || !telp || !email || !jenisDok) {
+        showFormMsg('error', 'Harap lengkapi semua kolom bertanda (*) sebelum mengirim.');
+        return;
+      }
+      if (!file) {
+        showFormMsg('error', 'Harap pilih file dokumen yang akan diunggah.');
+        return;
+      }
+      const maxSize = 25 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showFormMsg('error', 'Ukuran file melebihi batas 25 MB. Kompres file terlebih dahulu.');
+        return;
       }
 
       const appsScriptUrl = load('appsscript', '');
@@ -1472,26 +1481,69 @@
       btn.disabled = true;
       document.getElementById('uploadSpinner').style.display = 'inline';
 
+      // Show progress bar
+      const progressWrap = document.getElementById('fUploadProgress');
+      const progressBar  = document.getElementById('fProgressBar');
+      const progressText = document.getElementById('fProgressText');
+      progressWrap.style.display = 'block';
+      progressBar.style.width = '10%';
+      progressText.textContent = 'Membaca file…';
+
       try {
-        const resp = await fetch(appsScriptUrl, {
+        // Convert file to base64
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload  = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = () => reject(new Error('Gagal membaca file'));
+          reader.readAsDataURL(file);
+        });
+
+        progressBar.style.width = '40%';
+        progressText.textContent = 'Mengunggah ke server…';
+
+        const payload = {
+          namaPerusahaan, npwp, namaDirektur, telp, email,
+          jenisDok, keterangan,
+          fileName    : file.name,
+          fileType    : file.type,
+          fileData    : base64,
+        };
+
+        await fetch(appsScriptUrl, {
           method : 'POST',
           mode   : 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify(fields),
+          body   : JSON.stringify(payload),
         });
-        // no-cors → tidak bisa baca response, tapi jika tidak throw = sukses
+
+        progressBar.style.width = '100%';
+        progressText.textContent = 'Selesai!';
+
         // Simpan ke local submissions untuk review Pokja
         const subs = getSubmissions();
-        subs.push({ ...fields, tanggal: new Date().toISOString(), reviewStatus:'pending', catatanPokja:'' });
+        subs.push({
+          namaPerusahaan, npwp, namaDirektur, telp, email,
+          jenisDok, keterangan,
+          namaFile    : file.name,
+          linkFile    : '(file diunggah via Apps Script)',
+          tanggal     : new Date().toISOString(),
+          reviewStatus: 'pending',
+          catatanPokja: ''
+        });
         saveSubmissions(subs);
         showFormMsg('success');
+
         // Reset form
-        ['fNamaPerusahaan','fNpwp','fNamaDirektur','fTelp','fEmail','fKeterangan','fLinkFile'].forEach(id => {
+        ['fNamaPerusahaan','fNpwp','fNamaDirektur','fTelp','fEmail','fKeterangan'].forEach(id => {
           document.getElementById(id).value = '';
         });
         document.getElementById('fJenisDok').value = '';
+        fileInput.value = '';
+        setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 2000);
+
       } catch(err) {
         showFormMsg('error', 'Gagal mengirim: ' + err.message);
+        progressWrap.style.display = 'none';
       } finally {
         btn.disabled = false;
         document.getElementById('uploadSpinner').style.display = 'none';
@@ -1558,7 +1610,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:28px;">Tidak ada data ditemukan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--gray-400);padding:28px;">Tidak ada data ditemukan.</td></tr>`;
         renderPokjaStats(); return;
       }
 
@@ -1581,8 +1633,9 @@
           <td style="max-width:180px;">${d.jenisDok||'-'}</td>
           <td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br>
             <i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td>
-          <td>${d.linkFile ? `<a href="${d.linkFile}" target="_blank" rel="noopener" style="color:var(--blue-700);font-size:0.78rem;word-break:break-all;"><i class="fa-solid fa-link"></i> Lihat</a>` : '-'}</td>
+          <td>${d.namaFile ? `<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.namaFile}</span>` : (d.linkFile && d.linkFile !== '(file diunggah via Apps Script)' ? `<a href="${d.linkFile}" target="_blank" rel="noopener" style="color:var(--blue-700);font-size:0.78rem;"><i class="fa-solid fa-link"></i> Lihat</a>` : '<span style="color:var(--gray-400);font-size:0.78rem;">✓ Terunggah</span>')}</td>
           <td>${stat}</td>
+          <td style="max-width:200px;font-size:0.78rem;color:var(--gray-600);">${d.catatanPokja ? `<span title="${d.catatanPokja}">${d.catatanPokja.length > 60 ? d.catatanPokja.substring(0,57)+'…' : d.catatanPokja}</span>` : '<em style="color:var(--gray-400);">Belum ada catatan</em>'}</td>
           <td><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button></td>
         </tr>`;
       }).join('');
@@ -1599,7 +1652,7 @@
         <strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br>
         <span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br>
         <span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} &nbsp;/&nbsp; ${d.email||'-'}</span>
-        ${d.linkFile ? `<br><a href="${d.linkFile}" target="_blank" rel="noopener" style="color:var(--blue-700);"><i class="fa-solid fa-link"></i> Buka Dokumen</a>` : ''}`;
+        ${d.namaFile ? `<br><span style="color:var(--blue-700);"><i class="fa-solid fa-file-arrow-up"></i> File: ${d.namaFile}</span>` : (d.linkFile && d.linkFile !== '(file diunggah via Apps Script)' ? `<br><a href="${d.linkFile}" target="_blank" rel="noopener" style="color:var(--blue-700);"><i class="fa-solid fa-link"></i> Buka Dokumen</a>` : '<br><span style="color:var(--green-700);"><i class="fa-solid fa-check-circle"></i> Dokumen terunggah</span>')}`;
 
       document.getElementById('reviewStatus').value    = d.reviewStatus || 'pending';
       document.getElementById('reviewCatatan').value   = d.catatanPokja || '';
@@ -1634,7 +1687,7 @@
         Dokumen penawaran Anda untuk paket <em>Konsolidasi Jasa Tenaga Alih Daya 2026</em> telah dievaluasi oleh Pokja Pemilihan.<br>
         Status: <strong>${statusTxt[status]||status}</strong><br>
         ${catatan ? `Catatan: ${catatan}<br>` : ''}
-        — Pokja Pemilihan, Bagian PBJS Kota Surakarta`;
+        — Pokja Pemilihan, BPBJ Kota Surakarta`;
     }
 
     // Live preview saat status/catatan berubah
@@ -1645,7 +1698,7 @@
       if (e.target.id === 'reviewCatatan') updateNotifPreview();
     });
 
-    function simpanReview() {
+    async function simpanReview() {
       if (currentReviewIdx === null) return;
       const data    = getSubmissions();
       const d       = data[currentReviewIdx];
@@ -1660,20 +1713,40 @@
       saveSubmissions(data);
       renderPokjaTable();
 
+      // Push review update to Google Spreadsheet
+      const appsScriptUrl = load('appsscript', '');
+      if (appsScriptUrl) {
+        try {
+          await fetch(appsScriptUrl, {
+            method : 'POST',
+            mode   : 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify({
+              action         : 'updateReview',
+              namaPerusahaan : d.namaPerusahaan,
+              npwp           : d.npwp,
+              reviewStatus   : status,
+              catatanPokja   : catatan,
+              reviewTanggal  : d.reviewTanggal,
+            }),
+          });
+        } catch(e) { /* silent – no-cors, tidak bisa baca error */ }
+      }
+
       const statusTxt = {
         pending:'Menunggu Review', lulus:'Lulus / Memenuhi Syarat',
         tidak_lulus:'Tidak Memenuhi Syarat', revisi:'Perlu Revisi / Klarifikasi'
       };
       let notifLog = [];
       if (doEmail && d.email) {
-        const mailBody = encodeURIComponent(`Yth. ${d.namaPerusahaan},\n\nDokumen penawaran Anda untuk paket Konsolidasi Jasa Tenaga Alih Daya 2026 telah dievaluasi oleh Pokja Pemilihan.\nStatus: ${statusTxt[status]||status}\n${catatan ? 'Catatan: '+catatan+'\n' : ''}\n— Pokja Pemilihan, Bagian PBJS Kota Surakarta`);
+        const mailBody = encodeURIComponent(`Yth. ${d.namaPerusahaan},\n\nDokumen penawaran Anda untuk paket Konsolidasi Jasa Tenaga Alih Daya 2026 telah dievaluasi oleh Pokja Pemilihan.\nStatus: ${statusTxt[status]||status}\n${catatan ? 'Catatan: '+catatan+'\n' : ''}\n— Pokja Pemilihan, BPBJ Kota Surakarta`);
         const mailSubj = encodeURIComponent(`[Konsolidasi 2026] Hasil Review Dokumen – ${d.namaPerusahaan}`);
         window.open(`mailto:${d.email}?subject=${mailSubj}&body=${mailBody}`, '_blank');
         notifLog.push('Email');
       }
       if (doWa && d.telp) {
         const waNum = d.telp.replace(/\D/g,'').replace(/^0/,'62');
-        const waMsg = encodeURIComponent(`Yth. ${d.namaPerusahaan},\n\nDokumen penawaran Anda untuk paket *Konsolidasi Jasa Tenaga Alih Daya 2026* telah dievaluasi oleh Pokja Pemilihan.\nStatus: *${statusTxt[status]||status}*\n${catatan ? 'Catatan: '+catatan+'\n' : ''}\n— Pokja Pemilihan, Bagian PBJS Kota Surakarta`);
+        const waMsg = encodeURIComponent(`Yth. ${d.namaPerusahaan},\n\nDokumen penawaran Anda untuk paket *Konsolidasi Jasa Tenaga Alih Daya 2026* telah dievaluasi oleh Pokja Pemilihan.\nStatus: *${statusTxt[status]||status}*\n${catatan ? 'Catatan: '+catatan+'\n' : ''}\n— Pokja Pemilihan, BPBJ Kota Surakarta`);
         window.open(`https://wa.me/${waNum}?text=${waMsg}`, '_blank');
         notifLog.push('WhatsApp');
       }
