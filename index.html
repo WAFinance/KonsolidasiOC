@@ -6,6 +6,12 @@
   <title id="pageTabTitle">Portal Pengadaan – Pemerintah Kota Surakarta 2026</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    /* ===== PASSWORD TOGGLE EYE ===== */
+    .pw-wrap { position:relative; }
+    .pw-wrap input { padding-right:38px !important; }
+    .pw-eye { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--gray-400); font-size:14px; padding:4px; transition:color var(--transition); }
+    .pw-eye:hover { color:var(--blue-600); }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --blue-50:#E6F1FB; --blue-100:#B5D4F4; --blue-600:#185FA5;
@@ -79,20 +85,23 @@
     .info-banner { background:var(--blue-50); border:1px solid var(--blue-100); border-left:4px solid var(--blue-600); border-radius:var(--radius); padding:14px 18px; font-size:0.875rem; color:var(--blue-800); display:flex; gap:10px; align-items:flex-start; margin-bottom:22px; }
     .info-banner i { margin-top:2px; flex-shrink:0; }
 
-    /* ===== CALENDAR ===== */
-    .calendar-view { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
-    .calendar-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-    .calendar-nav h3 { font-size:1rem; font-weight:700; color:var(--blue-900); }
-    .calendar-nav button { background:var(--blue-50); border:1px solid var(--blue-100); border-radius:7px; padding:5px 12px; cursor:pointer; color:var(--blue-700); font-size:0.82rem; font-weight:600; transition:background var(--transition); }
+    /* ===== CALENDAR – Full Width Modern ===== */
+    .calendar-view { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; width:100%; }
+    .calendar-nav { display:flex; align-items:center; gap:10px; padding:14px 20px 10px; }
+    .calendar-nav h3 { font-size:1rem; font-weight:700; color:var(--blue-900); flex:1; text-align:center; }
+    .calendar-nav button { background:var(--blue-50); border:1px solid var(--blue-100); border-radius:7px; padding:5px 13px; cursor:pointer; color:var(--blue-700); font-size:0.9rem; font-weight:700; transition:background var(--transition); }
     .calendar-nav button:hover { background:var(--blue-100); }
-    .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-    .calendar-day-header { text-align:center; font-size:0.72rem; font-weight:700; color:var(--gray-400); padding:6px 2px; text-transform:uppercase; }
-    .calendar-day { min-height:70px; border:1px solid var(--gray-100); border-radius:6px; padding:4px 5px; font-size:0.75rem; background:var(--white); position:relative; transition:background 0.15s; }
-    .calendar-day.other-month { background:var(--gray-50); color:var(--gray-400); }
-    .calendar-day.today { border-color:var(--blue-600); background:var(--blue-50); }
-    .calendar-day .day-num { font-weight:700; font-size:0.8rem; color:var(--gray-800); margin-bottom:3px; }
+    .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--gray-200); }
+    .calendar-day-header { text-align:center; font-size:0.75rem; font-weight:700; color:var(--white); padding:9px 4px; text-transform:uppercase; background:var(--blue-800); border-right:1px solid rgba(255,255,255,0.12); }
+    .calendar-day-header:last-child { border-right:none; }
+    .calendar-day { min-height:90px; border-right:1px solid var(--gray-200); border-bottom:1px solid var(--gray-200); padding:5px 6px; font-size:0.75rem; background:var(--white); position:relative; transition:background 0.15s; vertical-align:top; }
+    .calendar-day:nth-child(7n) { border-right:none; }
+    .calendar-day.other-month { background:#f9fafb; }
+    .calendar-day.today .day-num-wrap { background:var(--blue-600); color:white; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .calendar-day .day-num { font-weight:600; font-size:0.82rem; color:var(--gray-700); margin-bottom:3px; }
     .calendar-day.other-month .day-num { color:var(--gray-400); }
-    .calendar-event { font-size:0.65rem; font-weight:600; color:white; border-radius:3px; padding:1px 4px; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:default; }
+    .calendar-day .day-num-wrap { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; margin-bottom:2px; font-weight:600; font-size:0.82rem; color:var(--gray-700); }
+    .calendar-event { font-size:0.7rem; font-weight:600; color:white; border-radius:3px; padding:2px 5px; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:default; display:block; }
     .calendar-event.done { background:var(--gantt-done); }
     .calendar-event.active { background:var(--gantt-active); }
     .calendar-event.upcoming { background:var(--gantt-upcoming); }
@@ -289,8 +298,11 @@
       </div>
       <div class="admin-form-group">
         <label>Password</label>
-        <input type="password" id="overlayPassword" placeholder="Masukkan password…" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')doOverlayLogin()" />
+        <div class="pw-wrap">
+          <input type="password" id="overlayPassword" placeholder="Masukkan password…" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')doOverlayLogin()" />
+          <button type="button" class="pw-eye" onclick="togglePw('overlayPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
+        </div>
       </div>
       <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="overlayLoginError"></div>
       <div id="loginLoadingMsg" style="display:none;font-size:0.8rem;color:var(--blue-700);margin-top:4px;"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi…</div>
@@ -695,17 +707,17 @@
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;flex-wrap:wrap;">
                 <div class="timeline-editor-item">
                   <div class="tei-head"><i class="fa-solid fa-gear" style="color:var(--blue-600);"></i> Ganti Password Admin</div>
-                  <div class="admin-form-group"><label>Password Lama</label><input type="password" id="ak-admin-old" /></div>
-                  <div class="admin-form-group"><label>Password Baru</label><input type="password" id="ak-admin-new" /></div>
-                  <div class="admin-form-group"><label>Konfirmasi</label><input type="password" id="ak-admin-confirm" /></div>
+                  <div class="admin-form-group"><label>Password Lama</label><div class="pw-wrap"><input type="password" id="ak-admin-old" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-old',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-admin-new" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-admin-confirm" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
                   <button class="btn-admin-save" onclick="changeAdminPassword()"><i class="fa-solid fa-key"></i> Ganti Password</button>
                   <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunAdmin"></div>
                 </div>
                 <div class="timeline-editor-item">
                   <div class="tei-head"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> Ganti Password Pokja</div>
                   <div class="admin-form-group"><label>Username Pokja</label><input type="text" id="ak-pokja-user" /></div>
-                  <div class="admin-form-group"><label>Password Baru</label><input type="password" id="ak-pokja-new" /></div>
-                  <div class="admin-form-group"><label>Konfirmasi</label><input type="password" id="ak-pokja-confirm" /></div>
+                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-pokja-new" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-pokja-confirm" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
                   <button class="btn-admin-save" onclick="changePokjaPassword()"><i class="fa-solid fa-key"></i> Ganti Password</button>
                   <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunPokja"></div>
                 </div>
@@ -908,6 +920,14 @@ async function loadSubmissionsFromSheet() {
 }
 
 function getSubmissions() { return _submissions; }
+
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
 
 // =================================================================
 // AUTH – Kredensial dari Spreadsheet
@@ -1139,21 +1159,21 @@ function renderCalendar() {
   const daysInPrev  = new Date(year, month, 0).getDate();
 
   for (let i = firstDay-1; i >= 0; i--) {
-    html += `<div class="calendar-day other-month"><div class="day-num">${daysInPrev-i}</div></div>`;
+    html += `<div class="calendar-day other-month"><div class="day-num-wrap">${daysInPrev-i}</div></div>`;
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
     const events  = eventMap[dateStr] || [];
     html += `<div class="calendar-day${isToday?' today':''}">
-      <div class="day-num">${d}</div>
-      ${events.map(e=>`<div class="calendar-event ${e.status}" title="${e.label}">${e.label.length>14?e.label.slice(0,13)+'…':e.label}</div>`).join('')}
+      <div class="day-num-wrap">${d}</div>
+      ${events.map(e=>`<div class="calendar-event ${e.status}" title="${e.label}">${e.label.length>22?e.label.slice(0,21)+'…':e.label}</div>`).join('')}
     </div>`;
   }
   const total     = firstDay + daysInMonth;
   const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
   for (let d=1; d<=remaining; d++) {
-    html += `<div class="calendar-day other-month"><div class="day-num">${d}</div></div>`;
+    html += `<div class="calendar-day other-month"><div class="day-num-wrap">${d}</div></div>`;
   }
   html += `</div></div>`;
   wrap.innerHTML = html;
@@ -1571,7 +1591,7 @@ function renderFormFieldList() {
       <span style="font-size:0.78rem;color:var(--gray-400);width:60px;flex-shrink:0;">${f.type}</span>
       <input type="text" value="${f.label}" onchange="updateFormFieldLabel(${i}, this.value)" style="flex:2;" />
       ${f.required?'<span style="color:#C0392B;font-size:0.78rem;">Wajib</span>':'<span style="color:var(--gray-400);font-size:0.78rem;">Opsional</span>'}
-      ${!f.fixed ? `<button class="btn-danger-sm" onclick="removeFormField(${i})"><i class="fa-solid fa-trash"></i></button>` : '<span style="font-size:0.72rem;color:var(--gray-400);">Fixed</span>'}
+      <button class="btn-danger-sm" onclick="${f.fixed ? `removeFixedFormField(${i})` : `removeFormField(${i})`}" title="${f.fixed ? 'Hapus field fixed (konfirmasi diperlukan)' : 'Hapus field'}"><i class="fa-solid fa-trash"></i></button>
     </div>`;
   });
   document.getElementById('formFieldList').innerHTML = html;
@@ -1592,6 +1612,16 @@ function addFormField(type) {
 function removeFormField(i) {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   if (fields[i] && !fields[i].fixed) { fields.splice(i, 1); _globalConfig['formFields'] = fields; renderFormFieldList(); }
+}
+
+function removeFixedFormField(i) {
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  if (!fields[i]) return;
+  const fieldLabel = fields[i].label;
+  if (!confirm(`⚠️ Hapus field "${fieldLabel}"?\n\nField ini adalah field bawaan (fixed). Jika dihapus, Anda perlu menambahkan ulang secara manual.\n\nLanjutkan hapus?`)) return;
+  fields.splice(i, 1);
+  _globalConfig['formFields'] = fields;
+  renderFormFieldList();
 }
 
 async function saveFormFields() {
@@ -1778,12 +1808,13 @@ async function submitUpload() {
       keterangan:      payload.fKeterangan,
     };
 
-    const res = await fetch(APPS_SCRIPT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
       body: JSON.stringify(fullPayload)
     });
-    const result = await res.json().catch(()=>({status:'ok'}));
+    const result = {status:'ok'};
     progressBar.style.width='100%'; progressText.textContent='Selesai!';
 
     document.getElementById('statPeserta').textContent = '–';
