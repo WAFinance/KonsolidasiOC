@@ -55,31 +55,26 @@
     aside.sidebar.collapsed nav.sidebar-nav li a .nav-label { opacity:0; pointer-events:none; }
     nav.sidebar-nav li a:hover, nav.sidebar-nav li a.active { background:var(--blue-50); color:var(--blue-700); border-left-color:var(--blue-600); }
 
-    /* Upload nav – Hijau */
     nav.sidebar-nav li a.nav-upload { background:linear-gradient(135deg,#2D7D17,#3B8C1A); color:#fff; border-left:3px solid #1a5c0a; margin:6px 10px; border-radius:8px; padding:11px 12px; font-weight:700; }
     nav.sidebar-nav li a.nav-upload:hover { background:linear-gradient(135deg,#1a5c0a,#2D7D17); color:#fff; border-left-color:#1a5c0a; }
     nav.sidebar-nav li a.nav-upload .nav-icon { color:#fff; }
     aside.sidebar.collapsed nav.sidebar-nav li a.nav-upload { margin:6px 4px; padding:11px 8px; border-radius:8px; }
 
-    /* Status nav – Teal */
     nav.sidebar-nav li a.nav-status { background:linear-gradient(135deg,#0C6E6E,#0F8A8A); color:#fff; border-left:3px solid #085555; margin:3px 10px; border-radius:8px; padding:11px 12px; font-weight:700; }
     nav.sidebar-nav li a.nav-status:hover { background:linear-gradient(135deg,#085555,#0C6E6E); color:#fff; }
     nav.sidebar-nav li a.nav-status .nav-icon { color:#fff; }
     aside.sidebar.collapsed nav.sidebar-nav li a.nav-status { margin:3px 4px; padding:11px 8px; border-radius:8px; }
 
-    /* Login Penyedia nav – biru muda */
     nav.sidebar-nav li a.nav-login-penyedia { background:linear-gradient(135deg,#185FA5,#0C447C); color:#fff; border-left:3px solid #042C53; margin:6px 10px; border-radius:8px; padding:11px 12px; font-weight:700; }
     nav.sidebar-nav li a.nav-login-penyedia:hover { background:linear-gradient(135deg,#042C53,#185FA5); color:#fff; }
     nav.sidebar-nav li a.nav-login-penyedia .nav-icon { color:#fff; }
     aside.sidebar.collapsed nav.sidebar-nav li a.nav-login-penyedia { margin:6px 4px; padding:11px 8px; border-radius:8px; }
 
-    /* Login Pokja nav – abu-abu biru */
     nav.sidebar-nav li a.nav-login-pokja { background:linear-gradient(135deg,#4A5568,#2D3748); color:#fff; border-left:3px solid #1a202c; margin:3px 10px; border-radius:8px; padding:11px 12px; font-weight:700; }
     nav.sidebar-nav li a.nav-login-pokja:hover { background:linear-gradient(135deg,#1a202c,#4A5568); color:#fff; }
     nav.sidebar-nav li a.nav-login-pokja .nav-icon { color:#fff; }
     aside.sidebar.collapsed nav.sidebar-nav li a.nav-login-pokja { margin:3px 4px; padding:11px 8px; border-radius:8px; }
 
-    /* Penyedia info bar di sidebar */
     .sidebar-penyedia-info { background:linear-gradient(135deg,#0C6E6E,#0F8A8A); color:#fff; margin:6px 10px; border-radius:8px; padding:10px 12px; font-size:0.78rem; display:none; }
     .sidebar-penyedia-info.show { display:block; }
     .sidebar-penyedia-info .sp-name { font-weight:700; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -99,7 +94,6 @@
     .page-title i { color:var(--blue-600); }
     .page-subtitle { font-size:0.85rem; color:var(--gray-400); margin-bottom:22px; padding-bottom:14px; border-bottom:2px solid var(--blue-50); }
 
-    /* ===== STAT CARDS ===== */
     .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:28px; }
     .stat-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); transition:transform var(--transition),box-shadow var(--transition); }
     .stat-card:hover { transform:translateY(-3px); box-shadow:0 6px 16px rgba(0,0,0,0.12); }
@@ -110,7 +104,6 @@
     .info-banner { background:var(--blue-50); border:1px solid var(--blue-100); border-left:4px solid var(--blue-600); border-radius:var(--radius); padding:14px 18px; font-size:0.875rem; color:var(--blue-800); display:flex; gap:10px; align-items:flex-start; margin-bottom:22px; }
     .info-banner i { margin-top:2px; flex-shrink:0; }
 
-    /* ===== CALENDAR ===== */
     .calendar-view { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; width:100%; }
     .calendar-nav { display:flex; align-items:center; gap:10px; padding:14px 20px 10px; }
     .calendar-nav h3 { font-size:1rem; font-weight:700; color:var(--blue-900); flex:1; text-align:center; }
@@ -135,7 +128,6 @@
     .section-heading i { color:var(--blue-600); }
     .spse-section { margin-top:32px; border-top:2px solid var(--blue-50); padding-top:24px; }
 
-    /* ===== DOC GRID ===== */
     .doc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; }
     .doc-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:22px 22px 18px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px; transition:transform var(--transition),box-shadow var(--transition); }
     .doc-card:hover { transform:translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.11); }
@@ -147,7 +139,6 @@
     .btn-download { display:inline-flex; align-items:center; gap:7px; background:var(--blue-700); color:var(--white); border:none; border-radius:8px; padding:9px 16px; font-size:0.85rem; font-weight:600; cursor:pointer; text-decoration:none; transition:background var(--transition); }
     .btn-download:hover { background:var(--blue-900); }
 
-    /* ===== ZOOM ===== */
     .zoom-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:36px 32px; box-shadow:var(--shadow); max-width:620px; margin:0 auto; text-align:center; }
     .zoom-icon-wrap { width:80px; height:80px; background:#E8F2FF; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
     .zoom-icon-wrap i { font-size:36px; color:#0B5CFF; }
@@ -160,7 +151,6 @@
     .btn-zoom:hover { background:#0244CC; transform:scale(1.03); }
     .btn-zoom.disabled { background:var(--gray-200); color:var(--gray-400); pointer-events:none; }
 
-    /* ===== UPLOAD FORM ===== */
     .upload-instruction { background:var(--blue-50); border:1px solid var(--blue-100); border-left:4px solid var(--blue-600); border-radius:var(--radius); padding:16px 20px; margin-bottom:22px; }
     .upload-instruction h3 { font-size:0.95rem; font-weight:700; color:var(--blue-800); margin-bottom:10px; }
     .upload-instruction ol { padding-left:18px; font-size:0.85rem; color:var(--blue-800); line-height:1.9; }
@@ -180,7 +170,6 @@
     .form-success { display:none; background:#EAF3DE; border:1px solid #B6DBA0; border-left:4px solid #3B6D11; border-radius:var(--radius); padding:18px 20px; color:#3B6D11; font-size:0.9rem; margin-top:18px; }
     .form-error { display:none; background:#FDEDEC; border:1px solid #F5B7B1; border-left:4px solid #C0392B; border-radius:var(--radius); padding:18px 20px; color:#922B21; font-size:0.9rem; margin-top:18px; }
 
-    /* ===== STATUS PENGAJUAN ===== */
     .status-welcome-card { background:linear-gradient(135deg,#0C6E6E,#0F8A8A); color:#fff; border-radius:var(--radius); padding:24px 28px; margin-bottom:24px; display:flex; align-items:center; gap:18px; }
     .status-welcome-card .sw-icon { width:56px; height:56px; background:rgba(255,255,255,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
     .status-welcome-card .sw-text h3 { font-size:1.1rem; font-weight:700; margin-bottom:4px; }
@@ -202,7 +191,6 @@
     .sb-tolak    { background:#FDEDEC; color:#922B21; }
     .sb-revisi   { background:#E8F2FF; color:#0C447C; }
 
-    /* ===== ADMIN PANEL ===== */
     .admin-panel { background:var(--white); border:2px solid #FFC107; border-radius:var(--radius); padding:0; box-shadow:var(--shadow); overflow:hidden; margin-bottom:20px; }
     .admin-panel-header { background:linear-gradient(135deg,#856404 0%,#FFC107 100%); color:var(--white); padding:14px 20px; display:flex; align-items:center; gap:10px; font-weight:700; }
     .admin-panel-body { padding:22px 22px; }
@@ -228,7 +216,6 @@
     .btn-outline { display:inline-flex; align-items:center; gap:7px; border:1px solid var(--blue-600); color:var(--blue-700); background:transparent; border-radius:8px; padding:7px 14px; font-size:0.82rem; font-weight:600; cursor:pointer; text-decoration:none; transition:all var(--transition); }
     .btn-outline:hover { background:var(--blue-50); }
 
-    /* ===== POKJA TABLE ===== */
     .pokja-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
     .pokja-table th { background:var(--blue-900); color:white; padding:10px 12px; text-align:left; white-space:nowrap; font-weight:600; }
     .pokja-table td { padding:10px 12px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
@@ -246,7 +233,7 @@
     .btn-dl-doc { display:inline-flex; align-items:center; gap:5px; background:var(--blue-600); color:white; border:none; border-radius:6px; padding:5px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; text-decoration:none; transition:background var(--transition); }
     .btn-dl-doc:hover { background:var(--blue-900); }
 
-    /* ===== LOGIN MODALS (Terpisah per role) ===== */
+    /* ===== LOGIN MODALS ===== */
     .login-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
     .login-overlay.show { display:flex; }
     .login-modal { background:var(--white); border-radius:14px; width:min(460px,94vw); padding:0; overflow:hidden; box-shadow:0 12px 48px rgba(0,0,0,0.3); animation: modalIn 0.2s ease; }
@@ -255,7 +242,6 @@
     .login-modal-header h2 { font-size:1.1rem; font-weight:700; }
     .login-modal-header p { font-size:0.8rem; opacity:0.8; margin-top:3px; }
     .login-modal-body { padding:24px 26px; }
-    /* Warna header per role */
     .modal-header-penyedia { background:linear-gradient(135deg,#0C6E6E,#0F8A8A); }
     .modal-header-pokja    { background:linear-gradient(135deg,#4A5568,#2D3748); }
     .modal-header-admin    { background:linear-gradient(135deg,var(--blue-900),var(--blue-700)); }
@@ -265,7 +251,6 @@
     .role-pokja    { background:#E6F1FB; color:var(--blue-800); }
     .role-penyedia { background:#E0F4F4; color:#0C6E6E; }
 
-    .penyedia-info-box { background:#E0F4F4; border:1px solid #A8DEDE; border-left:4px solid #0C6E6E; border-radius:8px; padding:12px 14px; font-size:0.82rem; color:#0C6E6E; margin-bottom:16px; }
     .register-hint { background:#FFF8E1; border:1px solid #FFD54F; border-left:4px solid #FFC107; border-radius:8px; padding:10px 14px; font-size:0.82rem; color:#856404; margin-bottom:14px; }
 
     .sidebar-toggle-row { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--gray-100); }
@@ -301,9 +286,90 @@
     .mobile-overlay.active { display:block; }
     .mobile-toggle { display:none; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); color:var(--white); border-radius:7px; padding:6px 10px; cursor:pointer; font-size:15px; margin-right:10px; }
 
-    /* Ganti Password Penyedia */
     .settings-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); max-width:500px; }
     .settings-card h3 { font-size:1rem; font-weight:700; color:var(--blue-900); margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+
+    /* ===== PERBAIKAN 2: ANIMASI LOADING ===== */
+    .btn-loading { position:relative; pointer-events:none; opacity:0.82; }
+    .btn-loading::after {
+      content:'';
+      position:absolute;
+      width:16px; height:16px;
+      border:2px solid rgba(255,255,255,0.4);
+      border-top-color:white;
+      border-radius:50%;
+      animation:spin 0.7s linear infinite;
+      right:12px; top:50%;
+      transform:translateY(-50%);
+    }
+    @keyframes spin { to { transform:translateY(-50%) rotate(360deg); } }
+
+    /* Loading overlay di dalam modal */
+    .modal-loading-overlay {
+      position:absolute; inset:0;
+      background:rgba(255,255,255,0.88);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:14px; z-index:10;
+      border-radius:14px;
+      animation: fadeIn 0.15s ease;
+    }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .modal-loading-overlay .spin-ring {
+      width:44px; height:44px;
+      border:4px solid var(--blue-100);
+      border-top-color:var(--blue-600);
+      border-radius:50%;
+      animation:spin2 0.7s linear infinite;
+    }
+    @keyframes spin2 { to { transform:rotate(360deg); } }
+    .modal-loading-overlay p { font-size:0.88rem; font-weight:600; color:var(--blue-800); }
+
+    /* Success animation overlay di modal */
+    .modal-success-overlay {
+      position:absolute; inset:0;
+      background:rgba(255,255,255,0.95);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:12px; z-index:10;
+      border-radius:14px;
+      animation: fadeIn 0.15s ease;
+    }
+    .modal-success-overlay .success-check {
+      width:60px; height:60px;
+      background:#EAF3DE; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      animation: popIn 0.3s cubic-bezier(.175,.885,.32,1.275);
+    }
+    @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+    .modal-success-overlay .success-check i { font-size:28px; color:#3B6D11; }
+    .modal-success-overlay p { font-size:0.9rem; font-weight:700; color:#3B6D11; }
+
+    /* Error shake */
+    .shake { animation: shake 0.4s ease; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-8px)}
+      40%{transform:translateX(8px)}
+      60%{transform:translateX(-5px)}
+      80%{transform:translateX(5px)}
+    }
+
+    /* Upload progress bar enhanced */
+    .upload-progress-wrap { background:var(--gray-200); border-radius:6px; height:10px; overflow:hidden; margin-top:10px; }
+    .upload-progress-bar { height:100%; background:linear-gradient(90deg,var(--green-700),#56ab2f); width:0%; transition:width 0.4s ease; border-radius:6px; }
+    .upload-progress-label { font-size:0.78rem; color:var(--green-700); margin-top:5px; font-weight:600; }
+
+    /* ===== PERBAIKAN 4: Review modal fix ===== */
+    #reviewModal {
+      display:none;
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.45);
+      z-index:200;
+      align-items:center;
+      justify-content:center;
+    }
+    #reviewModal.show { display:flex; }
 
     ::-webkit-scrollbar { width:6px; }
     ::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:4px; }
@@ -328,13 +394,12 @@
 
 <!-- ===== LOGIN OVERLAY PENYEDIA ===== -->
 <div id="loginOverlayPenyedia" class="login-overlay">
-  <div class="login-modal">
+  <div class="login-modal" style="position:relative;">
     <div class="login-modal-header modal-header-penyedia">
       <h2><i class="fa-solid fa-building"></i> &nbsp;Login / Daftar Penyedia</h2>
       <p>Masukkan email dan password akun penyedia Anda</p>
     </div>
     <div class="login-modal-body">
-      <!-- Tab Masuk / Daftar -->
       <div style="display:flex;gap:6px;margin-bottom:18px;">
         <button id="tabMasukPenyedia" onclick="switchPenyediaTab('masuk')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;">
           <i class="fa-solid fa-right-to-bracket"></i> Masuk
@@ -359,8 +424,8 @@
         </div>
         <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginPenyedia"></div>
         <div style="display:flex;gap:10px;margin-top:14px;">
-          <button onclick="doLoginPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;">
-            <i class="fa-solid fa-right-to-bracket"></i> Masuk
+          <button id="btnDoLoginPenyedia" onclick="doLoginPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
+            <i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span>
           </button>
           <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
         </div>
@@ -373,30 +438,30 @@
         </div>
         <div class="admin-form-group">
           <label>Nama Perusahaan <span style="color:#C0392B;">*</span></label>
-          <input type="text" id="regNamaPerusahaan" placeholder="PT / CV / Firma / Koperasi…" />
+          <input type="text" id="regNamaPerusahaan" placeholder="PT / CV / Firma / Koperasi…" autocomplete="organization" />
         </div>
         <div class="admin-form-group">
           <label>Email <span style="color:#C0392B;">*</span></label>
-          <input type="email" id="regEmail" placeholder="perusahaan@domain.com" />
+          <input type="email" id="regEmail" placeholder="perusahaan@domain.com" autocomplete="email" />
         </div>
         <div class="admin-form-group">
           <label>Buat Password <span style="color:#C0392B;">*</span></label>
           <div class="pw-wrap">
-            <input type="password" id="regPassword" placeholder="Min. 6 karakter" />
+            <input type="password" id="regPassword" placeholder="Min. 6 karakter" autocomplete="new-password" />
             <button type="button" class="pw-eye" onclick="togglePw('regPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
           </div>
         </div>
         <div class="admin-form-group">
           <label>Konfirmasi Password <span style="color:#C0392B;">*</span></label>
           <div class="pw-wrap">
-            <input type="password" id="regPasswordConfirm" placeholder="Ulangi password" />
+            <input type="password" id="regPasswordConfirm" placeholder="Ulangi password" autocomplete="new-password" />
             <button type="button" class="pw-eye" onclick="togglePw('regPasswordConfirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
           </div>
         </div>
         <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorRegPenyedia"></div>
         <div style="display:flex;gap:10px;margin-top:14px;">
-          <button onclick="doRegisterPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;">
-            <i class="fa-solid fa-user-plus"></i> Daftar & Masuk
+          <button id="btnDoRegister" onclick="doRegisterPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
+            <i class="fa-solid fa-user-plus"></i> <span>Daftar &amp; Masuk</span>
           </button>
           <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
         </div>
@@ -407,7 +472,7 @@
 
 <!-- ===== LOGIN OVERLAY POKJA ===== -->
 <div id="loginOverlayPokja" class="login-overlay">
-  <div class="login-modal">
+  <div class="login-modal" style="position:relative;">
     <div class="login-modal-header modal-header-pokja">
       <h2><i class="fa-solid fa-magnifying-glass-chart"></i> &nbsp;Login Pokja Pemilihan</h2>
       <p>Masuk dengan akun Pokja Anda</p>
@@ -425,10 +490,9 @@
         </div>
       </div>
       <div style="font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginPokja"></div>
-      <div id="pokjaLoginLoading" style="display:none;font-size:0.8rem;color:var(--blue-700);margin-top:4px;"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi…</div>
       <div style="display:flex;gap:10px;margin-top:14px;">
-        <button onclick="doLoginPokja()" style="flex:1;padding:10px;background:#4A5568;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;">
-          <i class="fa-solid fa-right-to-bracket"></i> Masuk
+        <button id="btnDoLoginPokja" onclick="doLoginPokja()" style="flex:1;padding:10px;background:#4A5568;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
+          <i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span>
         </button>
         <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
       </div>
@@ -436,9 +500,9 @@
   </div>
 </div>
 
-<!-- ===== LOGIN OVERLAY ADMIN (klik logo 3x) ===== -->
+<!-- ===== LOGIN OVERLAY ADMIN ===== -->
 <div id="loginOverlayAdmin" class="login-overlay">
-  <div class="login-modal">
+  <div class="login-modal" style="position:relative;">
     <div class="login-modal-header modal-header-admin">
       <h2><i class="fa-solid fa-gear"></i> &nbsp;Login Admin</h2>
       <p>Akses terbatas – Admin Portal</p>
@@ -456,10 +520,9 @@
         </div>
       </div>
       <div style="font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginAdmin"></div>
-      <div id="adminLoginLoading" style="display:none;font-size:0.8rem;color:var(--blue-700);margin-top:4px;"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi…</div>
       <div style="display:flex;gap:10px;margin-top:14px;">
-        <button onclick="doLoginAdmin()" style="flex:1;padding:10px;background:var(--blue-700);color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;">
-          <i class="fa-solid fa-right-to-bracket"></i> Masuk
+        <button id="btnDoLoginAdmin" onclick="doLoginAdmin()" style="flex:1;padding:10px;background:var(--blue-700);color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
+          <i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span>
         </button>
         <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
       </div>
@@ -509,7 +572,6 @@
         <i class="fa-solid fa-angles-left" id="collapseIcon"></i>
       </button>
     </div>
-    <!-- Info penyedia yang sedang login -->
     <div class="sidebar-penyedia-info" id="sidebarPenyediaInfo">
       <div class="sp-name" id="spName">–</div>
       <div class="sp-email" id="spEmail">–</div>
@@ -585,7 +647,7 @@
       </div>
     </section>
 
-    <!-- UPLOAD (hanya muncul di sidebar saat penyedia login) -->
+    <!-- UPLOAD -->
     <section class="page" id="page-upload">
       <h2 class="page-title" style="color:var(--green-700);"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--green-700);"></i> Upload Dokumen</h2>
       <p class="page-subtitle">Unggah dokumen penawaran Anda melalui formulir di bawah ini. File tersimpan di Google Drive BPBJ.</p>
@@ -599,17 +661,18 @@
           <li>Setelah berhasil upload, Anda dapat upload ulang untuk mengganti atau melengkapi dokumen.</li>
         </ol>
       </div>
+      <!-- PERBAIKAN 3: autocomplete="off" di form upload wrapper -->
       <div class="form-card">
-        <div id="uploadDynamicFields"></div>
+        <div id="uploadDynamicFields" autocomplete="off"></div>
         <button class="btn-submit" id="btnSubmitUpload" onclick="submitUpload()">
           <i class="fa-solid fa-paper-plane"></i> Kirim Dokumen
         </button>
-        <span style="font-size:0.8rem;color:var(--gray-400);margin-left:12px;" id="uploadSpinner" style="display:none;">
+        <span style="font-size:0.8rem;color:var(--gray-400);margin-left:12px;display:none;" id="uploadSpinner">
           <i class="fa-solid fa-spinner fa-spin"></i> Mengirim…
         </span>
         <div class="form-success" id="uploadSuccess">
           <i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen berhasil dikirim!</strong> File tersimpan di Google Drive BPBJ. Terima kasih.
-          <br><span id="uploadSuccessStatusHint" style="display:none;font-size:0.85rem;margin-top:6px;display:block;"></span>
+          <span id="uploadSuccessStatusHint" style="display:none;font-size:0.85rem;margin-top:6px;display:block;"></span>
         </div>
         <div class="form-error" id="uploadError">
           <i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg"></span>
@@ -617,7 +680,7 @@
       </div>
     </section>
 
-    <!-- STATUS PENGAJUAN (Penyedia) -->
+    <!-- STATUS PENGAJUAN -->
     <section class="page" id="page-status">
       <h2 class="page-title" style="color:#0C6E6E;"><i class="fa-solid fa-clipboard-list" style="color:#0C6E6E;"></i> Status Pengajuan</h2>
       <p class="page-subtitle">Pantau status dokumen penawaran yang telah Anda kirimkan kepada Pokja Pemilihan.</p>
@@ -639,7 +702,7 @@
       </div>
     </section>
 
-    <!-- SETTINGS PENYEDIA (ganti password) -->
+    <!-- SETTINGS PENYEDIA -->
     <section class="page" id="page-settings-penyedia">
       <h2 class="page-title" style="color:#0C6E6E;"><i class="fa-solid fa-gear" style="color:#0C6E6E;"></i> Pengaturan Akun</h2>
       <p class="page-subtitle">Kelola akun penyedia Anda.</p>
@@ -648,21 +711,21 @@
         <div class="admin-form-group">
           <label>Password Lama <span style="color:#C0392B;">*</span></label>
           <div class="pw-wrap">
-            <input type="password" id="sp-old-password" placeholder="Password lama…" />
+            <input type="password" id="sp-old-password" placeholder="Password lama…" autocomplete="current-password" />
             <button type="button" class="pw-eye" onclick="togglePw('sp-old-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
           </div>
         </div>
         <div class="admin-form-group">
           <label>Password Baru <span style="color:#C0392B;">*</span></label>
           <div class="pw-wrap">
-            <input type="password" id="sp-new-password" placeholder="Min. 6 karakter" />
+            <input type="password" id="sp-new-password" placeholder="Min. 6 karakter" autocomplete="new-password" />
             <button type="button" class="pw-eye" onclick="togglePw('sp-new-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
           </div>
         </div>
         <div class="admin-form-group">
           <label>Konfirmasi Password Baru <span style="color:#C0392B;">*</span></label>
           <div class="pw-wrap">
-            <input type="password" id="sp-confirm-password" placeholder="Ulangi password baru" />
+            <input type="password" id="sp-confirm-password" placeholder="Ulangi password baru" autocomplete="new-password" />
             <button type="button" class="pw-eye" onclick="togglePw('sp-confirm-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
           </div>
         </div>
@@ -864,17 +927,17 @@
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;flex-wrap:wrap;">
                 <div class="timeline-editor-item">
                   <div class="tei-head"><i class="fa-solid fa-gear" style="color:var(--blue-600);"></i> Ganti Password Admin</div>
-                  <div class="admin-form-group"><label>Password Lama</label><div class="pw-wrap"><input type="password" id="ak-admin-old" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-old',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-admin-new" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-admin-confirm" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Password Lama</label><div class="pw-wrap"><input type="password" id="ak-admin-old" autocomplete="current-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-old',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-admin-new" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-admin-confirm" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
                   <button class="btn-admin-save" onclick="changeAdminPassword()"><i class="fa-solid fa-key"></i> Ganti Password</button>
                   <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunAdmin"></div>
                 </div>
                 <div class="timeline-editor-item">
                   <div class="tei-head"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> Ganti Password Pokja</div>
-                  <div class="admin-form-group"><label>Username Pokja</label><input type="text" id="ak-pokja-user" /></div>
-                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-pokja-new" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-pokja-confirm" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Username Pokja</label><input type="text" id="ak-pokja-user" autocomplete="off" /></div>
+                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-pokja-new" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-pokja-confirm" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
                   <button class="btn-admin-save" onclick="changePokjaPassword()"><i class="fa-solid fa-key"></i> Ganti Password</button>
                   <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunPokja"></div>
                 </div>
@@ -891,9 +954,14 @@
   </main>
 </div>
 
-<!-- MODAL REVIEW DOKUMEN -->
-<div id="reviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:12px;width:min(620px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+<!-- MODAL REVIEW DOKUMEN — PERBAIKAN 4: pakai class .show -->
+<div id="reviewModal">
+  <div style="background:var(--white);border-radius:12px;width:min(620px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);position:relative;">
+    <!-- Loading overlay review -->
+    <div id="reviewLoadingOverlay" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,0.9);border-radius:12px;z-index:20;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+      <div style="width:44px;height:44px;border:4px solid var(--blue-100);border-top-color:var(--blue-600);border-radius:50%;animation:spin2 0.7s linear infinite;"></div>
+      <p style="font-size:0.88rem;font-weight:600;color:var(--blue-800);" id="reviewLoadingMsg">Menyimpan review…</p>
+    </div>
     <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
       <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-circle-check"></i> &nbsp;Review Dokumen</span>
       <button onclick="closeReviewModal()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
@@ -930,7 +998,9 @@
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;">
         <button onclick="closeReviewModal()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
-        <button class="btn-admin-save" onclick="simpanReview()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Kirim Notifikasi</button>
+        <button id="btnSimpanReview" class="btn-admin-save" onclick="simpanReview()">
+          <i class="fa-solid fa-floppy-disk"></i> Simpan &amp; Kirim Notifikasi
+        </button>
       </div>
       <div id="reviewModalMsg" style="display:none;margin-top:12px;"></div>
     </div>
@@ -1076,10 +1146,59 @@ function togglePw(id, btn) {
 }
 
 // =================================================================
+// ===== PERBAIKAN 2: Animasi tombol login =====
+// =================================================================
+function setButtonLoading(btnId, loading, originalHTML) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  if (loading) {
+    btn._originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.style.opacity = '0.8';
+    btn.style.cursor = 'not-allowed';
+    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;flex-shrink:0;">
+        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+        <path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span>${originalHTML || 'Memproses…'}</span>
+    </span>`;
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = '';
+    if (btn._originalHTML) btn.innerHTML = btn._originalHTML;
+  }
+}
+
+function showModalSuccess(modalId, message, delay=1800) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-success-overlay';
+  overlay.innerHTML = `
+    <div class="success-check"><i class="fa-solid fa-check"></i></div>
+    <p>${message}</p>`;
+  const inner = modal.querySelector('.login-modal');
+  if (inner) {
+    inner.style.position = 'relative';
+    inner.appendChild(overlay);
+    setTimeout(() => { try { inner.removeChild(overlay); } catch(e){} }, delay);
+  }
+}
+
+function shakeModal(modalId) {
+  const el = document.getElementById(modalId);
+  if (!el) return;
+  const inner = el.querySelector('.login-modal');
+  if (inner) { inner.classList.remove('shake'); void inner.offsetWidth; inner.classList.add('shake'); setTimeout(()=>inner.classList.remove('shake'),500); }
+}
+
+// =================================================================
 // AUTH – role & state
 // =================================================================
 let currentRole      = null;
-let currentPenyedia  = null; // { nama, email, password }
+let currentPenyedia  = null;
 let adminClickCount  = 0;
 let adminClickTimer  = null;
 
@@ -1087,7 +1206,6 @@ function closeAllLoginOverlays() {
   document.querySelectorAll('.login-overlay').forEach(el => el.classList.remove('show'));
 }
 
-// --- Tab Masuk/Daftar Penyedia ---
 function switchPenyediaTab(tab) {
   const isMasuk = tab === 'masuk';
   document.getElementById('formMasukPenyedia').style.display  = isMasuk ? 'block' : 'none';
@@ -1100,7 +1218,7 @@ function switchPenyediaTab(tab) {
     : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
 }
 
-// --- Registrasi Penyedia Baru ---
+// ===== PERBAIKAN 1: Registrasi Penyedia → ke sheet Akun, bukan config =====
 async function doRegisterPenyedia() {
   const nama     = document.getElementById('regNamaPerusahaan').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
@@ -1109,105 +1227,184 @@ async function doRegisterPenyedia() {
   const errEl    = document.getElementById('errorRegPenyedia');
   errEl.textContent = '';
 
-  if (!nama)   { errEl.textContent = '❌ Nama perusahaan tidak boleh kosong.'; return; }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '❌ Email tidak valid.'; return; }
-  if (password.length < 6)  { errEl.textContent = '❌ Password minimal 6 karakter.'; return; }
-  if (password !== confirm)  { errEl.textContent = '❌ Konfirmasi password tidak cocok.'; return; }
+  if (!nama)   { errEl.textContent = '❌ Nama perusahaan tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '❌ Email tidak valid.'; shakeModal('loginOverlayPenyedia'); return; }
+  if (password.length < 6)  { errEl.textContent = '❌ Password minimal 6 karakter.'; shakeModal('loginOverlayPenyedia'); return; }
+  if (password !== confirm)  { errEl.textContent = '❌ Konfirmasi password tidak cocok.'; shakeModal('loginOverlayPenyedia'); return; }
 
-  // Cek apakah email sudah terdaftar
+  // Animasi loading
+  setButtonLoading('btnDoRegister', true, 'Mendaftarkan…');
+
+  // Cek duplikasi email di config (fallback) dan sheet
   const cfg = await fetchGlobalConfig(true);
   const penyediaAccounts = gcGet('penyediaAccounts', []);
   const existing = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase());
-  if (existing) { errEl.textContent = '❌ Email sudah terdaftar. Gunakan menu Masuk.'; return; }
+  if (existing) {
+    setButtonLoading('btnDoRegister', false);
+    errEl.textContent = '❌ Email sudah terdaftar. Gunakan menu Masuk.';
+    shakeModal('loginOverlayPenyedia');
+    return;
+  }
 
-  // Simpan akun baru ke spreadsheet
-  const newAccount = { nama, email, password, terdaftar: new Date().toISOString() };
+  // === PERBAIKAN 1: Kirim ke Apps Script dengan action 'registerPenyedia' (sheet Akun) ===
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'registerPenyedia',
+        nama,
+        email,
+        password,
+        role: 'penyedia',
+        terdaftar: new Date().toISOString()
+      })
+    });
+  } catch(e) {
+    // no-cors: anggap berhasil jika tidak error
+  }
+
+  // Simpan juga ke config lokal (cache) agar login langsung bisa
+  const newAccount = { nama, email, password, terdaftar: new Date().toISOString(), role:'penyedia' };
   penyediaAccounts.push(newAccount);
-  await pushConfig('penyediaAccounts', penyediaAccounts);
+  _globalConfig['penyediaAccounts'] = penyediaAccounts;
+  // Sync cache ke sheet config sebagai backup
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'setConfig', key:'penyediaAccounts', value: penyediaAccounts })
+    });
+  } catch(e) {}
 
-  // Langsung login
-  currentPenyedia = { nama, email };
-  setRole('penyedia');
-  closeAllLoginOverlays();
+  setButtonLoading('btnDoRegister', false);
+
+  // Animasi sukses
+  showModalSuccess('loginOverlayPenyedia', 'Pendaftaran berhasil! Selamat datang 🎉', 1600);
+
+  setTimeout(() => {
+    currentPenyedia = { nama, email };
+    setRole('penyedia');
+    closeAllLoginOverlays();
+  }, 1700);
 }
 
-// --- Login Penyedia ---
+// ===== PERBAIKAN 2: Login Penyedia dengan animasi =====
 async function doLoginPenyedia() {
   const email    = document.getElementById('loginPenyediaEmail').value.trim();
   const password = document.getElementById('loginPenyediaPassword').value;
   const errEl    = document.getElementById('errorLoginPenyedia');
   errEl.textContent = '';
 
-  if (!email)    { errEl.textContent = '❌ Email tidak boleh kosong.'; return; }
-  if (!password) { errEl.textContent = '❌ Password tidak boleh kosong.'; return; }
+  if (!email)    { errEl.textContent = '❌ Email tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
+  if (!password) { errEl.textContent = '❌ Password tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
+
+  setButtonLoading('btnDoLoginPenyedia', true, 'Memverifikasi…');
 
   const cfg = await fetchGlobalConfig(true);
   const penyediaAccounts = gcGet('penyediaAccounts', []);
-  const account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
+
+  // Cek di cache config
+  let account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
+
+  // Jika tidak ketemu di cache, coba cek di sheet Akun via Apps Script
+  if (!account) {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+      const data = await res.json();
+      if (data.status === 'ok' && data.account) {
+        account = data.account;
+        // Update cache lokal
+        const idx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
+        if (idx >= 0) { penyediaAccounts[idx] = data.account; }
+        else { penyediaAccounts.push(data.account); }
+        _globalConfig['penyediaAccounts'] = penyediaAccounts;
+      }
+    } catch(e) {}
+  }
 
   if (!account) {
+    setButtonLoading('btnDoLoginPenyedia', false);
     errEl.textContent = '❌ Email atau password salah. Belum punya akun? Klik Daftar Baru.';
+    shakeModal('loginOverlayPenyedia');
     return;
   }
 
-  currentPenyedia = { nama: account.nama, email: account.email };
-  // Jika sebelumnya login sebagai pokja, logout dulu
-  if (currentRole === 'pokja') doLogoutSilent();
-  setRole('penyedia');
-  closeAllLoginOverlays();
+  // Sukses
+  showModalSuccess('loginOverlayPenyedia', `Selamat datang, ${account.nama}! ✓`, 1400);
+  setButtonLoading('btnDoLoginPenyedia', false);
+
+  setTimeout(() => {
+    currentPenyedia = { nama: account.nama, email: account.email };
+    if (currentRole === 'pokja') doLogoutSilent();
+    setRole('penyedia');
+    closeAllLoginOverlays();
+  }, 1500);
 }
 
-// --- Login Pokja ---
+// ===== PERBAIKAN 2: Login Pokja dengan animasi =====
 async function doLoginPokja() {
   const username = document.getElementById('pokjaUsername').value.trim();
   const password = document.getElementById('pokjaPasswordInput').value;
   const errEl    = document.getElementById('errorLoginPokja');
-  const loadEl   = document.getElementById('pokjaLoginLoading');
   errEl.textContent = '';
-  loadEl.style.display = 'block';
+
+  if (!username || !password) { errEl.textContent = '❌ Username dan password wajib diisi.'; shakeModal('loginOverlayPokja'); return; }
+
+  setButtonLoading('btnDoLoginPokja', true, 'Memverifikasi…');
 
   const cfg = await fetchGlobalConfig(true);
-  loadEl.style.display = 'none';
 
   const pokjaUser = (cfg && cfg.pokjaUsername) ? cfg.pokjaUsername : 'pokja';
   const pokjaPass = (cfg && cfg.pokjaPassword) ? cfg.pokjaPassword : 'pokja2026';
 
   if (username === pokjaUser && password === pokjaPass) {
-    // Jika penyedia sedang login, logout penyedia dulu
-    if (currentRole === 'penyedia') doLogoutSilent();
-    setRole('pokja');
-    closeAllLoginOverlays();
+    showModalSuccess('loginOverlayPokja', 'Login berhasil! ✓', 1200);
+    setButtonLoading('btnDoLoginPokja', false);
+    setTimeout(() => {
+      if (currentRole === 'penyedia') doLogoutSilent();
+      setRole('pokja');
+      closeAllLoginOverlays();
+    }, 1300);
   } else {
+    setButtonLoading('btnDoLoginPokja', false);
     errEl.textContent = '❌ Username atau password salah.';
+    shakeModal('loginOverlayPokja');
   }
 }
 
-// --- Login Admin (klik logo 3x) ---
+// ===== PERBAIKAN 2: Login Admin dengan animasi =====
 async function doLoginAdmin() {
   const username = document.getElementById('adminUsernameInput').value.trim();
   const password = document.getElementById('adminPasswordInput').value;
   const errEl    = document.getElementById('errorLoginAdmin');
-  const loadEl   = document.getElementById('adminLoginLoading');
   errEl.textContent = '';
-  loadEl.style.display = 'block';
+
+  if (!username || !password) { errEl.textContent = '❌ Username dan password wajib diisi.'; shakeModal('loginOverlayAdmin'); return; }
+
+  setButtonLoading('btnDoLoginAdmin', true, 'Memverifikasi…');
 
   const cfg = await fetchGlobalConfig(true);
-  loadEl.style.display = 'none';
 
   const adminUser = (cfg && cfg.adminUsername) ? cfg.adminUsername : 'admin';
   const adminPass = (cfg && cfg.adminPassword) ? cfg.adminPassword : 'admin123';
 
   if (username === adminUser && password === adminPass) {
-    if (currentRole === 'penyedia' || currentRole === 'pokja') doLogoutSilent();
-    setRole('admin');
-    closeAllLoginOverlays();
+    showModalSuccess('loginOverlayAdmin', 'Login admin berhasil! ✓', 1200);
+    setButtonLoading('btnDoLoginAdmin', false);
+    setTimeout(() => {
+      if (currentRole === 'penyedia' || currentRole === 'pokja') doLogoutSilent();
+      setRole('admin');
+      closeAllLoginOverlays();
+    }, 1300);
   } else {
+    setButtonLoading('btnDoLoginAdmin', false);
     errEl.textContent = '❌ Username atau password salah.';
+    shakeModal('loginOverlayAdmin');
   }
 }
 
 function initAuth() {
-  // Klik logo 3x → buka login Admin
   document.getElementById('logoClick').addEventListener('click', function() {
     adminClickCount++;
     clearTimeout(adminClickTimer);
@@ -1237,7 +1434,6 @@ function setRole(role) {
   }
 }
 
-// Logout tanpa navigasi (silent, untuk auto-logout saat ganti role)
 function doLogoutSilent() {
   currentRole     = null;
   currentPenyedia = null;
@@ -1304,6 +1500,21 @@ async function doGantiPasswordPenyedia() {
   if (newPass !== confirm) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
 
   penyediaAccounts[accountIdx].password = newPass;
+  // Update cache
+  _globalConfig['penyediaAccounts'] = penyediaAccounts;
+  // Sync ke sheet Akun
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'updatePenyediaPassword',
+        email: currentPenyedia.email,
+        newPassword: newPass
+      })
+    });
+  } catch(e) {}
+  // Sync cache config juga
   await pushConfig('penyediaAccounts', penyediaAccounts);
   msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Password berhasil diubah!';
   ['sp-old-password','sp-new-password','sp-confirm-password'].forEach(id=>document.getElementById(id).value='');
@@ -1384,7 +1595,7 @@ function renderStatusPenyedia() {
 }
 
 // =================================================================
-// UPLOAD FORM – Lock fields jika penyedia sudah login
+// ===== PERBAIKAN 3: UPLOAD FORM – Cegah autofill browser =====
 // =================================================================
 function updateUploadFormLock() {
   setTimeout(() => {
@@ -1392,9 +1603,19 @@ function updateUploadFormLock() {
 
     if (isPenyedia) {
       const namaEl = document.getElementById('fNamaPerusahaan');
-      if (namaEl) { namaEl.value=currentPenyedia.nama; namaEl.readOnly=true; namaEl.classList.add('field-locked'); }
+      if (namaEl) {
+        namaEl.value=currentPenyedia.nama;
+        namaEl.readOnly=true;
+        namaEl.classList.add('field-locked');
+        namaEl.setAttribute('autocomplete','off');
+      }
       const emailEl = document.getElementById('fEmail');
-      if (emailEl) { emailEl.value=currentPenyedia.email; emailEl.readOnly=true; emailEl.classList.add('field-locked'); }
+      if (emailEl) {
+        emailEl.value=currentPenyedia.email;
+        emailEl.readOnly=true;
+        emailEl.classList.add('field-locked');
+        emailEl.setAttribute('autocomplete','off');
+      }
       ['fNamaPerusahaan','fEmail'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -1406,7 +1627,14 @@ function updateUploadFormLock() {
     } else {
       ['fNamaPerusahaan','fEmail'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) { el.readOnly=false; el.classList.remove('field-locked'); el.value=''; const lbl=el.closest('.form-row')?.querySelector('.field-locked-badge'); if(lbl) lbl.remove(); }
+        if (el) {
+          el.readOnly=false;
+          el.classList.remove('field-locked');
+          el.value='';
+          el.removeAttribute('autocomplete');
+          const lbl=el.closest('.form-row')?.querySelector('.field-locked-badge');
+          if(lbl) lbl.remove();
+        }
       });
     }
   }, 120);
@@ -1428,7 +1656,6 @@ function renderSidebar() {
   let html    = '';
   let hasManageSection = false;
 
-  // ===== Penyedia sudah login: tampilkan Upload + Status, sembunyikan Login Penyedia =====
   if (currentRole === 'penyedia') {
     html += `<li style="padding:6px 10px 2px;">
       <a href="#" class="nav-link nav-upload" data-page="upload">
@@ -1449,7 +1676,6 @@ function renderSidebar() {
       </a>
     </li>`;
   } else if (currentRole === null) {
-    // Publik: tampilkan tombol Login Penyedia dan Login Pokja di sidebar
     html += `<li style="padding:6px 10px 2px;">
       <a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');">
         <span class="nav-icon"><i class="fa-solid fa-building"></i></span>
@@ -1466,7 +1692,6 @@ function renderSidebar() {
 
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
 
-  // Menu utama
   items.forEach(item => {
     if (item.id === 'upload') return;
     const isAdminOnly    = item.roleOnly && item.roleOnly.includes('admin') && !item.roleOnly.includes('pokja');
@@ -1490,7 +1715,6 @@ function renderSidebar() {
     </a></li>`;
   });
 
-  // Tombol Logout di sidebar (jika login sebagai pokja)
   if (currentRole === 'pokja') {
     html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>
     <li style="padding:4px 10px;">
@@ -1513,7 +1737,7 @@ function renderSidebar() {
   nav.innerHTML = html;
   document.querySelectorAll('.nav-link[data-page]').forEach(link => {
     link.addEventListener('click', function(e) {
-      if (this.getAttribute('onclick')) return; // sudah ada handler inline
+      if (this.getAttribute('onclick')) return;
       e.preventDefault();
       showPage(this.dataset.page);
       if (window.innerWidth <= 768) {
@@ -1673,26 +1897,26 @@ function renderJudul() {
 }
 
 // =================================================================
-// UPLOAD FORM
+// ===== PERBAIKAN 3: UPLOAD FORM – autocomplete="off" + name palsu =====
 // =================================================================
 function renderUploadForm() {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   let html = '';
   fields.forEach(f => {
+    // Nama palsu untuk cegah autofill
+    const fakeName = 'field_' + (Math.random().toString(36).slice(2,7));
     if (f.type === 'file') {
       html += `<div class="form-row">
         <label>${f.label}${f.required?'<span class="req"> *</span>':''}</label>
-        <input type="file" id="${f.id}" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" />
+        <input type="file" id="${f.id}" name="${fakeName}" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" />
         <div class="file-hint">${f.hint||'PDF, ZIP, atau RAR – maks. 25 MB.'}</div>
-        <div id="fUploadProgress" style="display:none;margin-top:8px;">
-          <div style="background:var(--gray-200);border-radius:4px;height:8px;overflow:hidden;">
-            <div id="fProgressBar" style="height:100%;background:var(--green-700);width:0%;transition:width 0.3s;"></div>
-          </div>
-          <span id="fProgressText" style="font-size:0.75rem;color:var(--green-700);margin-top:4px;display:block;"></span>
+        <div id="fUploadProgress" style="display:none;margin-top:10px;">
+          <div class="upload-progress-wrap"><div class="upload-progress-bar" id="fProgressBar"></div></div>
+          <span class="upload-progress-label" id="fProgressText"></span>
         </div>
       </div>`;
     } else if (f.type === 'textarea') {
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><textarea id="${f.id}" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><textarea id="${f.id}" name="${fakeName}" autocomplete="off" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
     } else if (f.type === 'select') {
       let opts = `<option value="">-- Pilih --</option>`;
       if (f.options && f.options.length) {
@@ -1704,9 +1928,13 @@ function renderUploadForm() {
           }
         });
       }
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><select id="${f.id}">${opts}</select></div>`;
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><select id="${f.id}" name="${fakeName}" autocomplete="off">${opts}</select></div>`;
     } else {
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" placeholder="${f.placeholder||''}" /></div>`;
+      // PERBAIKAN 3: autocomplete="off" + name palsu + readonly trick
+      const isEmail = f.type === 'email';
+      const isTel   = f.type === 'tel';
+      const acValue = isEmail ? 'new-password' : isTel ? 'off' : 'off'; // "new-password" trick mencegah autofill
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" /></div>`;
     }
   });
   document.getElementById('uploadDynamicFields').innerHTML = html;
@@ -1949,7 +2177,7 @@ function flashMsg(id) {
 }
 
 // =================================================================
-// SUBMIT UPLOAD
+// ===== PERBAIKAN 2: SUBMIT UPLOAD dengan animasi progress =====
 // =================================================================
 async function submitUpload() {
   const fields=gcGet('formFields',DEFAULT_FORM_FIELDS);
@@ -1970,18 +2198,26 @@ async function submitUpload() {
 
   const btn=document.getElementById('btnSubmitUpload');
   btn.disabled=true;
-  document.getElementById('uploadSpinner').style.display='inline';
+  btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg> Mengirim…`;
+  document.getElementById('uploadSpinner').style.display='none';
   const progressWrap=document.getElementById('fUploadProgress');
   const progressBar=document.getElementById('fProgressBar');
   const progressText=document.getElementById('fProgressText');
-  progressWrap.style.display='block'; progressBar.style.width='10%'; progressText.textContent='Membaca file…';
+  progressWrap.style.display='block'; progressBar.style.width='5%'; progressText.textContent='Membaca file…';
 
   try {
     const base64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('Gagal membaca file'));reader.readAsDataURL(file);});
-    progressBar.style.width='40%'; progressText.textContent='Mengunggah ke Google Drive…';
+    progressBar.style.width='35%'; progressText.textContent='Mengompres & menyiapkan…';
+
+    await new Promise(r=>setTimeout(r,400)); // beri waktu visual
+    progressBar.style.width='60%'; progressText.textContent='Mengunggah ke Google Drive…';
+
     const fullPayload={...payload,fileName:file.name,fileType:file.type,fileData:base64,namaPerusahaan:payload.fNamaPerusahaan,npwp:payload.fNpwp,namaDirektur:payload.fNamaDirektur,telp:payload.fTelp,email:payload.fEmail,jenisDok:payload.fJenisDok,keterangan:payload.fKeterangan};
     await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(fullPayload)});
-    progressBar.style.width='100%'; progressText.textContent='Selesai!';
+
+    progressBar.style.width='100%'; progressText.textContent='✓ Berhasil dikirim!';
+    progressBar.style.background='linear-gradient(90deg,#3B6D11,#56ab2f)';
+
     document.getElementById('statPeserta').textContent='–';
     const successEl=document.getElementById('uploadSuccess');
     successEl.style.display='block';
@@ -1990,14 +2226,14 @@ async function submitUpload() {
     document.getElementById('uploadError').style.display='none';
     fields.forEach(f=>{const el=document.getElementById(f.id);if(el&&f.type!=='file'&&!el.readOnly)el.value='';});
     if(fileInput) fileInput.value='';
-    setTimeout(()=>{progressWrap.style.display='none';progressBar.style.width='0%';},2000);
+    setTimeout(()=>{ progressWrap.style.display='none'; progressBar.style.width='0%'; progressBar.style.background=''; },3000);
     if(currentRole==='penyedia') setTimeout(loadStatusPenyedia,3000);
   } catch(err) {
     showFormMsg('error','Gagal mengirim: '+err.message);
     progressWrap.style.display='none';
   } finally {
     btn.disabled=false;
-    document.getElementById('uploadSpinner').style.display='none';
+    btn.innerHTML=`<i class="fa-solid fa-paper-plane"></i> Kirim Dokumen`;
   }
 }
 function showFormMsg(type,msg) {
@@ -2044,6 +2280,7 @@ function renderPokjaTable() {
   renderPokjaStats();
 }
 
+// ===== PERBAIKAN 4: Review Modal — gunakan .show class =====
 function openReviewModal(idx) {
   const data=getSubmissions(); const d=data[idx]; if(!d) return;
   currentReviewIdx=idx;
@@ -2053,12 +2290,19 @@ function openReviewModal(idx) {
   else{btnWrap.innerHTML='';}
   document.getElementById('reviewStatus').value=d.reviewStatus||'Menunggu Review';
   document.getElementById('reviewCatatan').value=d.catatanPokja||'';
-  document.getElementById('notifEmail').checked=true; document.getElementById('notifWa').checked=true;
-  updateNotifPreview();
-  document.getElementById('reviewModal').style.display='flex';
+  document.getElementById('notifEmail').checked=true;
+  document.getElementById('notifWa').checked=true;
   document.getElementById('reviewModalMsg').style.display='none';
+  document.getElementById('reviewLoadingOverlay').style.display='none';
+  updateNotifPreview();
+  // PERBAIKAN 4: Gunakan .show class bukan inline style
+  document.getElementById('reviewModal').classList.add('show');
 }
-function closeReviewModal(){document.getElementById('reviewModal').style.display='none';currentReviewIdx=null;}
+
+function closeReviewModal(){
+  document.getElementById('reviewModal').classList.remove('show');
+  currentReviewIdx=null;
+}
 
 function fillTemplate(template,vars){return template.replace(/\{(\w+)\}/g,(_,k)=>vars[k]!==undefined?vars[k]:'');}
 
@@ -2074,39 +2318,110 @@ function updateNotifPreview() {
   if(previewEl) previewEl.innerHTML=preview.replace(/\n/g,'<br>');
 }
 
+// ===== PERBAIKAN 4: simpanReview dengan loading overlay dan error handling =====
 async function simpanReview() {
   if(currentReviewIdx===null) return;
-  const data=getSubmissions(); const d=data[currentReviewIdx];
+
+  const data=getSubmissions();
+  const d=data[currentReviewIdx];
   const status=document.getElementById('reviewStatus').value;
-  const catatan=document.getElementById('reviewCatatan').value;
+  const catatan=document.getElementById('reviewCatatan').value.trim();
   const doEmail=document.getElementById('notifEmail').checked;
   const doWa=document.getElementById('notifWa').checked;
-  try{await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,reviewStatus:status,catatanPokja:catatan,reviewTanggal:new Date().toISOString()})});}catch(e){}
-  d.reviewStatus=status; d.catatanPokja=catatan; d.reviewTanggal=new Date().toISOString();
-  renderPokjaTable();
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
-  const namaPerusahaan=d.namaPerusahaan||'-'; const email=d.email||''; const telp=d.telp||'';
-  const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
-  const tmpl=gcGet('notifTemplate',{}); const fonnteConfig=gcGet('fonnteConfig',{});
+
+  // Tampilkan loading overlay
+  const loadingOverlay = document.getElementById('reviewLoadingOverlay');
+  const loadingMsg = document.getElementById('reviewLoadingMsg');
+  const btnSimpan = document.getElementById('btnSimpanReview');
+  loadingOverlay.style.display='flex';
+  btnSimpan.disabled=true;
+
   let notifLog=[];
-  if(doEmail&&email){
+  let hasError=false;
+
+  // 1. Simpan review ke sheet
+  loadingMsg.textContent = 'Menyimpan review ke spreadsheet…';
+  try {
+    await fetch(APPS_SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'updateReview',
+        namaPerusahaan:d.namaPerusahaan,
+        npwp:d.npwp,
+        reviewStatus:status,
+        catatanPokja:catatan,
+        reviewTanggal:new Date().toISOString()
+      })
+    });
+  } catch(e) { hasError=true; }
+
+  // Update local state
+  d.reviewStatus=status;
+  d.catatanPokja=catatan;
+  d.reviewTanggal=new Date().toISOString();
+  renderPokjaTable();
+
+  const statusTxt={
+    'Menunggu Review':'⏳ Menunggu Review',
+    'Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat',
+    'Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat',
+    'Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'
+  };
+  const namaPerusahaan=d.namaPerusahaan||'-';
+  const emailPenyedia=d.email||'';
+  const telp=d.telp||'';
+  const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
+  const tmpl=gcGet('notifTemplate',{});
+  const fonnteConfig=gcGet('fonnteConfig',{});
+
+  // 2. Kirim Email
+  if(doEmail && emailPenyedia) {
+    loadingMsg.textContent = 'Mengirim email notifikasi…';
     const emailSubject=fillTemplate(tmpl.emailSubject||DEFAULT_NOTIF_EMAIL_SUBJECT,{namaPerusahaan,status:statusTxt[status]||status,catatan,paketNama});
     const emailBody=fillTemplate(tmpl.emailBody||DEFAULT_NOTIF_EMAIL_BODY,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
-    try{await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendEmail',to:email,subject:emailSubject,body:emailBody,replyTo:fonnteConfig.replyTo||'',senderName:fonnteConfig.senderName||''})});notifLog.push('Email');}catch(e){notifLog.push('Email (gagal)');}
+    try {
+      await fetch(APPS_SCRIPT_URL,{
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'sendEmail',to:emailPenyedia,subject:emailSubject,body:emailBody,replyTo:fonnteConfig.replyTo||'',senderName:fonnteConfig.senderName||''})
+      });
+      notifLog.push('📧 Email');
+    } catch(e) { notifLog.push('📧 Email (gagal)'); }
   }
-  if(doWa&&telp&&fonnteConfig.token){
+
+  // 3. Kirim WhatsApp via Fonnte (atau buka wa.me jika tidak ada token)
+  if(doWa && telp) {
+    loadingMsg.textContent = 'Mengirim WhatsApp…';
     const waMsg=fillTemplate(tmpl.wa||DEFAULT_NOTIF_WA,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
     const waNum=telp.replace(/\D/g,'').replace(/^0/,'62');
-    try{await fetch('https://api.fonnte.com/send',{method:'POST',headers:{'Authorization':fonnteConfig.token,'Content-Type':'application/json'},body:JSON.stringify({target:waNum,message:waMsg,countryCode:'62'})});notifLog.push('WhatsApp');}catch(e){notifLog.push('WhatsApp (gagal)');}
-  }else if(doWa&&telp&&!fonnteConfig.token){
-    const waMsg=fillTemplate(tmpl.wa||DEFAULT_NOTIF_WA,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
-    window.open(`https://wa.me/${telp.replace(/\D/g,'').replace(/^0/,'62')}?text=${encodeURIComponent(waMsg)}`,'_blank');
-    notifLog.push('WhatsApp (manual)');
+    if(fonnteConfig.token) {
+      try {
+        const resp=await fetch('https://api.fonnte.com/send',{
+          method:'POST',
+          headers:{'Authorization':fonnteConfig.token,'Content-Type':'application/json'},
+          body:JSON.stringify({target:waNum,message:waMsg,countryCode:'62'})
+        });
+        notifLog.push('💬 WhatsApp');
+      } catch(e) { notifLog.push('💬 WA (gagal)'); }
+    } else {
+      // Buka WA manual
+      window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`,'_blank');
+      notifLog.push('💬 WhatsApp (manual)');
+    }
   }
+
+  loadingOverlay.style.display='none';
+  btnSimpan.disabled=false;
+
+  // Tampilkan pesan hasil
   const msgEl=document.getElementById('reviewModalMsg');
-  msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-top:12px;';
-  msgEl.innerHTML=`<i class="fa-solid fa-circle-check"></i> Review tersimpan! ${notifLog.length?'Notifikasi: '+notifLog.join(', ')+'.':''}`;
-  setTimeout(closeReviewModal,2500);
+  msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
+  msgEl.innerHTML=`<i class="fa-solid fa-circle-check" style="color:#3B6D11;margin-right:6px;"></i>
+    <strong>Review tersimpan!</strong>
+    ${notifLog.length ? ' &nbsp;Notifikasi terkirim: ' + notifLog.join(', ') + '.' : ' Tidak ada notifikasi yang dikirim.'}`;
+
+  setTimeout(closeReviewModal, 2800);
 }
 
 // =================================================================
@@ -2124,6 +2439,11 @@ document.getElementById('mobileOverlay').addEventListener('click',()=>{sidebar.c
 // Tutup overlay kalau klik luar modal
 document.querySelectorAll('.login-overlay').forEach(overlay=>{
   overlay.addEventListener('click',function(e){if(e.target===this)closeAllLoginOverlays();});
+});
+
+// Tutup reviewModal klik luar
+document.getElementById('reviewModal').addEventListener('click',function(e){
+  if(e.target===this) closeReviewModal();
 });
 
 // =================================================================
