@@ -6,7 +6,6 @@
   <title id="pageTabTitle">Portal Pengadaan – Pemerintah Kota Surakarta 2026</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    /* ===== PASSWORD TOGGLE EYE ===== */
     .pw-wrap { position:relative; }
     .pw-wrap input { padding-right:38px !important; }
     .pw-eye { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--gray-400); font-size:14px; padding:4px; transition:color var(--transition); }
@@ -31,7 +30,7 @@
     header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-700) 100%); color:var(--white); z-index:100; display:flex; flex-direction:column; justify-content:center; padding:0 1.5rem; box-shadow:0 3px 12px rgba(0,0,0,0.2); }
     .header-top { display:flex; align-items:center; gap:14px; }
     .header-logo { height:56px; display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; }
-    .header-logo img { height:56px; width:auto; object-fit:contain; background:transparent; /* transparan */ }
+    .header-logo img { height:56px; width:auto; object-fit:contain; background:transparent; }
     .header-text h1 { font-size:1.1rem; font-weight:700; letter-spacing:0.3px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .header-text p { font-size:0.78rem; opacity:0.85; margin-top:2px; }
     .running-text-bar { background:rgba(255,255,255,0.10); border-top:1px solid rgba(255,255,255,0.15); padding:3px 1.5rem; font-size:0.78rem; overflow:hidden; white-space:nowrap; }
@@ -55,11 +54,24 @@
     aside.sidebar.collapsed nav.sidebar-nav li a .nav-label { opacity:0; pointer-events:none; }
     nav.sidebar-nav li a:hover, nav.sidebar-nav li a.active { background:var(--blue-50); color:var(--blue-700); border-left-color:var(--blue-600); }
 
-    /* Upload nav item – Hijau */
+    /* Upload nav – Hijau */
     nav.sidebar-nav li a.nav-upload { background:linear-gradient(135deg,#2D7D17,#3B8C1A); color:#fff; border-left:3px solid #1a5c0a; margin:6px 10px; border-radius:8px; padding:11px 12px; font-weight:700; }
     nav.sidebar-nav li a.nav-upload:hover { background:linear-gradient(135deg,#1a5c0a,#2D7D17); color:#fff; border-left-color:#1a5c0a; }
     nav.sidebar-nav li a.nav-upload .nav-icon { color:#fff; }
     aside.sidebar.collapsed nav.sidebar-nav li a.nav-upload { margin:6px 4px; padding:11px 8px; border-radius:8px; }
+
+    /* Status nav – Teal/hijau muda */
+    nav.sidebar-nav li a.nav-status { background:linear-gradient(135deg,#0C6E6E,#0F8A8A); color:#fff; border-left:3px solid #085555; margin:3px 10px; border-radius:8px; padding:11px 12px; font-weight:700; }
+    nav.sidebar-nav li a.nav-status:hover { background:linear-gradient(135deg,#085555,#0C6E6E); color:#fff; }
+    nav.sidebar-nav li a.nav-status .nav-icon { color:#fff; }
+    aside.sidebar.collapsed nav.sidebar-nav li a.nav-status { margin:3px 4px; padding:11px 8px; border-radius:8px; }
+
+    /* Penyedia info bar di sidebar */
+    .sidebar-penyedia-info { background:linear-gradient(135deg,#0C6E6E,#0F8A8A); color:#fff; margin:6px 10px; border-radius:8px; padding:10px 12px; font-size:0.78rem; display:none; }
+    .sidebar-penyedia-info.show { display:block; }
+    .sidebar-penyedia-info .sp-name { font-weight:700; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sidebar-penyedia-info .sp-email { opacity:0.8; font-size:0.72rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    aside.sidebar.collapsed .sidebar-penyedia-info { display:none !important; }
 
     .sidebar-section-label { padding:10px 18px 4px; font-size:0.68rem; font-weight:700; letter-spacing:1px; color:var(--gray-400); text-transform:uppercase; white-space:nowrap; }
     aside.sidebar.collapsed .sidebar-section-label { opacity:0; }
@@ -85,7 +97,7 @@
     .info-banner { background:var(--blue-50); border:1px solid var(--blue-100); border-left:4px solid var(--blue-600); border-radius:var(--radius); padding:14px 18px; font-size:0.875rem; color:var(--blue-800); display:flex; gap:10px; align-items:flex-start; margin-bottom:22px; }
     .info-banner i { margin-top:2px; flex-shrink:0; }
 
-    /* ===== CALENDAR – Full Width Modern ===== */
+    /* ===== CALENDAR ===== */
     .calendar-view { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; width:100%; }
     .calendar-nav { display:flex; align-items:center; gap:10px; padding:14px 20px 10px; }
     .calendar-nav h3 { font-size:1rem; font-weight:700; color:var(--blue-900); flex:1; text-align:center; }
@@ -106,7 +118,6 @@
     .calendar-event.active { background:var(--gantt-active); }
     .calendar-event.upcoming { background:var(--gantt-upcoming); }
 
-    /* Hanya kalender, tidak ada gantt toggle */
     .section-heading { font-size:1rem; font-weight:700; color:var(--blue-900); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
     .section-heading i { color:var(--blue-600); }
     .spse-section { margin-top:32px; border-top:2px solid var(--blue-50); padding-top:24px; }
@@ -148,11 +159,36 @@
     .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color:var(--blue-600); box-shadow:0 0 0 3px rgba(24,95,165,0.12); background:var(--white); }
     .form-row textarea { min-height:90px; resize:vertical; }
     .form-row .file-hint { font-size:0.75rem; color:var(--gray-400); margin-top:5px; }
+    /* Field terkunci (locked dari login penyedia) */
+    .form-row input.field-locked { background:#EAF3DE; border-color:#B6DBA0; color:var(--green-700); font-weight:600; cursor:not-allowed; }
+    .field-locked-badge { display:inline-flex; align-items:center; gap:5px; background:#EAF3DE; color:var(--green-700); border:1px solid #B6DBA0; border-radius:20px; padding:2px 10px; font-size:0.72rem; font-weight:600; margin-left:8px; }
     .btn-submit { display:inline-flex; align-items:center; gap:9px; background:var(--green-700); color:var(--white); border:none; border-radius:8px; padding:12px 28px; font-size:0.95rem; font-weight:700; cursor:pointer; transition:background var(--transition),transform var(--transition); }
     .btn-submit:hover { background:var(--green-600); transform:translateY(-1px); }
     .btn-submit:disabled { background:var(--gray-200); color:var(--gray-400); pointer-events:none; }
     .form-success { display:none; background:#EAF3DE; border:1px solid #B6DBA0; border-left:4px solid #3B6D11; border-radius:var(--radius); padding:18px 20px; color:#3B6D11; font-size:0.9rem; margin-top:18px; }
     .form-error { display:none; background:#FDEDEC; border:1px solid #F5B7B1; border-left:4px solid #C0392B; border-radius:var(--radius); padding:18px 20px; color:#922B21; font-size:0.9rem; margin-top:18px; }
+
+    /* ===== STATUS PENGAJUAN – Halaman Penyedia ===== */
+    .status-welcome-card { background:linear-gradient(135deg,#0C6E6E,#0F8A8A); color:#fff; border-radius:var(--radius); padding:24px 28px; margin-bottom:24px; display:flex; align-items:center; gap:18px; }
+    .status-welcome-card .sw-icon { width:56px; height:56px; background:rgba(255,255,255,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
+    .status-welcome-card .sw-text h3 { font-size:1.1rem; font-weight:700; margin-bottom:4px; }
+    .status-welcome-card .sw-text p { font-size:0.85rem; opacity:0.88; }
+    .status-card-wrap { display:grid; gap:18px; }
+    .status-doc-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; transition:transform var(--transition),box-shadow var(--transition); }
+    .status-doc-card:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.1); }
+    .status-doc-header { padding:16px 20px 12px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; border-bottom:1px solid var(--gray-100); }
+    .status-doc-title { font-size:0.95rem; font-weight:700; color:var(--blue-900); }
+    .status-doc-meta { font-size:0.78rem; color:var(--gray-400); margin-top:3px; }
+    .status-doc-body { padding:14px 20px 16px; }
+    .status-note-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:7px; padding:10px 14px; font-size:0.85rem; color:var(--gray-700); margin-top:10px; line-height:1.6; }
+    .status-note-box.has-note { background:#FFF8E1; border-color:#FFD54F; }
+    .status-empty { text-align:center; padding:48px 24px; color:var(--gray-400); }
+    .status-empty i { font-size:48px; margin-bottom:14px; display:block; color:var(--gray-200); }
+    .status-badge-lg { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:20px; font-size:0.85rem; font-weight:700; }
+    .sb-pending  { background:#FFF3CD; color:#856404; }
+    .sb-lulus    { background:#EAF3DE; color:#3B6D11; }
+    .sb-tolak    { background:#FDEDEC; color:#922B21; }
+    .sb-revisi   { background:#E8F2FF; color:#0C447C; }
 
     /* ===== ADMIN PANEL ===== */
     .admin-panel { background:var(--white); border:2px solid #FFC107; border-radius:var(--radius); padding:0; box-shadow:var(--shadow); overflow:hidden; margin-bottom:20px; }
@@ -201,7 +237,7 @@
     /* ===== LOGIN OVERLAY ===== */
     #loginOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
     #loginOverlay.show { display:flex; }
-    .login-modal { background:var(--white); border-radius:14px; width:min(420px,94vw); padding:0; overflow:hidden; box-shadow:0 12px 48px rgba(0,0,0,0.3); }
+    .login-modal { background:var(--white); border-radius:14px; width:min(460px,94vw); padding:0; overflow:hidden; box-shadow:0 12px 48px rgba(0,0,0,0.3); }
     .login-modal-header { background:linear-gradient(135deg,var(--blue-900),var(--blue-700)); color:white; padding:20px 26px; }
     .login-modal-header h2 { font-size:1.1rem; font-weight:700; }
     .login-modal-header p { font-size:0.8rem; opacity:0.8; margin-top:3px; }
@@ -209,11 +245,18 @@
     .login-role-tabs { display:flex; gap:8px; margin-bottom:20px; }
     .login-role-tab { flex:1; padding:9px; border-radius:8px; border:1.5px solid var(--gray-200); background:var(--gray-50); font-size:0.82rem; font-weight:600; cursor:pointer; text-align:center; transition:all var(--transition); color:var(--gray-600); }
     .login-role-tab.active { border-color:var(--blue-600); background:var(--blue-50); color:var(--blue-700); }
+    /* Tab penyedia – teal */
+    .login-role-tab.tab-penyedia.active { border-color:#0C6E6E; background:#E0F4F4; color:#0C6E6E; }
     .role-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:0.78rem; font-weight:700; }
     .role-admin { background:#FFF3CD; color:#856404; }
     .role-pokja { background:#E6F1FB; color:var(--blue-800); }
+    .role-penyedia { background:#E0F4F4; color:#0C6E6E; }
 
-    /* ===== TOGGLE SWITCH MINI ===== */
+    /* Penyedia login form */
+    #penyediaLoginForm { display:none; }
+    #penyediaLoginForm.show { display:block; }
+    .penyedia-info-box { background:#E0F4F4; border:1px solid #A8DEDE; border-left:4px solid #0C6E6E; border-radius:8px; padding:12px 14px; font-size:0.82rem; color:#0C6E6E; margin-bottom:16px; }
+
     .sidebar-toggle-row { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--gray-100); }
     .sidebar-toggle-row label { font-size:0.83rem; color:var(--gray-700); flex:1; display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:normal; }
     .toggle-switch { position:relative; width:30px; height:17px; flex-shrink:0; }
@@ -231,23 +274,18 @@
     .custom-page-content { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:28px; box-shadow:var(--shadow); }
     .icon-preview { width:40px; height:40px; border:1px solid var(--gray-200); border-radius:8px; object-fit:contain; margin-top:6px; display:none; }
     .notif-tmpl-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px; padding:12px 14px; font-size:0.8rem; color:var(--gray-600); line-height:1.8; }
-    .badge { margin-left:auto; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:600; white-space:nowrap; }
-    .badge-info { background:var(--blue-50); color:var(--blue-700); }
     footer { background:var(--blue-900); color:rgba(255,255,255,0.75); text-align:center; padding:12px; font-size:0.80rem; }
     footer strong { color:var(--white); }
 
-    /* Sync indicator */
     #syncIndicator { position:fixed; bottom:16px; right:16px; background:var(--blue-900); color:white; border-radius:10px; padding:8px 16px; font-size:0.8rem; display:none; z-index:9999; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.25); }
     #syncIndicator.show { display:flex; }
     #syncIndicator.error { background:#C0392B; }
     #syncIndicator.success { background:#3B6D11; }
 
-    /* ===== HEADER BANNER IMAGE ===== */
     .header-banner { width:100%; max-height:180px; object-fit:cover; display:block; margin-bottom:0; }
     #headerBannerWrap { display:none; }
     #headerBannerWrap.show { display:block; }
 
-    /* Mobile */
     .mobile-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:89; }
     .mobile-overlay.active { display:block; }
     .mobile-toggle { display:none; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); color:var(--white); border-radius:7px; padding:6px 10px; cursor:pointer; font-size:15px; margin-right:10px; }
@@ -263,13 +301,11 @@
       .mobile-toggle { display:flex !important; }
       .header-text h1 { font-size:0.92rem; }
       .header-text p { display:none; }
-      .zoom-card { padding:24px 18px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ===== SYNC INDICATOR ===== -->
 <div id="syncIndicator">
   <i class="fa-solid fa-rotate fa-spin" id="syncIcon"></i>
   <span id="syncMsg">Menyinkronkan…</span>
@@ -280,60 +316,90 @@
   <div class="login-modal">
     <div class="login-modal-header">
       <h2><i class="fa-solid fa-shield-halved"></i> &nbsp;Akses Portal</h2>
-      <p>Masuk untuk mengakses fitur yang dibatasi</p>
+      <p>Masuk sesuai peran Anda</p>
     </div>
     <div class="login-modal-body">
       <div class="login-role-tabs">
-        <div class="login-role-tab active" onclick="switchLoginRole('pokja',this)">
+        <div class="login-role-tab tab-penyedia active" onclick="switchLoginRole('penyedia',this)">
+          <i class="fa-solid fa-building"></i> Penyedia
+        </div>
+        <div class="login-role-tab" onclick="switchLoginRole('pokja',this)">
           <i class="fa-solid fa-magnifying-glass-chart"></i> Pokja
         </div>
         <div class="login-role-tab" onclick="switchLoginRole('admin',this)">
           <i class="fa-solid fa-gear"></i> Admin
         </div>
       </div>
-      <div id="loginRoleLabel" style="margin-bottom:14px;font-size:0.82rem;color:var(--gray-600);"></div>
-      <div class="admin-form-group">
-        <label>Username</label>
-        <input type="text" id="overlayUsername" placeholder="Masukkan username…" autocomplete="username" />
-      </div>
-      <div class="admin-form-group">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="overlayPassword" placeholder="Masukkan password…" autocomplete="current-password"
-            onkeydown="if(event.key==='Enter')doOverlayLogin()" />
-          <button type="button" class="pw-eye" onclick="togglePw('overlayPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
+
+      <!-- PENYEDIA LOGIN FORM -->
+      <div id="penyediaLoginForm" class="show">
+        <div class="penyedia-info-box">
+          <i class="fa-solid fa-circle-info"></i>
+          <strong> Login Penyedia</strong> – Masukkan email dan nama perusahaan Anda untuk mengakses status pengajuan. Tidak memerlukan password.
+        </div>
+        <div class="admin-form-group">
+          <label>Nama Perusahaan <span style="color:#C0392B;">*</span></label>
+          <input type="text" id="penyediaNama" placeholder="PT / CV / Firma / Koperasi…" autocomplete="organization" />
+        </div>
+        <div class="admin-form-group">
+          <label>Email <span style="color:#C0392B;">*</span></label>
+          <input type="email" id="penyediaEmail" placeholder="perusahaan@domain.com"
+            onkeydown="if(event.key==='Enter')doPenyediaLogin()" />
+        </div>
+        <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="penyediaLoginError"></div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button class="btn-admin-save" style="flex:1;background:#0C6E6E;" onclick="doPenyediaLogin()">
+            <i class="fa-solid fa-right-to-bracket"></i> Masuk sebagai Penyedia
+          </button>
+          <button onclick="closeLoginOverlay()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">
+            Batal
+          </button>
         </div>
       </div>
-      <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="overlayLoginError"></div>
-      <div id="loginLoadingMsg" style="display:none;font-size:0.8rem;color:var(--blue-700);margin-top:4px;"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi…</div>
-      <div style="display:flex;gap:10px;margin-top:14px;">
-        <button class="btn-admin-save" style="flex:1;" onclick="doOverlayLogin()">
-          <i class="fa-solid fa-right-to-bracket"></i> Masuk
-        </button>
-        <button onclick="closeLoginOverlay()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">
-          Batal
-        </button>
+
+      <!-- POKJA / ADMIN LOGIN FORM -->
+      <div id="staffLoginForm" style="display:none;">
+        <div id="loginRoleLabel" style="margin-bottom:14px;font-size:0.82rem;color:var(--gray-600);"></div>
+        <div class="admin-form-group">
+          <label>Username</label>
+          <input type="text" id="overlayUsername" placeholder="Masukkan username…" autocomplete="username" />
+        </div>
+        <div class="admin-form-group">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="overlayPassword" placeholder="Masukkan password…" autocomplete="current-password"
+              onkeydown="if(event.key==='Enter')doOverlayLogin()" />
+            <button type="button" class="pw-eye" onclick="togglePw('overlayPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="overlayLoginError"></div>
+        <div id="loginLoadingMsg" style="display:none;font-size:0.8rem;color:var(--blue-700);margin-top:4px;"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi…</div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button class="btn-admin-save" style="flex:1;" onclick="doOverlayLogin()">
+            <i class="fa-solid fa-right-to-bracket"></i> Masuk
+          </button>
+          <button onclick="closeLoginOverlay()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">
+            Batal
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 </div>
 
-<!-- ===== HEADER IMAGE BANNER ===== -->
 <div id="headerBannerWrap">
   <img id="headerBannerImg" class="header-banner" src="" alt="Header Banner" />
 </div>
 
-<!-- ===== HEADER ===== -->
 <header>
   <div class="header-top">
     <button class="mobile-toggle" id="mobileToggle" aria-label="Buka Menu">
       <i class="fa-solid fa-bars"></i>
     </button>
     <div class="header-logo" id="logoClick">
-      <!-- Logo dengan background transparan -->
       <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_Kota_Surakarta.png/200px-Logo_Kota_Surakarta.png"
-           alt="Logo" id="headerLogoImg"
-           style="background:transparent;" />
+           alt="Logo" id="headerLogoImg" style="background:transparent;" />
     </div>
     <div class="header-text">
       <h1 id="headerTitle">Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026</h1>
@@ -358,12 +424,16 @@
 <div class="mobile-overlay" id="mobileOverlay"></div>
 
 <div class="layout">
-  <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-toggle">
       <button id="collapseBtn" title="Collapse/Expand Sidebar" style="font-size:11px;padding:3px 6px;">
         <i class="fa-solid fa-angles-left" id="collapseIcon"></i>
       </button>
+    </div>
+    <!-- Info penyedia yang sedang login -->
+    <div class="sidebar-penyedia-info" id="sidebarPenyediaInfo">
+      <div class="sp-name" id="spName">–</div>
+      <div class="sp-email" id="spEmail">–</div>
     </div>
     <nav class="sidebar-nav">
       <ul id="sidebarNav"></ul>
@@ -374,10 +444,9 @@
     </div>
   </aside>
 
-  <!-- ===== MAIN ===== -->
   <main class="content" id="mainContent">
 
-    <!-- ---- BERANDA ---- -->
+    <!-- BERANDA -->
     <section class="page active" id="page-beranda">
       <h2 class="page-title"><i class="fa-solid fa-house"></i> Beranda</h2>
       <p class="page-subtitle" id="berandaSubtitle">Selamat datang di portal resmi konsolidasi pengadaan Pemerintah Kota Surakarta.</p>
@@ -392,7 +461,6 @@
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div><div class="stat-value">2026</div><div class="stat-label">Tahun Anggaran</div></div>
       </div>
       <h3 class="section-heading"><i class="fa-solid fa-calendar-days"></i> Jadwal Tahapan Konsolidasi</h3>
-      <!-- Hanya Kalender -->
       <div id="calendarWrap"></div>
       <div class="spse-section">
         <h3 class="section-heading"><i class="fa-solid fa-newspaper"></i> Pengumuman &amp; Berita SPSE</h3>
@@ -407,7 +475,7 @@
       </div>
     </section>
 
-    <!-- ---- DOWNLOAD ---- -->
+    <!-- DOWNLOAD -->
     <section class="page" id="page-download">
       <h2 class="page-title"><i class="fa-solid fa-file-arrow-down"></i> Download Dokumen</h2>
       <p class="page-subtitle">Unduh dokumen resmi pengadaan di bawah ini.</p>
@@ -418,7 +486,7 @@
       </div>
     </section>
 
-    <!-- ---- AANWIJZING ---- -->
+    <!-- AANWIJZING -->
     <section class="page" id="page-aanwijzing">
       <h2 class="page-title"><i class="fa-solid fa-video"></i> Link Zoom Aanwijzing</h2>
       <p class="page-subtitle">Rapat penjelasan pekerjaan (Aanwijzing) dilaksanakan secara daring melalui Zoom Meeting.</p>
@@ -438,10 +506,22 @@
       </div>
     </section>
 
-    <!-- ---- UPLOAD (terpisah, paling atas sidebar) ---- -->
+    <!-- UPLOAD -->
     <section class="page" id="page-upload">
       <h2 class="page-title" style="color:var(--green-700);"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--green-700);"></i> Upload Dokumen</h2>
       <p class="page-subtitle">Unggah dokumen penawaran Anda melalui formulir di bawah ini. File tersimpan di Google Drive BPBJ.</p>
+
+      <!-- Banner login penyedia jika belum login -->
+      <div id="uploadLoginPrompt" style="display:none;margin-bottom:18px;">
+        <div class="info-banner" style="background:#E0F4F4;border-color:#A8DEDE;border-left-color:#0C6E6E;">
+          <i class="fa-solid fa-user-check" style="color:#0C6E6E;"></i>
+          <div style="color:#0C6E6E;">
+            <strong>Tips:</strong> <a href="#" onclick="openLoginOverlay();return false;" style="color:#0C6E6E;font-weight:700;text-decoration:underline;">Login sebagai Penyedia</a>
+            terlebih dahulu agar email dan nama perusahaan Anda terkunci otomatis di form ini.
+          </div>
+        </div>
+      </div>
+
       <div class="upload-instruction">
         <h3><i class="fa-solid fa-circle-info"></i> &nbsp;Petunjuk Pengisian</h3>
         <ol>
@@ -462,6 +542,7 @@
         </span>
         <div class="form-success" id="uploadSuccess">
           <i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen berhasil dikirim!</strong> File tersimpan di Google Drive BPBJ. Terima kasih.
+          <br><span id="uploadSuccessStatusHint" style="display:none;font-size:0.85rem;margin-top:6px;display:block;"></span>
         </div>
         <div class="form-error" id="uploadError">
           <i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg"></span>
@@ -469,7 +550,35 @@
       </div>
     </section>
 
-    <!-- ---- POKJA REVIEW ---- -->
+    <!-- STATUS PENGAJUAN (Penyedia) -->
+    <section class="page" id="page-status">
+      <h2 class="page-title" style="color:#0C6E6E;"><i class="fa-solid fa-clipboard-list" style="color:#0C6E6E;"></i> Status Pengajuan</h2>
+      <p class="page-subtitle">Pantau status dokumen penawaran yang telah Anda kirimkan kepada Pokja Pemilihan.</p>
+
+      <div id="statusWelcomeCard" class="status-welcome-card">
+        <div class="sw-icon"><i class="fa-solid fa-building"></i></div>
+        <div class="sw-text">
+          <h3 id="statusPenyediaName">–</h3>
+          <p id="statusPenyediaEmail">–</p>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <h3 class="section-heading" style="margin-bottom:0;"><i class="fa-solid fa-file-lines"></i> Dokumen Anda</h3>
+        <button onclick="loadStatusPenyedia()" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:7px;padding:6px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--blue-700);display:flex;align-items:center;gap:6px;">
+          <i class="fa-solid fa-rotate"></i> Refresh
+        </button>
+      </div>
+
+      <div id="statusCardWrap" class="status-card-wrap">
+        <div class="status-empty">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <p>Memuat data…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- POKJA REVIEW -->
     <section class="page" id="page-pokja">
       <h2 class="page-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Review Pokja</h2>
       <p class="page-subtitle">Review dokumen yang diunggah oleh penyedia. Data diambil dari Google Spreadsheet.</p>
@@ -520,7 +629,7 @@
       </div>
     </section>
 
-    <!-- ---- ADMIN ---- -->
+    <!-- ADMIN -->
     <section class="page" id="page-admin">
       <h2 class="page-title"><i class="fa-solid fa-gear"></i> Panel Admin</h2>
       <p class="page-subtitle">Kelola seluruh konten dan konfigurasi portal. <strong style="color:var(--blue-700);">Semua pengaturan tersinkron ke Google Spreadsheet.</strong></p>
@@ -544,81 +653,50 @@
               <button class="admin-tab" onclick="switchAdminTab('akun',this)"><i class="fa-solid fa-users-gear"></i> Akun</button>
             </div>
 
-            <!-- Tab: Judul & Halaman -->
             <div class="admin-section active" id="atab-judul">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Ubah judul portal, logo, dan subtitle beranda.</p>
+              <div class="admin-form-group"><label>Judul Utama (di Header)</label><input type="text" id="aj-header-title" placeholder="Konsolidasi Jasa Tenaga Alih Daya…" /></div>
+              <div class="admin-form-group"><label>Subtitle Beranda</label><input type="text" id="aj-beranda-sub" placeholder="Selamat datang di portal…" /></div>
+              <div class="admin-form-group"><label>Judul Kartu Aanwijzing</label><input type="text" id="aj-aanwijzing-title" placeholder="Aanwijzing Konsolidasi…" /></div>
               <div class="admin-form-group">
-                <label>Judul Utama (di Header)</label>
-                <input type="text" id="aj-header-title" placeholder="Konsolidasi Jasa Tenaga Alih Daya…" />
-              </div>
-              <div class="admin-form-group">
-                <label>Subtitle Beranda</label>
-                <input type="text" id="aj-beranda-sub" placeholder="Selamat datang di portal…" />
-              </div>
-              <div class="admin-form-group">
-                <label>Judul Kartu Aanwijzing</label>
-                <input type="text" id="aj-aanwijzing-title" placeholder="Aanwijzing Konsolidasi…" />
-              </div>
-              <div class="admin-form-group">
-                <label>Logo Header (URL gambar atau upload PNG – background transparan otomatis)</label>
+                <label>Logo Header (URL gambar atau upload PNG)</label>
                 <input type="url" id="aj-logo-url" placeholder="https://…/logo.png" oninput="previewLogo()" />
                 <div style="margin-top:6px;font-size:0.78rem;color:var(--gray-400);">— atau —</div>
                 <input type="file" id="aj-logo-file" accept=".png,.jpg,.jpeg,.svg" style="margin-top:6px;" onchange="uploadLogoFile()" />
                 <img id="aj-logo-preview" class="icon-preview" style="display:block;margin-top:6px;background:var(--blue-900);padding:4px;border-radius:4px;" />
               </div>
               <div class="admin-form-group">
-                <label>Header Banner (upload gambar PNG/JPG untuk header di atas halaman)</label>
+                <label>Header Banner (upload gambar PNG/JPG)</label>
                 <input type="file" id="aj-banner-file" accept=".png,.jpg,.jpeg" style="margin-top:4px;" onchange="uploadBannerFile()" />
-                <div style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;">Gambar akan muncul sebagai banner di atas header.</div>
                 <img id="aj-banner-preview" style="max-width:100%;max-height:100px;object-fit:cover;border-radius:6px;margin-top:6px;display:none;" />
               </div>
               <button class="btn-admin-save" onclick="saveJudulConfig()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Sync</button>
               <span class="admin-save-msg" id="msgJudul">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Sidebar -->
             <div class="admin-section" id="atab-sidebar">
-              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Pilih menu yang tampil di mode <strong>Publik</strong>. Perubahan berlaku untuk semua pengguna.</p>
+              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Pilih menu yang tampil di mode <strong>Publik</strong>.</p>
               <div id="sidebarVisibilityEditor"></div>
               <hr style="margin:18px 0;border-color:var(--gray-200);">
               <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:12px;"><i class="fa-solid fa-plus"></i> Tambah Menu Custom</p>
               <div class="tei-row">
-                <div class="admin-form-group">
-                  <label>Nama Menu</label>
-                  <input type="text" id="custom-menu-name" placeholder="cth: Pengumuman" />
-                </div>
-                <div class="admin-form-group">
-                  <label>Ikon Font Awesome</label>
-                  <input type="text" id="custom-menu-icon" placeholder="cth: fa-bullhorn" />
-                </div>
+                <div class="admin-form-group"><label>Nama Menu</label><input type="text" id="custom-menu-name" placeholder="cth: Pengumuman" /></div>
+                <div class="admin-form-group"><label>Ikon Font Awesome</label><input type="text" id="custom-menu-icon" placeholder="cth: fa-bullhorn" /></div>
               </div>
-              <div class="admin-form-group">
-                <label>Konten Halaman (HTML atau teks)</label>
-                <textarea id="custom-menu-content" rows="5" placeholder="Isi halaman…"></textarea>
-              </div>
+              <div class="admin-form-group"><label>Konten Halaman (HTML atau teks)</label><textarea id="custom-menu-content" rows="5" placeholder="Isi halaman…"></textarea></div>
               <button class="btn-admin-save" onclick="addCustomMenu()"><i class="fa-solid fa-plus"></i> Tambah Menu</button>
               <button class="btn-admin-save" style="margin-left:8px;background:var(--blue-600);" onclick="saveSidebarConfig()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Sync</button>
               <span class="admin-save-msg" id="msgSidebar">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Jadwal (Kalender saja) -->
             <div class="admin-section" id="atab-jadwal">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Atur jadwal tahapan konsolidasi. Tampil sebagai Kalender di beranda.</p>
               <div style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
                 <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:10px;"><i class="fa-solid fa-palette"></i> Warna Kalender</p>
                 <div class="tei-row">
-                  <div class="admin-form-group">
-                    <label>✅ Selesai</label>
-                    <input type="color" id="gantt-color-done" value="#3B6D11" />
-                  </div>
-                  <div class="admin-form-group">
-                    <label>⏳ Berlangsung</label>
-                    <input type="color" id="gantt-color-active" value="#856404" />
-                  </div>
-                  <div class="admin-form-group">
-                    <label>📅 Akan Datang</label>
-                    <input type="color" id="gantt-color-upcoming" value="#10478A" />
-                  </div>
+                  <div class="admin-form-group"><label>✅ Selesai</label><input type="color" id="gantt-color-done" value="#3B6D11" /></div>
+                  <div class="admin-form-group"><label>⏳ Berlangsung</label><input type="color" id="gantt-color-active" value="#856404" /></div>
+                  <div class="admin-form-group"><label>📅 Akan Datang</label><input type="color" id="gantt-color-upcoming" value="#10478A" /></div>
                 </div>
               </div>
               <div id="jadwalEditor"></div>
@@ -627,7 +705,6 @@
               <span class="admin-save-msg" id="msgJadwal">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Download -->
             <div class="admin-section" id="atab-download">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Isi tautan unduhan dokumen.</p>
               <div id="downloadEditor"></div>
@@ -636,7 +713,6 @@
               <span class="admin-save-msg" id="msgDownload">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Aanwijzing -->
             <div class="admin-section" id="atab-aanwijzing">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Atur informasi dan link Zoom Aanwijzing.</p>
               <div class="admin-form-group"><label>Tanggal Pelaksanaan</label><input type="text" id="az-tanggal" placeholder="cth: Senin, 20 Mei 2026" /></div>
@@ -648,7 +724,6 @@
               <span class="admin-save-msg" id="msgZoom">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Running Text -->
             <div class="admin-section" id="atab-running">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Edit teks berjalan di header. Pisahkan beberapa pengumuman dengan <code>|</code></p>
               <div class="admin-form-group"><label>Teks Berjalan</label><textarea id="ar-text" rows="5"></textarea></div>
@@ -656,9 +731,8 @@
               <span class="admin-save-msg" id="msgRunning">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Form Builder -->
             <div class="admin-section" id="atab-formbuilder">
-              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Kelola field formulir pengajuan dokumen penyedia. Field "Fixed" tetap bisa diedit label-nya tapi tidak bisa dihapus.</p>
+              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Kelola field formulir pengajuan dokumen penyedia.</p>
               <div id="formFieldList"></div>
               <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
                 <button class="btn-outline" onclick="addFormField('text')"><i class="fa-solid fa-plus"></i> Tambah Field Teks</button>
@@ -670,26 +744,15 @@
               <span class="admin-save-msg" id="msgForm">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Template Notifikasi -->
             <div class="admin-section" id="atab-notiftemplate">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Edit template notifikasi. Gunakan variabel: <code>{namaPerusahaan}</code> <code>{status}</code> <code>{catatan}</code> <code>{paketNama}</code></p>
-              <div class="admin-form-group">
-                <label>Template WhatsApp</label>
-                <textarea id="nt-wa" rows="7"></textarea>
-              </div>
-              <div class="admin-form-group">
-                <label>Template Email (Subject)</label>
-                <input type="text" id="nt-email-subject" />
-              </div>
-              <div class="admin-form-group">
-                <label>Template Email (Body)</label>
-                <textarea id="nt-email-body" rows="7"></textarea>
-              </div>
+              <div class="admin-form-group"><label>Template WhatsApp</label><textarea id="nt-wa" rows="7"></textarea></div>
+              <div class="admin-form-group"><label>Template Email (Subject)</label><input type="text" id="nt-email-subject" /></div>
+              <div class="admin-form-group"><label>Template Email (Body)</label><textarea id="nt-email-body" rows="7"></textarea></div>
               <button class="btn-admin-save" onclick="saveNotifTemplate()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Sync</button>
               <span class="admin-save-msg" id="msgNotifTemplate">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Fonnte & Email -->
             <div class="admin-section" id="atab-fonnte">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Konfigurasi pengiriman WhatsApp (Fonnte) dan Email.</p>
               <div class="admin-form-group"><label>Fonnte API Token</label><input type="text" id="fonnte-token" /></div>
@@ -701,9 +764,8 @@
               <span class="admin-save-msg" id="msgFonnte">✓ Tersinkron</span>
             </div>
 
-            <!-- Tab: Akun -->
             <div class="admin-section" id="atab-akun">
-              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Kelola akun Admin dan Pokja. Password tersimpan di Spreadsheet dan berlaku global.</p>
+              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Kelola akun Admin dan Pokja.</p>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;flex-wrap:wrap;">
                 <div class="timeline-editor-item">
                   <div class="tei-head"><i class="fa-solid fa-gear" style="color:var(--blue-600);"></i> Ganti Password Admin</div>
@@ -722,17 +784,13 @@
                   <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunPokja"></div>
                 </div>
               </div>
-              <div style="margin-top:16px;background:var(--blue-50);border:1px solid var(--blue-100);border-left:4px solid var(--blue-600);border-radius:8px;padding:12px 16px;font-size:0.82rem;color:var(--blue-800);">
-                <strong><i class="fa-solid fa-circle-info"></i> Info:</strong> Perubahan password langsung tersimpan di Google Spreadsheet dan berlaku di semua perangkat/browser.
-              </div>
             </div>
 
-          </div><!-- /admin-panel-body -->
-        </div><!-- /admin-panel -->
-      </div><!-- /adminDashboard -->
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- ---- CUSTOM PAGES ---- -->
     <div id="customPagesContainer"></div>
 
   </main>
@@ -789,16 +847,9 @@
 </footer>
 
 <script>
-// =================================================================
-// KONFIGURASI TETAP (Built-in) – tidak perlu di-setting manual
-// =================================================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmovWhDQTQgXQEHoPTlH6mShnPxXquVARQz1c42I72w8S6Rw3rVcDOF4hfyHgveUBL/exec';
-const DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/1VU5sAih4H9g7zW42vme5Egp46kys9j1VtruFUa1TbPtGBR6a0eS8hDIehu6_6B-1WJUXL8fn';
 const DRIVE_FOLDER_ID  = '1VU5sAih4H9g7zW42vme5Egp46kys9j1VtruFUa1TbPtGBR6a0eS8hDIehu6_6B-1WJUXL8fn';
 
-// =================================================================
-// DEFAULT DATA
-// =================================================================
 const DEFAULT_JADWAL = [
   { label:'Pengumuman Konsolidasi',    sub:'SPSE', status:'done',     mulai:'2026-01-10', selesai:'2026-01-17' },
   { label:'Pendaftaran & Aanwijzing',  sub:'SPSE', status:'done',     mulai:'2026-01-18', selesai:'2026-02-01' },
@@ -839,10 +890,10 @@ const DEFAULT_SIDEBAR_ITEMS = [
 ];
 
 // =================================================================
-// STORAGE – hanya memori (tidak pakai localStorage)
+// STATE
 // =================================================================
 let _globalConfig = {};
-let _submissions  = []; // cache submissions dari spreadsheet
+let _submissions  = [];
 
 function gcGet(key, def) {
   return (_globalConfig[key] !== undefined) ? _globalConfig[key] : def;
@@ -851,8 +902,6 @@ function gcGet(key, def) {
 // =================================================================
 // APPS SCRIPT API
 // =================================================================
-function getAppsScriptUrl() { return APPS_SCRIPT_URL; }
-
 async function fetchGlobalConfig(silent=false) {
   if (!silent) showSync('Memuat pengaturan global…');
   try {
@@ -870,7 +919,6 @@ async function fetchGlobalConfig(silent=false) {
 
 async function pushConfig(key, value) {
   showSync('Menyimpan & sinkronisasi…');
-  // Update cache lokal
   _globalConfig[key] = value;
   try {
     await fetch(APPS_SCRIPT_URL, {
@@ -887,16 +935,15 @@ async function pushConfig(key, value) {
 }
 
 function showSync(msg, type='') {
-  const el   = document.getElementById('syncIndicator');
-  const icon = document.getElementById('syncIcon');
+  const el = document.getElementById('syncIndicator');
   document.getElementById('syncMsg').textContent = msg;
   el.className = 'show' + (type ? ' '+type : '');
-  icon.className = type==='success' ? 'fa-solid fa-check' : type==='error' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-rotate fa-spin';
+  document.getElementById('syncIcon').className = type==='success' ? 'fa-solid fa-check' : type==='error' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-rotate fa-spin';
 }
 function hideSync() { document.getElementById('syncIndicator').className=''; }
 
 // =================================================================
-// LOAD SUBMISSIONS dari Spreadsheet
+// SUBMISSIONS
 // =================================================================
 async function loadSubmissionsFromSheet() {
   showSync('Memuat data submisi…');
@@ -907,16 +954,20 @@ async function loadSubmissionsFromSheet() {
       _submissions = data.submissions;
       document.getElementById('statPeserta').textContent = _submissions.length || '–';
       if (currentRole === 'pokja' || currentRole === 'admin') renderPokjaTable();
+      if (currentRole === 'penyedia') renderStatusPenyedia();
       renderPokjaStats();
       hideSync();
-    } else {
-      hideSync();
-    }
+    } else { hideSync(); }
   } catch(e) {
     hideSync();
     showSync('⚠ Gagal memuat data submisi', 'error');
     setTimeout(hideSync, 3000);
   }
+}
+
+async function loadStatusPenyedia() {
+  await loadSubmissionsFromSheet();
+  renderStatusPenyedia();
 }
 
 function getSubmissions() { return _submissions; }
@@ -930,43 +981,73 @@ function togglePw(id, btn) {
 }
 
 // =================================================================
-// AUTH – Kredensial dari Spreadsheet
+// AUTH
 // =================================================================
 let currentRole      = null;
+let currentPenyedia  = null; // { nama, email }
 let loginClickCount  = 0;
 let loginClickTimer  = null;
-let currentLoginRole = 'pokja';
+let currentLoginRole = 'penyedia';
 
 function initAuth() {
   document.getElementById('logoClick').addEventListener('click', function() {
     loginClickCount++;
     clearTimeout(loginClickTimer);
     loginClickTimer = setTimeout(() => loginClickCount = 0, 700);
-    if (loginClickCount >= 3) { loginClickCount = 0; openLoginOverlay(); }
+    if (loginClickCount >= 2) { loginClickCount = 0; openLoginOverlay(); }
   });
 }
 
 function openLoginOverlay() {
   document.getElementById('loginOverlay').classList.add('show');
-  document.getElementById('overlayUsername').value = '';
-  document.getElementById('overlayPassword').value = '';
+  document.getElementById('penyediaLoginError').textContent = '';
   document.getElementById('overlayLoginError').textContent = '';
-  document.getElementById('loginLoadingMsg').style.display = 'none';
-  updateLoginRoleLabel();
+  document.getElementById('loginLoadingMsg') && (document.getElementById('loginLoadingMsg').style.display='none');
+  // Default ke tab penyedia
+  const tabs = document.querySelectorAll('.login-role-tab');
+  tabs.forEach(t=>t.classList.remove('active'));
+  tabs[0].classList.add('active');
+  currentLoginRole = 'penyedia';
+  document.getElementById('penyediaLoginForm').classList.add('show');
+  document.getElementById('staffLoginForm').style.display = 'none';
+  // Jika sudah login sebagai penyedia, pre-fill
+  if (currentPenyedia) {
+    document.getElementById('penyediaNama').value  = currentPenyedia.nama;
+    document.getElementById('penyediaEmail').value = currentPenyedia.email;
+  }
 }
 function closeLoginOverlay() { document.getElementById('loginOverlay').classList.remove('show'); }
+
 function switchLoginRole(role, btn) {
   currentLoginRole = role;
   document.querySelectorAll('.login-role-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  updateLoginRoleLabel();
+  const isPenyedia = role === 'penyedia';
+  document.getElementById('penyediaLoginForm').classList.toggle('show', isPenyedia);
+  document.getElementById('staffLoginForm').style.display = isPenyedia ? 'none' : 'block';
+  if (!isPenyedia) {
+    const labels = { pokja:'<i class="fa-solid fa-magnifying-glass-chart"></i> Login sebagai <strong>Pokja Pemilihan</strong>', admin:'<i class="fa-solid fa-gear"></i> Login sebagai <strong>Admin</strong>' };
+    document.getElementById('loginRoleLabel').innerHTML = labels[role]||'';
+    document.getElementById('overlayUsername').value = '';
+    document.getElementById('overlayPassword').value = '';
+  }
 }
-function updateLoginRoleLabel() {
-  const labels = {
-    pokja: '<i class="fa-solid fa-magnifying-glass-chart"></i> Login sebagai <strong>Pokja Pemilihan</strong>',
-    admin: '<i class="fa-solid fa-gear"></i> Login sebagai <strong>Admin</strong>',
-  };
-  document.getElementById('loginRoleLabel').innerHTML = labels[currentLoginRole]||'';
+
+// Login Penyedia (open – hanya email & nama PT)
+function doPenyediaLogin() {
+  const nama  = document.getElementById('penyediaNama').value.trim();
+  const email = document.getElementById('penyediaEmail').value.trim();
+  const errEl = document.getElementById('penyediaLoginError');
+  errEl.textContent = '';
+
+  if (!nama)  { errEl.textContent = '❌ Nama perusahaan tidak boleh kosong.'; return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = '❌ Masukkan alamat email yang valid.'; return;
+  }
+
+  currentPenyedia = { nama, email };
+  setRole('penyedia');
+  closeLoginOverlay();
 }
 
 async function doOverlayLogin() {
@@ -977,11 +1058,9 @@ async function doOverlayLogin() {
   errEl.textContent = '';
   loadEl.style.display = 'block';
 
-  // Selalu ambil dari server (sumber kebenaran = spreadsheet)
   const cfg = await fetchGlobalConfig(true);
   loadEl.style.display = 'none';
 
-  // Fallback hardcode jika server tidak bisa dihubungi
   const adminUser = (cfg && cfg.adminUsername) ? cfg.adminUsername : 'admin';
   const adminPass = (cfg && cfg.adminPassword) ? cfg.adminPassword : 'admin123';
   const pokjaUser = (cfg && cfg.pokjaUsername) ? cfg.pokjaUsername : 'pokja';
@@ -990,15 +1069,11 @@ async function doOverlayLogin() {
   if (currentLoginRole === 'admin') {
     if (username === adminUser && password === adminPass) {
       setRole('admin'); closeLoginOverlay();
-    } else {
-      errEl.textContent = '❌ Username atau password salah.';
-    }
+    } else { errEl.textContent = '❌ Username atau password salah.'; }
   } else {
     if (username === pokjaUser && password === pokjaPass) {
       setRole('pokja'); closeLoginOverlay();
-    } else {
-      errEl.textContent = '❌ Username atau password salah.';
-    }
+    } else { errEl.textContent = '❌ Username atau password salah.'; }
   }
 }
 
@@ -1006,29 +1081,179 @@ function setRole(role) {
   currentRole = role;
   renderSidebar();
   updateRoleUI();
-  if (role === 'pokja' || role === 'admin') {
-    loadSubmissionsFromSheet();
+  if (role === 'pokja' || role === 'admin') loadSubmissionsFromSheet();
+  if (role === 'admin') loadAdminForms();
+  if (role === 'pokja') showPage('pokja');
+  if (role === 'admin') showPage('admin');
+  if (role === 'penyedia') {
+    updateUploadFormLock();
+    loadStatusPenyedia();
+    showPage('status');
   }
-  if (role === 'admin')  loadAdminForms();
-  if (role === 'pokja')  showPage('pokja');
-  if (role === 'admin')  showPage('admin');
 }
 
-function doLogout() { currentRole = null; _submissions = []; renderSidebar(); updateRoleUI(); showPage('beranda'); }
+function doLogout() {
+  currentRole = null;
+  currentPenyedia = null;
+  _submissions = [];
+  renderSidebar();
+  updateRoleUI();
+  updateUploadFormLock();
+  showPage('beranda');
+}
 
 function updateRoleUI() {
   const indicator = document.getElementById('roleIndicator');
   const badge     = document.getElementById('roleBadge');
   const logoutBtn = document.getElementById('logoutTopBtn');
+  // Sidebar penyedia info
+  const spInfo    = document.getElementById('sidebarPenyediaInfo');
+
   if (currentRole) {
     indicator.style.display='block'; logoutBtn.style.display='block';
     if (currentRole==='admin') { badge.className='role-badge role-admin'; badge.innerHTML='<i class="fa-solid fa-gear"></i> Admin'; }
-    else { badge.className='role-badge role-pokja'; badge.innerHTML='<i class="fa-solid fa-shield-halved"></i> Pokja'; }
-  } else { indicator.style.display='none'; logoutBtn.style.display='none'; }
+    else if (currentRole==='pokja') { badge.className='role-badge role-pokja'; badge.innerHTML='<i class="fa-solid fa-shield-halved"></i> Pokja'; }
+    else if (currentRole==='penyedia' && currentPenyedia) {
+      badge.className='role-badge role-penyedia';
+      badge.innerHTML=`<i class="fa-solid fa-building"></i> ${currentPenyedia.nama.length>20?currentPenyedia.nama.slice(0,18)+'…':currentPenyedia.nama}`;
+      spInfo.classList.add('show');
+      document.getElementById('spName').textContent  = currentPenyedia.nama;
+      document.getElementById('spEmail').textContent = currentPenyedia.email;
+    }
+  } else {
+    indicator.style.display='none';
+    logoutBtn.style.display='none';
+    spInfo.classList.remove('show');
+  }
 }
 
 // =================================================================
-// SIDEBAR – Upload Dokumen paling atas, warna hijau
+// STATUS PENGAJUAN – Render untuk Penyedia
+// =================================================================
+function renderStatusPenyedia() {
+  if (!currentPenyedia) return;
+  document.getElementById('statusPenyediaName').textContent  = currentPenyedia.nama;
+  document.getElementById('statusPenyediaEmail').textContent = currentPenyedia.email;
+
+  const all = getSubmissions();
+  // Filter berdasarkan email ATAU nama perusahaan (case-insensitive)
+  const myDocs = all.filter(d => {
+    const emailMatch = d.email && d.email.toLowerCase() === currentPenyedia.email.toLowerCase();
+    const namaMatch  = d.namaPerusahaan && d.namaPerusahaan.toLowerCase() === currentPenyedia.nama.toLowerCase();
+    return emailMatch || namaMatch;
+  });
+
+  const wrap = document.getElementById('statusCardWrap');
+
+  if (!myDocs.length) {
+    wrap.innerHTML = `<div class="status-empty">
+      <i class="fa-solid fa-inbox"></i>
+      <p style="font-weight:600;color:var(--gray-600);margin-bottom:6px;">Belum ada dokumen pengajuan</p>
+      <p>Dokumen yang Anda upload melalui menu <strong>Upload Dokumen</strong> akan tampil di sini.</p>
+      <a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:8px;background:var(--green-700);color:white;border-radius:8px;padding:10px 20px;font-weight:700;font-size:0.88rem;text-decoration:none;margin-top:16px;">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen Sekarang
+      </a>
+    </div>`;
+    return;
+  }
+
+  const statusMap = {
+    'Menunggu Review':          { cls:'sb-pending', icon:'fa-hourglass-half', label:'Menunggu Review' },
+    'Lulus / Memenuhi Syarat':  { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus / Memenuhi Syarat' },
+    'Tidak Memenuhi Syarat':    { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
+    'Perlu Revisi / Klarifikasi':{ cls:'sb-revisi', icon:'fa-rotate',        label:'Perlu Revisi / Klarifikasi' },
+  };
+
+  wrap.innerHTML = myDocs.map((d, i) => {
+    const tgl     = d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+    const revTgl  = d.reviewTanggal ? new Date(d.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
+    const status  = d.reviewStatus || 'Menunggu Review';
+    const sm      = statusMap[status] || statusMap['Menunggu Review'];
+    const catatan = d.catatanPokja || '';
+    const hasFile = d.fileLink && d.fileLink.startsWith('http');
+
+    return `<div class="status-doc-card">
+      <div class="status-doc-header">
+        <div>
+          <div class="status-doc-title">${d.jenisDok || 'Dokumen Pengajuan'}</div>
+          <div class="status-doc-meta">
+            <i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i> Dikirim: ${tgl}
+            ${d.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${d.fileName}` : ''}
+          </div>
+        </div>
+        <span class="status-badge-lg ${sm.cls}">
+          <i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}
+        </span>
+      </div>
+      <div class="status-doc-body">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">
+          ${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}
+          ${hasFile ? `<a href="${d.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` : ''}
+        </div>
+        ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
+        ${status === 'Perlu Revisi / Klarifikasi' ? `
+          <div style="margin-top:12px;">
+            <a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi
+            </a>
+          </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// =================================================================
+// UPLOAD FORM – Lock fields jika penyedia sudah login
+// =================================================================
+function updateUploadFormLock() {
+  // Tunda sedikit agar form sudah ter-render
+  setTimeout(() => {
+    const isPenyedia = currentRole === 'penyedia' && currentPenyedia;
+    const promptEl   = document.getElementById('uploadLoginPrompt');
+    if (promptEl) promptEl.style.display = isPenyedia ? 'none' : 'block';
+
+    if (isPenyedia) {
+      // Kunci field Nama Perusahaan
+      const namaEl = document.getElementById('fNamaPerusahaan');
+      if (namaEl) {
+        namaEl.value    = currentPenyedia.nama;
+        namaEl.readOnly = true;
+        namaEl.classList.add('field-locked');
+      }
+      // Kunci field Email
+      const emailEl = document.getElementById('fEmail');
+      if (emailEl) {
+        emailEl.value    = currentPenyedia.email;
+        emailEl.readOnly = true;
+        emailEl.classList.add('field-locked');
+      }
+      // Tambah badge kunci di label
+      ['fNamaPerusahaan','fEmail'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const label = el.closest('.form-row')?.querySelector('label');
+        if (label && !label.querySelector('.field-locked-badge')) {
+          label.insertAdjacentHTML('beforeend', `<span class="field-locked-badge"><i class="fa-solid fa-lock"></i> Terkunci</span>`);
+        }
+      });
+    } else {
+      // Buka kunci
+      ['fNamaPerusahaan','fEmail'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.readOnly = false;
+          el.classList.remove('field-locked');
+          el.value = '';
+          const label = el.closest('.form-row')?.querySelector('.field-locked-badge');
+          if (label) label.remove();
+        }
+      });
+    }
+  }, 120);
+}
+
+// =================================================================
+// SIDEBAR
 // =================================================================
 function getSidebarItems() {
   const stored = gcGet('sidebarItems', null);
@@ -1043,23 +1268,35 @@ function renderSidebar() {
   let html    = '';
   let hasManageSection = false;
 
-  // Upload selalu paling atas dengan warna hijau
+  // Upload – selalu paling atas
   html += `<li style="padding:6px 10px 2px;">
     <a href="#" class="nav-link nav-upload" data-page="upload">
       <span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
       <span class="nav-label" style="font-weight:700;">Upload Dokumen</span>
     </a>
   </li>`;
+
+  // Status Pengajuan – hanya tampil jika login sebagai penyedia
+  if (currentRole === 'penyedia') {
+    html += `<li style="padding:2px 10px 2px;">
+      <a href="#" class="nav-link nav-status" data-page="status">
+        <span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span>
+        <span class="nav-label" style="font-weight:700;">Status Pengajuan</span>
+      </a>
+    </li>`;
+  }
+
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
 
   items.forEach(item => {
-    if (item.id === 'upload') return; // sudah di atas
+    if (item.id === 'upload') return;
     const isAdminOnly    = item.roleOnly && item.roleOnly.includes('admin') && !item.roleOnly.includes('pokja');
     const isPokjaOrAdmin = item.roleOnly && (item.roleOnly.includes('pokja') || item.roleOnly.includes('admin'));
     if (currentRole === null && !item.publik) return;
+    if (currentRole === 'penyedia' && (isAdminOnly || isPokjaOrAdmin)) return;
     if (currentRole === 'pokja' && isAdminOnly) return;
 
-    if ((isAdminOnly || isPokjaOrAdmin) && !hasManageSection && currentRole) {
+    if ((isAdminOnly || isPokjaOrAdmin) && !hasManageSection && currentRole && currentRole !== 'penyedia') {
       html += `<div class="sidebar-section-label">Manajemen</div>`;
       hasManageSection = true;
     }
@@ -1102,6 +1339,8 @@ function showPage(pageId) {
   if (target) target.classList.add('active');
   const activeLink = document.querySelector('[data-page="'+pageId+'"]');
   if (activeLink) activeLink.classList.add('active');
+  // Jika ke halaman upload, re-apply lock
+  if (pageId === 'upload') updateUploadFormLock();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -1111,13 +1350,10 @@ function showPage(pageId) {
 let calendarCurrentDate = new Date();
 
 function applyCalendarColors() {
-  const cfg      = gcGet('ganttColors', {});
-  const done     = cfg.done     || '#3B6D11';
-  const active   = cfg.active   || '#856404';
-  const upcoming = cfg.upcoming || '#10478A';
-  document.documentElement.style.setProperty('--gantt-done',     done);
-  document.documentElement.style.setProperty('--gantt-active',   active);
-  document.documentElement.style.setProperty('--gantt-upcoming', upcoming);
+  const cfg = gcGet('ganttColors', {});
+  document.documentElement.style.setProperty('--gantt-done',     cfg.done     || '#3B6D11');
+  document.documentElement.style.setProperty('--gantt-active',   cfg.active   || '#856404');
+  document.documentElement.style.setProperty('--gantt-upcoming', cfg.upcoming || '#10478A');
 }
 
 function renderCalendar() {
@@ -1185,7 +1421,7 @@ function calNavMonth(dir) {
 }
 
 // =================================================================
-// RENDER DOWNLOAD
+// RENDER DOWNLOAD / ZOOM / RUNNING / JUDUL
 // =================================================================
 function renderDownload() {
   const data = gcGet('docs', DEFAULT_DOCS);
@@ -1202,9 +1438,6 @@ function renderDownload() {
   document.getElementById('statDokumen').textContent = data.filter(d=>d.link).length || data.length;
 }
 
-// =================================================================
-// RENDER ZOOM
-// =================================================================
 function renderZoom() {
   const z = gcGet('zoom', DEFAULT_ZOOM);
   document.getElementById('zoomTanggal').textContent  = z.tanggal   || 'Akan diumumkan melalui SPSE';
@@ -1216,9 +1449,6 @@ function renderZoom() {
   else { btn.href='#'; btn.classList.add('disabled'); btn.onclick=e=>e.preventDefault(); }
 }
 
-// =================================================================
-// RENDER RUNNING TEXT
-// =================================================================
 function renderRunning() {
   const txt   = gcGet('running', DEFAULT_RUNNING);
   const parts = txt.split('|').map(s=>s.trim()).filter(Boolean);
@@ -1226,9 +1456,6 @@ function renderRunning() {
     parts.map(p=>`<i class="fa-solid fa-bullhorn"></i> ${p} &nbsp;&nbsp;&nbsp;`).join('| &nbsp;&nbsp;&nbsp;');
 }
 
-// =================================================================
-// RENDER JUDUL
-// =================================================================
 function renderJudul() {
   const cfg = gcGet('judulConfig', {});
   if (cfg.headerTitle)     document.getElementById('headerTitle').textContent = cfg.headerTitle;
@@ -1247,7 +1474,7 @@ function renderJudul() {
 }
 
 // =================================================================
-// RENDER UPLOAD FORM
+// UPLOAD FORM
 // =================================================================
 function renderUploadForm() {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
@@ -1284,11 +1511,13 @@ function renderUploadForm() {
     }
   });
   document.getElementById('uploadDynamicFields').innerHTML = html;
+  // Tampilkan hint login
+  const promptEl = document.getElementById('uploadLoginPrompt');
+  if (promptEl) promptEl.style.display = (currentRole === 'penyedia') ? 'none' : 'block';
+  // Re-apply lock setelah render
+  updateUploadFormLock();
 }
 
-// =================================================================
-// RENDER CUSTOM PAGES
-// =================================================================
 function renderCustomPages() {
   const menus = gcGet('customMenus', []);
   document.getElementById('customPagesContainer').innerHTML = menus.map(m => `
@@ -1302,12 +1531,11 @@ function renderCustomPages() {
 // LOGO & BANNER UPLOAD
 // =================================================================
 function previewLogo() {
-  const url     = document.getElementById('aj-logo-url').value;
+  const url = document.getElementById('aj-logo-url').value;
   const preview = document.getElementById('aj-logo-preview');
   if (url) { preview.src=url; preview.style.display='block'; }
   else { preview.style.display='none'; }
 }
-
 function uploadLogoFile() {
   const file = document.getElementById('aj-logo-file').files[0];
   if (!file) return;
@@ -1319,16 +1547,13 @@ function uploadLogoFile() {
   };
   reader.readAsDataURL(file);
 }
-
 function uploadBannerFile() {
   const file = document.getElementById('aj-banner-file').files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     const preview = document.getElementById('aj-banner-preview');
-    preview.src = e.target.result;
-    preview.style.display = 'block';
-    // Simpan ke config
+    preview.src = e.target.result; preview.style.display = 'block';
     _globalConfig.judulConfig = _globalConfig.judulConfig || {};
     _globalConfig.judulConfig.bannerUrl = e.target.result;
     document.getElementById('headerBannerImg').src = e.target.result;
@@ -1349,14 +1574,10 @@ async function saveJudulConfig() {
     logoUrl:         document.getElementById('aj-logo-url').value.trim(),
     bannerUrl:       existingCfg.bannerUrl || '',
   };
-  // Jika ada banner yang baru di-upload
   const bannerPreview = document.getElementById('aj-banner-preview');
-  if (bannerPreview.src && bannerPreview.style.display !== 'none') {
-    cfg.bannerUrl = bannerPreview.src;
-  }
+  if (bannerPreview.src && bannerPreview.style.display !== 'none') cfg.bannerUrl = bannerPreview.src;
   await pushConfig('judulConfig', cfg);
-  renderJudul();
-  flashMsg('msgJudul');
+  renderJudul(); flashMsg('msgJudul');
 }
 
 // =================================================================
@@ -1397,16 +1618,13 @@ function toggleSidebarItem(id, checked) {
   const item  = items.find(it=>it.id===id);
   if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; }
 }
-
 async function saveSidebarConfig() {
-  const items  = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i})));
+  const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i})));
   await pushConfig('sidebarItems', items);
   const custom = gcGet('customMenus', []);
   await pushConfig('customMenus', custom);
-  renderSidebar();
-  flashMsg('msgSidebar');
+  renderSidebar(); flashMsg('msgSidebar');
 }
-
 async function addCustomMenu() {
   const name    = document.getElementById('custom-menu-name').value.trim();
   const iconTxt = document.getElementById('custom-menu-icon').value.trim() || 'fa-file';
@@ -1422,7 +1640,6 @@ async function addCustomMenu() {
   renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor();
   flashMsg('msgSidebar');
 }
-
 async function removeCustomMenu(idx) {
   if (!confirm('Hapus menu ini?')) return;
   const menus = gcGet('customMenus', []);
@@ -1447,27 +1664,24 @@ function renderJadwalEditor() {
       <div class="admin-form-group"><label>Selesai</label><input type="date" id="tj-selesai-${i}" value="${item.selesai||''}" /></div>
       <div class="admin-form-group"><label>Status</label>
         <select id="tj-status-${i}">
-          <option value="done"     ${item.status==='done'    ?'selected':''}>✅ Selesai</option>
-          <option value="active"   ${item.status==='active'  ?'selected':''}>⏳ Berlangsung</option>
+          <option value="done" ${item.status==='done'?'selected':''}>✅ Selesai</option>
+          <option value="active" ${item.status==='active'?'selected':''}>⏳ Berlangsung</option>
           <option value="upcoming" ${item.status==='upcoming'?'selected':''}>📅 Akan Datang</option>
         </select>
       </div>
-      <div class="admin-form-group"><label>Keterangan</label><input type="text" id="tj-sub-${i}" value="${item.sub||''}" /></div>
+      <div class="admin-form-group"><label>Ket.</label><input type="text" id="tj-sub-${i}" value="${item.sub||''}" /></div>
       <button onclick="removeJadwalItem(${i})" style="background:#C0392B;color:white;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;align-self:flex-end;margin-bottom:14px;"><i class="fa-solid fa-trash"></i></button>
     </div>`).join('');
 }
-
 function addJadwalItem() {
   const data = gcGet('jadwal', DEFAULT_JADWAL);
   data.push({ label:'Tahapan Baru', sub:'', status:'upcoming', mulai:'', selesai:'' });
   _globalConfig['jadwal'] = data; renderJadwalEditor();
 }
-
 function removeJadwalItem(i) {
   const data = gcGet('jadwal', DEFAULT_JADWAL);
   data.splice(i, 1); _globalConfig['jadwal'] = data; renderJadwalEditor();
 }
-
 async function saveJadwal() {
   const data = gcGet('jadwal', DEFAULT_JADWAL);
   data.forEach((item, i) => {
@@ -1484,8 +1698,7 @@ async function saveJadwal() {
   };
   await pushConfig('jadwal', data);
   await pushConfig('ganttColors', colors);
-  renderCalendar();
-  flashMsg('msgJadwal');
+  renderCalendar(); flashMsg('msgJadwal');
 }
 
 // =================================================================
@@ -1510,29 +1723,22 @@ function renderDownloadEditor() {
       <button onclick="removeDownloadItem(${i})" class="btn-danger-sm" style="margin-top:6px;"><i class="fa-solid fa-trash"></i> Hapus</button>
     </div>`).join('');
 }
-
 function previewDocIcon(i) {
   const file = document.getElementById(`dd-iconfile-${i}`).files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    const img = document.getElementById(`dd-iconpreview-${i}`);
-    img.src = e.target.result; img.style.display = 'block';
-  };
+  reader.onload = e => { const img=document.getElementById(`dd-iconpreview-${i}`); img.src=e.target.result; img.style.display='block'; };
   reader.readAsDataURL(file);
 }
-
 function addDownloadItem() {
   const data = gcGet('docs', DEFAULT_DOCS);
   data.push({ title:'Dokumen Baru', desc:'', icon:'fa-file', link:'', iconType:'fa' });
   _globalConfig['docs'] = data; renderDownloadEditor();
 }
-
 function removeDownloadItem(i) {
   const data = gcGet('docs', DEFAULT_DOCS);
   data.splice(i, 1); _globalConfig['docs'] = data; renderDownloadEditor();
 }
-
 async function saveDownload() {
   const data = gcGet('docs', DEFAULT_DOCS);
   const promises = data.map(async (d, i) => {
@@ -1542,9 +1748,7 @@ async function saveDownload() {
     const iconTxt  = document.getElementById(`dd-icon-${i}`).value;
     const iconFile = document.getElementById(`dd-iconfile-${i}`).files[0];
     if (iconFile) {
-      const dataUrl = await new Promise(res => {
-        const r = new FileReader(); r.onload = ()=>res(r.result); r.readAsDataURL(iconFile);
-      });
+      const dataUrl = await new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(iconFile); });
       d.iconType = 'img'; d.iconImg = dataUrl;
     } else {
       if (d.iconType !== 'img') { d.icon = iconTxt; d.iconType = 'fa'; }
@@ -1552,12 +1756,11 @@ async function saveDownload() {
   });
   await Promise.all(promises);
   await pushConfig('docs', data);
-  renderDownload();
-  flashMsg('msgDownload');
+  renderDownload(); flashMsg('msgDownload');
 }
 
 // =================================================================
-// ADMIN: ZOOM
+// ADMIN: ZOOM / RUNNING / NOTIF / FONNTE
 // =================================================================
 async function saveZoom() {
   const z = {
@@ -1568,16 +1771,30 @@ async function saveZoom() {
     link     : document.getElementById('az-link').value,
   };
   await pushConfig('zoom', z);
-  renderZoom();
-  flashMsg('msgZoom');
+  renderZoom(); flashMsg('msgZoom');
 }
-
-// =================================================================
-// ADMIN: RUNNING
-// =================================================================
 async function saveRunning() {
   await pushConfig('running', document.getElementById('ar-text').value);
   renderRunning(); flashMsg('msgRunning');
+}
+async function saveNotifTemplate() {
+  const tmpl = {
+    wa:           document.getElementById('nt-wa').value,
+    emailSubject: document.getElementById('nt-email-subject').value,
+    emailBody:    document.getElementById('nt-email-body').value,
+  };
+  await pushConfig('notifTemplate', tmpl);
+  flashMsg('msgNotifTemplate');
+}
+async function saveFonnteConfig() {
+  const cfg = {
+    token:      document.getElementById('fonnte-token').value.trim(),
+    sender:     document.getElementById('fonnte-sender').value.trim(),
+    replyTo:    document.getElementById('email-replyto').value.trim(),
+    senderName: document.getElementById('email-sendername').value.trim(),
+  };
+  await pushConfig('fonnteConfig', cfg);
+  flashMsg('msgFonnte');
 }
 
 // =================================================================
@@ -1591,39 +1808,31 @@ function renderFormFieldList() {
       <span style="font-size:0.78rem;color:var(--gray-400);width:60px;flex-shrink:0;">${f.type}</span>
       <input type="text" value="${f.label}" onchange="updateFormFieldLabel(${i}, this.value)" style="flex:2;" />
       ${f.required?'<span style="color:#C0392B;font-size:0.78rem;">Wajib</span>':'<span style="color:var(--gray-400);font-size:0.78rem;">Opsional</span>'}
-      <button class="btn-danger-sm" onclick="${f.fixed ? `removeFixedFormField(${i})` : `removeFormField(${i})`}" title="${f.fixed ? 'Hapus field fixed (konfirmasi diperlukan)' : 'Hapus field'}"><i class="fa-solid fa-trash"></i></button>
+      <button class="btn-danger-sm" onclick="${f.fixed ? `removeFixedFormField(${i})` : `removeFormField(${i})`}"><i class="fa-solid fa-trash"></i></button>
     </div>`;
   });
   document.getElementById('formFieldList').innerHTML = html;
 }
-
 function updateFormFieldLabel(i, val) {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   if (fields[i]) { fields[i].label = val; _globalConfig['formFields'] = fields; }
 }
-
 function addFormField(type) {
   const fields   = gcGet('formFields', DEFAULT_FORM_FIELDS);
   const insertAt = fields.length - 2;
   fields.splice(insertAt, 0, { id:'fCustom_'+Date.now(), label:'Field Baru', type, placeholder:'', required:false, fixed:false });
   _globalConfig['formFields'] = fields; renderFormFieldList();
 }
-
 function removeFormField(i) {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   if (fields[i] && !fields[i].fixed) { fields.splice(i, 1); _globalConfig['formFields'] = fields; renderFormFieldList(); }
 }
-
 function removeFixedFormField(i) {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   if (!fields[i]) return;
-  const fieldLabel = fields[i].label;
-  if (!confirm(`⚠️ Hapus field "${fieldLabel}"?\n\nField ini adalah field bawaan (fixed). Jika dihapus, Anda perlu menambahkan ulang secara manual.\n\nLanjutkan hapus?`)) return;
-  fields.splice(i, 1);
-  _globalConfig['formFields'] = fields;
-  renderFormFieldList();
+  if (!confirm(`⚠️ Hapus field "${fields[i].label}"?\n\nField ini adalah field bawaan (fixed). Lanjutkan hapus?`)) return;
+  fields.splice(i, 1); _globalConfig['formFields'] = fields; renderFormFieldList();
 }
-
 async function saveFormFields() {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   await pushConfig('formFields', fields);
@@ -1631,70 +1840,35 @@ async function saveFormFields() {
 }
 
 // =================================================================
-// ADMIN: NOTIF TEMPLATE
-// =================================================================
-async function saveNotifTemplate() {
-  const tmpl = {
-    wa:           document.getElementById('nt-wa').value,
-    emailSubject: document.getElementById('nt-email-subject').value,
-    emailBody:    document.getElementById('nt-email-body').value,
-  };
-  await pushConfig('notifTemplate', tmpl);
-  flashMsg('msgNotifTemplate');
-}
-
-// =================================================================
-// ADMIN: FONNTE
-// =================================================================
-async function saveFonnteConfig() {
-  const cfg = {
-    token:      document.getElementById('fonnte-token').value.trim(),
-    sender:     document.getElementById('fonnte-sender').value.trim(),
-    replyTo:    document.getElementById('email-replyto').value.trim(),
-    senderName: document.getElementById('email-sendername').value.trim(),
-  };
-  await pushConfig('fonnteConfig', cfg);
-  flashMsg('msgFonnte');
-}
-
-// =================================================================
-// ADMIN: AKUN (password dari spreadsheet)
+// ADMIN: AKUN
 // =================================================================
 async function changeAdminPassword() {
   const oldPass = document.getElementById('ak-admin-old').value;
   const newPass = document.getElementById('ak-admin-new').value;
   const confirm = document.getElementById('ak-admin-confirm').value;
   const msgEl   = document.getElementById('msgAkunAdmin');
-
-  // Ambil password terkini dari spreadsheet
-  const cfg = await fetchGlobalConfig(true);
+  const cfg     = await fetchGlobalConfig(true);
   const storedPass = (cfg && cfg.adminPassword) ? cfg.adminPassword : 'admin123';
-
   if (oldPass !== storedPass) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Password lama salah.'; return; }
   if (newPass.length < 8)     { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Min. 8 karakter.'; return; }
   if (newPass !== confirm)    { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
-
   const adminUser = (cfg && cfg.adminUsername) ? cfg.adminUsername : 'admin';
   await syncAccountToSheet('admin', adminUser, newPass);
-  msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Password admin berhasil diubah & tersinkron.';
+  msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Password admin berhasil diubah.';
   ['ak-admin-old','ak-admin-new','ak-admin-confirm'].forEach(id=>document.getElementById(id).value='');
 }
-
 async function changePokjaPassword() {
   const username = document.getElementById('ak-pokja-user').value.trim();
   const newPass  = document.getElementById('ak-pokja-new').value;
   const confirm  = document.getElementById('ak-pokja-confirm').value;
   const msgEl    = document.getElementById('msgAkunPokja');
-
-  if (!username)          { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Masukkan username.'; return; }
-  if (newPass.length < 6) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Min. 6 karakter.'; return; }
-  if (newPass !== confirm) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
-
+  if (!username)           { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Masukkan username.'; return; }
+  if (newPass.length < 6)  { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Min. 6 karakter.'; return; }
+  if (newPass !== confirm)  { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
   await syncAccountToSheet('pokja', username, newPass);
-  msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Akun Pokja berhasil diperbarui & tersinkron.';
+  msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Akun Pokja berhasil diperbarui.';
   ['ak-pokja-new','ak-pokja-confirm'].forEach(id=>document.getElementById(id).value='');
 }
-
 async function syncAccountToSheet(role, username, password) {
   try {
     await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
@@ -1718,12 +1892,11 @@ function loadAdminForms() {
   document.getElementById('az-link').value      = z.link||'';
   document.getElementById('ar-text').value      = gcGet('running', DEFAULT_RUNNING);
   const cfg = gcGet('judulConfig',{});
-  document.getElementById('aj-header-title').value     = cfg.headerTitle||'Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026';
+  document.getElementById('aj-header-title').value     = cfg.headerTitle||'';
   document.getElementById('aj-beranda-sub').value      = cfg.berandaSub||'';
   document.getElementById('aj-aanwijzing-title').value = cfg.aanwijzingTitle||'';
   document.getElementById('aj-logo-url').value         = cfg.logoUrl||'';
   if (cfg.logoUrl) { document.getElementById('aj-logo-preview').src=cfg.logoUrl; document.getElementById('aj-logo-preview').style.display='block'; }
-  if (cfg.bannerUrl) { document.getElementById('aj-banner-preview').src=cfg.bannerUrl; document.getElementById('aj-banner-preview').style.display='block'; }
   const tmpl = gcGet('notifTemplate',{});
   document.getElementById('nt-wa').value             = tmpl.wa||DEFAULT_NOTIF_WA;
   document.getElementById('nt-email-subject').value  = tmpl.emailSubject||DEFAULT_NOTIF_EMAIL_SUBJECT;
@@ -1733,13 +1906,9 @@ function loadAdminForms() {
   document.getElementById('fonnte-sender').value     = fCfg.sender||'';
   document.getElementById('email-replyto').value     = fCfg.replyTo||'';
   document.getElementById('email-sendername').value  = fCfg.senderName||'Pokja Pemilihan BPBJ Kota Surakarta';
-  const pokjaCfg = gcGet('pokjaUsername','pokja');
-  document.getElementById('ak-pokja-user').value     = typeof pokjaCfg === 'string' ? pokjaCfg : 'pokja';
+  document.getElementById('ak-pokja-user').value     = gcGet('pokjaUsername','pokja');
 }
 
-// =================================================================
-// ADMIN TABS
-// =================================================================
 function switchAdminTab(name, btn) {
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
@@ -1755,11 +1924,11 @@ function flashMsg(id) {
 }
 
 // =================================================================
-// UPLOAD FORM SUBMIT – ke Spreadsheet via Apps Script
+// SUBMIT UPLOAD
 // =================================================================
 async function submitUpload() {
-  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
-  let valid    = true;
+  const fields  = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  let valid     = true;
   const payload = {};
 
   for (const f of fields) {
@@ -1809,19 +1978,32 @@ async function submitUpload() {
     };
 
     await fetch(APPS_SCRIPT_URL, {
-      method:'POST',
-      mode:'no-cors',
+      method:'POST', mode:'no-cors',
       headers:{'Content-Type':'text/plain'},
       body: JSON.stringify(fullPayload)
     });
-    const result = {status:'ok'};
-    progressBar.style.width='100%'; progressText.textContent='Selesai!';
 
+    progressBar.style.width='100%'; progressText.textContent='Selesai!';
     document.getElementById('statPeserta').textContent = '–';
-    showFormMsg('success');
-    fields.forEach(f=>{ const el=document.getElementById(f.id); if(el && f.type!=='file') el.value=''; });
+
+    // Tampilkan hint untuk cek status jika penyedia login
+    const successEl = document.getElementById('uploadSuccess');
+    successEl.style.display = 'block';
+    const statusHint = document.getElementById('uploadSuccessStatusHint');
+    if (currentRole === 'penyedia' && statusHint) {
+      statusHint.style.display = 'block';
+      statusHint.innerHTML = `<a href="#" onclick="showPage('status');return false;" style="color:var(--green-700);font-weight:700;">
+        <i class="fa-solid fa-clipboard-list"></i> Pantau status pengajuan Anda di halaman Status Pengajuan
+      </a>`;
+    }
+    document.getElementById('uploadError').style.display='none';
+
+    fields.forEach(f=>{ const el=document.getElementById(f.id); if(el && f.type!=='file' && !el.readOnly) el.value=''; });
     if (fileInput) fileInput.value='';
     setTimeout(()=>{ progressWrap.style.display='none'; progressBar.style.width='0%'; }, 2000);
+
+    // Refresh submissions agar status langsung ter-update (jika penyedia login)
+    if (currentRole === 'penyedia') setTimeout(loadStatusPenyedia, 3000);
   } catch(err) {
     showFormMsg('error','Gagal mengirim: '+err.message);
     progressWrap.style.display='none';
@@ -1839,7 +2021,7 @@ function showFormMsg(type, msg) {
 }
 
 // =================================================================
-// POKJA – Data dari Spreadsheet
+// POKJA TABLE
 // =================================================================
 let currentReviewIdx = null;
 
@@ -1880,7 +2062,7 @@ function renderPokjaTable() {
     if (fileLink && fileLink.startsWith('http')) {
       fileCell = `<div style="display:flex;flex-direction:column;gap:3px;">
         <a href="${fileLink}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a>
-        <a href="${fileLink.replace('/view','/export?format=pdf').replace('open?id=','uc?export=download&id=').replace('file/d/','uc?id=').replace('/view','')+(!fileLink.includes('export')&&!fileLink.includes('uc?')?'&export=download':'')}" target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a>
+        <a href="${fileLink}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a>
       </div>`;
     } else if (d.fileName) {
       fileCell = `<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;
@@ -1911,21 +2093,12 @@ function openReviewModal(idx) {
     <span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br>
     <span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} / ${d.email||'-'}</span>
     ${d.fileName ? `<br><span style="color:var(--blue-700);font-size:0.82rem;"><i class="fa-solid fa-file-arrow-up"></i> ${d.fileName}</span>` : ''}`;
-
-  // Tombol lihat / download dokumen
   const btnWrap = document.getElementById('reviewDocButtons');
   if (d.fileLink && d.fileLink.startsWith('http')) {
     btnWrap.innerHTML = `
-      <a href="${d.fileLink}" target="_blank" class="btn-view-doc" style="font-size:0.82rem;padding:7px 14px;">
-        <i class="fa-solid fa-eye"></i> Lihat Dokumen
-      </a>
-      <a href="${d.fileLink}" download target="_blank" class="btn-dl-doc" style="font-size:0.82rem;padding:7px 14px;">
-        <i class="fa-solid fa-download"></i> Download Dokumen
-      </a>`;
-  } else {
-    btnWrap.innerHTML = '';
-  }
-
+      <a href="${d.fileLink}" target="_blank" class="btn-view-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>
+      <a href="${d.fileLink}" download target="_blank" class="btn-dl-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-download"></i> Download</a>`;
+  } else { btnWrap.innerHTML = ''; }
   document.getElementById('reviewStatus').value  = d.reviewStatus || 'Menunggu Review';
   document.getElementById('reviewCatatan').value = d.catatanPokja || '';
   document.getElementById('notifEmail').checked  = true;
@@ -1962,14 +2135,12 @@ async function simpanReview() {
   const doEmail = document.getElementById('notifEmail').checked;
   const doWa    = document.getElementById('notifWa').checked;
 
-  // Update ke spreadsheet
   try {
     await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'updateReview', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp,
         reviewStatus:status, catatanPokja:catatan, reviewTanggal:new Date().toISOString() }) });
   } catch(e){}
 
-  // Update cache lokal
   d.reviewStatus  = status;
   d.catatanPokja  = catatan;
   d.reviewTanggal = new Date().toISOString();
@@ -2011,14 +2182,13 @@ async function simpanReview() {
   }
 
   const msgEl = document.getElementById('reviewModalMsg');
-  msgEl.style.display='block';
   msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-top:12px;';
   msgEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Review tersimpan! ${notifLog.length?'Notifikasi: '+notifLog.join(', ')+'.':''}`;
   setTimeout(closeReviewModal, 2500);
 }
 
 // =================================================================
-// SIDEBAR COLLAPSE
+// SIDEBAR COLLAPSE & MOBILE
 // =================================================================
 const sidebar      = document.getElementById('sidebar');
 const mainContent  = document.getElementById('mainContent');
@@ -2059,15 +2229,10 @@ async function init() {
   initAuth();
   showSync('Memuat pengaturan dari server…');
   const cfg = await fetchGlobalConfig(true);
-  if (cfg) {
-    hideSync();
-  } else {
-    showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.', 'error');
-    setTimeout(hideSync, 3000);
-  }
+  if (cfg) { hideSync(); }
+  else { showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.', 'error'); setTimeout(hideSync, 3000); }
   renderAll();
 
-  // Auto-refresh config setiap 60 detik
   setInterval(async () => {
     const cfg = await fetchGlobalConfig(true);
     if (cfg) renderAll();
@@ -2076,6 +2241,5 @@ async function init() {
 
 init();
 </script>
-
 </body>
 </html>
