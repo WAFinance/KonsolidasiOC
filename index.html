@@ -555,11 +555,22 @@
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-file-contract"></i></div><div class="stat-value" id="statDokumen">2</div><div class="stat-label">Dokumen Tersedia</div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div><div class="stat-value">2026</div><div class="stat-label">Tahun Anggaran</div></div>
       </div>
-      <h2 class="section-heading" style="font-size:1.15rem;color:var(--blue-900);border-bottom:2px solid var(--blue-100);padding-bottom:10px;margin-bottom:18px;"><i class="fa-solid fa-calendar-days" style="color:var(--blue-600);"></i> Jadwal Tahapan Konsolidasi</h2>
-      <h3 class="section-heading" style="font-size:0.92rem;color:var(--gray-600);font-weight:600;margin-bottom:12px;"><i class="fa-regular fa-calendar" style="color:var(--blue-400);"></i> Kalender</h3>
-      <div id="calendarWrap"></div>
-      <h3 class="section-heading" style="font-size:0.92rem;color:var(--gray-600);font-weight:600;margin-top:28px;margin-bottom:12px;"><i class="fa-solid fa-bars-progress" style="color:var(--blue-400);"></i> Jadwal per Tahapan</h3>
-      <div id="ganttWrap"></div>
+      <h2 class="section-heading" style="font-size:1.15rem;color:var(--blue-900);border-bottom:2px solid var(--blue-100);padding-bottom:10px;margin-bottom:0;"><i class="fa-solid fa-calendar-days" style="color:var(--blue-600);"></i> Jadwal Tahapan Konsolidasi</h2>
+      <!-- Sub-menu tabs -->
+      <div class="jadwal-tabs" style="display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--blue-100);margin-top:0;">
+        <button id="jadwalTabKalender" class="jadwal-tab jadwal-tab-active" onclick="switchJadwalTab('kalender')" style="display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:none;border-bottom:3px solid var(--blue-600);background:var(--blue-50);color:var(--blue-700);font-size:0.88rem;font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;">
+          <i class="fa-regular fa-calendar"></i> Kalender
+        </button>
+        <button id="jadwalTabGantt" class="jadwal-tab" onclick="switchJadwalTab('gantt')" style="display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:none;border-bottom:3px solid transparent;background:transparent;color:var(--gray-600);font-size:0.88rem;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;">
+          <i class="fa-solid fa-bars-progress"></i> Jadwal per Tahapan
+        </button>
+      </div>
+      <div id="jadwalPanelKalender" style="display:block;">
+        <div id="calendarWrap"></div>
+      </div>
+      <div id="jadwalPanelGantt" style="display:none;">
+        <div id="ganttWrap"></div>
+      </div>
       <div class="spse-section">
         <h3 class="section-heading"><i class="fa-solid fa-newspaper"></i> Pengumuman &amp; Berita SPSE</h3>
         <div class="info-banner" style="margin-bottom:0;"><i class="fa-solid fa-link"></i><div>Informasi resmi dari SPSE Kota Surakarta: <a href="https://spse.inaproc.id/surakarta" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:700;margin-left:4px;">spse.inaproc.id/surakarta <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a></div></div>
@@ -1625,138 +1636,216 @@ window.addEventListener('resize', () => {
 // =================================================================
 // GANTT CHART
 // =================================================================
+// ── Gantt zoom state ──
+let _ganttDayW     = 22;
+const GANTT_DAY_W_MIN  = 6;
+const GANTT_DAY_W_MAX  = 64;
+const GANTT_LABEL_W    = 180;
+
+// Pinch-zoom state
+let _ganttPinchDist = null;
+let _ganttPinchDayW = null;
+
 function renderGantt() {
   const jadwal = gcGet('jadwal', DEFAULT_JADWAL);
-  const wrap = document.getElementById('ganttWrap');
+  const wrap   = document.getElementById('ganttWrap');
   if (!wrap) return;
 
   const activeJadwal = jadwal.filter(j => j.mulai && j.selesai);
   if (!activeJadwal.length) { wrap.innerHTML = ''; return; }
 
-  // Hitung rentang tanggal keseluruhan
-  const allDates = activeJadwal.flatMap(j => [new Date(j.mulai + 'T00:00:00'), new Date(j.selesai + 'T00:00:00')]);
-  let minDate = new Date(Math.min(...allDates));
-  let maxDate = new Date(Math.max(...allDates));
-  // Snap ke awal & akhir bulan
-  minDate = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-  maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+  // Rentang: mulai tepat dari tanggal pertama, akhir bulan terakhir
+  const allDates = activeJadwal.flatMap(j => [new Date(j.mulai+'T00:00:00'), new Date(j.selesai+'T00:00:00')]);
+  const minDate  = new Date(Math.min(...allDates)); minDate.setHours(0,0,0,0);
+  const rawMax   = new Date(Math.max(...allDates));
+  const maxDate  = new Date(rawMax.getFullYear(), rawMax.getMonth()+1, 0);
 
-  // Buat array hari
   const days = [];
-  let d = new Date(minDate);
-  while (d <= maxDate) { days.push(new Date(d)); d.setDate(d.getDate() + 1); }
+  let dd = new Date(minDate);
+  while (dd <= maxDate) { days.push(new Date(dd)); dd.setDate(dd.getDate()+1); }
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const DAY_W   = _ganttDayW;
+  const LABEL_W = GANTT_LABEL_W;
+  const gridW   = days.length * DAY_W;
 
-  const LABEL_W = 220; // px untuk kolom label
-  const DAY_W   = 28;  // px per hari — responsive nanti
-  const totalW  = LABEL_W + days.length * DAY_W;
+  const fmtDate  = dt => dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+  const fmtShort = dt => dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});
 
-  const fmtDate = dt => dt.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
-  const fmtShort = dt => dt.toLocaleDateString('id-ID', {day:'2-digit', month:'short'});
-
-  // Kelompokkan hari per bulan untuk header
-  const months = [];
-  let curMonth = null, curCount = 0;
-  days.forEach(day => {
-    const mk = day.getFullYear() + '-' + day.getMonth();
-    if (mk !== curMonth) {
-      if (curMonth !== null) months.push({ label: curMonth, count: curCount });
-      curMonth = mk;
-      curCount = 1;
-    } else curCount++;
+  // Kelompok bulan
+  const months=[]; let curM=null,curC=0;
+  days.forEach(day=>{
+    const mk=day.getFullYear()+'-'+day.getMonth();
+    if(mk!==curM){if(curM!==null)months.push({label:curM,count:curC});curM=mk;curC=1;}else curC++;
   });
-  if (curMonth !== null) months.push({ label: curMonth, count: curCount });
+  if(curM!==null)months.push({label:curM,count:curC});
+  const monthNames=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
 
-  const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  const zoomPct = ((DAY_W - GANTT_DAY_W_MIN)/(GANTT_DAY_W_MAX - GANTT_DAY_W_MIN)*100).toFixed(1);
+  const todayIdx = days.findIndex(d=>d.getTime()===today.getTime());
+  const showNum  = DAY_W >= 14;
 
-  let html = `<div class="gantt-wrap" style="overflow-x:auto;">
-  <div style="min-width:${totalW}px;">`;
+  // ══ Toolbar ══
+  let html = `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gray-50);border:1px solid var(--gray-200);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;">
+    <span style="font-size:0.78rem;color:var(--gray-600);font-weight:600;"><i class="fa-solid fa-magnifying-glass" style="color:var(--blue-600);margin-right:4px;"></i>Zoom:</span>
+    <button onclick="ganttZoom(-4)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--gray-200);background:white;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--gray-600);" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+    <div id="ganttZoomTrack" onclick="ganttZoomTrackClick(event)" style="flex:1;max-width:140px;height:6px;background:var(--gray-200);border-radius:3px;position:relative;cursor:pointer;">
+      <div style="position:absolute;top:0;left:0;height:100%;width:${zoomPct}%;background:var(--blue-400);border-radius:3px;pointer-events:none;"></div>
+      <div style="position:absolute;top:50%;transform:translateY(-50%);height:14px;width:14px;border-radius:50%;background:var(--blue-600);border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.25);left:${zoomPct}%;margin-left:-7px;pointer-events:none;"></div>
+    </div>
+    <button onclick="ganttZoom(4)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--gray-200);background:white;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--gray-600);" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+    <span style="font-size:0.72rem;color:var(--gray-400);min-width:52px;">${DAY_W}px/hr</span>
+    <span style="margin-left:auto;font-size:0.71rem;color:var(--gray-400);"><i class="fa-solid fa-hand-pointer" style="margin-right:3px;"></i>Pinch / Ctrl+scroll = zoom &nbsp;·&nbsp; Geser = scroll</span>
+  </div>`;
 
-  // ── Header bulan ──
-  html += `<div style="display:flex;">
-    <div style="width:${LABEL_W}px;flex-shrink:0;background:var(--blue-900);border-right:1px solid rgba(255,255,255,0.15);"></div>`;
-  let dayIdx = 0;
-  months.forEach(m => {
-    const [yr, mo] = m.label.split('-');
-    html += `<div style="width:${m.count * DAY_W}px;background:var(--blue-800);color:#fff;padding:7px 6px;font-size:0.75rem;font-weight:700;text-align:center;border-right:1px solid rgba(255,255,255,0.12);">${monthNames[parseInt(mo)]} ${yr}</div>`;
+  // ══ Container utama: flex, label fixed kiri, grid scrollable kanan ══
+  html += `<div class="gantt-wrap" id="ganttOuter" style="display:flex;overflow:hidden;border-radius:0 0 var(--radius) var(--radius);">`;
+
+  // ─ Kolom label (KIRI – tidak scroll) ─
+  html += `<div id="ganttLabels" style="min-width:${LABEL_W}px;flex-shrink:0;border-right:2px solid var(--gray-200);background:var(--white);z-index:2;position:relative;">`;
+  // header bulan placeholder
+  html += `<div style="height:28px;background:var(--blue-900);"></div>`;
+  // header tanggal placeholder
+  html += `<div style="height:28px;background:var(--blue-50);border-bottom:2px solid var(--blue-100);display:flex;align-items:center;padding:0 14px;font-size:0.72rem;font-weight:700;color:var(--blue-800);white-space:nowrap;">Tahapan</div>`;
+  // baris label
+  activeJadwal.forEach((item,idx)=>{
+    const color=JADWAL_COLORS[idx%JADWAL_COLORS.length];
+    html+=`<div style="height:40px;padding:0 14px;font-size:0.80rem;font-weight:600;color:var(--blue-900);border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:8px;background:white;white-space:nowrap;">
+      <span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+      <span style="white-space:nowrap;">${item.label}</span>
+    </div>`;
+  });
+  // footer legend placeholder
+  html += `<div style="height:38px;background:var(--gray-50);border-top:1px solid var(--gray-100);"></div>`;
+  html += `</div>`;
+
+  // ─ Panel kanan (scroll horizontal saja) ─
+  html += `<div id="ganttScrollBox" style="flex:1;overflow-x:auto;overflow-y:hidden;cursor:grab;">`;
+  html += `<div style="width:${gridW}px;min-width:${gridW}px;">`;
+
+  // header bulan
+  html += `<div style="display:flex;height:28px;">`;
+  months.forEach(m=>{
+    const [yr,mo]=m.label.split('-');
+    html+=`<div style="width:${m.count*DAY_W}px;flex-shrink:0;background:var(--blue-800);color:#fff;font-size:0.75rem;font-weight:700;text-align:center;line-height:28px;border-right:1px solid rgba(255,255,255,0.12);overflow:hidden;white-space:nowrap;">${monthNames[parseInt(mo)]} ${yr}</div>`;
   });
   html += `</div>`;
 
-  // ── Header tanggal ──
-  html += `<div style="display:flex;background:var(--blue-50);border-bottom:2px solid var(--blue-100);">
-    <div style="width:${LABEL_W}px;flex-shrink:0;padding:5px 14px;font-size:0.72rem;font-weight:700;color:var(--blue-800);border-right:1px solid var(--gray-200);display:flex;align-items:center;">Tahapan</div>`;
-  days.forEach(day => {
-    const isToday = day.getTime() === today.getTime();
-    const isSun = day.getDay() === 0;
-    const isSat = day.getDay() === 6;
-    const wknd = (isSat||isSun) ? 'background:#f0f0f0;' : '';
-    const todayCss = isToday ? 'color:#C0392B;font-weight:700;background:#FFF3CD;' : '';
-    html += `<div style="width:${DAY_W}px;flex-shrink:0;font-size:0.60rem;color:var(--gray-400);text-align:center;padding:4px 0;border-right:1px solid var(--gray-100);${wknd}${todayCss}">${day.getDate()}</div>`;
+  // header tanggal
+  html += `<div style="display:flex;height:28px;background:var(--blue-50);border-bottom:2px solid var(--blue-100);">`;
+  days.forEach(day=>{
+    const isToday=day.getTime()===today.getTime();
+    const wknd=(day.getDay()===0||day.getDay()===6)?'background:#f0f0f0;':'';
+    const todayCss=isToday?'color:#C0392B;font-weight:700;background:#FFF3CD;':'';
+    html+=`<div style="width:${DAY_W}px;flex-shrink:0;font-size:0.60rem;color:var(--gray-400);text-align:center;line-height:28px;border-right:1px solid var(--gray-100);overflow:hidden;${wknd}${todayCss}">${showNum?day.getDate():(isToday?'·':'')}</div>`;
   });
   html += `</div>`;
 
-  // ── Baris tiap tahapan ──
-  activeJadwal.forEach((item, idx) => {
-    const color = JADWAL_COLORS[idx % JADWAL_COLORS.length];
-    const start = new Date(item.mulai + 'T00:00:00');
-    const end   = new Date(item.selesai + 'T00:00:00');
-
-    // Hitung offset & lebar bar dalam satuan hari
-    const startIdx = days.findIndex(d => d.getTime() === start.getTime());
-    const endIdx   = days.findIndex(d => d.getTime() === end.getTime());
-    const barLeft  = startIdx >= 0 ? startIdx * DAY_W : 0;
-    const barWidth = (endIdx >= 0 && startIdx >= 0) ? (endIdx - startIdx + 1) * DAY_W : 0;
-
-    const tooltipTxt = `${item.label}: ${fmtShort(start)} – ${fmtShort(end)}${item.sub ? ' ('+item.sub+')' : ''}`;
-
-    html += `<div style="display:flex;border-bottom:1px solid var(--gray-100);" onmouseenter="this.style.background='var(--blue-50)'" onmouseleave="this.style.background=''">
-      <div style="width:${LABEL_W}px;flex-shrink:0;padding:9px 14px;font-size:0.80rem;font-weight:600;color:var(--blue-900);border-right:1px solid var(--gray-100);display:flex;align-items:center;gap:8px;">
-        <span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
-        <span>${item.label}${item.sub ? `<br><span style="font-size:0.70rem;color:var(--gray-400);font-weight:400;">${item.sub}</span>` : ''}</span>
-      </div>
-      <div style="flex:1;position:relative;height:40px;">`;
-
-    // Garis hari ini
-    if (today >= start && today <= maxDate) {
-      const todayIdx = days.findIndex(d => d.getTime() === today.getTime());
-      if (todayIdx >= 0) {
-        const todayLeft = todayIdx * DAY_W + DAY_W / 2;
-        html += `<div style="position:absolute;top:0;bottom:0;left:${todayLeft}px;width:2px;background:#C0392B;opacity:0.5;z-index:5;"></div>`;
-      }
+  // baris bar
+  activeJadwal.forEach((item,idx)=>{
+    const color=JADWAL_COLORS[idx%JADWAL_COLORS.length];
+    const start=new Date(item.mulai+'T00:00:00'), end=new Date(item.selesai+'T00:00:00');
+    const si=days.findIndex(d=>d.getTime()===start.getTime());
+    const ei=days.findIndex(d=>d.getTime()===end.getTime());
+    const barL=si>=0?si*DAY_W:0;
+    const barW=(si>=0&&ei>=0)?(ei-si+1)*DAY_W:0;
+    const tooltipTxt=`${item.label}: ${fmtShort(start)} – ${fmtShort(end)}${item.sub?' ('+item.sub+')':''}`;
+    html+=`<div style="height:40px;position:relative;border-bottom:1px solid var(--gray-100);">`;
+    // today line
+    if(todayIdx>=0) html+=`<div style="position:absolute;top:0;bottom:0;left:${todayIdx*DAY_W+DAY_W/2}px;width:2px;background:#C0392B;opacity:0.4;pointer-events:none;z-index:3;"></div>`;
+    // bar
+    if(barW>0){
+      const ongoing=today>=start&&today<=end, done=today>end;
+      html+=`<div title="${tooltipTxt}" style="position:absolute;top:50%;transform:translateY(-50%);left:${barL}px;width:${barW}px;height:22px;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.68rem;font-weight:700;overflow:hidden;white-space:nowrap;padding:0 6px;cursor:default;opacity:${done?'0.65':'1'};${ongoing?'box-shadow:0 0 0 2px '+color+'55;':''}transition:filter 0.15s;" onmouseenter="this.style.filter='brightness(1.15)'" onmouseleave="this.style.filter=''">${barW>55?item.label:''}</div>`;
     }
-
-    // Weekend shading
-    days.forEach((day, di) => {
-      if (day.getDay() === 0 || day.getDay() === 6) {
-        html += `<div style="position:absolute;top:0;bottom:0;left:${di*DAY_W}px;width:${DAY_W}px;background:rgba(0,0,0,0.03);"></div>`;
-      }
-    });
-
-    if (barWidth > 0) {
-      const isOngoing = today >= start && today <= end;
-      const isDone    = today > end;
-      const glowCss   = isOngoing ? `box-shadow:0 0 0 2px ${color}55;` : '';
-      const opacity   = isDone ? '0.65' : '1';
-      html += `<div title="${tooltipTxt}" style="position:absolute;top:50%;transform:translateY(-50%);left:${barLeft}px;width:${barWidth}px;height:22px;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.68rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 6px;cursor:default;opacity:${opacity};${glowCss}transition:filter 0.15s;" onmouseenter="this.style.filter='brightness(1.15)'" onmouseleave="this.style.filter=''">${barWidth > 60 ? item.label : ''}</div>`;
-    }
-
-    html += `</div></div>`;
+    html+=`</div>`;
   });
 
-  // ── Footer legend tanggal ──
-  html += `<div style="padding:10px 14px;background:var(--gray-50);border-top:1px solid var(--gray-100);display:flex;flex-wrap:wrap;gap:6px 16px;font-size:0.75rem;color:var(--gray-600);">`;
-  activeJadwal.forEach((item, idx) => {
-    const color = JADWAL_COLORS[idx % JADWAL_COLORS.length];
-    const start = new Date(item.mulai + 'T00:00:00');
-    const end   = new Date(item.selesai + 'T00:00:00');
-    html += `<span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:${color};display:inline-block;flex-shrink:0;"></span>${item.label}: ${fmtDate(start)} – ${fmtDate(end)}</span>`;
+  // footer legend (dalam scroll panel)
+  html+=`<div style="height:38px;background:var(--gray-50);border-top:1px solid var(--gray-100);display:flex;align-items:center;padding:0 10px;flex-wrap:nowrap;gap:12px;overflow:hidden;">`;
+  activeJadwal.forEach((item,idx)=>{
+    const color=JADWAL_COLORS[idx%JADWAL_COLORS.length];
+    html+=`<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--gray-600);white-space:nowrap;flex-shrink:0;"><span style="width:10px;height:10px;border-radius:2px;background:${color};display:inline-block;"></span>${item.label}: ${fmtDate(new Date(item.mulai+'T00:00:00'))} – ${fmtDate(new Date(item.selesai+'T00:00:00'))}</span>`;
   });
-  html += `</div>`;
+  html+=`</div>`;
 
-  html += `</div></div>`;
+  html+=`</div></div></div>`; // inner, scrollBox, ganttOuter
+
   wrap.innerHTML = html;
+
+  // ── Auto-expand kolom label agar teks tidak terpotong ──
+  const labelCol = document.getElementById('ganttLabels');
+  if (labelCol) {
+    const spans = labelCol.querySelectorAll('div > span:last-child');
+    let maxW = LABEL_W;
+    spans.forEach(s => { maxW = Math.max(maxW, s.scrollWidth + 46); });
+    if (maxW > LABEL_W) labelCol.style.width = maxW + 'px';
+  }
+
+  // ══ Event listeners ══
+  const scrollBox = document.getElementById('ganttScrollBox');
+  if (!scrollBox) return;
+
+  // 1) Mouse drag — click & drag horizontal
+  let isDragging=false, dragStartX=0, dragStartScroll=0;
+  scrollBox.addEventListener('mousedown', e=>{
+    if(e.button!==0) return;
+    isDragging=true; dragStartX=e.clientX; dragStartScroll=scrollBox.scrollLeft;
+    scrollBox.style.cursor='grabbing'; e.preventDefault();
+  });
+  document.addEventListener('mousemove', e=>{
+    if(!isDragging) return;
+    scrollBox.scrollLeft = dragStartScroll - (e.clientX - dragStartX);
+  });
+  document.addEventListener('mouseup', ()=>{ isDragging=false; if(scrollBox) scrollBox.style.cursor='grab'; });
+
+  // 2) Wheel — satu handler semua skenario
+  scrollBox.addEventListener('wheel', e=>{
+    if(e.ctrlKey || e.metaKey){
+      e.preventDefault();
+      _ganttDayW = Math.min(GANTT_DAY_W_MAX, Math.max(GANTT_DAY_W_MIN, _ganttDayW + (e.deltaY > 0 ? -3 : 3)));
+      renderGantt();
+      return;
+    }
+    const absX = Math.abs(e.deltaX), absY = Math.abs(e.deltaY);
+    if(absX > 0 && absX >= absY * 0.3){
+      // Trackpad geser horizontal → scroll chart
+      e.preventDefault();
+      scrollBox.scrollLeft += e.deltaX;
+      return;
+    }
+    // Vertikal murni → biarkan halaman scroll (tidak preventDefault)
+  }, {passive:false});
+
+  // 3) Touch pinch zoom
+  scrollBox.addEventListener('touchstart', e=>{
+    if(e.touches.length===2){
+      const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+      _ganttPinchDist=Math.sqrt(dx*dx+dy*dy); _ganttPinchDayW=_ganttDayW;
+    }
+  },{passive:true});
+  scrollBox.addEventListener('touchmove', e=>{
+    if(e.touches.length===2 && _ganttPinchDist!==null){
+      e.preventDefault();
+      const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+      const ratio=Math.sqrt(dx*dx+dy*dy)/_ganttPinchDist;
+      _ganttDayW=Math.min(GANTT_DAY_W_MAX,Math.max(GANTT_DAY_W_MIN,Math.round(_ganttPinchDayW*ratio)));
+      renderGantt();
+    }
+  },{passive:false});
+  scrollBox.addEventListener('touchend', ()=>{ _ganttPinchDist=null; _ganttPinchDayW=null; },{passive:true});
+}
+
+function ganttZoom(delta){
+  _ganttDayW=Math.min(GANTT_DAY_W_MAX,Math.max(GANTT_DAY_W_MIN,_ganttDayW+delta));
+  renderGantt();
+}
+function ganttZoomTrackClick(e){
+  const track=document.getElementById('ganttZoomTrack'); if(!track) return;
+  const rect=track.getBoundingClientRect();
+  const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  _ganttDayW=Math.round(GANTT_DAY_W_MIN+pct*(GANTT_DAY_W_MAX-GANTT_DAY_W_MIN));
+  renderGantt();
 }
 
 function renderDownload() {
@@ -2343,8 +2432,30 @@ document.getElementById('reviewModal').addEventListener('click',function(e){
 });
 
 // =================================================================
-// RENDER ALL & INIT
+// JADWAL TAB SWITCHER
 // =================================================================
+function switchJadwalTab(tab) {
+  const panelKal  = document.getElementById('jadwalPanelKalender');
+  const panelGantt= document.getElementById('jadwalPanelGantt');
+  const btnKal    = document.getElementById('jadwalTabKalender');
+  const btnGantt  = document.getElementById('jadwalTabGantt');
+  if (!panelKal) return;
+  if (tab === 'kalender') {
+    panelKal.style.display  = 'block';
+    panelGantt.style.display= 'none';
+    btnKal.style.cssText    = 'display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:none;border-bottom:3px solid var(--blue-600);background:var(--blue-50);color:var(--blue-700);font-size:0.88rem;font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;';
+    btnGantt.style.cssText  = 'display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:none;border-bottom:3px solid transparent;background:transparent;color:var(--gray-600);font-size:0.88rem;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;';
+  } else {
+    panelKal.style.display  = 'none';
+    panelGantt.style.display= 'block';
+    btnKal.style.cssText    = 'display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:none;border-bottom:3px solid transparent;background:transparent;color:var(--gray-600);font-size:0.88rem;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;';
+    btnGantt.style.cssText  = 'display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:none;border-bottom:3px solid var(--blue-600);background:var(--blue-50);color:var(--blue-700);font-size:0.88rem;font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;';
+    // Re-render gantt to calculate correct auto-fit width
+    renderGantt();
+  }
+}
+
+
 function renderAll() {
   renderJudul(); renderSidebar(); renderCalendar(); renderGantt(); renderDownload(); renderZoom();
   renderRunning(); renderUploadForm(); renderCustomPages(); renderPokjaStats();
