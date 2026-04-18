@@ -871,7 +871,7 @@ const DEFAULT_FORM_FIELDS = [
   { id:'fNpwp', label:'NPWP Perusahaan', type:'text', placeholder:'xx.xxx.xxx.x-xxx.xxx', required:true, fixed:true },
   { id:'fAlamat', label:'Alamat / Domisili Usaha', type:'textarea', placeholder:'Jl. …, Kelurahan …, Kecamatan …, Kota/Kab. …', required:true, fixed:true },
   { id:'fNamaDirektur', label:'Nama Direktur / Pimpinan', type:'text', placeholder:'Nama lengkap…', required:true, fixed:true },
-  { id:'fTelp', label:'No. Telepon / WhatsApp', type:'tel', placeholder:'08xxxxxxxxxx', required:true, fixed:true },
+  { id:'fTelp', label:'No. Telepon / WhatsApp', type:'tel', placeholder:'62812xxxxxxxx (awali dengan 62)', required:true, fixed:true },
   { id:'fEmail', label:'Email', type:'email', placeholder:'perusahaan@domain.com', required:true, fixed:true },
   { id:'fJenisDok', label:'Jenis Dokumen yang Diunggah', type:'select', required:true, fixed:true, options:[
     { group:'1. Tenaga Kebersihan', items:['Tenaga Kebersihan – Fasilitas Olahraga/Objek Wisata','Tenaga Kebersihan – Gedung Kantor','Tenaga Kebersihan – Pertamanan Kota','Tenaga Kebersihan – Persampahan Kota','Tenaga Kebersihan – Lingkungan Kelurahan'] },
@@ -1075,20 +1075,24 @@ async function doLoginPenyedia() {
   if (!email)    { errEl.textContent = '❌ Email tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   if (!password) { errEl.textContent = '❌ Password tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   setButtonLoading('btnDoLoginPenyedia', true, 'Memverifikasi…');
-  const cfg = await fetchGlobalConfig(true);
-  const penyediaAccounts = gcGet('penyediaAccounts', []);
-  let account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
-  if (!account) {
-    try {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
-      const data = await res.json();
-      if (data.status === 'ok' && data.account) {
-        account = data.account;
-        const idx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
-        if (idx >= 0) { penyediaAccounts[idx] = data.account; } else { penyediaAccounts.push(data.account); }
-        _globalConfig['penyediaAccounts'] = penyediaAccounts;
-      }
-    } catch(e) {}
+  let account = null;
+  // [FIX #2] Prioritaskan verifikasi langsung ke sheet Akun (server), bukan dari penyediaAccounts di config
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'ok' && data.account) {
+      account = data.account;
+      // Sinkronkan ke cache lokal
+      const penyediaAccounts = gcGet('penyediaAccounts', []);
+      const idx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
+      if (idx >= 0) { penyediaAccounts[idx] = { ...penyediaAccounts[idx], ...data.account }; }
+      else { penyediaAccounts.push({ ...data.account, role:'penyedia' }); }
+      _globalConfig['penyediaAccounts'] = penyediaAccounts;
+    }
+  } catch(e) {
+    // Fallback ke cache lokal jika server tidak bisa dijangkau
+    const penyediaAccounts = gcGet('penyediaAccounts', []);
+    account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password) || null;
   }
   if (!account) { setButtonLoading('btnDoLoginPenyedia', false); errEl.textContent = '❌ Email atau password salah. Belum punya akun? Klik Daftar Baru.'; shakeModal('loginOverlayPenyedia'); return; }
   showModalSuccess('loginOverlayPenyedia', `Selamat datang, ${account.nama}! ✓`, 1400);
@@ -1627,7 +1631,13 @@ function renderJudul() {
 // UPLOAD FORM RENDER
 // =================================================================
 function renderUploadForm() {
-  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  // Merge dari server dengan DEFAULT — pastikan field fixed selalu pakai required dari default
+  const serverFields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  const fields = serverFields.map(f => {
+    const def = DEFAULT_FORM_FIELDS.find(d => d.id === f.id);
+    if (def && def.fixed) return { ...f, required: def.required }; // paksa required dari default
+    return f;
+  });
   let html = '';
   fields.forEach(f => {
     const fakeName = 'field_' + (Math.random().toString(36).slice(2,7));
@@ -1643,7 +1653,8 @@ function renderUploadForm() {
       const isEmail = f.type === 'email';
       const isTel   = f.type === 'tel';
       const acValue = isEmail ? 'new-password' : 'off';
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" /></div>`;
+      const telHint = isTel ? `<div style="font-size:0.78rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info" style="color:var(--blue-600);"></i> Awali dengan <strong>62</strong> (bukan 0), contoh: <code>62812xxxxxxxx</code></div>` : '';
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" />${telHint}</div>`;
     }
   });
   document.getElementById('uploadDynamicFields').innerHTML = html;
@@ -1806,6 +1817,9 @@ async function submitUpload() {
   const fileInput=document.getElementById('fFileDok');
   const file=fileInput?fileInput.files[0]:null;
   if(!valid){showFormMsg('error','Harap lengkapi semua kolom bertanda (*).'); return;}
+  // [FIX #3] Validasi nomor HP wajib diawali 62
+  const telpVal = (payload['fTelp']||'').replace(/\s+/g,'');
+  if(!/^62\d{7,14}$/.test(telpVal)){showFormMsg('error','No. Telepon/WhatsApp harus diawali 62 dan berisi angka saja, contoh: 62812xxxxxxxx'); return;}
   if(!file){showFormMsg('error','Harap pilih file dokumen.'); return;}
   if(file.size>25*1024*1024){showFormMsg('error','Ukuran file melebihi 25 MB.'); return;}
   const btn=document.getElementById('btnSubmitUpload');
