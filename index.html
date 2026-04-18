@@ -190,13 +190,36 @@
     .cal-tooltip {
       display:none; position:fixed; z-index:9999;
       background:var(--blue-900); color:#fff;
-      padding:8px 12px; border-radius:8px;
-      font-size:0.80rem; max-width:240px; line-height:1.5;
-      pointer-events:none; box-shadow:0 4px 16px rgba(0,0,0,0.25);
+      padding:10px 14px; border-radius:9px;
+      font-size:0.80rem; max-width:280px; line-height:1.6;
+      pointer-events:none; box-shadow:0 4px 20px rgba(0,0,0,0.30);
     }
     .cal-tooltip.visible { display:block; }
 
     .section-heading { font-size:1rem; font-weight:700; color:var(--blue-900); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+
+    /* ===== GANTT CHART ===== */
+    .gantt-wrap { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+    .gantt-header { display:grid; background:var(--blue-800); color:#fff; font-size:0.72rem; font-weight:700; letter-spacing:0.3px; }
+    .gantt-header-cell { padding:8px 6px; text-align:center; border-right:1px solid rgba(255,255,255,0.12); }
+    .gantt-header-cell:last-child { border-right:none; }
+    .gantt-row { display:grid; border-bottom:1px solid var(--gray-100); transition:background 0.15s; }
+    .gantt-row:last-child { border-bottom:none; }
+    .gantt-row:hover { background:var(--blue-50); }
+    .gantt-label { padding:10px 14px; font-size:0.82rem; font-weight:600; color:var(--blue-900); display:flex; align-items:center; gap:8px; border-right:1px solid var(--gray-100); }
+    .gantt-label .gantt-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .gantt-label .gantt-sub { font-size:0.72rem; color:var(--gray-400); font-weight:400; }
+    .gantt-cell { padding:8px 4px; display:flex; align-items:center; justify-content:center; border-right:1px solid var(--gray-100); }
+    .gantt-cell:last-child { border-right:none; }
+    .gantt-bar-wrap { position:relative; height:100%; width:100%; display:flex; align-items:center; }
+    .gantt-bar { height:22px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 6px; cursor:default; transition:filter 0.15s,box-shadow 0.15s; }
+    .gantt-bar:hover { filter:brightness(1.12); box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+    .gantt-today-line { position:absolute; top:0; bottom:0; width:2px; background:#C0392B; opacity:0.7; z-index:5; }
+    .gantt-month-header { background:var(--blue-700); color:#fff; padding:6px 10px; font-size:0.75rem; font-weight:700; text-align:center; }
+    .gantt-dates-row { display:grid; background:var(--blue-50); border-bottom:1px solid var(--gray-200); }
+    .gantt-date-cell { font-size:0.65rem; color:var(--gray-400); text-align:center; padding:4px 2px; border-right:1px solid var(--gray-100); }
+    .gantt-date-cell.today { color:#C0392B; font-weight:700; }
+    .gantt-date-cell:last-child { border-right:none; }
     .section-heading i { color:var(--blue-600); }
     .spse-section { margin-top:32px; border-top:2px solid var(--blue-50); padding-top:24px; }
 
@@ -532,8 +555,11 @@
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-file-contract"></i></div><div class="stat-value" id="statDokumen">2</div><div class="stat-label">Dokumen Tersedia</div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div><div class="stat-value">2026</div><div class="stat-label">Tahun Anggaran</div></div>
       </div>
-      <h3 class="section-heading"><i class="fa-solid fa-calendar-days"></i> Jadwal Tahapan Konsolidasi</h3>
+      <h2 class="section-heading" style="font-size:1.15rem;color:var(--blue-900);border-bottom:2px solid var(--blue-100);padding-bottom:10px;margin-bottom:18px;"><i class="fa-solid fa-calendar-days" style="color:var(--blue-600);"></i> Jadwal Tahapan Konsolidasi</h2>
+      <h3 class="section-heading" style="font-size:0.92rem;color:var(--gray-600);font-weight:600;margin-bottom:12px;"><i class="fa-regular fa-calendar" style="color:var(--blue-400);"></i> Kalender</h3>
       <div id="calendarWrap"></div>
+      <h3 class="section-heading" style="font-size:0.92rem;color:var(--gray-600);font-weight:600;margin-top:28px;margin-bottom:12px;"><i class="fa-solid fa-bars-progress" style="color:var(--blue-400);"></i> Jadwal per Tahapan</h3>
+      <div id="ganttWrap"></div>
       <div class="spse-section">
         <h3 class="section-heading"><i class="fa-solid fa-newspaper"></i> Pengumuman &amp; Berita SPSE</h3>
         <div class="info-banner" style="margin-bottom:0;"><i class="fa-solid fa-link"></i><div>Informasi resmi dari SPSE Kota Surakarta: <a href="https://spse.inaproc.id/surakarta" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:700;margin-left:4px;">spse.inaproc.id/surakarta <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a></div></div>
@@ -871,7 +897,7 @@ const DEFAULT_FORM_FIELDS = [
   { id:'fNpwp', label:'NPWP Perusahaan', type:'text', placeholder:'xx.xxx.xxx.x-xxx.xxx', required:true, fixed:true },
   { id:'fAlamat', label:'Alamat / Domisili Usaha', type:'textarea', placeholder:'Jl. …, Kelurahan …, Kecamatan …, Kota/Kab. …', required:true, fixed:true },
   { id:'fNamaDirektur', label:'Nama Direktur / Pimpinan', type:'text', placeholder:'Nama lengkap…', required:true, fixed:true },
-  { id:'fTelp', label:'No. Telepon / WhatsApp', type:'tel', placeholder:'62812xxxxxxxx (awali dengan 62)', required:true, fixed:true },
+  { id:'fTelp', label:'No. Telepon / WhatsApp', type:'tel', placeholder:'08xxxxxxxxxx', required:true, fixed:true },
   { id:'fEmail', label:'Email', type:'email', placeholder:'perusahaan@domain.com', required:true, fixed:true },
   { id:'fJenisDok', label:'Jenis Dokumen yang Diunggah', type:'select', required:true, fixed:true, options:[
     { group:'1. Tenaga Kebersihan', items:['Tenaga Kebersihan – Fasilitas Olahraga/Objek Wisata','Tenaga Kebersihan – Gedung Kantor','Tenaga Kebersihan – Pertamanan Kota','Tenaga Kebersihan – Persampahan Kota','Tenaga Kebersihan – Lingkungan Kelurahan'] },
@@ -1075,24 +1101,20 @@ async function doLoginPenyedia() {
   if (!email)    { errEl.textContent = '❌ Email tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   if (!password) { errEl.textContent = '❌ Password tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   setButtonLoading('btnDoLoginPenyedia', true, 'Memverifikasi…');
-  let account = null;
-  // [FIX #2] Prioritaskan verifikasi langsung ke sheet Akun (server), bukan dari penyediaAccounts di config
-  try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
-    const data = await res.json();
-    if (data.status === 'ok' && data.account) {
-      account = data.account;
-      // Sinkronkan ke cache lokal
-      const penyediaAccounts = gcGet('penyediaAccounts', []);
-      const idx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
-      if (idx >= 0) { penyediaAccounts[idx] = { ...penyediaAccounts[idx], ...data.account }; }
-      else { penyediaAccounts.push({ ...data.account, role:'penyedia' }); }
-      _globalConfig['penyediaAccounts'] = penyediaAccounts;
-    }
-  } catch(e) {
-    // Fallback ke cache lokal jika server tidak bisa dijangkau
-    const penyediaAccounts = gcGet('penyediaAccounts', []);
-    account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password) || null;
+  const cfg = await fetchGlobalConfig(true);
+  const penyediaAccounts = gcGet('penyediaAccounts', []);
+  let account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
+  if (!account) {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+      const data = await res.json();
+      if (data.status === 'ok' && data.account) {
+        account = data.account;
+        const idx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
+        if (idx >= 0) { penyediaAccounts[idx] = data.account; } else { penyediaAccounts.push(data.account); }
+        _globalConfig['penyediaAccounts'] = penyediaAccounts;
+      }
+    } catch(e) {}
   }
   if (!account) { setButtonLoading('btnDoLoginPenyedia', false); errEl.textContent = '❌ Email atau password salah. Belum punya akun? Klik Daftar Baru.'; shakeModal('loginOverlayPenyedia'); return; }
   showModalSuccess('loginOverlayPenyedia', `Selamat datang, ${account.nama}! ✓`, 1400);
@@ -1527,12 +1549,23 @@ function placeCalendarEventBars(jadwal, year, month, firstOffset, daysInMonth, t
       bar.className = 'cal-ev-bar';
       bar.dataset.evId = evId;
       bar.title = item.label;
-      bar.textContent = labelText;
-      bar.style.cssText = `background:${color};left:${barLeft}px;top:${barTop}px;width:${barWidth}px;`;
+      // [FIX 2] Label centred di dalam bar
+      if (labelText) {
+        bar.style.cssText = `background:${color};left:${barLeft}px;top:${barTop}px;width:${barWidth}px;display:flex;align-items:center;justify-content:center;text-align:center;`;
+        const span = document.createElement('span');
+        span.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;text-align:center;padding:0 4px;';
+        span.textContent = labelText;
+        bar.appendChild(span);
+      } else {
+        bar.style.cssText = `background:${color};left:${barLeft}px;top:${barTop}px;width:${barWidth}px;`;
+      }
+      // [FIX 1] Tooltip dengan detail tanggal mulai – selesai
+      const fmtDate = d => new Date(d + 'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+      const tooltipHtml = `<strong>${item.label}</strong><br><span style="opacity:0.85;font-size:0.75rem;">${fmtDate(item.mulai)} – ${fmtDate(item.selesai)}${item.sub ? '<br><em>'+item.sub+'</em>' : ''}</span>`;
 
       bar.addEventListener('mouseenter', function(e) {
         overlay.querySelectorAll(`[data-ev-id="${evId}"]`).forEach(b => b.classList.add('ev-hovered'));
-        showCalTooltip(e, item.label);
+        showCalTooltip(e, tooltipHtml);
       });
       bar.addEventListener('mouseleave', function() {
         overlay.querySelectorAll(`[data-ev-id="${evId}"]`).forEach(b => b.classList.remove('ev-hovered'));
@@ -1550,9 +1583,9 @@ function placeCalendarEventBars(jadwal, year, month, firstOffset, daysInMonth, t
 }
 
 
-function showCalTooltip(e, label) {
+function showCalTooltip(e, html) {
   const tt = document.getElementById('calTooltip');
-  tt.textContent = label;
+  tt.innerHTML = html; // [FIX 1] support rich HTML dengan tanggal
   tt.classList.add('visible');
   moveCalTooltip(e);
 }
@@ -1589,6 +1622,143 @@ window.addEventListener('resize', () => {
 // =================================================================
 // RENDER DOWNLOAD / ZOOM / RUNNING / JUDUL
 // =================================================================
+// =================================================================
+// GANTT CHART
+// =================================================================
+function renderGantt() {
+  const jadwal = gcGet('jadwal', DEFAULT_JADWAL);
+  const wrap = document.getElementById('ganttWrap');
+  if (!wrap) return;
+
+  const activeJadwal = jadwal.filter(j => j.mulai && j.selesai);
+  if (!activeJadwal.length) { wrap.innerHTML = ''; return; }
+
+  // Hitung rentang tanggal keseluruhan
+  const allDates = activeJadwal.flatMap(j => [new Date(j.mulai + 'T00:00:00'), new Date(j.selesai + 'T00:00:00')]);
+  let minDate = new Date(Math.min(...allDates));
+  let maxDate = new Date(Math.max(...allDates));
+  // Snap ke awal & akhir bulan
+  minDate = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+  maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+
+  // Buat array hari
+  const days = [];
+  let d = new Date(minDate);
+  while (d <= maxDate) { days.push(new Date(d)); d.setDate(d.getDate() + 1); }
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const LABEL_W = 220; // px untuk kolom label
+  const DAY_W   = 28;  // px per hari — responsive nanti
+  const totalW  = LABEL_W + days.length * DAY_W;
+
+  const fmtDate = dt => dt.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
+  const fmtShort = dt => dt.toLocaleDateString('id-ID', {day:'2-digit', month:'short'});
+
+  // Kelompokkan hari per bulan untuk header
+  const months = [];
+  let curMonth = null, curCount = 0;
+  days.forEach(day => {
+    const mk = day.getFullYear() + '-' + day.getMonth();
+    if (mk !== curMonth) {
+      if (curMonth !== null) months.push({ label: curMonth, count: curCount });
+      curMonth = mk;
+      curCount = 1;
+    } else curCount++;
+  });
+  if (curMonth !== null) months.push({ label: curMonth, count: curCount });
+
+  const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+
+  let html = `<div class="gantt-wrap" style="overflow-x:auto;">
+  <div style="min-width:${totalW}px;">`;
+
+  // ── Header bulan ──
+  html += `<div style="display:flex;">
+    <div style="width:${LABEL_W}px;flex-shrink:0;background:var(--blue-900);border-right:1px solid rgba(255,255,255,0.15);"></div>`;
+  let dayIdx = 0;
+  months.forEach(m => {
+    const [yr, mo] = m.label.split('-');
+    html += `<div style="width:${m.count * DAY_W}px;background:var(--blue-800);color:#fff;padding:7px 6px;font-size:0.75rem;font-weight:700;text-align:center;border-right:1px solid rgba(255,255,255,0.12);">${monthNames[parseInt(mo)]} ${yr}</div>`;
+  });
+  html += `</div>`;
+
+  // ── Header tanggal ──
+  html += `<div style="display:flex;background:var(--blue-50);border-bottom:2px solid var(--blue-100);">
+    <div style="width:${LABEL_W}px;flex-shrink:0;padding:5px 14px;font-size:0.72rem;font-weight:700;color:var(--blue-800);border-right:1px solid var(--gray-200);display:flex;align-items:center;">Tahapan</div>`;
+  days.forEach(day => {
+    const isToday = day.getTime() === today.getTime();
+    const isSun = day.getDay() === 0;
+    const isSat = day.getDay() === 6;
+    const wknd = (isSat||isSun) ? 'background:#f0f0f0;' : '';
+    const todayCss = isToday ? 'color:#C0392B;font-weight:700;background:#FFF3CD;' : '';
+    html += `<div style="width:${DAY_W}px;flex-shrink:0;font-size:0.60rem;color:var(--gray-400);text-align:center;padding:4px 0;border-right:1px solid var(--gray-100);${wknd}${todayCss}">${day.getDate()}</div>`;
+  });
+  html += `</div>`;
+
+  // ── Baris tiap tahapan ──
+  activeJadwal.forEach((item, idx) => {
+    const color = JADWAL_COLORS[idx % JADWAL_COLORS.length];
+    const start = new Date(item.mulai + 'T00:00:00');
+    const end   = new Date(item.selesai + 'T00:00:00');
+
+    // Hitung offset & lebar bar dalam satuan hari
+    const startIdx = days.findIndex(d => d.getTime() === start.getTime());
+    const endIdx   = days.findIndex(d => d.getTime() === end.getTime());
+    const barLeft  = startIdx >= 0 ? startIdx * DAY_W : 0;
+    const barWidth = (endIdx >= 0 && startIdx >= 0) ? (endIdx - startIdx + 1) * DAY_W : 0;
+
+    const tooltipTxt = `${item.label}: ${fmtShort(start)} – ${fmtShort(end)}${item.sub ? ' ('+item.sub+')' : ''}`;
+
+    html += `<div style="display:flex;border-bottom:1px solid var(--gray-100);" onmouseenter="this.style.background='var(--blue-50)'" onmouseleave="this.style.background=''">
+      <div style="width:${LABEL_W}px;flex-shrink:0;padding:9px 14px;font-size:0.80rem;font-weight:600;color:var(--blue-900);border-right:1px solid var(--gray-100);display:flex;align-items:center;gap:8px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+        <span>${item.label}${item.sub ? `<br><span style="font-size:0.70rem;color:var(--gray-400);font-weight:400;">${item.sub}</span>` : ''}</span>
+      </div>
+      <div style="flex:1;position:relative;height:40px;">`;
+
+    // Garis hari ini
+    if (today >= start && today <= maxDate) {
+      const todayIdx = days.findIndex(d => d.getTime() === today.getTime());
+      if (todayIdx >= 0) {
+        const todayLeft = todayIdx * DAY_W + DAY_W / 2;
+        html += `<div style="position:absolute;top:0;bottom:0;left:${todayLeft}px;width:2px;background:#C0392B;opacity:0.5;z-index:5;"></div>`;
+      }
+    }
+
+    // Weekend shading
+    days.forEach((day, di) => {
+      if (day.getDay() === 0 || day.getDay() === 6) {
+        html += `<div style="position:absolute;top:0;bottom:0;left:${di*DAY_W}px;width:${DAY_W}px;background:rgba(0,0,0,0.03);"></div>`;
+      }
+    });
+
+    if (barWidth > 0) {
+      const isOngoing = today >= start && today <= end;
+      const isDone    = today > end;
+      const glowCss   = isOngoing ? `box-shadow:0 0 0 2px ${color}55;` : '';
+      const opacity   = isDone ? '0.65' : '1';
+      html += `<div title="${tooltipTxt}" style="position:absolute;top:50%;transform:translateY(-50%);left:${barLeft}px;width:${barWidth}px;height:22px;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.68rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 6px;cursor:default;opacity:${opacity};${glowCss}transition:filter 0.15s;" onmouseenter="this.style.filter='brightness(1.15)'" onmouseleave="this.style.filter=''">${barWidth > 60 ? item.label : ''}</div>`;
+    }
+
+    html += `</div></div>`;
+  });
+
+  // ── Footer legend tanggal ──
+  html += `<div style="padding:10px 14px;background:var(--gray-50);border-top:1px solid var(--gray-100);display:flex;flex-wrap:wrap;gap:6px 16px;font-size:0.75rem;color:var(--gray-600);">`;
+  activeJadwal.forEach((item, idx) => {
+    const color = JADWAL_COLORS[idx % JADWAL_COLORS.length];
+    const start = new Date(item.mulai + 'T00:00:00');
+    const end   = new Date(item.selesai + 'T00:00:00');
+    html += `<span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:${color};display:inline-block;flex-shrink:0;"></span>${item.label}: ${fmtDate(start)} – ${fmtDate(end)}</span>`;
+  });
+  html += `</div>`;
+
+  html += `</div></div>`;
+  wrap.innerHTML = html;
+}
+
 function renderDownload() {
   const data = gcGet('docs', DEFAULT_DOCS);
   document.getElementById('docGrid').innerHTML = data.map(d=>{
@@ -1631,13 +1801,7 @@ function renderJudul() {
 // UPLOAD FORM RENDER
 // =================================================================
 function renderUploadForm() {
-  // Merge dari server dengan DEFAULT — pastikan field fixed selalu pakai required dari default
-  const serverFields = gcGet('formFields', DEFAULT_FORM_FIELDS);
-  const fields = serverFields.map(f => {
-    const def = DEFAULT_FORM_FIELDS.find(d => d.id === f.id);
-    if (def && def.fixed) return { ...f, required: def.required }; // paksa required dari default
-    return f;
-  });
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   let html = '';
   fields.forEach(f => {
     const fakeName = 'field_' + (Math.random().toString(36).slice(2,7));
@@ -1653,8 +1817,7 @@ function renderUploadForm() {
       const isEmail = f.type === 'email';
       const isTel   = f.type === 'tel';
       const acValue = isEmail ? 'new-password' : 'off';
-      const telHint = isTel ? `<div style="font-size:0.78rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info" style="color:var(--blue-600);"></i> Awali dengan <strong>62</strong> (bukan 0), contoh: <code>62812xxxxxxxx</code></div>` : '';
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" />${telHint}</div>`;
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" /></div>`;
     }
   });
   document.getElementById('uploadDynamicFields').innerHTML = html;
@@ -1817,9 +1980,6 @@ async function submitUpload() {
   const fileInput=document.getElementById('fFileDok');
   const file=fileInput?fileInput.files[0]:null;
   if(!valid){showFormMsg('error','Harap lengkapi semua kolom bertanda (*).'); return;}
-  // [FIX #3] Validasi nomor HP wajib diawali 62
-  const telpVal = (payload['fTelp']||'').replace(/\s+/g,'');
-  if(!/^62\d{7,14}$/.test(telpVal)){showFormMsg('error','No. Telepon/WhatsApp harus diawali 62 dan berisi angka saja, contoh: 62812xxxxxxxx'); return;}
   if(!file){showFormMsg('error','Harap pilih file dokumen.'); return;}
   if(file.size>25*1024*1024){showFormMsg('error','Ukuran file melebihi 25 MB.'); return;}
   const btn=document.getElementById('btnSubmitUpload');
@@ -2186,7 +2346,7 @@ document.getElementById('reviewModal').addEventListener('click',function(e){
 // RENDER ALL & INIT
 // =================================================================
 function renderAll() {
-  renderJudul(); renderSidebar(); renderCalendar(); renderDownload(); renderZoom();
+  renderJudul(); renderSidebar(); renderCalendar(); renderGantt(); renderDownload(); renderZoom();
   renderRunning(); renderUploadForm(); renderCustomPages(); renderPokjaStats();
 }
 
