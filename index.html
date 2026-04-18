@@ -23,7 +23,19 @@
       --sidebar-w:260px; --sidebar-collapsed-w:64px;
       --header-h:100px; --transition:0.25s ease;
       --radius:10px; --shadow:0 2px 8px rgba(0,0,0,0.10);
-      --gantt-done:#3B6D11; --gantt-active:#856404; --gantt-upcoming:#10478A;
+      /* ===== PERBAIKAN 3: Warna per-tahapan kalender ===== */
+      --gantt-done:#3B6D11;
+      --gantt-active:#856404;
+      --gantt-upcoming:#10478A;
+      --gantt-c0:#7B2D8B;
+      --gantt-c1:#185FA5;
+      --gantt-c2:#856404;
+      --gantt-c3:#0C6E6E;
+      --gantt-c4:#C0392B;
+      --gantt-c5:#3B6D11;
+      --gantt-c6:#6B4226;
+      --gantt-c7:#1A5276;
+      --gantt-c8:#7D6608;
     }
     body { font-family:'Segoe UI',Arial,sans-serif; background:var(--gray-50); color:var(--gray-800); min-height:100vh; display:flex; flex-direction:column; }
 
@@ -104,25 +116,85 @@
     .info-banner { background:var(--blue-50); border:1px solid var(--blue-100); border-left:4px solid var(--blue-600); border-radius:var(--radius); padding:14px 18px; font-size:0.875rem; color:var(--blue-800); display:flex; gap:10px; align-items:flex-start; margin-bottom:22px; }
     .info-banner i { margin-top:2px; flex-shrink:0; }
 
+    /* ===== KALENDER — overlay absolute bar (seperti Google Calendar) ===== */
     .calendar-view { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; width:100%; }
-    .calendar-nav { display:flex; align-items:center; gap:10px; padding:14px 20px 10px; }
-    .calendar-nav h3 { font-size:1rem; font-weight:700; color:var(--blue-900); flex:1; text-align:center; }
-    .calendar-nav button { background:var(--blue-50); border:1px solid var(--blue-100); border-radius:7px; padding:5px 13px; cursor:pointer; color:var(--blue-700); font-size:0.9rem; font-weight:700; transition:background var(--transition); }
-    .calendar-nav button:hover { background:var(--blue-100); }
-    .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--gray-200); }
-    .calendar-day-header { text-align:center; font-size:0.75rem; font-weight:700; color:var(--white); padding:9px 4px; text-transform:uppercase; background:var(--blue-800); border-right:1px solid rgba(255,255,255,0.12); }
+
+    .calendar-nav { display:flex; align-items:center; gap:10px; padding:14px 20px 12px; background:var(--white); }
+    .calendar-nav h3 { font-size:1.05rem; font-weight:800; color:var(--blue-900); flex:1; text-align:center; min-width:180px; }
+    .calendar-nav button { width:34px; height:34px; border-radius:7px; border:1px solid var(--gray-200); background:var(--white); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--gray-600); transition:background var(--transition); }
+    .calendar-nav button:hover { background:var(--blue-50); color:var(--blue-700); }
+
+    /* Wrapper seluruh grid + overlay */
+    .cal-grid-wrap { position:relative; }
+
+    /* Header hari */
+    .calendar-day-header { text-align:center; font-size:0.7rem; font-weight:700; color:rgba(255,255,255,0.85); padding:9px 4px; text-transform:uppercase; letter-spacing:0.5px; background:var(--blue-800); border-right:1px solid rgba(255,255,255,0.12); }
     .calendar-day-header:last-child { border-right:none; }
-    .calendar-day { min-height:90px; border-right:1px solid var(--gray-200); border-bottom:1px solid var(--gray-200); padding:5px 6px; font-size:0.75rem; background:var(--white); position:relative; transition:background 0.15s; vertical-align:top; }
+    .cal-days-header { display:grid; grid-template-columns:repeat(7,1fr); }
+
+    /* Grid sel hari */
+    .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+
+    /* Tiap sel — overflow:hidden agar background bersih, tapi event dioverlay dari luar */
+    .calendar-day {
+      min-height:108px; border-right:1px solid var(--gray-200); border-bottom:1px solid var(--gray-200);
+      padding:4px 4px 28px 4px; /* padding bawah = ruang event bars */
+      font-size:0.75rem; background:var(--white);
+      position:relative; transition:background 0.15s;
+      overflow:hidden; box-sizing:border-box;
+    }
     .calendar-day:nth-child(7n) { border-right:none; }
-    .calendar-day.other-month { background:#f9fafb; }
-    .calendar-day.today .day-num-wrap { background:var(--blue-600); color:white; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-weight:700; }
-    .calendar-day .day-num { font-weight:600; font-size:0.82rem; color:var(--gray-700); margin-bottom:3px; }
-    .calendar-day.other-month .day-num { color:var(--gray-400); }
-    .calendar-day .day-num-wrap { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; margin-bottom:2px; font-weight:600; font-size:0.82rem; color:var(--gray-700); }
-    .calendar-event { font-size:0.7rem; font-weight:600; color:white; border-radius:3px; padding:2px 5px; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:default; display:block; }
-    .calendar-event.done { background:var(--gantt-done); }
-    .calendar-event.active { background:var(--gantt-active); }
-    .calendar-event.upcoming { background:var(--gantt-upcoming); }
+    .calendar-day.other-month  { background:#f8f9fa; }
+    .calendar-day.today        { background:#fffbeb; }
+    .calendar-day.today .day-num-wrap { background:var(--blue-600); color:white; border-radius:50%; }
+    .calendar-day:hover        { background:#f0f6ff; }
+
+    /* Nomor tanggal */
+    .calendar-day .day-num-wrap {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:26px; height:26px; font-weight:700; font-size:0.80rem; color:var(--gray-800);
+      margin-bottom:2px;
+    }
+    .calendar-day.other-month .day-num-wrap { color:var(--gray-400); }
+
+    /* ── OVERLAY layer untuk event bars ── */
+    .cal-events-overlay {
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      pointer-events:none; /* klik tembus ke sel */
+      z-index:10;
+    }
+
+    /* Bar event absolut di dalam overlay */
+    .cal-ev-bar {
+      position:absolute;
+      height:20px; line-height:20px;
+      font-size:0.70rem; font-weight:700; color:#fff;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      border-radius:3px;
+      padding:0 6px;
+      cursor:pointer;
+      pointer-events:all;
+      transition:filter 0.15s, box-shadow 0.15s;
+      z-index:10;
+      box-sizing:border-box;
+    }
+    .cal-ev-bar:hover { filter:brightness(1.12); box-shadow:0 2px 8px rgba(0,0,0,0.25); z-index:20; }
+    .cal-ev-bar.ev-hovered { filter:brightness(1.12); box-shadow:0 2px 8px rgba(0,0,0,0.25); z-index:20; }
+
+    /* Legend kalender */
+    .calendar-legend { display:flex; flex-wrap:wrap; gap:8px 16px; padding:12px 20px 14px; border-top:1px solid var(--gray-100); background:var(--white); }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--gray-600); font-weight:500; }
+    .legend-dot { width:28px; height:10px; border-radius:2px; flex-shrink:0; }
+
+    /* Tooltip hover */
+    .cal-tooltip {
+      display:none; position:fixed; z-index:9999;
+      background:var(--blue-900); color:#fff;
+      padding:8px 12px; border-radius:8px;
+      font-size:0.80rem; max-width:240px; line-height:1.5;
+      pointer-events:none; box-shadow:0 4px 16px rgba(0,0,0,0.25);
+    }
+    .cal-tooltip.visible { display:block; }
 
     .section-heading { font-size:1rem; font-weight:700; color:var(--blue-900); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
     .section-heading i { color:var(--blue-600); }
@@ -289,86 +361,30 @@
     .settings-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); max-width:500px; }
     .settings-card h3 { font-size:1rem; font-weight:700; color:var(--blue-900); margin-bottom:18px; display:flex; align-items:center; gap:8px; }
 
-    /* ===== PERBAIKAN 2: ANIMASI LOADING ===== */
     .btn-loading { position:relative; pointer-events:none; opacity:0.82; }
-    .btn-loading::after {
-      content:'';
-      position:absolute;
-      width:16px; height:16px;
-      border:2px solid rgba(255,255,255,0.4);
-      border-top-color:white;
-      border-radius:50%;
-      animation:spin 0.7s linear infinite;
-      right:12px; top:50%;
-      transform:translateY(-50%);
-    }
+    .btn-loading::after { content:''; position:absolute; width:16px; height:16px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; right:12px; top:50%; transform:translateY(-50%); }
     @keyframes spin { to { transform:translateY(-50%) rotate(360deg); } }
 
-    /* Loading overlay di dalam modal */
-    .modal-loading-overlay {
-      position:absolute; inset:0;
-      background:rgba(255,255,255,0.88);
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      gap:14px; z-index:10;
-      border-radius:14px;
-      animation: fadeIn 0.15s ease;
-    }
+    .modal-loading-overlay { position:absolute; inset:0; background:rgba(255,255,255,0.88); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:10; border-radius:14px; animation: fadeIn 0.15s ease; }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-    .modal-loading-overlay .spin-ring {
-      width:44px; height:44px;
-      border:4px solid var(--blue-100);
-      border-top-color:var(--blue-600);
-      border-radius:50%;
-      animation:spin2 0.7s linear infinite;
-    }
+    .modal-loading-overlay .spin-ring { width:44px; height:44px; border:4px solid var(--blue-100); border-top-color:var(--blue-600); border-radius:50%; animation:spin2 0.7s linear infinite; }
     @keyframes spin2 { to { transform:rotate(360deg); } }
     .modal-loading-overlay p { font-size:0.88rem; font-weight:600; color:var(--blue-800); }
 
-    /* Success animation overlay di modal */
-    .modal-success-overlay {
-      position:absolute; inset:0;
-      background:rgba(255,255,255,0.95);
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      gap:12px; z-index:10;
-      border-radius:14px;
-      animation: fadeIn 0.15s ease;
-    }
-    .modal-success-overlay .success-check {
-      width:60px; height:60px;
-      background:#EAF3DE; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      animation: popIn 0.3s cubic-bezier(.175,.885,.32,1.275);
-    }
+    .modal-success-overlay { position:absolute; inset:0; background:rgba(255,255,255,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; z-index:10; border-radius:14px; animation: fadeIn 0.15s ease; }
+    .modal-success-overlay .success-check { width:60px; height:60px; background:#EAF3DE; border-radius:50%; display:flex; align-items:center; justify-content:center; animation: popIn 0.3s cubic-bezier(.175,.885,.32,1.275); }
     @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
     .modal-success-overlay .success-check i { font-size:28px; color:#3B6D11; }
     .modal-success-overlay p { font-size:0.9rem; font-weight:700; color:#3B6D11; }
 
-    /* Error shake */
     .shake { animation: shake 0.4s ease; }
-    @keyframes shake {
-      0%,100%{transform:translateX(0)}
-      20%{transform:translateX(-8px)}
-      40%{transform:translateX(8px)}
-      60%{transform:translateX(-5px)}
-      80%{transform:translateX(5px)}
-    }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
 
-    /* Upload progress bar enhanced */
     .upload-progress-wrap { background:var(--gray-200); border-radius:6px; height:10px; overflow:hidden; margin-top:10px; }
     .upload-progress-bar { height:100%; background:linear-gradient(90deg,var(--green-700),#56ab2f); width:0%; transition:width 0.4s ease; border-radius:6px; }
     .upload-progress-label { font-size:0.78rem; color:var(--green-700); margin-top:5px; font-weight:600; }
 
-    /* ===== PERBAIKAN 4: Review modal fix ===== */
-    #reviewModal {
-      display:none;
-      position:fixed; inset:0;
-      background:rgba(0,0,0,0.45);
-      z-index:200;
-      align-items:center;
-      justify-content:center;
-    }
+    #reviewModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:200; align-items:center; justify-content:center; }
     #reviewModal.show { display:flex; }
 
     ::-webkit-scrollbar { width:6px; }
@@ -387,6 +403,9 @@
 </head>
 <body>
 
+<!-- Tooltip kalender -->
+<div class="cal-tooltip" id="calTooltip"></div>
+
 <div id="syncIndicator">
   <i class="fa-solid fa-rotate fa-spin" id="syncIcon"></i>
   <span id="syncMsg">Menyinkronkan…</span>
@@ -401,68 +420,27 @@
     </div>
     <div class="login-modal-body">
       <div style="display:flex;gap:6px;margin-bottom:18px;">
-        <button id="tabMasukPenyedia" onclick="switchPenyediaTab('masuk')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;">
-          <i class="fa-solid fa-right-to-bracket"></i> Masuk
-        </button>
-        <button id="tabDaftarPenyedia" onclick="switchPenyediaTab('daftar')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;">
-          <i class="fa-solid fa-user-plus"></i> Daftar Baru
-        </button>
+        <button id="tabMasukPenyedia" onclick="switchPenyediaTab('masuk')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+        <button id="tabDaftarPenyedia" onclick="switchPenyediaTab('daftar')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;"><i class="fa-solid fa-user-plus"></i> Daftar Baru</button>
       </div>
-
-      <!-- Form Masuk -->
       <div id="formMasukPenyedia">
-        <div class="admin-form-group">
-          <label>Email <span style="color:#C0392B;">*</span></label>
-          <input type="email" id="loginPenyediaEmail" placeholder="perusahaan@domain.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLoginPenyedia()" />
-        </div>
-        <div class="admin-form-group">
-          <label>Password <span style="color:#C0392B;">*</span></label>
-          <div class="pw-wrap">
-            <input type="password" id="loginPenyediaPassword" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPenyedia()" />
-            <button type="button" class="pw-eye" onclick="togglePw('loginPenyediaPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-          </div>
-        </div>
+        <div class="admin-form-group"><label>Email <span style="color:#C0392B;">*</span></label><input type="email" id="loginPenyediaEmail" placeholder="perusahaan@domain.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLoginPenyedia()" /></div>
+        <div class="admin-form-group"><label>Password <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="loginPenyediaPassword" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPenyedia()" /><button type="button" class="pw-eye" onclick="togglePw('loginPenyediaPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
         <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginPenyedia"></div>
         <div style="display:flex;gap:10px;margin-top:14px;">
-          <button id="btnDoLoginPenyedia" onclick="doLoginPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
-            <i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span>
-          </button>
+          <button id="btnDoLoginPenyedia" onclick="doLoginPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;"><i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span></button>
           <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
         </div>
       </div>
-
-      <!-- Form Daftar Baru -->
       <div id="formDaftarPenyedia" style="display:none;">
-        <div class="register-hint">
-          <i class="fa-solid fa-circle-info"></i> <strong>Pendaftaran Baru</strong> — Isi data di bawah. Password yang Anda buat akan digunakan untuk login selanjutnya.
-        </div>
-        <div class="admin-form-group">
-          <label>Nama Perusahaan <span style="color:#C0392B;">*</span></label>
-          <input type="text" id="regNamaPerusahaan" placeholder="PT / CV / Firma / Koperasi…" autocomplete="organization" />
-        </div>
-        <div class="admin-form-group">
-          <label>Email <span style="color:#C0392B;">*</span></label>
-          <input type="email" id="regEmail" placeholder="perusahaan@domain.com" autocomplete="email" />
-        </div>
-        <div class="admin-form-group">
-          <label>Buat Password <span style="color:#C0392B;">*</span></label>
-          <div class="pw-wrap">
-            <input type="password" id="regPassword" placeholder="Min. 6 karakter" autocomplete="new-password" />
-            <button type="button" class="pw-eye" onclick="togglePw('regPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-          </div>
-        </div>
-        <div class="admin-form-group">
-          <label>Konfirmasi Password <span style="color:#C0392B;">*</span></label>
-          <div class="pw-wrap">
-            <input type="password" id="regPasswordConfirm" placeholder="Ulangi password" autocomplete="new-password" />
-            <button type="button" class="pw-eye" onclick="togglePw('regPasswordConfirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-          </div>
-        </div>
+        <div class="register-hint"><i class="fa-solid fa-circle-info"></i> <strong>Pendaftaran Baru</strong> — Isi data di bawah. Password yang Anda buat akan digunakan untuk login selanjutnya.</div>
+        <div class="admin-form-group"><label>Nama Perusahaan <span style="color:#C0392B;">*</span></label><input type="text" id="regNamaPerusahaan" placeholder="PT / CV / Firma / Koperasi…" autocomplete="organization" /></div>
+        <div class="admin-form-group"><label>Email <span style="color:#C0392B;">*</span></label><input type="email" id="regEmail" placeholder="perusahaan@domain.com" autocomplete="email" /></div>
+        <div class="admin-form-group"><label>Buat Password <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="regPassword" placeholder="Min. 6 karakter" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('regPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+        <div class="admin-form-group"><label>Konfirmasi Password <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="regPasswordConfirm" placeholder="Ulangi password" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('regPasswordConfirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
         <div style="margin-top:4px;font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorRegPenyedia"></div>
         <div style="display:flex;gap:10px;margin-top:14px;">
-          <button id="btnDoRegister" onclick="doRegisterPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
-            <i class="fa-solid fa-user-plus"></i> <span>Daftar &amp; Masuk</span>
-          </button>
+          <button id="btnDoRegister" onclick="doRegisterPenyedia()" style="flex:1;padding:10px;background:#0C6E6E;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;"><i class="fa-solid fa-user-plus"></i> <span>Daftar &amp; Masuk</span></button>
           <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
         </div>
       </div>
@@ -478,22 +456,11 @@
       <p>Masuk dengan akun Pokja Anda</p>
     </div>
     <div class="login-modal-body">
-      <div class="admin-form-group">
-        <label>Username</label>
-        <input type="text" id="pokjaUsername" placeholder="Username Pokja…" autocomplete="username" onkeydown="if(event.key==='Enter')doLoginPokja()" />
-      </div>
-      <div class="admin-form-group">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="pokjaPasswordInput" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPokja()" />
-          <button type="button" class="pw-eye" onclick="togglePw('pokjaPasswordInput',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-        </div>
-      </div>
+      <div class="admin-form-group"><label>Username</label><input type="text" id="pokjaUsername" placeholder="Username Pokja…" autocomplete="username" onkeydown="if(event.key==='Enter')doLoginPokja()" /></div>
+      <div class="admin-form-group"><label>Password</label><div class="pw-wrap"><input type="password" id="pokjaPasswordInput" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPokja()" /><button type="button" class="pw-eye" onclick="togglePw('pokjaPasswordInput',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
       <div style="font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginPokja"></div>
       <div style="display:flex;gap:10px;margin-top:14px;">
-        <button id="btnDoLoginPokja" onclick="doLoginPokja()" style="flex:1;padding:10px;background:#4A5568;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
-          <i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span>
-        </button>
+        <button id="btnDoLoginPokja" onclick="doLoginPokja()" style="flex:1;padding:10px;background:#4A5568;color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;"><i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span></button>
         <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
       </div>
     </div>
@@ -508,81 +475,48 @@
       <p>Akses terbatas – Admin Portal</p>
     </div>
     <div class="login-modal-body">
-      <div class="admin-form-group">
-        <label>Username</label>
-        <input type="text" id="adminUsernameInput" placeholder="Username admin…" autocomplete="username" onkeydown="if(event.key==='Enter')doLoginAdmin()" />
-      </div>
-      <div class="admin-form-group">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="adminPasswordInput" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginAdmin()" />
-          <button type="button" class="pw-eye" onclick="togglePw('adminPasswordInput',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-        </div>
-      </div>
+      <div class="admin-form-group"><label>Username</label><input type="text" id="adminUsernameInput" placeholder="Username admin…" autocomplete="username" onkeydown="if(event.key==='Enter')doLoginAdmin()" /></div>
+      <div class="admin-form-group"><label>Password</label><div class="pw-wrap"><input type="password" id="adminPasswordInput" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginAdmin()" /><button type="button" class="pw-eye" onclick="togglePw('adminPasswordInput',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
       <div style="font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginAdmin"></div>
       <div style="display:flex;gap:10px;margin-top:14px;">
-        <button id="btnDoLoginAdmin" onclick="doLoginAdmin()" style="flex:1;padding:10px;background:var(--blue-700);color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;">
-          <i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span>
-        </button>
+        <button id="btnDoLoginAdmin" onclick="doLoginAdmin()" style="flex:1;padding:10px;background:var(--blue-700);color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:background 0.2s;"><i class="fa-solid fa-right-to-bracket"></i> <span>Masuk</span></button>
         <button onclick="closeAllLoginOverlays()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="headerBannerWrap">
-  <img id="headerBannerImg" class="header-banner" src="" alt="Header Banner" />
-</div>
+<div id="headerBannerWrap"><img id="headerBannerImg" class="header-banner" src="" alt="Header Banner" /></div>
 
 <header>
   <div class="header-top">
-    <button class="mobile-toggle" id="mobileToggle" aria-label="Buka Menu">
-      <i class="fa-solid fa-bars"></i>
-    </button>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Buka Menu"><i class="fa-solid fa-bars"></i></button>
     <div class="header-logo" id="logoClick">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_Kota_Surakarta.png/200px-Logo_Kota_Surakarta.png"
-           alt="Logo" id="headerLogoImg" style="background:transparent;" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_Kota_Surakarta.png/200px-Logo_Kota_Surakarta.png" alt="Logo" id="headerLogoImg" style="background:transparent;" />
     </div>
     <div class="header-text">
       <h1 id="headerTitle">Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026</h1>
       <p>Bagian Pengadaan Barang dan Jasa &nbsp;|&nbsp; Pemerintah Kota Surakarta</p>
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
-      <div id="roleIndicator" style="display:none;">
-        <span class="role-badge" id="roleBadge"></span>
-      </div>
-      <button id="logoutTopBtn" style="display:none;background:#C0392B;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;" onclick="doLogout()">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-      </button>
+      <div id="roleIndicator" style="display:none;"><span class="role-badge" id="roleBadge"></span></div>
+      <button id="logoutTopBtn" style="display:none;background:#C0392B;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
     </div>
   </div>
-  <div class="running-text-bar">
-    <span class="marquee" id="marqueeText">
-      <i class="fa-solid fa-bullhorn"></i> Memuat pengumuman…
-    </span>
-  </div>
+  <div class="running-text-bar"><span class="marquee" id="marqueeText"><i class="fa-solid fa-bullhorn"></i> Memuat pengumuman…</span></div>
 </header>
 
 <div class="mobile-overlay" id="mobileOverlay"></div>
 
 <div class="layout">
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-toggle">
-      <button id="collapseBtn" title="Collapse/Expand Sidebar" style="font-size:11px;padding:3px 6px;">
-        <i class="fa-solid fa-angles-left" id="collapseIcon"></i>
-      </button>
-    </div>
+    <div class="sidebar-toggle"><button id="collapseBtn" title="Collapse/Expand Sidebar" style="font-size:11px;padding:3px 6px;"><i class="fa-solid fa-angles-left" id="collapseIcon"></i></button></div>
     <div class="sidebar-penyedia-info" id="sidebarPenyediaInfo">
       <div class="sp-name" id="spName">–</div>
       <div class="sp-email" id="spEmail">–</div>
     </div>
-    <nav class="sidebar-nav">
-      <ul id="sidebarNav"></ul>
-    </nav>
-    <div class="sidebar-footer">
-      <i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i>
-      <span>BPBJ Kota Surakarta &copy; 2026</span>
-    </div>
+    <nav class="sidebar-nav"><ul id="sidebarNav"></ul></nav>
+    <div class="sidebar-footer"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i><span>BPBJ Kota Surakarta &copy; 2026</span></div>
   </aside>
 
   <main class="content" id="mainContent">
@@ -591,10 +525,7 @@
     <section class="page active" id="page-beranda">
       <h2 class="page-title"><i class="fa-solid fa-house"></i> Beranda</h2>
       <p class="page-subtitle" id="berandaSubtitle">Selamat datang di portal resmi konsolidasi pengadaan Pemerintah Kota Surakarta.</p>
-      <div class="info-banner">
-        <i class="fa-solid fa-circle-exclamation"></i>
-        <div><strong>Informasi Penting:</strong> Portal ini digunakan untuk kegiatan resmi pengadaan. Pastikan Anda membaca seluruh dokumen pemilihan sebelum mengajukan penawaran.</div>
-      </div>
+      <div class="info-banner"><i class="fa-solid fa-circle-exclamation"></i><div><strong>Informasi Penting:</strong> Portal ini digunakan untuk kegiatan resmi pengadaan. Pastikan Anda membaca seluruh dokumen pemilihan sebelum mengajukan penawaran.</div></div>
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-building-columns"></i></div><div class="stat-value">1</div><div class="stat-label">Paket Konsolidasi</div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div class="stat-value" id="statPeserta">–</div><div class="stat-label">Peserta Terdaftar</div></div>
@@ -605,14 +536,7 @@
       <div id="calendarWrap"></div>
       <div class="spse-section">
         <h3 class="section-heading"><i class="fa-solid fa-newspaper"></i> Pengumuman &amp; Berita SPSE</h3>
-        <div class="info-banner" style="margin-bottom:0;">
-          <i class="fa-solid fa-link"></i>
-          <div>Informasi resmi dari SPSE Kota Surakarta:
-            <a href="https://spse.inaproc.id/surakarta" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:700;margin-left:4px;">
-              spse.inaproc.id/surakarta <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i>
-            </a>
-          </div>
-        </div>
+        <div class="info-banner" style="margin-bottom:0;"><i class="fa-solid fa-link"></i><div>Informasi resmi dari SPSE Kota Surakarta: <a href="https://spse.inaproc.id/surakarta" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:700;margin-left:4px;">spse.inaproc.id/surakarta <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i></a></div></div>
       </div>
     </section>
 
@@ -621,10 +545,7 @@
       <h2 class="page-title"><i class="fa-solid fa-file-arrow-down"></i> Download Dokumen</h2>
       <p class="page-subtitle">Unduh dokumen resmi pengadaan di bawah ini.</p>
       <div class="doc-grid" id="docGrid"></div>
-      <div class="info-banner" style="margin-top:24px;">
-        <i class="fa-solid fa-circle-info"></i>
-        <span>Apabila tautan unduhan belum aktif, silakan hubungi Pokja Pemilihan atau cek portal SPSE.</span>
-      </div>
+      <div class="info-banner" style="margin-top:24px;"><i class="fa-solid fa-circle-info"></i><span>Apabila tautan unduhan belum aktif, silakan hubungi Pokja Pemilihan atau cek portal SPSE.</span></div>
     </section>
 
     <!-- AANWIJZING -->
@@ -641,9 +562,7 @@
           <div class="zi-row"><i class="fa-solid fa-hashtag"></i><span><strong>Meeting ID:</strong> &nbsp;<span id="zoomMeetingId"><em>Akan diinformasikan kemudian</em></span></span></div>
           <div class="zi-row"><i class="fa-solid fa-key"></i><span><strong>Passcode:</strong> &nbsp;<span id="zoomPasscode"><em>Akan diinformasikan kemudian</em></span></span></div>
         </div>
-        <a id="btnJoinZoom" href="#" class="btn-zoom disabled" target="_blank" rel="noopener">
-          <i class="fa-solid fa-video"></i> Join Zoom Meeting
-        </a>
+        <a id="btnJoinZoom" href="#" class="btn-zoom disabled" target="_blank" rel="noopener"><i class="fa-solid fa-video"></i> Join Zoom Meeting</a>
       </div>
     </section>
 
@@ -661,22 +580,12 @@
           <li>Setelah berhasil upload, Anda dapat upload ulang untuk mengganti atau melengkapi dokumen.</li>
         </ol>
       </div>
-      <!-- PERBAIKAN 3: autocomplete="off" di form upload wrapper -->
       <div class="form-card">
         <div id="uploadDynamicFields" autocomplete="off"></div>
-        <button class="btn-submit" id="btnSubmitUpload" onclick="submitUpload()">
-          <i class="fa-solid fa-paper-plane"></i> Kirim Dokumen
-        </button>
-        <span style="font-size:0.8rem;color:var(--gray-400);margin-left:12px;display:none;" id="uploadSpinner">
-          <i class="fa-solid fa-spinner fa-spin"></i> Mengirim…
-        </span>
-        <div class="form-success" id="uploadSuccess">
-          <i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen berhasil dikirim!</strong> File tersimpan di Google Drive BPBJ. Terima kasih.
-          <span id="uploadSuccessStatusHint" style="display:none;font-size:0.85rem;margin-top:6px;display:block;"></span>
-        </div>
-        <div class="form-error" id="uploadError">
-          <i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg"></span>
-        </div>
+        <button class="btn-submit" id="btnSubmitUpload" onclick="submitUpload()"><i class="fa-solid fa-paper-plane"></i> Kirim Dokumen</button>
+        <span style="font-size:0.8rem;color:var(--gray-400);margin-left:12px;display:none;" id="uploadSpinner"><i class="fa-solid fa-spinner fa-spin"></i> Mengirim…</span>
+        <div class="form-success" id="uploadSuccess"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen berhasil dikirim!</strong> File tersimpan di Google Drive BPBJ. Terima kasih.<span id="uploadSuccessStatusHint" style="display:none;font-size:0.85rem;margin-top:6px;display:block;"></span></div>
+        <div class="form-error" id="uploadError"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg"></span></div>
       </div>
     </section>
 
@@ -686,20 +595,13 @@
       <p class="page-subtitle">Pantau status dokumen penawaran yang telah Anda kirimkan kepada Pokja Pemilihan.</p>
       <div id="statusWelcomeCard" class="status-welcome-card">
         <div class="sw-icon"><i class="fa-solid fa-building"></i></div>
-        <div class="sw-text">
-          <h3 id="statusPenyediaName">–</h3>
-          <p id="statusPenyediaEmail">–</p>
-        </div>
+        <div class="sw-text"><h3 id="statusPenyediaName">–</h3><p id="statusPenyediaEmail">–</p></div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <h3 class="section-heading" style="margin-bottom:0;"><i class="fa-solid fa-file-lines"></i> Dokumen Anda</h3>
-        <button onclick="loadStatusPenyedia()" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:7px;padding:6px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--blue-700);display:flex;align-items:center;gap:6px;">
-          <i class="fa-solid fa-rotate"></i> Refresh
-        </button>
+        <button onclick="loadStatusPenyedia()" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:7px;padding:6px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--blue-700);display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-rotate"></i> Refresh</button>
       </div>
-      <div id="statusCardWrap" class="status-card-wrap">
-        <div class="status-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat data…</p></div>
-      </div>
+      <div id="statusCardWrap" class="status-card-wrap"><div class="status-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat data…</p></div></div>
     </section>
 
     <!-- SETTINGS PENYEDIA -->
@@ -708,31 +610,11 @@
       <p class="page-subtitle">Kelola akun penyedia Anda.</p>
       <div class="settings-card">
         <h3><i class="fa-solid fa-key" style="color:#0C6E6E;"></i> Ganti Password</h3>
-        <div class="admin-form-group">
-          <label>Password Lama <span style="color:#C0392B;">*</span></label>
-          <div class="pw-wrap">
-            <input type="password" id="sp-old-password" placeholder="Password lama…" autocomplete="current-password" />
-            <button type="button" class="pw-eye" onclick="togglePw('sp-old-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-          </div>
-        </div>
-        <div class="admin-form-group">
-          <label>Password Baru <span style="color:#C0392B;">*</span></label>
-          <div class="pw-wrap">
-            <input type="password" id="sp-new-password" placeholder="Min. 6 karakter" autocomplete="new-password" />
-            <button type="button" class="pw-eye" onclick="togglePw('sp-new-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-          </div>
-        </div>
-        <div class="admin-form-group">
-          <label>Konfirmasi Password Baru <span style="color:#C0392B;">*</span></label>
-          <div class="pw-wrap">
-            <input type="password" id="sp-confirm-password" placeholder="Ulangi password baru" autocomplete="new-password" />
-            <button type="button" class="pw-eye" onclick="togglePw('sp-confirm-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
-          </div>
-        </div>
+        <div class="admin-form-group"><label>Password Lama <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="sp-old-password" placeholder="Password lama…" autocomplete="current-password" /><button type="button" class="pw-eye" onclick="togglePw('sp-old-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+        <div class="admin-form-group"><label>Password Baru <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="sp-new-password" placeholder="Min. 6 karakter" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('sp-new-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+        <div class="admin-form-group"><label>Konfirmasi Password Baru <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="sp-confirm-password" placeholder="Ulangi password baru" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('sp-confirm-password',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
         <div style="font-size:0.8rem;min-height:20px;margin-bottom:10px;" id="msgGantiPassword"></div>
-        <button onclick="doGantiPasswordPenyedia()" style="background:#0C6E6E;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:0.9rem;font-weight:700;cursor:pointer;">
-          <i class="fa-solid fa-floppy-disk"></i> Simpan Password Baru
-        </button>
+        <button onclick="doGantiPasswordPenyedia()" style="background:#0C6E6E;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:0.9rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-floppy-disk"></i> Simpan Password Baru</button>
       </div>
     </section>
 
@@ -744,9 +626,7 @@
         <div class="admin-panel" style="border-color:var(--blue-600);">
           <div class="admin-panel-header" style="background:linear-gradient(135deg,#0C447C 0%,#185FA5 100%);">
             <i class="fa-solid fa-shield-halved"></i> Dashboard Review Pokja
-            <button onclick="loadSubmissionsFromSheet()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:6px;padding:5px 12px;font-size:0.78rem;cursor:pointer;">
-              <i class="fa-solid fa-rotate"></i> Refresh Data
-            </button>
+            <button onclick="loadSubmissionsFromSheet()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:6px;padding:5px 12px;font-size:0.78rem;cursor:pointer;"><i class="fa-solid fa-rotate"></i> Refresh Data</button>
           </div>
           <div class="admin-panel-body" style="padding:16px 22px;">
             <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
@@ -758,23 +638,11 @@
           </div>
         </div>
         <div class="admin-panel" style="border-color:var(--blue-600);">
-          <div class="admin-panel-header" style="background:linear-gradient(135deg,#0C447C 0%,#185FA5 100%);">
-            <i class="fa-solid fa-table-list"></i> Daftar Dokumen Penyedia
-          </div>
+          <div class="admin-panel-header" style="background:linear-gradient(135deg,#0C447C 0%,#185FA5 100%);"><i class="fa-solid fa-table-list"></i> Daftar Dokumen Penyedia</div>
           <div class="admin-panel-body">
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
-              <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;">
-                <input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, jenis dokumen…" oninput="renderPokjaTable()" />
-              </div>
-              <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;">
-                <select id="pokjaFilterStatus" onchange="renderPokjaTable()">
-                  <option value="">Semua Status</option>
-                  <option value="Menunggu Review">⏳ Menunggu Review</option>
-                  <option value="Lulus / Memenuhi Syarat">✅ Lulus</option>
-                  <option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi</option>
-                  <option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi</option>
-                </select>
-              </div>
+              <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;"><input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, jenis dokumen…" oninput="renderPokjaTable()" /></div>
+              <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Review">⏳ Menunggu Review</option><option value="Lulus / Memenuhi Syarat">✅ Lulus</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi</option></select></div>
             </div>
             <div style="overflow-x:auto;">
               <table class="pokja-table" id="pokjaTable">
@@ -793,10 +661,7 @@
       <p class="page-subtitle">Kelola seluruh konten dan konfigurasi portal. <strong style="color:var(--blue-700);">Semua pengaturan tersinkron ke Google Spreadsheet.</strong></p>
       <div id="adminDashboard">
         <div class="admin-panel">
-          <div class="admin-panel-header">
-            <i class="fa-solid fa-screwdriver-wrench"></i> Dashboard Admin
-            <button class="btn-admin-logout" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-          </div>
+          <div class="admin-panel-header"><i class="fa-solid fa-screwdriver-wrench"></i> Dashboard Admin<button class="btn-admin-logout" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></div>
           <div class="admin-panel-body">
             <div class="admin-tabs">
               <button class="admin-tab active" onclick="switchAdminTab('judul',this)"><i class="fa-solid fa-heading"></i> Judul</button>
@@ -816,18 +681,8 @@
               <div class="admin-form-group"><label>Judul Utama (di Header)</label><input type="text" id="aj-header-title" placeholder="Konsolidasi Jasa Tenaga Alih Daya…" /></div>
               <div class="admin-form-group"><label>Subtitle Beranda</label><input type="text" id="aj-beranda-sub" placeholder="Selamat datang di portal…" /></div>
               <div class="admin-form-group"><label>Judul Kartu Aanwijzing</label><input type="text" id="aj-aanwijzing-title" placeholder="Aanwijzing Konsolidasi…" /></div>
-              <div class="admin-form-group">
-                <label>Logo Header (URL gambar atau upload PNG)</label>
-                <input type="url" id="aj-logo-url" placeholder="https://…/logo.png" oninput="previewLogo()" />
-                <div style="margin-top:6px;font-size:0.78rem;color:var(--gray-400);">— atau —</div>
-                <input type="file" id="aj-logo-file" accept=".png,.jpg,.jpeg,.svg" style="margin-top:6px;" onchange="uploadLogoFile()" />
-                <img id="aj-logo-preview" class="icon-preview" style="display:block;margin-top:6px;background:var(--blue-900);padding:4px;border-radius:4px;" />
-              </div>
-              <div class="admin-form-group">
-                <label>Header Banner (upload gambar PNG/JPG)</label>
-                <input type="file" id="aj-banner-file" accept=".png,.jpg,.jpeg" style="margin-top:4px;" onchange="uploadBannerFile()" />
-                <img id="aj-banner-preview" style="max-width:100%;max-height:100px;object-fit:cover;border-radius:6px;margin-top:6px;display:none;" />
-              </div>
+              <div class="admin-form-group"><label>Logo Header (URL gambar atau upload PNG)</label><input type="url" id="aj-logo-url" placeholder="https://…/logo.png" oninput="previewLogo()" /><div style="margin-top:6px;font-size:0.78rem;color:var(--gray-400);">— atau —</div><input type="file" id="aj-logo-file" accept=".png,.jpg,.jpeg,.svg" style="margin-top:6px;" onchange="uploadLogoFile()" /><img id="aj-logo-preview" class="icon-preview" style="display:block;margin-top:6px;background:var(--blue-900);padding:4px;border-radius:4px;" /></div>
+              <div class="admin-form-group"><label>Header Banner (upload gambar PNG/JPG)</label><input type="file" id="aj-banner-file" accept=".png,.jpg,.jpeg" style="margin-top:4px;" onchange="uploadBannerFile()" /><img id="aj-banner-preview" style="max-width:100%;max-height:100px;object-fit:cover;border-radius:6px;margin-top:6px;display:none;" /></div>
               <button class="btn-admin-save" onclick="saveJudulConfig()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Sync</button>
               <span class="admin-save-msg" id="msgJudul">✓ Tersinkron</span>
             </div>
@@ -849,14 +704,6 @@
 
             <div class="admin-section" id="atab-jadwal">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Atur jadwal tahapan konsolidasi. Tampil sebagai Kalender di beranda.</p>
-              <div style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-                <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:10px;"><i class="fa-solid fa-palette"></i> Warna Kalender</p>
-                <div class="tei-row">
-                  <div class="admin-form-group"><label>✅ Selesai</label><input type="color" id="gantt-color-done" value="#3B6D11" /></div>
-                  <div class="admin-form-group"><label>⏳ Berlangsung</label><input type="color" id="gantt-color-active" value="#856404" /></div>
-                  <div class="admin-form-group"><label>📅 Akan Datang</label><input type="color" id="gantt-color-upcoming" value="#10478A" /></div>
-                </div>
-              </div>
               <div id="jadwalEditor"></div>
               <button class="btn-outline" onclick="addJadwalItem()" style="margin-bottom:14px;"><i class="fa-solid fa-plus"></i> Tambah Tahapan</button><br>
               <button class="btn-admin-save" onclick="saveJadwal()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Sync</button>
@@ -950,14 +797,12 @@
     </section>
 
     <div id="customPagesContainer"></div>
-
   </main>
 </div>
 
-<!-- MODAL REVIEW DOKUMEN — PERBAIKAN 4: pakai class .show -->
+<!-- MODAL REVIEW DOKUMEN -->
 <div id="reviewModal">
   <div style="background:var(--white);border-radius:12px;width:min(620px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);position:relative;">
-    <!-- Loading overlay review -->
     <div id="reviewLoadingOverlay" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,0.9);border-radius:12px;z-index:20;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
       <div style="width:44px;height:44px;border:4px solid var(--blue-100);border-top-color:var(--blue-600);border-radius:50%;animation:spin2 0.7s linear infinite;"></div>
       <p style="font-size:0.88rem;font-weight:600;color:var(--blue-800);" id="reviewLoadingMsg">Menyimpan review…</p>
@@ -969,60 +814,47 @@
     <div style="padding:22px 24px;">
       <div id="reviewModalInfo" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:0.85rem;color:var(--blue-800);"></div>
       <div id="reviewDocButtons" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;"></div>
-      <div class="admin-form-group">
-        <label>Status Review <span style="color:#C0392B;">*</span></label>
-        <select id="reviewStatus" onchange="updateNotifPreview()">
-          <option value="Menunggu Review">⏳ Menunggu Review</option>
-          <option value="Lulus / Memenuhi Syarat">✅ Lulus / Memenuhi Syarat</option>
-          <option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option>
-          <option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi / Klarifikasi</option>
-        </select>
-      </div>
-      <div class="admin-form-group">
-        <label><i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja</label>
-        <textarea id="reviewCatatan" rows="4" oninput="updateNotifPreview()" style="border-left:3px solid var(--blue-600);background:#F8FBFF;"></textarea>
-      </div>
+      <div class="admin-form-group"><label>Status Review <span style="color:#C0392B;">*</span></label><select id="reviewStatus" onchange="updateNotifPreview()"><option value="Menunggu Review">⏳ Menunggu Review</option><option value="Lulus / Memenuhi Syarat">✅ Lulus / Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi / Klarifikasi</option></select></div>
+      <div class="admin-form-group"><label><i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja</label><textarea id="reviewCatatan" rows="4" oninput="updateNotifPreview()" style="border-left:3px solid var(--blue-600);background:#F8FBFF;"></textarea></div>
       <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:0.85rem;font-weight:700;color:var(--gray-800);margin-bottom:12px;"><i class="fa-solid fa-bell"></i> &nbsp;Kirim Notifikasi ke Penyedia</div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;font-weight:normal;">
-            <input type="checkbox" id="notifEmail" checked style="width:16px;height:16px;accent-color:var(--blue-700);" onchange="updateNotifPreview()" />
-            <i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> Email
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;font-weight:normal;">
-            <input type="checkbox" id="notifWa" checked style="width:16px;height:16px;accent-color:#25D366;" onchange="updateNotifPreview()" />
-            <i class="fa-brands fa-whatsapp" style="color:#25D366;font-size:16px;"></i> WhatsApp
-          </label>
+        <div style="font-size:0.85rem;font-weight:700;color:var(--gray-800);margin-bottom:8px;"><i class="fa-solid fa-bell"></i> &nbsp;Preview Notifikasi ke Penyedia</div>
+        <!-- PERBAIKAN 2: Info mode notifikasi -->
+        <div id="notifModeInfo" style="font-size:0.75rem;color:#856404;background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:6px 10px;margin-bottom:8px;display:none;">
+          <i class="fa-solid fa-circle-info"></i> Fonnte belum dikonfigurasi — WhatsApp akan dibuka secara manual di tab baru. Email akan dibuka di aplikasi email default.
         </div>
         <div class="notif-tmpl-box" id="notifPreview"></div>
       </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
         <button onclick="closeReviewModal()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
-        <button id="btnSimpanReview" class="btn-admin-save" onclick="simpanReview()">
-          <i class="fa-solid fa-floppy-disk"></i> Simpan &amp; Kirim Notifikasi
-        </button>
+        <button id="btnSimpanReview" class="btn-admin-save" onclick="simpanReview()"><i class="fa-solid fa-floppy-disk"></i> Simpan Review</button>
+        <button id="btnKirimWa" class="btn-admin-save" style="background:#25D366;border-color:#25D366;" onclick="kirimNotifWa()"><i class="fa-brands fa-whatsapp"></i> Kirim WhatsApp</button>
+        <button id="btnKirimEmail" class="btn-admin-save" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimNotifEmail()"><i class="fa-solid fa-envelope"></i> Kirim Email</button>
       </div>
       <div id="reviewModalMsg" style="display:none;margin-top:12px;"></div>
     </div>
   </div>
 </div>
 
-<footer>
-  <strong>Portal Konsolidasi Jasa Tenaga Alih Daya</strong> &mdash; Bagian Pengadaan Barang dan Jasa, Pemerintah Kota Surakarta &copy; 2026
-</footer>
+<footer><strong>Portal Konsolidasi Jasa Tenaga Alih Daya</strong> &mdash; Bagian Pengadaan Barang dan Jasa, Pemerintah Kota Surakarta &copy; 2026</footer>
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmovWhDQTQgXQEHoPTlH6mShnPxXquVARQz1c42I72w8S6Rw3rVcDOF4hfyHgveUBL/exec';
 const DRIVE_FOLDER_ID  = '1VU5sAih4H9g7zW42vme5Egp46kys9j1VtruFUa1TbPtGBR6a0eS8hDIehu6_6B-1WJUXL8fn';
 
 const DEFAULT_JADWAL = [
-  { label:'Pengumuman Konsolidasi',    sub:'SPSE', status:'done',     mulai:'2026-01-10', selesai:'2026-01-17' },
-  { label:'Pendaftaran & Aanwijzing',  sub:'SPSE', status:'done',     mulai:'2026-01-18', selesai:'2026-02-01' },
-  { label:'Penyampaian Dokumen',       sub:'SPSE', status:'active',   mulai:'2026-02-02', selesai:'2026-02-28' },
-  { label:'Evaluasi Penawaran',        sub:'Pokja',status:'upcoming', mulai:'2026-03-01', selesai:'2026-03-14' },
-  { label:'Penetapan Pemenang',        sub:'PPK',  status:'upcoming', mulai:'2026-03-15', selesai:'2026-03-20' },
-  { label:'Penandatanganan Kontrak',   sub:'PPK',  status:'upcoming', mulai:'2026-03-21', selesai:'2026-03-31' },
+  { label:'Pengumuman Konsolidasi',    sub:'SPSE', mulai:'2026-01-10', selesai:'2026-01-17' },
+  { label:'Pendaftaran & Aanwijzing',  sub:'SPSE', mulai:'2026-01-18', selesai:'2026-02-01' },
+  { label:'Penyampaian Dokumen',       sub:'SPSE', mulai:'2026-02-02', selesai:'2026-02-28' },
+  { label:'Evaluasi Penawaran',        sub:'Pokja',mulai:'2026-03-01', selesai:'2026-03-14' },
+  { label:'Penetapan Pemenang',        sub:'PPK',  mulai:'2026-03-15', selesai:'2026-03-20' },
+  { label:'Penandatanganan Kontrak',   sub:'PPK',  mulai:'2026-03-21', selesai:'2026-03-31' },
 ];
+
+// Palet warna per-tahapan (PERBAIKAN 3)
+const JADWAL_COLORS = [
+  '#185FA5','#0C6E6E','#856404','#3B6D11','#7B2D8B','#C0392B','#6B4226','#1A5276','#7D6608','#0A4D68'
+];
+
 const DEFAULT_DOCS = [
   { title:'Dokumen Pemilihan', desc:'Unduh dokumen resmi pemilihan konsolidasi jasa tenaga alih daya.', icon:'fa-file-pdf', link:'', iconType:'fa' },
   { title:'Addendum Dokumen',  desc:'Addendum/perubahan dokumen (jika ada) akan diunggah di sini.',   icon:'fa-file-lines', link:'', iconType:'fa' },
@@ -1032,9 +864,12 @@ const DEFAULT_RUNNING = 'Selamat datang di Portal Konsolidasi Jasa Tenaga Alih D
 const DEFAULT_NOTIF_WA = `Yth. {namaPerusahaan},\n\nDengan hormat,\nKami informasikan bahwa dokumen penawaran Anda untuk paket:\n*{paketNama}*\ntelah dievaluasi oleh Pokja Pemilihan.\n\n*Status: {status}*\n\n{catatan}\n\nTerima kasih atas partisipasi Anda.\n\nHormat kami,\nPokja Pemilihan BPBJ Kota Surakarta`;
 const DEFAULT_NOTIF_EMAIL_SUBJECT = '[Konsolidasi 2026] Hasil Review – {namaPerusahaan}';
 const DEFAULT_NOTIF_EMAIL_BODY = `Yth. {namaPerusahaan},\n\nKami informasikan hasil evaluasi dokumen penawaran Anda:\n\nPaket: {paketNama}\nStatus: {status}\n\n{catatan}\n\nHormat kami,\nPokja Pemilihan BPBJ Kota Surakarta`;
+
+// ===== PERBAIKAN 1: Alamat/Domisili Usaha sebagai field dedicated fixed =====
 const DEFAULT_FORM_FIELDS = [
   { id:'fNamaPerusahaan', label:'Nama Perusahaan', type:'text', placeholder:'PT / CV / Firma…', required:true, fixed:true },
   { id:'fNpwp', label:'NPWP Perusahaan', type:'text', placeholder:'xx.xxx.xxx.x-xxx.xxx', required:true, fixed:true },
+  { id:'fAlamat', label:'Alamat / Domisili Usaha', type:'textarea', placeholder:'Jl. …, Kelurahan …, Kecamatan …, Kota/Kab. …', required:true, fixed:true },
   { id:'fNamaDirektur', label:'Nama Direktur / Pimpinan', type:'text', placeholder:'Nama lengkap…', required:true, fixed:true },
   { id:'fTelp', label:'No. Telepon / WhatsApp', type:'tel', placeholder:'08xxxxxxxxxx', required:true, fixed:true },
   { id:'fEmail', label:'Email', type:'email', placeholder:'perusahaan@domain.com', required:true, fixed:true },
@@ -1046,6 +881,7 @@ const DEFAULT_FORM_FIELDS = [
   { id:'fFileDok', label:'Upload Dokumen', type:'file', hint:'PDF, ZIP, atau RAR – maks. 25 MB', required:true, fixed:true },
   { id:'fKeterangan', label:'Keterangan Tambahan', type:'textarea', placeholder:'Isi jika ada catatan khusus (opsional)…', required:false, fixed:true },
 ];
+
 const DEFAULT_SIDEBAR_ITEMS = [
   { id:'beranda',    label:'Beranda',           icon:'fa-house',                  publik:true,  fixed:true },
   { id:'download',   label:'Download Dokumen',  icon:'fa-file-arrow-down',        publik:true,  fixed:true },
@@ -1145,9 +981,6 @@ function togglePw(id, btn) {
   btn.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
 }
 
-// =================================================================
-// ===== PERBAIKAN 2: Animasi tombol login =====
-// =================================================================
 function setButtonLoading(btnId, loading, originalHTML) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
@@ -1156,13 +989,7 @@ function setButtonLoading(btnId, loading, originalHTML) {
     btn.disabled = true;
     btn.style.opacity = '0.8';
     btn.style.cursor = 'not-allowed';
-    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;flex-shrink:0;">
-        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
-        <path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-      <span>${originalHTML || 'Memproses…'}</span>
-    </span>`;
+    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;flex-shrink:0;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg><span>${originalHTML || 'Memproses…'}</span></span>`;
   } else {
     btn.disabled = false;
     btn.style.opacity = '';
@@ -1176,9 +1003,7 @@ function showModalSuccess(modalId, message, delay=1800) {
   if (!modal) return;
   const overlay = document.createElement('div');
   overlay.className = 'modal-success-overlay';
-  overlay.innerHTML = `
-    <div class="success-check"><i class="fa-solid fa-check"></i></div>
-    <p>${message}</p>`;
+  overlay.innerHTML = `<div class="success-check"><i class="fa-solid fa-check"></i></div><p>${message}</p>`;
   const inner = modal.querySelector('.login-modal');
   if (inner) {
     inner.style.position = 'relative';
@@ -1195,7 +1020,7 @@ function shakeModal(modalId) {
 }
 
 // =================================================================
-// AUTH – role & state
+// AUTH
 // =================================================================
 let currentRole      = null;
 let currentPenyedia  = null;
@@ -1210,15 +1035,10 @@ function switchPenyediaTab(tab) {
   const isMasuk = tab === 'masuk';
   document.getElementById('formMasukPenyedia').style.display  = isMasuk ? 'block' : 'none';
   document.getElementById('formDaftarPenyedia').style.display = isMasuk ? 'none'  : 'block';
-  document.getElementById('tabMasukPenyedia').style.cssText   = isMasuk
-    ? 'flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;'
-    : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
-  document.getElementById('tabDaftarPenyedia').style.cssText  = !isMasuk
-    ? 'flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;'
-    : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
+  document.getElementById('tabMasukPenyedia').style.cssText   = isMasuk ? 'flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;' : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
+  document.getElementById('tabDaftarPenyedia').style.cssText  = !isMasuk ? 'flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;' : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
 }
 
-// ===== PERBAIKAN 1: Registrasi Penyedia → ke sheet Akun, bukan config =====
 async function doRegisterPenyedia() {
   const nama     = document.getElementById('regNamaPerusahaan').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
@@ -1226,146 +1046,70 @@ async function doRegisterPenyedia() {
   const confirm  = document.getElementById('regPasswordConfirm').value;
   const errEl    = document.getElementById('errorRegPenyedia');
   errEl.textContent = '';
-
   if (!nama)   { errEl.textContent = '❌ Nama perusahaan tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '❌ Email tidak valid.'; shakeModal('loginOverlayPenyedia'); return; }
   if (password.length < 6)  { errEl.textContent = '❌ Password minimal 6 karakter.'; shakeModal('loginOverlayPenyedia'); return; }
   if (password !== confirm)  { errEl.textContent = '❌ Konfirmasi password tidak cocok.'; shakeModal('loginOverlayPenyedia'); return; }
-
-  // Animasi loading
   setButtonLoading('btnDoRegister', true, 'Mendaftarkan…');
-
-  // Cek duplikasi email di config (fallback) dan sheet
   const cfg = await fetchGlobalConfig(true);
   const penyediaAccounts = gcGet('penyediaAccounts', []);
   const existing = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase());
-  if (existing) {
-    setButtonLoading('btnDoRegister', false);
-    errEl.textContent = '❌ Email sudah terdaftar. Gunakan menu Masuk.';
-    shakeModal('loginOverlayPenyedia');
-    return;
-  }
-
-  // === PERBAIKAN 1: Kirim ke Apps Script dengan action 'registerPenyedia' (sheet Akun) ===
+  if (existing) { setButtonLoading('btnDoRegister', false); errEl.textContent = '❌ Email sudah terdaftar. Gunakan menu Masuk.'; shakeModal('loginOverlayPenyedia'); return; }
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action: 'registerPenyedia',
-        nama,
-        email,
-        password,
-        role: 'penyedia',
-        terdaftar: new Date().toISOString()
-      })
-    });
-  } catch(e) {
-    // no-cors: anggap berhasil jika tidak error
-  }
-
-  // Simpan juga ke config lokal (cache) agar login langsung bisa
+    await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'registerPenyedia', nama, email, password, role:'penyedia', terdaftar:new Date().toISOString() }) });
+  } catch(e) {}
   const newAccount = { nama, email, password, terdaftar: new Date().toISOString(), role:'penyedia' };
   penyediaAccounts.push(newAccount);
   _globalConfig['penyediaAccounts'] = penyediaAccounts;
-  // Sync cache ke sheet config sebagai backup
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'setConfig', key:'penyediaAccounts', value: penyediaAccounts })
-    });
-  } catch(e) {}
-
+  try { await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'setConfig', key:'penyediaAccounts', value: penyediaAccounts }) }); } catch(e) {}
   setButtonLoading('btnDoRegister', false);
-
-  // Animasi sukses
   showModalSuccess('loginOverlayPenyedia', 'Pendaftaran berhasil! Selamat datang 🎉', 1600);
-
-  setTimeout(() => {
-    currentPenyedia = { nama, email };
-    setRole('penyedia');
-    closeAllLoginOverlays();
-  }, 1700);
+  setTimeout(() => { currentPenyedia = { nama, email }; setRole('penyedia'); closeAllLoginOverlays(); }, 1700);
 }
 
-// ===== PERBAIKAN 2: Login Penyedia dengan animasi =====
 async function doLoginPenyedia() {
   const email    = document.getElementById('loginPenyediaEmail').value.trim();
   const password = document.getElementById('loginPenyediaPassword').value;
   const errEl    = document.getElementById('errorLoginPenyedia');
   errEl.textContent = '';
-
   if (!email)    { errEl.textContent = '❌ Email tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   if (!password) { errEl.textContent = '❌ Password tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
-
   setButtonLoading('btnDoLoginPenyedia', true, 'Memverifikasi…');
-
   const cfg = await fetchGlobalConfig(true);
   const penyediaAccounts = gcGet('penyediaAccounts', []);
-
-  // Cek di cache config
   let account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
-
-  // Jika tidak ketemu di cache, coba cek di sheet Akun via Apps Script
   if (!account) {
     try {
       const res = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
       const data = await res.json();
       if (data.status === 'ok' && data.account) {
         account = data.account;
-        // Update cache lokal
         const idx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
-        if (idx >= 0) { penyediaAccounts[idx] = data.account; }
-        else { penyediaAccounts.push(data.account); }
+        if (idx >= 0) { penyediaAccounts[idx] = data.account; } else { penyediaAccounts.push(data.account); }
         _globalConfig['penyediaAccounts'] = penyediaAccounts;
       }
     } catch(e) {}
   }
-
-  if (!account) {
-    setButtonLoading('btnDoLoginPenyedia', false);
-    errEl.textContent = '❌ Email atau password salah. Belum punya akun? Klik Daftar Baru.';
-    shakeModal('loginOverlayPenyedia');
-    return;
-  }
-
-  // Sukses
+  if (!account) { setButtonLoading('btnDoLoginPenyedia', false); errEl.textContent = '❌ Email atau password salah. Belum punya akun? Klik Daftar Baru.'; shakeModal('loginOverlayPenyedia'); return; }
   showModalSuccess('loginOverlayPenyedia', `Selamat datang, ${account.nama}! ✓`, 1400);
   setButtonLoading('btnDoLoginPenyedia', false);
-
-  setTimeout(() => {
-    currentPenyedia = { nama: account.nama, email: account.email };
-    if (currentRole === 'pokja') doLogoutSilent();
-    setRole('penyedia');
-    closeAllLoginOverlays();
-  }, 1500);
+  setTimeout(() => { currentPenyedia = { nama: account.nama, email: account.email }; if (currentRole === 'pokja') doLogoutSilent(); setRole('penyedia'); closeAllLoginOverlays(); }, 1500);
 }
 
-// ===== PERBAIKAN 2: Login Pokja dengan animasi =====
 async function doLoginPokja() {
   const username = document.getElementById('pokjaUsername').value.trim();
   const password = document.getElementById('pokjaPasswordInput').value;
   const errEl    = document.getElementById('errorLoginPokja');
   errEl.textContent = '';
-
   if (!username || !password) { errEl.textContent = '❌ Username dan password wajib diisi.'; shakeModal('loginOverlayPokja'); return; }
-
   setButtonLoading('btnDoLoginPokja', true, 'Memverifikasi…');
-
   const cfg = await fetchGlobalConfig(true);
-
   const pokjaUser = (cfg && cfg.pokjaUsername) ? cfg.pokjaUsername : 'pokja';
   const pokjaPass = (cfg && cfg.pokjaPassword) ? cfg.pokjaPassword : 'pokja2026';
-
   if (username === pokjaUser && password === pokjaPass) {
     showModalSuccess('loginOverlayPokja', 'Login berhasil! ✓', 1200);
     setButtonLoading('btnDoLoginPokja', false);
-    setTimeout(() => {
-      if (currentRole === 'penyedia') doLogoutSilent();
-      setRole('pokja');
-      closeAllLoginOverlays();
-    }, 1300);
+    setTimeout(() => { if (currentRole === 'penyedia') doLogoutSilent(); setRole('pokja'); closeAllLoginOverlays(); }, 1300);
   } else {
     setButtonLoading('btnDoLoginPokja', false);
     errEl.textContent = '❌ Username atau password salah.';
@@ -1373,30 +1117,20 @@ async function doLoginPokja() {
   }
 }
 
-// ===== PERBAIKAN 2: Login Admin dengan animasi =====
 async function doLoginAdmin() {
   const username = document.getElementById('adminUsernameInput').value.trim();
   const password = document.getElementById('adminPasswordInput').value;
   const errEl    = document.getElementById('errorLoginAdmin');
   errEl.textContent = '';
-
   if (!username || !password) { errEl.textContent = '❌ Username dan password wajib diisi.'; shakeModal('loginOverlayAdmin'); return; }
-
   setButtonLoading('btnDoLoginAdmin', true, 'Memverifikasi…');
-
   const cfg = await fetchGlobalConfig(true);
-
   const adminUser = (cfg && cfg.adminUsername) ? cfg.adminUsername : 'admin';
   const adminPass = (cfg && cfg.adminPassword) ? cfg.adminPassword : 'admin123';
-
   if (username === adminUser && password === adminPass) {
     showModalSuccess('loginOverlayAdmin', 'Login admin berhasil! ✓', 1200);
     setButtonLoading('btnDoLoginAdmin', false);
-    setTimeout(() => {
-      if (currentRole === 'penyedia' || currentRole === 'pokja') doLogoutSilent();
-      setRole('admin');
-      closeAllLoginOverlays();
-    }, 1300);
+    setTimeout(() => { if (currentRole === 'penyedia' || currentRole === 'pokja') doLogoutSilent(); setRole('admin'); closeAllLoginOverlays(); }, 1300);
   } else {
     setButtonLoading('btnDoLoginAdmin', false);
     errEl.textContent = '❌ Username atau password salah.';
@@ -1427,44 +1161,22 @@ function setRole(role) {
   if (role === 'admin') loadAdminForms();
   if (role === 'pokja') showPage('pokja');
   if (role === 'admin') showPage('admin');
-  if (role === 'penyedia') {
-    updateUploadFormLock();
-    loadStatusPenyedia();
-    showPage('status');
-  }
+  if (role === 'penyedia') { updateUploadFormLock(); loadStatusPenyedia(); showPage('status'); }
 }
 
-function doLogoutSilent() {
-  currentRole     = null;
-  currentPenyedia = null;
-  _submissions    = [];
-}
-
-function doLogout() {
-  currentRole     = null;
-  currentPenyedia = null;
-  _submissions    = [];
-  renderSidebar();
-  updateRoleUI();
-  updateUploadFormLock();
-  showPage('beranda');
-}
+function doLogoutSilent() { currentRole = null; currentPenyedia = null; _submissions = []; }
+function doLogout() { currentRole = null; currentPenyedia = null; _submissions = []; renderSidebar(); updateRoleUI(); updateUploadFormLock(); showPage('beranda'); }
 
 function updateRoleUI() {
   const indicator = document.getElementById('roleIndicator');
   const badge     = document.getElementById('roleBadge');
   const logoutBtn = document.getElementById('logoutTopBtn');
   const spInfo    = document.getElementById('sidebarPenyediaInfo');
-
   if (currentRole) {
     indicator.style.display='block'; logoutBtn.style.display='block';
-    if (currentRole==='admin') {
-      badge.className='role-badge role-admin';
-      badge.innerHTML='<i class="fa-solid fa-gear"></i> Admin';
-    } else if (currentRole==='pokja') {
-      badge.className='role-badge role-pokja';
-      badge.innerHTML='<i class="fa-solid fa-shield-halved"></i> Pokja';
-    } else if (currentRole==='penyedia' && currentPenyedia) {
+    if (currentRole==='admin') { badge.className='role-badge role-admin'; badge.innerHTML='<i class="fa-solid fa-gear"></i> Admin'; }
+    else if (currentRole==='pokja') { badge.className='role-badge role-pokja'; badge.innerHTML='<i class="fa-solid fa-shield-halved"></i> Pokja'; }
+    else if (currentRole==='penyedia' && currentPenyedia) {
       badge.className='role-badge role-penyedia';
       badge.innerHTML=`<i class="fa-solid fa-building"></i> ${currentPenyedia.nama.length>20?currentPenyedia.nama.slice(0,18)+'…':currentPenyedia.nama}`;
       spInfo.classList.add('show');
@@ -1472,9 +1184,7 @@ function updateRoleUI() {
       document.getElementById('spEmail').textContent = currentPenyedia.email;
     }
   } else {
-    indicator.style.display='none';
-    logoutBtn.style.display='none';
-    spInfo.classList.remove('show');
+    indicator.style.display='none'; logoutBtn.style.display='none'; spInfo.classList.remove('show');
   }
 }
 
@@ -1488,74 +1198,44 @@ async function doGantiPasswordPenyedia() {
   const confirm  = document.getElementById('sp-confirm-password').value;
   const msgEl    = document.getElementById('msgGantiPassword');
   msgEl.textContent = '';
-
   const penyediaAccounts = gcGet('penyediaAccounts', []);
   const accountIdx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === currentPenyedia.email.toLowerCase());
   if (accountIdx < 0) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Akun tidak ditemukan.'; return; }
-
-  if (penyediaAccounts[accountIdx].password !== oldPass) {
-    msgEl.style.color='#C0392B'; msgEl.textContent='❌ Password lama salah.'; return;
-  }
+  if (penyediaAccounts[accountIdx].password !== oldPass) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Password lama salah.'; return; }
   if (newPass.length < 6) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Password baru minimal 6 karakter.'; return; }
   if (newPass !== confirm) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
-
   penyediaAccounts[accountIdx].password = newPass;
-  // Update cache
   _globalConfig['penyediaAccounts'] = penyediaAccounts;
-  // Sync ke sheet Akun
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action: 'updatePenyediaPassword',
-        email: currentPenyedia.email,
-        newPassword: newPass
-      })
-    });
-  } catch(e) {}
-  // Sync cache config juga
+  try { await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'updatePenyediaPassword', email:currentPenyedia.email, newPassword:newPass }) }); } catch(e) {}
   await pushConfig('penyediaAccounts', penyediaAccounts);
   msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Password berhasil diubah!';
   ['sp-old-password','sp-new-password','sp-confirm-password'].forEach(id=>document.getElementById(id).value='');
 }
 
 // =================================================================
-// STATUS PENGAJUAN – Render untuk Penyedia
+// STATUS PENGAJUAN
 // =================================================================
 function renderStatusPenyedia() {
   if (!currentPenyedia) return;
   document.getElementById('statusPenyediaName').textContent  = currentPenyedia.nama;
   document.getElementById('statusPenyediaEmail').textContent = currentPenyedia.email;
-
   const all = getSubmissions();
   const myDocs = all.filter(d => {
     const emailMatch = d.email && d.email.toLowerCase() === currentPenyedia.email.toLowerCase();
     const namaMatch  = d.namaPerusahaan && d.namaPerusahaan.toLowerCase() === currentPenyedia.nama.toLowerCase();
     return emailMatch || namaMatch;
   });
-
   const wrap = document.getElementById('statusCardWrap');
-
   if (!myDocs.length) {
-    wrap.innerHTML = `<div class="status-empty">
-      <i class="fa-solid fa-inbox"></i>
-      <p style="font-weight:600;color:var(--gray-600);margin-bottom:6px;">Belum ada dokumen pengajuan</p>
-      <p>Dokumen yang Anda upload melalui menu <strong>Upload Dokumen</strong> akan tampil di sini.</p>
-      <a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:8px;background:var(--green-700);color:white;border-radius:8px;padding:10px 20px;font-weight:700;font-size:0.88rem;text-decoration:none;margin-top:16px;">
-        <i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen Sekarang
-      </a>
-    </div>`;
+    wrap.innerHTML = `<div class="status-empty"><i class="fa-solid fa-inbox"></i><p style="font-weight:600;color:var(--gray-600);margin-bottom:6px;">Belum ada dokumen pengajuan</p><p>Dokumen yang Anda upload melalui menu <strong>Upload Dokumen</strong> akan tampil di sini.</p><a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:8px;background:var(--green-700);color:white;border-radius:8px;padding:10px 20px;font-weight:700;font-size:0.88rem;text-decoration:none;margin-top:16px;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen Sekarang</a></div>`;
     return;
   }
-
   const statusMap = {
     'Menunggu Review':          { cls:'sb-pending', icon:'fa-hourglass-half', label:'Menunggu Review' },
     'Lulus / Memenuhi Syarat':  { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus / Memenuhi Syarat' },
     'Tidak Memenuhi Syarat':    { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
     'Perlu Revisi / Klarifikasi':{ cls:'sb-revisi', icon:'fa-rotate',        label:'Perlu Revisi / Klarifikasi' },
   };
-
   wrap.innerHTML = myDocs.map((d) => {
     const tgl     = d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
     const revTgl  = d.reviewTanggal ? new Date(d.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
@@ -1563,78 +1243,31 @@ function renderStatusPenyedia() {
     const sm      = statusMap[status] || statusMap['Menunggu Review'];
     const catatan = d.catatanPokja || '';
     const hasFile = d.fileLink && d.fileLink.startsWith('http');
-
-    return `<div class="status-doc-card">
-      <div class="status-doc-header">
-        <div>
-          <div class="status-doc-title">${d.jenisDok || 'Dokumen Pengajuan'}</div>
-          <div class="status-doc-meta">
-            <i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i> Dikirim: ${tgl}
-            ${d.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${d.fileName}` : ''}
-          </div>
-        </div>
-        <span class="status-badge-lg ${sm.cls}">
-          <i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}
-        </span>
-      </div>
-      <div class="status-doc-body">
-        <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">
-          ${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}
-          ${hasFile ? `<a href="${d.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` : ''}
-        </div>
-        ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
-        ${status === 'Perlu Revisi / Klarifikasi' ? `
-          <div style="margin-top:12px;">
-            <a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;">
-              <i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi
-            </a>
-          </div>` : ''}
-      </div>
-    </div>`;
+    return `<div class="status-doc-card"><div class="status-doc-header"><div><div class="status-doc-title">${d.jenisDok || 'Dokumen Pengajuan'}</div><div class="status-doc-meta"><i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i> Dikirim: ${tgl}${d.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${d.fileName}` : ''}</div></div><span class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}</span></div><div class="status-doc-body"><div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}${hasFile ? `<a href="${d.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` : ''}</div>${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}${status === 'Perlu Revisi / Klarifikasi' ? `<div style="margin-top:12px;"><a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</a></div>` : ''}</div></div>`;
   }).join('');
 }
 
 // =================================================================
-// ===== PERBAIKAN 3: UPLOAD FORM – Cegah autofill browser =====
+// UPLOAD FORM
 // =================================================================
 function updateUploadFormLock() {
   setTimeout(() => {
     const isPenyedia = currentRole === 'penyedia' && currentPenyedia;
-
     if (isPenyedia) {
       const namaEl = document.getElementById('fNamaPerusahaan');
-      if (namaEl) {
-        namaEl.value=currentPenyedia.nama;
-        namaEl.readOnly=true;
-        namaEl.classList.add('field-locked');
-        namaEl.setAttribute('autocomplete','off');
-      }
+      if (namaEl) { namaEl.value=currentPenyedia.nama; namaEl.readOnly=true; namaEl.classList.add('field-locked'); namaEl.setAttribute('autocomplete','off'); }
       const emailEl = document.getElementById('fEmail');
-      if (emailEl) {
-        emailEl.value=currentPenyedia.email;
-        emailEl.readOnly=true;
-        emailEl.classList.add('field-locked');
-        emailEl.setAttribute('autocomplete','off');
-      }
+      if (emailEl) { emailEl.value=currentPenyedia.email; emailEl.readOnly=true; emailEl.classList.add('field-locked'); emailEl.setAttribute('autocomplete','off'); }
       ['fNamaPerusahaan','fEmail'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         const label = el.closest('.form-row')?.querySelector('label');
-        if (label && !label.querySelector('.field-locked-badge')) {
-          label.insertAdjacentHTML('beforeend', `<span class="field-locked-badge"><i class="fa-solid fa-lock"></i> Terkunci</span>`);
-        }
+        if (label && !label.querySelector('.field-locked-badge')) { label.insertAdjacentHTML('beforeend', `<span class="field-locked-badge"><i class="fa-solid fa-lock"></i> Terkunci</span>`); }
       });
     } else {
       ['fNamaPerusahaan','fEmail'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-          el.readOnly=false;
-          el.classList.remove('field-locked');
-          el.value='';
-          el.removeAttribute('autocomplete');
-          const lbl=el.closest('.form-row')?.querySelector('.field-locked-badge');
-          if(lbl) lbl.remove();
-        }
+        if (el) { el.readOnly=false; el.classList.remove('field-locked'); el.value=''; el.removeAttribute('autocomplete'); const lbl=el.closest('.form-row')?.querySelector('.field-locked-badge'); if(lbl) lbl.remove(); }
       });
     }
   }, 120);
@@ -1655,43 +1288,12 @@ function renderSidebar() {
   const nav   = document.getElementById('sidebarNav');
   let html    = '';
   let hasManageSection = false;
-
   if (currentRole === 'penyedia') {
-    html += `<li style="padding:6px 10px 2px;">
-      <a href="#" class="nav-link nav-upload" data-page="upload">
-        <span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
-        <span class="nav-label">Upload Dokumen</span>
-      </a>
-    </li>
-    <li style="padding:2px 10px 2px;">
-      <a href="#" class="nav-link nav-status" data-page="status">
-        <span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span>
-        <span class="nav-label">Status Pengajuan</span>
-      </a>
-    </li>
-    <li style="padding:2px 10px 2px;">
-      <a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);">
-        <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
-        <span class="nav-label">Pengaturan Akun</span>
-      </a>
-    </li>`;
+    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-upload" data-page="upload"><span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="nav-label">Upload Dokumen</span></a></li><li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="status"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="nav-label">Status Pengajuan</span></a></li><li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Pengaturan Akun</span></a></li>`;
   } else if (currentRole === null) {
-    html += `<li style="padding:6px 10px 2px;">
-      <a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');">
-        <span class="nav-icon"><i class="fa-solid fa-building"></i></span>
-        <span class="nav-label">Login Penyedia</span>
-      </a>
-    </li>
-    <li style="padding:2px 10px 4px;">
-      <a href="#" class="nav-link nav-login-pokja" onclick="event.preventDefault();document.getElementById('pokjaUsername').value='';document.getElementById('pokjaPasswordInput').value='';document.getElementById('errorLoginPokja').textContent='';document.getElementById('loginOverlayPokja').classList.add('show');">
-        <span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
-        <span class="nav-label">Login Pokja</span>
-      </a>
-    </li>`;
+    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-building"></i></span><span class="nav-label">Login Penyedia</span></a></li><li style="padding:2px 10px 4px;"><a href="#" class="nav-link nav-login-pokja" onclick="event.preventDefault();document.getElementById('pokjaUsername').value='';document.getElementById('pokjaPasswordInput').value='';document.getElementById('errorLoginPokja').textContent='';document.getElementById('loginOverlayPokja').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Login Pokja</span></a></li>`;
   }
-
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
-
   items.forEach(item => {
     if (item.id === 'upload') return;
     const isAdminOnly    = item.roleOnly && item.roleOnly.includes('admin') && !item.roleOnly.includes('pokja');
@@ -1699,58 +1301,23 @@ function renderSidebar() {
     if (currentRole === null && !item.publik) return;
     if (currentRole === 'penyedia' && (isAdminOnly || isPokjaOrAdmin)) return;
     if (currentRole === 'pokja' && isAdminOnly) return;
-
-    if ((isAdminOnly || isPokjaOrAdmin) && !hasManageSection && currentRole && currentRole !== 'penyedia') {
-      html += `<div class="sidebar-section-label">Manajemen</div>`;
-      hasManageSection = true;
-    }
-
-    let iconHtml = item.iconType==='img' && item.iconUrl
-      ? `<img src="${item.iconUrl}" class="custom-nav-icon" alt="${item.label}" />`
-      : `<i class="fa-solid ${item.icon||'fa-circle'}"></i>`;
-
-    html += `<li><a href="#" class="nav-link" data-page="${item.id}">
-      <span class="nav-icon">${iconHtml}</span>
-      <span class="nav-label">${item.label}</span>
-    </a></li>`;
+    if ((isAdminOnly || isPokjaOrAdmin) && !hasManageSection && currentRole && currentRole !== 'penyedia') { html += `<div class="sidebar-section-label">Manajemen</div>`; hasManageSection = true; }
+    let iconHtml = item.iconType==='img' && item.iconUrl ? `<img src="${item.iconUrl}" class="custom-nav-icon" alt="${item.label}" />` : `<i class="fa-solid ${item.icon||'fa-circle'}"></i>`;
+    html += `<li><a href="#" class="nav-link" data-page="${item.id}"><span class="nav-icon">${iconHtml}</span><span class="nav-label">${item.label}</span></a></li>`;
   });
-
-  if (currentRole === 'pokja') {
-    html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>
-    <li style="padding:4px 10px;">
-      <a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;">
-        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
-        <span class="nav-label">Logout Pokja</span>
-      </a>
-    </li>`;
-  }
-  if (currentRole === 'penyedia') {
-    html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>
-    <li style="padding:4px 10px;">
-      <a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;">
-        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
-        <span class="nav-label">Logout</span>
-      </a>
-    </li>`;
-  }
-
+  if (currentRole === 'pokja') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout Pokja</span></a></li>`; }
+  if (currentRole === 'penyedia') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout</span></a></li>`; }
   nav.innerHTML = html;
   document.querySelectorAll('.nav-link[data-page]').forEach(link => {
     link.addEventListener('click', function(e) {
       if (this.getAttribute('onclick')) return;
       e.preventDefault();
       showPage(this.dataset.page);
-      if (window.innerWidth <= 768) {
-        document.getElementById('sidebar').classList.remove('mobile-open');
-        document.getElementById('mobileOverlay').classList.remove('active');
-      }
+      if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('mobileOverlay').classList.remove('active'); }
     });
   });
   const currentPage = document.querySelector('.page.active');
-  if (currentPage) {
-    const pageId = currentPage.id.replace('page-','');
-    document.querySelectorAll('.nav-link[data-page]').forEach(a=>a.classList.toggle('active', a.dataset.page===pageId));
-  }
+  if (currentPage) { const pageId = currentPage.id.replace('page-',''); document.querySelectorAll('.nav-link[data-page]').forEach(a=>a.classList.toggle('active', a.dataset.page===pageId)); }
 }
 
 // =================================================================
@@ -1768,80 +1335,252 @@ function showPage(pageId) {
 }
 
 // =================================================================
-// CALENDAR
+// ===== PERBAIKAN 3: KALENDER BARU – bar menerus, warna per-tahapan, legend, hover =====
 // =================================================================
 let calendarCurrentDate = new Date();
 
-function applyCalendarColors() {
-  const cfg = gcGet('ganttColors', {});
-  document.documentElement.style.setProperty('--gantt-done',     cfg.done     || '#3B6D11');
-  document.documentElement.style.setProperty('--gantt-active',   cfg.active   || '#856404');
-  document.documentElement.style.setProperty('--gantt-upcoming', cfg.upcoming || '#10478A');
-}
-
 function renderCalendar() {
-  applyCalendarColors();
   const jadwal = gcGet('jadwal', DEFAULT_JADWAL);
   const wrap   = document.getElementById('calendarWrap');
   const year   = calendarCurrentDate.getFullYear();
   const month  = calendarCurrentDate.getMonth();
   const today  = new Date();
 
-  const eventMap = {};
-  jadwal.forEach(item => {
-    if (!item.mulai || !item.selesai) return;
-    let d = new Date(item.mulai);
-    const end = new Date(item.selesai);
-    while (d <= end) {
-      const key = d.toISOString().slice(0,10);
-      if (!eventMap[key]) eventMap[key] = [];
-      eventMap[key].push({ label: item.label, status: item.status||'upcoming' });
-      d.setDate(d.getDate()+1);
-    }
-  });
-
   const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  const dayNames   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const dayNames   = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
 
+  // Kalender mulai Senin. firstOffset = berapa sel kosong di awal.
+  const firstDayJS  = new Date(year, month, 1).getDay(); // 0=Sun
+  const firstOffset = (firstDayJS + 6) % 7;              // 0=Mon … 6=Sun
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInPrev  = new Date(year, month, 0).getDate();
+  const totalCells  = firstOffset + daysInMonth;
+  const totalRows   = Math.ceil(totalCells / 7);
+  const totalSlots  = totalRows * 7;
+
+  // ── Build HTML grid ──
   let html = `<div class="calendar-view">
     <div class="calendar-nav">
       <button onclick="calNavMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
       <h3>${monthNames[month]} ${year}</h3>
       <button onclick="calNavMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
     </div>
-    <div class="calendar-grid">`;
-
+    <div class="cal-grid-wrap" id="calGridWrap">
+      <div class="cal-days-header">`;
   dayNames.forEach(d => { html += `<div class="calendar-day-header">${d}</div>`; });
+  html += `</div><div class="calendar-grid" id="calGrid">`;
 
-  const firstDay    = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const daysInPrev  = new Date(year, month, 0).getDate();
+  for (let ci = 0; ci < totalSlots; ci++) {
+    const isPrev = ci < firstOffset;
+    const isNext = ci >= firstOffset + daysInMonth;
+    let dayNum;
+    if (isPrev)       dayNum = daysInPrev - (firstOffset - ci - 1);
+    else if (isNext)  dayNum = ci - (firstOffset + daysInMonth) + 1;
+    else              dayNum = ci - firstOffset + 1;
 
-  for (let i = firstDay-1; i >= 0; i--) {
-    html += `<div class="calendar-day other-month"><div class="day-num-wrap">${daysInPrev-i}</div></div>`;
+    const otherCls = (isPrev || isNext) ? ' other-month' : '';
+    const isToday  = !isPrev && !isNext && today.getFullYear()===year && today.getMonth()===month && today.getDate()===dayNum;
+    const todayCls = isToday ? ' today' : '';
+    // data-ci untuk referensi posisi
+    html += `<div class="calendar-day${otherCls}${todayCls}" data-ci="${ci}"><div class="day-num-wrap">${dayNum}</div></div>`;
   }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
-    const events  = eventMap[dateStr] || [];
-    html += `<div class="calendar-day${isToday?' today':''}">
-      <div class="day-num-wrap">${d}</div>
-      ${events.map(e=>`<div class="calendar-event ${e.status}" title="${e.label}">${e.label.length>22?e.label.slice(0,21)+'…':e.label}</div>`).join('')}
-    </div>`;
+
+  html += `</div>`; // .calendar-grid
+
+  // Overlay layer — event bars dipasang di sini via JS setelah render
+  html += `<div class="cal-events-overlay" id="calEventsOverlay"></div>`;
+  html += `</div>`; // .cal-grid-wrap
+
+  // Legend
+  const activeJadwal = jadwal.filter(j => j.mulai && j.selesai);
+  if (activeJadwal.length) {
+    html += `<div class="calendar-legend">`;
+    activeJadwal.forEach((item, idx) => {
+      const color = JADWAL_COLORS[idx % JADWAL_COLORS.length];
+      html += `<div class="legend-item"><div class="legend-dot" style="background:${color};"></div><span>${item.label}</span></div>`;
+    });
+    html += `</div>`;
   }
-  const total     = firstDay + daysInMonth;
-  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
-  for (let d=1; d<=remaining; d++) {
-    html += `<div class="calendar-day other-month"><div class="day-num-wrap">${d}</div></div>`;
-  }
-  html += `</div></div>`;
+  html += `</div>`; // .calendar-view
+
   wrap.innerHTML = html;
+
+  // ── Setelah DOM siap, posisikan event bars via overlay ──
+  requestAnimationFrame(() => { placeCalendarEventBars(jadwal, year, month, firstOffset, daysInMonth, totalSlots); });
+}
+
+function placeCalendarEventBars(jadwal, year, month, firstOffset, daysInMonth, totalSlots) {
+  const gridWrap = document.getElementById('calGridWrap');
+  const grid     = document.getElementById('calGrid');
+  const overlay  = document.getElementById('calEventsOverlay');
+  if (!gridWrap || !grid || !overlay) return;
+
+  // Rect overlay container = gridWrap (header hari + grid sel)
+  const wrapRect = gridWrap.getBoundingClientRect();
+  const cells    = grid.querySelectorAll('.calendar-day');
+  if (!cells.length) return;
+
+  // Rect tiap sel relatif terhadap gridWrap
+  const cellRects = Array.from(cells).map(el => {
+    const r = el.getBoundingClientRect();
+    return {
+      left:   r.left   - wrapRect.left,
+      top:    r.top    - wrapRect.top,
+      width:  r.width,
+      height: r.height,
+      ci:     parseInt(el.dataset.ci)
+    };
+  });
+
+  const getRectByCi = ci => cellRects.find(r => r.ci === ci) || null;
+
+  // Helper: date → ci
+  function dateToCi(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    if (d.getFullYear() !== year || d.getMonth() !== month) return -1;
+    return firstOffset + d.getDate() - 1;
+  }
+
+  // Slot assignment greedy
+  const slotGrid   = Array.from({length:totalSlots}, () => []);
+  const eventSlots = [];
+
+  jadwal.forEach((item, idx) => {
+    if (!item.mulai || !item.selesai) { eventSlots.push(-1); return; }
+    const startDate = new Date(item.mulai + 'T00:00:00');
+    const endDate   = new Date(item.selesai + 'T00:00:00');
+    const cells = [];
+    let d = new Date(startDate);
+    while (d <= endDate) {
+      const ci = dateToCi(d.toISOString().slice(0,10));
+      if (ci >= 0 && ci < totalSlots) cells.push(ci);
+      d.setDate(d.getDate()+1);
+    }
+    if (!cells.length) { eventSlots.push(-1); return; }
+    let slot = 0;
+    while (slot <= 12) {
+      if (cells.every(ci => !slotGrid[ci][slot])) {
+        cells.forEach(ci => { slotGrid[ci][slot] = idx + 1; });
+        eventSlots.push(slot);
+        break;
+      }
+      slot++;
+    }
+    if (slot > 12) eventSlots.push(-1);
+  });
+
+  const BAR_H   = 20; // tinggi bar px
+  const BAR_GAP = 3;  // jarak antar bar
+  const DAY_NUM_H = 30; // tinggi area nomor tanggal (day-num-wrap + sedikit padding)
+
+  const overlayFrag = document.createDocumentFragment();
+
+  jadwal.forEach((item, idx) => {
+    const slot = eventSlots[idx];
+    if (slot < 0) return;
+    const color = JADWAL_COLORS[idx % JADWAL_COLORS.length];
+    const evId  = `ev-${idx}`;
+
+    const startDate = new Date(item.mulai + 'T00:00:00');
+    const endDate   = new Date(item.selesai + 'T00:00:00');
+
+    // Kumpulkan semua ci bulan ini
+    const allCi = [];
+    let d = new Date(startDate);
+    while (d <= endDate) {
+      const ci = dateToCi(d.toISOString().slice(0,10));
+      if (ci >= 0 && ci < totalSlots) allCi.push(ci);
+      d.setDate(d.getDate()+1);
+    }
+    if (!allCi.length) return;
+
+    // Pecah per baris minggu (ci berurutan dalam row yang sama)
+    const rows = [];
+    let cur = [allCi[0]];
+    for (let i = 1; i < allCi.length; i++) {
+      const same = allCi[i] === allCi[i-1]+1 && Math.floor(allCi[i]/7) === Math.floor(allCi[i-1]/7);
+      if (same) cur.push(allCi[i]);
+      else { rows.push(cur); cur = [allCi[i]]; }
+    }
+    rows.push(cur);
+
+    rows.forEach((rowCis, rowIdx) => {
+      const rFirst = getRectByCi(rowCis[0]);
+      const rLast  = getRectByCi(rowCis[rowCis.length-1]);
+      if (!rFirst || !rLast) return;
+
+      // Top = atas sel + offset nomor tanggal + (slot × (bar+gap))
+      const barTop   = rFirst.top + DAY_NUM_H + slot * (BAR_H + BAR_GAP);
+      const barLeft  = rFirst.left + 2;
+      const barRight = rLast.left + rLast.width - 2;
+      const barWidth = Math.max(barRight - barLeft, 4);
+
+      // Label hanya di segmen pertama (rowIdx===0), dan hanya jika bar cukup lebar
+      const showLabel = rowIdx === 0 && barWidth > 40;
+      const labelText = showLabel ? item.label : '';
+
+      const bar = document.createElement('div');
+      bar.className = 'cal-ev-bar';
+      bar.dataset.evId = evId;
+      bar.title = item.label;
+      bar.textContent = labelText;
+      bar.style.cssText = `background:${color};left:${barLeft}px;top:${barTop}px;width:${barWidth}px;`;
+
+      bar.addEventListener('mouseenter', function(e) {
+        overlay.querySelectorAll(`[data-ev-id="${evId}"]`).forEach(b => b.classList.add('ev-hovered'));
+        showCalTooltip(e, item.label);
+      });
+      bar.addEventListener('mouseleave', function() {
+        overlay.querySelectorAll(`[data-ev-id="${evId}"]`).forEach(b => b.classList.remove('ev-hovered'));
+        hideCalTooltip();
+      });
+      bar.addEventListener('mousemove', moveCalTooltip);
+
+      overlayFrag.appendChild(bar);
+    });
+  });
+
+  overlay.innerHTML = '';
+  overlay.appendChild(overlayFrag);
+  overlay.style.height = (grid.offsetTop + grid.offsetHeight) + 'px';
+}
+
+
+function showCalTooltip(e, label) {
+  const tt = document.getElementById('calTooltip');
+  tt.textContent = label;
+  tt.classList.add('visible');
+  moveCalTooltip(e);
+}
+
+function moveCalTooltip(e) {
+  const tt = document.getElementById('calTooltip');
+  if (!tt.classList.contains('visible')) return;
+  let x = e.clientX + 14;
+  let y = e.clientY - 36;
+  if (x + 230 > window.innerWidth) x = e.clientX - 230;
+  if (y < 4) y = e.clientY + 14;
+  tt.style.left = x + 'px';
+  tt.style.top  = y + 'px';
+}
+document.addEventListener('mousemove', moveCalTooltip);
+
+function hideCalTooltip() {
+  document.getElementById('calTooltip').classList.remove('visible');
 }
 
 function calNavMonth(dir) {
   calendarCurrentDate.setMonth(calendarCurrentDate.getMonth()+dir);
   renderCalendar();
 }
+
+// Re-render kalender saat window resize agar overlay repositioned
+let _calResizeTimer = null;
+window.addEventListener('resize', () => {
+  if (!document.getElementById('calendarWrap')?.innerHTML) return;
+  clearTimeout(_calResizeTimer);
+  _calResizeTimer = setTimeout(renderCalendar, 200);
+});
 
 // =================================================================
 // RENDER DOWNLOAD / ZOOM / RUNNING / JUDUL
@@ -1850,12 +1589,8 @@ function renderDownload() {
   const data = gcGet('docs', DEFAULT_DOCS);
   document.getElementById('docGrid').innerHTML = data.map(d=>{
     const hasLink = d.link && d.link.trim() !== '';
-    const btn = hasLink
-      ? `<a href="${d.link}" class="btn-download" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> Unduh</a>`
-      : `<button class="btn-download" style="background:var(--gray-200);color:var(--gray-600);cursor:not-allowed;" disabled><i class="fa-solid fa-clock"></i> Belum Tersedia</button>`;
-    let iconHtml = d.iconType==='img' && d.iconImg
-      ? `<img src="${d.iconImg}" alt="${d.title}" />`
-      : `<i class="fa-solid ${d.icon||'fa-file'}"></i>`;
+    const btn = hasLink ? `<a href="${d.link}" class="btn-download" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> Unduh</a>` : `<button class="btn-download" style="background:var(--gray-200);color:var(--gray-600);cursor:not-allowed;" disabled><i class="fa-solid fa-clock"></i> Belum Tersedia</button>`;
+    let iconHtml = d.iconType==='img' && d.iconImg ? `<img src="${d.iconImg}" alt="${d.title}" />` : `<i class="fa-solid ${d.icon||'fa-file'}"></i>`;
     return `<div class="doc-card"><div class="doc-icon">${iconHtml}</div><h3>${d.title}</h3><p>${d.desc}</p>${btn}</div>`;
   }).join('');
   document.getElementById('statDokumen').textContent = data.filter(d=>d.link).length || data.length;
@@ -1875,8 +1610,7 @@ function renderZoom() {
 function renderRunning() {
   const txt   = gcGet('running', DEFAULT_RUNNING);
   const parts = txt.split('|').map(s=>s.trim()).filter(Boolean);
-  document.getElementById('marqueeText').innerHTML =
-    parts.map(p=>`<i class="fa-solid fa-bullhorn"></i> ${p} &nbsp;&nbsp;&nbsp;`).join('| &nbsp;&nbsp;&nbsp;');
+  document.getElementById('marqueeText').innerHTML = parts.map(p=>`<i class="fa-solid fa-bullhorn"></i> ${p} &nbsp;&nbsp;&nbsp;`).join('| &nbsp;&nbsp;&nbsp;');
 }
 
 function renderJudul() {
@@ -1884,56 +1618,31 @@ function renderJudul() {
   if (cfg.headerTitle)     document.getElementById('headerTitle').textContent = cfg.headerTitle;
   if (cfg.berandaSub)      document.getElementById('berandaSubtitle').textContent = cfg.berandaSub;
   if (cfg.aanwijzingTitle) document.getElementById('aanwijzingCardTitle').textContent = cfg.aanwijzingTitle;
-  if (cfg.logoUrl) {
-    const logoEl = document.getElementById('headerLogoImg');
-    logoEl.src = cfg.logoUrl;
-    logoEl.style.background = 'transparent';
-  }
-  if (cfg.bannerUrl) {
-    document.getElementById('headerBannerImg').src = cfg.bannerUrl;
-    document.getElementById('headerBannerWrap').classList.add('show');
-  }
+  if (cfg.logoUrl) { const logoEl = document.getElementById('headerLogoImg'); logoEl.src = cfg.logoUrl; logoEl.style.background = 'transparent'; }
+  if (cfg.bannerUrl) { document.getElementById('headerBannerImg').src = cfg.bannerUrl; document.getElementById('headerBannerWrap').classList.add('show'); }
   document.title = (cfg.headerTitle||'Portal Pengadaan') + ' – Pemerintah Kota Surakarta';
 }
 
 // =================================================================
-// ===== PERBAIKAN 3: UPLOAD FORM – autocomplete="off" + name palsu =====
+// UPLOAD FORM RENDER
 // =================================================================
 function renderUploadForm() {
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   let html = '';
   fields.forEach(f => {
-    // Nama palsu untuk cegah autofill
     const fakeName = 'field_' + (Math.random().toString(36).slice(2,7));
     if (f.type === 'file') {
-      html += `<div class="form-row">
-        <label>${f.label}${f.required?'<span class="req"> *</span>':''}</label>
-        <input type="file" id="${f.id}" name="${fakeName}" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" />
-        <div class="file-hint">${f.hint||'PDF, ZIP, atau RAR – maks. 25 MB.'}</div>
-        <div id="fUploadProgress" style="display:none;margin-top:10px;">
-          <div class="upload-progress-wrap"><div class="upload-progress-bar" id="fProgressBar"></div></div>
-          <span class="upload-progress-label" id="fProgressText"></span>
-        </div>
-      </div>`;
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="file" id="${f.id}" name="${fakeName}" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" /><div class="file-hint">${f.hint||'PDF, ZIP, atau RAR – maks. 25 MB.'}</div><div id="fUploadProgress" style="display:none;margin-top:10px;"><div class="upload-progress-wrap"><div class="upload-progress-bar" id="fProgressBar"></div></div><span class="upload-progress-label" id="fProgressText"></span></div></div>`;
     } else if (f.type === 'textarea') {
       html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><textarea id="${f.id}" name="${fakeName}" autocomplete="off" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
     } else if (f.type === 'select') {
       let opts = `<option value="">-- Pilih --</option>`;
-      if (f.options && f.options.length) {
-        f.options.forEach(grp => {
-          if (grp.group) {
-            opts += `<optgroup label="${grp.group}">`;
-            grp.items.forEach(it => { opts += `<option value="${it}">${it}</option>`; });
-            opts += `</optgroup>`;
-          }
-        });
-      }
+      if (f.options && f.options.length) { f.options.forEach(grp => { if (grp.group) { opts += `<optgroup label="${grp.group}">`; grp.items.forEach(it => { opts += `<option value="${it}">${it}</option>`; }); opts += `</optgroup>`; } }); }
       html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><select id="${f.id}" name="${fakeName}" autocomplete="off">${opts}</select></div>`;
     } else {
-      // PERBAIKAN 3: autocomplete="off" + name palsu + readonly trick
       const isEmail = f.type === 'email';
       const isTel   = f.type === 'tel';
-      const acValue = isEmail ? 'new-password' : isTel ? 'off' : 'off'; // "new-password" trick mencegah autofill
+      const acValue = isEmail ? 'new-password' : 'off';
       html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" /></div>`;
     }
   });
@@ -1943,56 +1652,22 @@ function renderUploadForm() {
 
 function renderCustomPages() {
   const menus = gcGet('customMenus', []);
-  document.getElementById('customPagesContainer').innerHTML = menus.map(m => `
-    <section class="page" id="custom-page-${m.id}">
-      <h2 class="page-title"><i class="fa-solid ${m.icon||'fa-circle'}"></i> ${m.label}</h2>
-      <div class="custom-page-content">${m.content || '<p>Konten belum tersedia.</p>'}</div>
-    </section>`).join('');
+  document.getElementById('customPagesContainer').innerHTML = menus.map(m => `<section class="page" id="custom-page-${m.id}"><h2 class="page-title"><i class="fa-solid ${m.icon||'fa-circle'}"></i> ${m.label}</h2><div class="custom-page-content">${m.content || '<p>Konten belum tersedia.</p>'}</div></section>`).join('');
 }
 
 // =================================================================
-// LOGO & BANNER UPLOAD
+// LOGO & BANNER
 // =================================================================
-function previewLogo() {
-  const url = document.getElementById('aj-logo-url').value;
-  const preview = document.getElementById('aj-logo-preview');
-  if (url) { preview.src=url; preview.style.display='block'; }
-  else { preview.style.display='none'; }
-}
-function uploadLogoFile() {
-  const file = document.getElementById('aj-logo-file').files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => { document.getElementById('aj-logo-url').value=e.target.result; document.getElementById('aj-logo-preview').src=e.target.result; document.getElementById('aj-logo-preview').style.display='block'; };
-  reader.readAsDataURL(file);
-}
-function uploadBannerFile() {
-  const file = document.getElementById('aj-banner-file').files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const preview = document.getElementById('aj-banner-preview');
-    preview.src = e.target.result; preview.style.display = 'block';
-    _globalConfig.judulConfig = _globalConfig.judulConfig || {};
-    _globalConfig.judulConfig.bannerUrl = e.target.result;
-    document.getElementById('headerBannerImg').src = e.target.result;
-    document.getElementById('headerBannerWrap').classList.add('show');
-  };
-  reader.readAsDataURL(file);
-}
+function previewLogo() { const url = document.getElementById('aj-logo-url').value; const preview = document.getElementById('aj-logo-preview'); if (url) { preview.src=url; preview.style.display='block'; } else { preview.style.display='none'; } }
+function uploadLogoFile() { const file = document.getElementById('aj-logo-file').files[0]; if (!file) return; const reader = new FileReader(); reader.onload = e => { document.getElementById('aj-logo-url').value=e.target.result; document.getElementById('aj-logo-preview').src=e.target.result; document.getElementById('aj-logo-preview').style.display='block'; }; reader.readAsDataURL(file); }
+function uploadBannerFile() { const file = document.getElementById('aj-banner-file').files[0]; if (!file) return; const reader = new FileReader(); reader.onload = e => { const preview = document.getElementById('aj-banner-preview'); preview.src = e.target.result; preview.style.display = 'block'; _globalConfig.judulConfig = _globalConfig.judulConfig || {}; _globalConfig.judulConfig.bannerUrl = e.target.result; document.getElementById('headerBannerImg').src = e.target.result; document.getElementById('headerBannerWrap').classList.add('show'); }; reader.readAsDataURL(file); }
 
 // =================================================================
 // ADMIN FORM SAVES
 // =================================================================
 async function saveJudulConfig() {
   const existingCfg = gcGet('judulConfig', {});
-  const cfg = {
-    headerTitle:     document.getElementById('aj-header-title').value.trim() || 'Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026',
-    berandaSub:      document.getElementById('aj-beranda-sub').value.trim(),
-    aanwijzingTitle: document.getElementById('aj-aanwijzing-title').value.trim(),
-    logoUrl:         document.getElementById('aj-logo-url').value.trim(),
-    bannerUrl:       existingCfg.bannerUrl || '',
-  };
+  const cfg = { headerTitle:document.getElementById('aj-header-title').value.trim()||'Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026', berandaSub:document.getElementById('aj-beranda-sub').value.trim(), aanwijzingTitle:document.getElementById('aj-aanwijzing-title').value.trim(), logoUrl:document.getElementById('aj-logo-url').value.trim(), bannerUrl:existingCfg.bannerUrl||'' };
   const bannerPreview = document.getElementById('aj-banner-preview');
   if (bannerPreview.src && bannerPreview.style.display !== 'none') cfg.bannerUrl = bannerPreview.src;
   await pushConfig('judulConfig', cfg);
@@ -2005,78 +1680,39 @@ function renderSidebarVisibilityEditor() {
   let html = '';
   items.forEach(item => {
     if (!item.fixed) return;
-    html += `<div class="sidebar-toggle-row">
-      <label><i class="fa-solid ${item.icon||'fa-circle'}" style="color:var(--blue-600);width:18px;text-align:center;"></i> ${item.label} ${item.roleOnly ? `<span style="font-size:0.72rem;color:var(--gray-400);">(${item.roleOnly.join('/')} only)</span>` : ''}</label>
-      ${!item.roleOnly ? `<label class="toggle-switch"><input type="checkbox" data-sidebar-id="${item.id}" ${item.publik?'checked':''} onchange="toggleSidebarItem('${item.id}', this.checked)" /><span class="toggle-slider"></span></label>` : '<span style="font-size:0.72rem;color:var(--gray-400);">Login required</span>'}
-    </div>`;
+    html += `<div class="sidebar-toggle-row"><label><i class="fa-solid ${item.icon||'fa-circle'}" style="color:var(--blue-600);width:18px;text-align:center;"></i> ${item.label} ${item.roleOnly ? `<span style="font-size:0.72rem;color:var(--gray-400);">(${item.roleOnly.join('/')} only)</span>` : ''}</label>${!item.roleOnly ? `<label class="toggle-switch"><input type="checkbox" data-sidebar-id="${item.id}" ${item.publik?'checked':''} onchange="toggleSidebarItem('${item.id}', this.checked)" /><span class="toggle-slider"></span></label>` : '<span style="font-size:0.72rem;color:var(--gray-400);">Login required</span>'}</div>`;
   });
-  if (custom.length) {
-    html += `<div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin:14px 0 8px;">Menu Custom</div>`;
-    custom.forEach((m, i) => { html += `<div class="sidebar-toggle-row"><label><i class="fa-solid ${m.icon||'fa-circle'}" style="color:var(--blue-600);"></i> ${m.label}</label><button class="btn-danger-sm" onclick="removeCustomMenu(${i})"><i class="fa-solid fa-trash"></i></button></div>`; });
-  }
+  if (custom.length) { html += `<div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin:14px 0 8px;">Menu Custom</div>`; custom.forEach((m, i) => { html += `<div class="sidebar-toggle-row"><label><i class="fa-solid ${m.icon||'fa-circle'}" style="color:var(--blue-600);"></i> ${m.label}</label><button class="btn-danger-sm" onclick="removeCustomMenu(${i})"><i class="fa-solid fa-trash"></i></button></div>`; }); }
   document.getElementById('sidebarVisibilityEditor').innerHTML = html;
 }
-function toggleSidebarItem(id, checked) {
-  const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i})));
-  const item  = items.find(it=>it.id===id);
-  if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; }
-}
-async function saveSidebarConfig() {
-  const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i})));
-  await pushConfig('sidebarItems', items);
-  await pushConfig('customMenus', gcGet('customMenus', []));
-  renderSidebar(); flashMsg('msgSidebar');
-}
-async function addCustomMenu() {
-  const name=document.getElementById('custom-menu-name').value.trim();
-  const iconTxt=document.getElementById('custom-menu-icon').value.trim()||'fa-file';
-  const content=document.getElementById('custom-menu-content').value.trim();
-  if (!name) { alert('Nama menu tidak boleh kosong.'); return; }
-  const id='custom_'+Date.now();
-  const menus=gcGet('customMenus',[]);
-  menus.push({id,label:name,icon:iconTxt,content,publik:true,iconType:'fa'});
-  await pushConfig('customMenus',menus);
-  document.getElementById('custom-menu-name').value=''; document.getElementById('custom-menu-icon').value=''; document.getElementById('custom-menu-content').value='';
-  renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor(); flashMsg('msgSidebar');
-}
-async function removeCustomMenu(idx) {
-  if (!confirm('Hapus menu ini?')) return;
-  const menus=gcGet('customMenus',[]);
-  menus.splice(idx,1);
-  await pushConfig('customMenus',menus);
-  renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor();
-}
+function toggleSidebarItem(id, checked) { const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}))); const item = items.find(it=>it.id===id); if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; } }
+async function saveSidebarConfig() { const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}))); await pushConfig('sidebarItems', items); await pushConfig('customMenus', gcGet('customMenus', [])); renderSidebar(); flashMsg('msgSidebar'); }
+async function addCustomMenu() { const name=document.getElementById('custom-menu-name').value.trim(); const iconTxt=document.getElementById('custom-menu-icon').value.trim()||'fa-file'; const content=document.getElementById('custom-menu-content').value.trim(); if (!name) { alert('Nama menu tidak boleh kosong.'); return; } const id='custom_'+Date.now(); const menus=gcGet('customMenus',[]); menus.push({id,label:name,icon:iconTxt,content,publik:true,iconType:'fa'}); await pushConfig('customMenus',menus); document.getElementById('custom-menu-name').value=''; document.getElementById('custom-menu-icon').value=''; document.getElementById('custom-menu-content').value=''; renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor(); flashMsg('msgSidebar'); }
+async function removeCustomMenu(idx) { if (!confirm('Hapus menu ini?')) return; const menus=gcGet('customMenus',[]); menus.splice(idx,1); await pushConfig('customMenus',menus); renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor(); }
 
 function renderJadwalEditor() {
   const data=gcGet('jadwal',DEFAULT_JADWAL);
-  const colors=gcGet('ganttColors',{});
-  document.getElementById('gantt-color-done').value=colors.done||'#3B6D11';
-  document.getElementById('gantt-color-active').value=colors.active||'#856404';
-  document.getElementById('gantt-color-upcoming').value=colors.upcoming||'#10478A';
   document.getElementById('jadwalEditor').innerHTML=data.map((item,i)=>`
     <div class="gantt-editor-row">
       <div class="admin-form-group"><label>Tahapan</label><input type="text" id="tj-label-${i}" value="${item.label}" /></div>
       <div class="admin-form-group"><label>Mulai</label><input type="date" id="tj-mulai-${i}" value="${item.mulai||''}" /></div>
       <div class="admin-form-group"><label>Selesai</label><input type="date" id="tj-selesai-${i}" value="${item.selesai||''}" /></div>
-      <div class="admin-form-group"><label>Status</label><select id="tj-status-${i}"><option value="done" ${item.status==='done'?'selected':''}>✅ Selesai</option><option value="active" ${item.status==='active'?'selected':''}>⏳ Berlangsung</option><option value="upcoming" ${item.status==='upcoming'?'selected':''}>📅 Akan Datang</option></select></div>
       <div class="admin-form-group"><label>Ket.</label><input type="text" id="tj-sub-${i}" value="${item.sub||''}" /></div>
-      <button onclick="removeJadwalItem(${i})" style="background:#C0392B;color:white;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;align-self:flex-end;margin-bottom:14px;"><i class="fa-solid fa-trash"></i></button>
+      <div style="display:flex;align-items:center;gap:6px;align-self:flex-end;margin-bottom:14px;"><div class="legend-dot" style="background:${JADWAL_COLORS[i%JADWAL_COLORS.length]};width:16px;height:16px;border-radius:50%;flex-shrink:0;"></div><button onclick="removeJadwalItem(${i})" style="background:#C0392B;color:white;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;"><i class="fa-solid fa-trash"></i></button></div>
     </div>`).join('');
 }
-function addJadwalItem() { const data=gcGet('jadwal',DEFAULT_JADWAL); data.push({label:'Tahapan Baru',sub:'',status:'upcoming',mulai:'',selesai:''}); _globalConfig['jadwal']=data; renderJadwalEditor(); }
+function addJadwalItem() { const data=gcGet('jadwal',DEFAULT_JADWAL); data.push({label:'Tahapan Baru',sub:'',mulai:'',selesai:''}); _globalConfig['jadwal']=data; renderJadwalEditor(); }
 function removeJadwalItem(i) { const data=gcGet('jadwal',DEFAULT_JADWAL); data.splice(i,1); _globalConfig['jadwal']=data; renderJadwalEditor(); }
 async function saveJadwal() {
   const data=gcGet('jadwal',DEFAULT_JADWAL);
-  data.forEach((item,i)=>{ item.label=document.getElementById(`tj-label-${i}`).value; item.mulai=document.getElementById(`tj-mulai-${i}`).value; item.selesai=document.getElementById(`tj-selesai-${i}`).value; item.status=document.getElementById(`tj-status-${i}`).value; item.sub=document.getElementById(`tj-sub-${i}`).value; });
-  const colors={done:document.getElementById('gantt-color-done').value,active:document.getElementById('gantt-color-active').value,upcoming:document.getElementById('gantt-color-upcoming').value};
-  await pushConfig('jadwal',data); await pushConfig('ganttColors',colors); renderCalendar(); flashMsg('msgJadwal');
+  data.forEach((item,i)=>{ item.label=document.getElementById(`tj-label-${i}`).value; item.mulai=document.getElementById(`tj-mulai-${i}`).value; item.selesai=document.getElementById(`tj-selesai-${i}`).value; item.sub=document.getElementById(`tj-sub-${i}`).value; });
+  await pushConfig('jadwal',data); renderCalendar(); flashMsg('msgJadwal');
 }
 
 function renderDownloadEditor() {
   const data=gcGet('docs',DEFAULT_DOCS);
   document.getElementById('downloadEditor').innerHTML=data.map((d,i)=>`
-    <div class="timeline-editor-item">
-      <div class="tei-head">Dokumen ${i+1}: ${d.title}</div>
+    <div class="timeline-editor-item"><div class="tei-head">Dokumen ${i+1}: ${d.title}</div>
       <div class="tei-row"><div class="admin-form-group"><label>Judul</label><input type="text" id="dd-title-${i}" value="${d.title}" /></div><div class="admin-form-group"><label>Deskripsi</label><input type="text" id="dd-desc-${i}" value="${d.desc}" /></div></div>
       <div class="admin-form-group"><label>Link Unduhan</label><input type="url" id="dd-link-${i}" value="${d.link||''}" placeholder="https://drive.google.com/…" /></div>
       <div class="admin-form-group"><label>Ikon</label><input type="text" id="dd-icon-${i}" value="${d.icon||'fa-file'}" placeholder="fa-file-pdf" /><input type="file" id="dd-iconfile-${i}" accept=".png" style="margin-top:4px;font-size:0.78rem;" onchange="previewDocIcon(${i})" /><img id="dd-iconpreview-${i}" style="width:36px;height:36px;object-fit:contain;border:1px solid var(--gray-200);border-radius:6px;margin-top:4px;${d.iconType==='img'&&d.iconImg?'display:block':'display:none'};" src="${d.iconType==='img'&&d.iconImg?d.iconImg:''}" /></div>
@@ -2092,19 +1728,10 @@ async function saveDownload() {
   await Promise.all(promises); await pushConfig('docs',data); renderDownload(); flashMsg('msgDownload');
 }
 
-async function saveZoom() {
-  const z={tanggal:document.getElementById('az-tanggal').value,pukul:document.getElementById('az-pukul').value,meetingid:document.getElementById('az-meetingid').value,passcode:document.getElementById('az-passcode').value,link:document.getElementById('az-link').value};
-  await pushConfig('zoom',z); renderZoom(); flashMsg('msgZoom');
-}
+async function saveZoom() { const z={tanggal:document.getElementById('az-tanggal').value,pukul:document.getElementById('az-pukul').value,meetingid:document.getElementById('az-meetingid').value,passcode:document.getElementById('az-passcode').value,link:document.getElementById('az-link').value}; await pushConfig('zoom',z); renderZoom(); flashMsg('msgZoom'); }
 async function saveRunning() { await pushConfig('running',document.getElementById('ar-text').value); renderRunning(); flashMsg('msgRunning'); }
-async function saveNotifTemplate() {
-  const tmpl={wa:document.getElementById('nt-wa').value,emailSubject:document.getElementById('nt-email-subject').value,emailBody:document.getElementById('nt-email-body').value};
-  await pushConfig('notifTemplate',tmpl); flashMsg('msgNotifTemplate');
-}
-async function saveFonnteConfig() {
-  const cfg={token:document.getElementById('fonnte-token').value.trim(),sender:document.getElementById('fonnte-sender').value.trim(),replyTo:document.getElementById('email-replyto').value.trim(),senderName:document.getElementById('email-sendername').value.trim()};
-  await pushConfig('fonnteConfig',cfg); flashMsg('msgFonnte');
-}
+async function saveNotifTemplate() { const tmpl={wa:document.getElementById('nt-wa').value,emailSubject:document.getElementById('nt-email-subject').value,emailBody:document.getElementById('nt-email-body').value}; await pushConfig('notifTemplate',tmpl); flashMsg('msgNotifTemplate'); }
+async function saveFonnteConfig() { const cfg={token:document.getElementById('fonnte-token').value.trim(),sender:document.getElementById('fonnte-sender').value.trim(),replyTo:document.getElementById('email-replyto').value.trim(),senderName:document.getElementById('email-sendername').value.trim()}; await pushConfig('fonnteConfig',cfg); flashMsg('msgFonnte'); }
 
 function renderFormFieldList() {
   const fields=gcGet('formFields',DEFAULT_FORM_FIELDS);
@@ -2117,12 +1744,8 @@ function removeFixedFormField(i) { const fields=gcGet('formFields',DEFAULT_FORM_
 async function saveFormFields() { const fields=gcGet('formFields',DEFAULT_FORM_FIELDS); await pushConfig('formFields',fields); renderUploadForm(); flashMsg('msgForm'); }
 
 async function changeAdminPassword() {
-  const oldPass=document.getElementById('ak-admin-old').value;
-  const newPass=document.getElementById('ak-admin-new').value;
-  const confirm=document.getElementById('ak-admin-confirm').value;
-  const msgEl=document.getElementById('msgAkunAdmin');
-  const cfg=await fetchGlobalConfig(true);
-  const storedPass=(cfg&&cfg.adminPassword)?cfg.adminPassword:'admin123';
+  const oldPass=document.getElementById('ak-admin-old').value; const newPass=document.getElementById('ak-admin-new').value; const confirm=document.getElementById('ak-admin-confirm').value; const msgEl=document.getElementById('msgAkunAdmin');
+  const cfg=await fetchGlobalConfig(true); const storedPass=(cfg&&cfg.adminPassword)?cfg.adminPassword:'admin123';
   if(oldPass!==storedPass){msgEl.style.color='#C0392B';msgEl.textContent='❌ Password lama salah.';return;}
   if(newPass.length<8){msgEl.style.color='#C0392B';msgEl.textContent='❌ Min. 8 karakter.';return;}
   if(newPass!==confirm){msgEl.style.color='#C0392B';msgEl.textContent='❌ Konfirmasi tidak cocok.';return;}
@@ -2132,10 +1755,7 @@ async function changeAdminPassword() {
   ['ak-admin-old','ak-admin-new','ak-admin-confirm'].forEach(id=>document.getElementById(id).value='');
 }
 async function changePokjaPassword() {
-  const username=document.getElementById('ak-pokja-user').value.trim();
-  const newPass=document.getElementById('ak-pokja-new').value;
-  const confirm=document.getElementById('ak-pokja-confirm').value;
-  const msgEl=document.getElementById('msgAkunPokja');
+  const username=document.getElementById('ak-pokja-user').value.trim(); const newPass=document.getElementById('ak-pokja-new').value; const confirm=document.getElementById('ak-pokja-confirm').value; const msgEl=document.getElementById('msgAkunPokja');
   if(!username){msgEl.style.color='#C0392B';msgEl.textContent='❌ Masukkan username.';return;}
   if(newPass.length<6){msgEl.style.color='#C0392B';msgEl.textContent='❌ Min. 6 karakter.';return;}
   if(newPass!==confirm){msgEl.style.color='#C0392B';msgEl.textContent='❌ Konfirmasi tidak cocok.';return;}
@@ -2143,9 +1763,7 @@ async function changePokjaPassword() {
   msgEl.style.color='#3B6D11';msgEl.textContent='✓ Akun Pokja berhasil diperbarui.';
   ['ak-pokja-new','ak-pokja-confirm'].forEach(id=>document.getElementById(id).value='');
 }
-async function syncAccountToSheet(role,username,password) {
-  try { await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateAccount',role,username,password})}); } catch(e){}
-}
+async function syncAccountToSheet(role,username,password) { try { await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateAccount',role,username,password})}); } catch(e){} }
 
 function loadAdminForms() {
   renderJadwalEditor(); renderDownloadEditor(); renderSidebarVisibilityEditor(); renderFormFieldList();
@@ -2169,15 +1787,10 @@ function switchAdminTab(name, btn) {
   btn.classList.add('active');
 }
 
-function flashMsg(id) {
-  const el=document.getElementById(id);
-  if(!el) return;
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),2500);
-}
+function flashMsg(id) { const el=document.getElementById(id); if(!el) return; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500); }
 
 // =================================================================
-// ===== PERBAIKAN 2: SUBMIT UPLOAD dengan animasi progress =====
+// SUBMIT UPLOAD
 // =================================================================
 async function submitUpload() {
   const fields=gcGet('formFields',DEFAULT_FORM_FIELDS);
@@ -2195,30 +1808,22 @@ async function submitUpload() {
   if(!valid){showFormMsg('error','Harap lengkapi semua kolom bertanda (*).'); return;}
   if(!file){showFormMsg('error','Harap pilih file dokumen.'); return;}
   if(file.size>25*1024*1024){showFormMsg('error','Ukuran file melebihi 25 MB.'); return;}
-
   const btn=document.getElementById('btnSubmitUpload');
   btn.disabled=true;
   btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg> Mengirim…`;
-  document.getElementById('uploadSpinner').style.display='none';
   const progressWrap=document.getElementById('fUploadProgress');
   const progressBar=document.getElementById('fProgressBar');
   const progressText=document.getElementById('fProgressText');
   progressWrap.style.display='block'; progressBar.style.width='5%'; progressText.textContent='Membaca file…';
-
   try {
     const base64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('Gagal membaca file'));reader.readAsDataURL(file);});
     progressBar.style.width='35%'; progressText.textContent='Mengompres & menyiapkan…';
-
-    await new Promise(r=>setTimeout(r,400)); // beri waktu visual
+    await new Promise(r=>setTimeout(r,400));
     progressBar.style.width='60%'; progressText.textContent='Mengunggah ke Google Drive…';
-
-    const fullPayload={...payload,fileName:file.name,fileType:file.type,fileData:base64,namaPerusahaan:payload.fNamaPerusahaan,npwp:payload.fNpwp,namaDirektur:payload.fNamaDirektur,telp:payload.fTelp,email:payload.fEmail,jenisDok:payload.fJenisDok,keterangan:payload.fKeterangan};
+    const fullPayload={...payload,fileName:file.name,fileType:file.type,fileData:base64,namaPerusahaan:payload.fNamaPerusahaan,npwp:payload.fNpwp,alamat:payload.fAlamat,namaDirektur:payload.fNamaDirektur,telp:payload.fTelp,email:payload.fEmail,jenisDok:payload.fJenisDok,keterangan:payload.fKeterangan};
     await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(fullPayload)});
-
     progressBar.style.width='100%'; progressText.textContent='✓ Berhasil dikirim!';
     progressBar.style.background='linear-gradient(90deg,#3B6D11,#56ab2f)';
-
-    document.getElementById('statPeserta').textContent='–';
     const successEl=document.getElementById('uploadSuccess');
     successEl.style.display='block';
     const statusHint=document.getElementById('uploadSuccessStatusHint');
@@ -2275,12 +1880,97 @@ function renderPokjaTable() {
     let fileCell='<span style="color:var(--gray-400);">-</span>';
     if(fileLink&&fileLink.startsWith('http')){fileCell=`<div style="display:flex;flex-direction:column;gap:3px;"><a href="${fileLink}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a><a href="${fileLink}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a></div>`;}
     else if(d.fileName){fileCell=`<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;}
-    return `<tr><td>${origIdx+1}</td><td style="white-space:nowrap;">${tgl}</td><td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td><td style="font-family:monospace;">${d.npwp||'-'}</td><td style="max-width:180px;">${d.jenisDok||'-'}</td><td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td><td>${fileCell}</td><td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td><td style="font-size:0.78rem;max-width:140px;">${d.catatanPokja||'-'}</td><td><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button></td></tr>`;
+    const catatanHtml = `
+      <div id="catatan-view-${origIdx}" style="display:flex;align-items:flex-start;gap:4px;min-width:120px;">
+        <span id="catatan-text-${origIdx}" style="font-size:0.78rem;flex:1;">${d.catatanPokja||'<em style="color:var(--gray-400);">-</em>'}</span>
+        <button onclick="startEditCatatan(${origIdx})" title="Edit catatan" style="background:none;border:none;cursor:pointer;color:var(--blue-600);padding:2px;flex-shrink:0;font-size:12px;opacity:0.7;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.7"><i class="fa-solid fa-pencil"></i></button>
+      </div>
+      <div id="catatan-edit-${origIdx}" style="display:none;min-width:160px;">
+        <textarea id="catatan-input-${origIdx}" rows="2" style="width:100%;font-size:0.78rem;border:1px solid var(--blue-600);border-radius:5px;padding:4px 6px;resize:vertical;font-family:inherit;">${d.catatanPokja||''}</textarea>
+        <div style="display:flex;gap:4px;margin-top:3px;">
+          <button onclick="saveCatatanInline(${origIdx})" style="flex:1;background:var(--blue-700);color:#fff;border:none;border-radius:4px;padding:3px 6px;font-size:0.75rem;cursor:pointer;"><i class="fa-solid fa-check"></i> Simpan</button>
+          <button onclick="cancelEditCatatan(${origIdx})" style="background:var(--gray-100);border:none;border-radius:4px;padding:3px 6px;font-size:0.75rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>`;
+    return `<tr><td>${origIdx+1}</td><td style="white-space:nowrap;">${tgl}</td><td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td><td style="font-family:monospace;">${d.npwp||'-'}</td><td style="max-width:180px;">${d.jenisDok||'-'}</td><td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td><td>${fileCell}</td><td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td><td>${catatanHtml}</td><td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td></tr>`;
   }).join('');
   renderPokjaStats();
 }
 
-// ===== PERBAIKAN 4: Review Modal — gunakan .show class =====
+function startEditCatatan(idx) {
+  document.getElementById(`catatan-view-${idx}`).style.display='none';
+  document.getElementById(`catatan-edit-${idx}`).style.display='block';
+  const ta = document.getElementById(`catatan-input-${idx}`);
+  ta.focus(); ta.selectionStart=ta.selectionEnd=ta.value.length;
+}
+
+function cancelEditCatatan(idx) {
+  document.getElementById(`catatan-edit-${idx}`).style.display='none';
+  document.getElementById(`catatan-view-${idx}`).style.display='flex';
+}
+
+async function saveCatatanInline(idx) {
+  const data=getSubmissions(); const d=data[idx]; if(!d) return;
+  const newCatatan=document.getElementById(`catatan-input-${idx}`).value.trim();
+  const btn=document.querySelector(`#catatan-edit-${idx} button`);
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';}
+  try {
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,reviewStatus:d.reviewStatus||'Menunggu Review',catatanPokja:newCatatan,reviewTanggal:new Date().toISOString()})});
+  } catch(e){}
+  d.catatanPokja=newCatatan;
+  // Update tampilan tanpa full re-render
+  const textEl=document.getElementById(`catatan-text-${idx}`);
+  if(textEl) textEl.innerHTML=newCatatan||'<em style="color:var(--gray-400);">-</em>';
+  cancelEditCatatan(idx);
+  renderPokjaStats();
+}
+
+// Helper: kirim WA/Email langsung dari baris tabel (tanpa buka modal)
+function kirimWaLangsung(idx) {
+  const data=getSubmissions(); const d=data[idx]; if(!d) return;
+  const telp=String(d.telp||'').trim(); if(!telp){alert('Nomor telepon tidak tersedia.');return;}
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const status=d.reviewStatus||'Menunggu Review';
+  const namaPerusahaan=d.namaPerusahaan||'-'; const catatan=d.catatanPokja||'';
+  const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
+  const tmpl=gcGet('notifTemplate',{});
+  const fonnteConfig=gcGet('fonnteConfig',{});
+  const hasFonnte=fonnteConfig.token&&fonnteConfig.token.trim()!=='';
+  const waMsg=fillTemplate(tmpl.wa||DEFAULT_NOTIF_WA,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
+  const waNum=telp.replace(/\D/g,'').replace(/^0/,'62');
+  if(hasFonnte){
+    fetch('https://api.fonnte.com/send',{method:'POST',headers:{'Authorization':fonnteConfig.token,'Content-Type':'application/json'},body:JSON.stringify({target:waNum,message:waMsg,countryCode:'62'})}).catch(()=>{});
+    alert('✅ WhatsApp terkirim via Fonnte ke '+namaPerusahaan+'.');
+  } else {
+    // Buka wa.me (universal link, lebih andal dari web.whatsapp.com)
+    window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`,'_blank');
+  }
+}
+
+function kirimEmailLangsung(idx) {
+  const data=getSubmissions(); const d=data[idx]; if(!d) return;
+  const emailPenyedia=d.email||''; if(!emailPenyedia){alert('Email tidak tersedia.');return;}
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const status=d.reviewStatus||'Menunggu Review';
+  const namaPerusahaan=d.namaPerusahaan||'-'; const catatan=d.catatanPokja||'';
+  const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
+  const tmpl=gcGet('notifTemplate',{});
+  const fonnteConfig=gcGet('fonnteConfig',{});
+  const hasFonnte=fonnteConfig.token&&fonnteConfig.token.trim()!=='';
+  const emailSubject=fillTemplate(tmpl.emailSubject||DEFAULT_NOTIF_EMAIL_SUBJECT,{namaPerusahaan,status:statusTxt[status]||status,catatan,paketNama});
+  const emailBody=fillTemplate(tmpl.emailBody||DEFAULT_NOTIF_EMAIL_BODY,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
+  if(hasFonnte){
+    fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendEmail',to:emailPenyedia,subject:emailSubject,body:emailBody,replyTo:fonnteConfig.replyTo||'',senderName:fonnteConfig.senderName||''})}).catch(()=>{});
+    alert('✅ Email terkirim ke '+emailPenyedia+'.');
+  } else {
+    // Buka Gmail langsung di tab baru
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailPenyedia)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(gmailUrl, '_blank');
+    alert('Gmail dibuka di tab baru. Kirim ke ' + emailPenyedia + '.');
+  }
+}
+
+
 function openReviewModal(idx) {
   const data=getSubmissions(); const d=data[idx]; if(!d) return;
   currentReviewIdx=idx;
@@ -2290,19 +1980,28 @@ function openReviewModal(idx) {
   else{btnWrap.innerHTML='';}
   document.getElementById('reviewStatus').value=d.reviewStatus||'Menunggu Review';
   document.getElementById('reviewCatatan').value=d.catatanPokja||'';
-  document.getElementById('notifEmail').checked=true;
-  document.getElementById('notifWa').checked=true;
   document.getElementById('reviewModalMsg').style.display='none';
   document.getElementById('reviewLoadingOverlay').style.display='none';
+  // PERBAIKAN 2: Cek mode fonnte dan tampilkan info
+  updateNotifModeInfo();
   updateNotifPreview();
-  // PERBAIKAN 4: Gunakan .show class bukan inline style
   document.getElementById('reviewModal').classList.add('show');
 }
 
-function closeReviewModal(){
-  document.getElementById('reviewModal').classList.remove('show');
-  currentReviewIdx=null;
+// PERBAIKAN 2: Tampilkan info mode notifikasi (Fonnte atau manual)
+function updateNotifModeInfo() {
+  const fonnteConfig=gcGet('fonnteConfig',{});
+  const hasFonnte = fonnteConfig.token && fonnteConfig.token.trim() !== '';
+  const infoEl = document.getElementById('notifModeInfo');
+  if (!hasFonnte && infoEl) {
+    infoEl.style.display='block';
+    infoEl.innerHTML = `<i class="fa-solid fa-circle-info"></i> <strong>Mode Manual:</strong> Fonnte belum dikonfigurasi. WhatsApp akan dibuka otomatis di tab baru, Email via aplikasi email default.`;
+  } else if (infoEl) {
+    infoEl.style.display='none';
+  }
 }
+
+function closeReviewModal(){ document.getElementById('reviewModal').classList.remove('show'); currentReviewIdx=null; }
 
 function fillTemplate(template,vars){return template.replace(/\{(\w+)\}/g,(_,k)=>vars[k]!==undefined?vars[k]:'');}
 
@@ -2318,110 +2017,135 @@ function updateNotifPreview() {
   if(previewEl) previewEl.innerHTML=preview.replace(/\n/g,'<br>');
 }
 
-// ===== PERBAIKAN 4: simpanReview dengan loading overlay dan error handling =====
+// =================================================================
+// ===== PERBAIKAN 2: simpanReview – hanya simpan review tanpa notifikasi =====
+// =================================================================
 async function simpanReview() {
   if(currentReviewIdx===null) return;
-
   const data=getSubmissions();
   const d=data[currentReviewIdx];
   const status=document.getElementById('reviewStatus').value;
   const catatan=document.getElementById('reviewCatatan').value.trim();
-  const doEmail=document.getElementById('notifEmail').checked;
-  const doWa=document.getElementById('notifWa').checked;
 
-  // Tampilkan loading overlay
   const loadingOverlay = document.getElementById('reviewLoadingOverlay');
   const loadingMsg = document.getElementById('reviewLoadingMsg');
   const btnSimpan = document.getElementById('btnSimpanReview');
   loadingOverlay.style.display='flex';
+  loadingMsg.textContent = 'Menyimpan review ke spreadsheet…';
   btnSimpan.disabled=true;
 
-  let notifLog=[];
-  let hasError=false;
-
-  // 1. Simpan review ke sheet
-  loadingMsg.textContent = 'Menyimpan review ke spreadsheet…';
   try {
     await fetch(APPS_SCRIPT_URL,{
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        action:'updateReview',
-        namaPerusahaan:d.namaPerusahaan,
-        npwp:d.npwp,
-        reviewStatus:status,
-        catatanPokja:catatan,
-        reviewTanggal:new Date().toISOString()
-      })
+      body:JSON.stringify({ action:'updateReview', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, reviewStatus:status, catatanPokja:catatan, reviewTanggal:new Date().toISOString() })
     });
-  } catch(e) { hasError=true; }
+  } catch(e) {}
 
-  // Update local state
-  d.reviewStatus=status;
-  d.catatanPokja=catatan;
-  d.reviewTanggal=new Date().toISOString();
+  d.reviewStatus=status; d.catatanPokja=catatan; d.reviewTanggal=new Date().toISOString();
   renderPokjaTable();
 
-  const statusTxt={
-    'Menunggu Review':'⏳ Menunggu Review',
-    'Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat',
-    'Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat',
-    'Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'
-  };
+  loadingOverlay.style.display='none';
+  btnSimpan.disabled=false;
+
+  const msgEl=document.getElementById('reviewModalMsg');
+  msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
+  msgEl.innerHTML=`<i class="fa-solid fa-circle-check" style="color:#3B6D11;margin-right:6px;"></i><strong>Review tersimpan!</strong>`;
+  setTimeout(()=>{ msgEl.style.display='none'; }, 2500);
+}
+
+// ===== Kirim Notifikasi WhatsApp =====
+async function kirimNotifWa() {
+  if(currentReviewIdx===null) return;
+  const data=getSubmissions();
+  const d=data[currentReviewIdx];
+  const status=document.getElementById('reviewStatus').value;
+  const catatan=document.getElementById('reviewCatatan').value.trim();
+  const telp = String(d.telp||'').trim();
+  if (!telp) { alert('Nomor telepon penyedia tidak tersedia.'); return; }
+
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
   const namaPerusahaan=d.namaPerusahaan||'-';
-  const emailPenyedia=d.email||'';
-  const telp=d.telp||'';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
   const tmpl=gcGet('notifTemplate',{});
   const fonnteConfig=gcGet('fonnteConfig',{});
+  const hasFonnte = fonnteConfig.token && fonnteConfig.token.trim() !== '';
+  const waMsg=fillTemplate(tmpl.wa||DEFAULT_NOTIF_WA,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
+  const waNum=telp.replace(/\D/g,'').replace(/^0/,'62');
 
-  // 2. Kirim Email
-  if(doEmail && emailPenyedia) {
-    loadingMsg.textContent = 'Mengirim email notifikasi…';
-    const emailSubject=fillTemplate(tmpl.emailSubject||DEFAULT_NOTIF_EMAIL_SUBJECT,{namaPerusahaan,status:statusTxt[status]||status,catatan,paketNama});
-    const emailBody=fillTemplate(tmpl.emailBody||DEFAULT_NOTIF_EMAIL_BODY,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
+  if(hasFonnte) {
+    const loadingOverlay=document.getElementById('reviewLoadingOverlay');
+    const loadingMsg=document.getElementById('reviewLoadingMsg');
+    loadingOverlay.style.display='flex';
+    loadingMsg.textContent='Mengirim WhatsApp via Fonnte…';
+    try {
+      await fetch('https://api.fonnte.com/send',{
+        method:'POST',
+        headers:{'Authorization':fonnteConfig.token,'Content-Type':'application/json'},
+        body:JSON.stringify({target:waNum,message:waMsg,countryCode:'62'})
+      });
+    } catch(e) {}
+    loadingOverlay.style.display='none';
+    const msgEl=document.getElementById('reviewModalMsg');
+    msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
+    msgEl.innerHTML=`<i class="fa-brands fa-whatsapp" style="color:#25D366;margin-right:6px;"></i><strong>WhatsApp terkirim via Fonnte!</strong>`;
+    setTimeout(()=>{ msgEl.style.display='none'; }, 2500);
+  } else {
+    // Buka wa.me (universal link, lebih andal)
+    const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`;
+    window.open(waUrl, '_blank');
+    const msgEl=document.getElementById('reviewModalMsg');
+    msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
+    msgEl.innerHTML=`<i class="fa-brands fa-whatsapp" style="color:#25D366;margin-right:6px;"></i><strong>WhatsApp dibuka di tab baru.</strong> Kirim pesan ke ${d.namaPerusahaan||'-'}.`;
+    setTimeout(()=>{ msgEl.style.display='none'; }, 3000);
+  }
+}
+
+// ===== Kirim Notifikasi Email =====
+async function kirimNotifEmail() {
+  if(currentReviewIdx===null) return;
+  const data=getSubmissions();
+  const d=data[currentReviewIdx];
+  const status=document.getElementById('reviewStatus').value;
+  const catatan=document.getElementById('reviewCatatan').value.trim();
+  const emailPenyedia=d.email||'';
+  if (!emailPenyedia) { alert('Alamat email penyedia tidak tersedia.'); return; }
+
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const namaPerusahaan=d.namaPerusahaan||'-';
+  const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
+  const tmpl=gcGet('notifTemplate',{});
+  const fonnteConfig=gcGet('fonnteConfig',{});
+  const hasFonnte = fonnteConfig.token && fonnteConfig.token.trim() !== '';
+  const emailSubject=fillTemplate(tmpl.emailSubject||DEFAULT_NOTIF_EMAIL_SUBJECT,{namaPerusahaan,status:statusTxt[status]||status,catatan,paketNama});
+  const emailBody=fillTemplate(tmpl.emailBody||DEFAULT_NOTIF_EMAIL_BODY,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
+
+  if(hasFonnte) {
+    const loadingOverlay=document.getElementById('reviewLoadingOverlay');
+    const loadingMsg=document.getElementById('reviewLoadingMsg');
+    loadingOverlay.style.display='flex';
+    loadingMsg.textContent='Mengirim email notifikasi…';
     try {
       await fetch(APPS_SCRIPT_URL,{
         method:'POST', mode:'no-cors',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'sendEmail',to:emailPenyedia,subject:emailSubject,body:emailBody,replyTo:fonnteConfig.replyTo||'',senderName:fonnteConfig.senderName||''})
       });
-      notifLog.push('📧 Email');
-    } catch(e) { notifLog.push('📧 Email (gagal)'); }
+    } catch(e) {}
+    loadingOverlay.style.display='none';
+    const msgEl=document.getElementById('reviewModalMsg');
+    msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
+    msgEl.innerHTML=`<i class="fa-solid fa-envelope" style="color:#E05C2A;margin-right:6px;"></i><strong>Email terkirim!</strong>`;
+    setTimeout(()=>{ msgEl.style.display='none'; }, 2500);
+  } else {
+    // Buka Gmail langsung di tab baru
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailPenyedia)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(gmailUrl, '_blank');
+    const msgEl=document.getElementById('reviewModalMsg');
+    msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
+    msgEl.innerHTML=`<i class="fa-solid fa-envelope" style="color:#E05C2A;margin-right:6px;"></i><strong>Gmail dibuka di tab baru.</strong> Kirim ke ${emailPenyedia}.`;
+    setTimeout(()=>{ msgEl.style.display='none'; }, 3000);
   }
-
-  // 3. Kirim WhatsApp via Fonnte (atau buka wa.me jika tidak ada token)
-  if(doWa && telp) {
-    loadingMsg.textContent = 'Mengirim WhatsApp…';
-    const waMsg=fillTemplate(tmpl.wa||DEFAULT_NOTIF_WA,{namaPerusahaan,status:statusTxt[status]||status,catatan:catatan?`Catatan: ${catatan}`:'',paketNama});
-    const waNum=telp.replace(/\D/g,'').replace(/^0/,'62');
-    if(fonnteConfig.token) {
-      try {
-        const resp=await fetch('https://api.fonnte.com/send',{
-          method:'POST',
-          headers:{'Authorization':fonnteConfig.token,'Content-Type':'application/json'},
-          body:JSON.stringify({target:waNum,message:waMsg,countryCode:'62'})
-        });
-        notifLog.push('💬 WhatsApp');
-      } catch(e) { notifLog.push('💬 WA (gagal)'); }
-    } else {
-      // Buka WA manual
-      window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`,'_blank');
-      notifLog.push('💬 WhatsApp (manual)');
-    }
-  }
-
-  loadingOverlay.style.display='none';
-  btnSimpan.disabled=false;
-
-  // Tampilkan pesan hasil
-  const msgEl=document.getElementById('reviewModalMsg');
-  msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
-  msgEl.innerHTML=`<i class="fa-solid fa-circle-check" style="color:#3B6D11;margin-right:6px;"></i>
-    <strong>Review tersimpan!</strong>
-    ${notifLog.length ? ' &nbsp;Notifikasi terkirim: ' + notifLog.join(', ') + '.' : ' Tidak ada notifikasi yang dikirim.'}`;
-
-  setTimeout(closeReviewModal, 2800);
 }
 
 // =================================================================
@@ -2436,12 +2160,10 @@ collapseBtn.addEventListener('click',function(){sidebar.classList.toggle('collap
 document.getElementById('mobileToggle').addEventListener('click',()=>{sidebar.classList.toggle('mobile-open');document.getElementById('mobileOverlay').classList.toggle('active');});
 document.getElementById('mobileOverlay').addEventListener('click',()=>{sidebar.classList.remove('mobile-open');document.getElementById('mobileOverlay').classList.remove('active');});
 
-// Tutup overlay kalau klik luar modal
 document.querySelectorAll('.login-overlay').forEach(overlay=>{
   overlay.addEventListener('click',function(e){if(e.target===this)closeAllLoginOverlays();});
 });
 
-// Tutup reviewModal klik luar
 document.getElementById('reviewModal').addEventListener('click',function(e){
   if(e.target===this) closeReviewModal();
 });
@@ -2451,7 +2173,7 @@ document.getElementById('reviewModal').addEventListener('click',function(e){
 // =================================================================
 function renderAll() {
   renderJudul(); renderSidebar(); renderCalendar(); renderDownload(); renderZoom();
-  renderRunning(); renderUploadForm(); renderCustomPages(); renderPokjaStats(); applyCalendarColors();
+  renderRunning(); renderUploadForm(); renderCustomPages(); renderPokjaStats();
 }
 
 async function init() {
