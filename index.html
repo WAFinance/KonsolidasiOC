@@ -109,6 +109,7 @@
     .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:28px; }
     .stat-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); transition:transform var(--transition),box-shadow var(--transition); }
     .stat-card:hover { transform:translateY(-3px); box-shadow:0 6px 16px rgba(0,0,0,0.12); }
+    #statPesertaCard:hover { border-color:var(--blue-600); box-shadow:0 6px 16px rgba(24,95,165,0.18); }
     .stat-card .stat-icon { width:40px; height:40px; border-radius:10px; background:var(--blue-50); display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
     .stat-card .stat-icon i { color:var(--blue-600); font-size:18px; }
     .stat-card .stat-value { font-size:1.6rem; font-weight:700; color:var(--blue-800); }
@@ -453,10 +454,12 @@
       .jadwal-tabs button { padding:9px 14px !important; font-size:0.78rem !important; }
 
       /* ─── KALENDER ─── */
-      .calendar-day { min-height:68px; padding:3px 2px 18px 2px; }
+      .calendar-day { min-height:72px; padding:3px 2px 4px 2px; overflow:hidden; }
       .calendar-day-header { font-size:0.60rem; padding:7px 2px; }
-      .calendar-day .day-num-wrap { width:22px; height:22px; font-size:0.72rem; }
-      .cal-ev-bar { height:16px; line-height:16px; font-size:0.60rem; padding:0 3px; }
+      .calendar-day .day-num-wrap { width:20px; height:20px; font-size:0.68rem; }
+      .cal-ev-bar { height:14px !important; line-height:14px !important; font-size:0.58rem !important; padding:0 2px !important; border-radius:2px !important; }
+      /* Sembunyikan bar yang keluar batas sel secara vertikal */
+      .cal-grid-wrap { overflow:hidden; }
       .calendar-nav h3 { font-size:0.88rem; min-width:0; }
       .calendar-nav { padding:10px 14px 10px; gap:6px; }
       .calendar-legend { gap:6px 10px; padding:10px 14px 12px; }
@@ -587,6 +590,13 @@
       .mbn-item.mbn-upload.active,
       .mbn-item.mbn-status.active {
         filter: brightness(1.1);
+      }
+      /* Upload & Status hanya tampil setelah login */
+      .mbn-item.mbn-auth-only {
+        display: none;
+      }
+      .mbn-item.mbn-auth-only.logged-in {
+        display: flex;
       }
       /* Badge notif (optional hook) */
       .mbn-badge {
@@ -731,7 +741,12 @@
       <div class="info-banner"><i class="fa-solid fa-circle-exclamation"></i><div><strong>Informasi Penting:</strong> Portal ini digunakan untuk kegiatan resmi pengadaan. Pastikan Anda membaca seluruh dokumen pemilihan sebelum mengajukan penawaran.</div></div>
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-building-columns"></i></div><div class="stat-value">1</div><div class="stat-label">Paket Konsolidasi</div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div class="stat-value" id="statPeserta">–</div><div class="stat-label">Peserta Terdaftar</div></div>
+        <div class="stat-card" id="statPesertaCard" onclick="bukaModalPeserta()" style="cursor:pointer;position:relative;" title="Klik untuk lihat detail peserta">
+          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-value" id="statPeserta">–</div>
+          <div class="stat-label">Peserta Terdaftar</div>
+          <div style="position:absolute;top:10px;right:12px;font-size:11px;color:var(--blue-600);opacity:0.7;"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+        </div>
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-file-contract"></i></div><div class="stat-value" id="statDokumen">2</div><div class="stat-label">Dokumen Tersedia</div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div><div class="stat-value">2026</div><div class="stat-label">Tahun Anggaran</div></div>
       </div>
@@ -1082,6 +1097,26 @@
   </div>
 </div>
 
+<!-- ══ MODAL DAFTAR PESERTA ══ -->
+<div id="modalPeserta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:12px;width:min(580px,95vw);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+    <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-users"></i> &nbsp;Daftar Peserta Terdaftar</span>
+      <button onclick="tutupModalPeserta()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:16px 20px 8px;flex-shrink:0;border-bottom:1px solid var(--gray-100);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="position:relative;flex:1;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray-400);font-size:13px;"></i>
+          <input type="text" id="pesertaSearch" placeholder="Cari nama perusahaan…" oninput="filterPeserta()" style="width:100%;padding:8px 12px 8px 32px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.85rem;outline:none;font-family:inherit;" />
+        </div>
+        <span id="pesertaCount" style="font-size:0.78rem;color:var(--gray-400);white-space:nowrap;"></span>
+      </div>
+    </div>
+    <div id="pesertaListWrap" style="overflow-y:auto;flex:1;padding:12px 20px 20px;"></div>
+  </div>
+</div>
+
 <footer><strong>Portal Konsolidasi Jasa Tenaga Alih Daya</strong> &mdash; Bagian Pengadaan Barang dan Jasa, Pemerintah Kota Surakarta &copy; 2026</footer>
 
 <!-- ══ MOBILE BOTTOM NAVIGATION BAR ══ -->
@@ -1094,11 +1129,11 @@
     <i class="fa-regular fa-calendar"></i>
     <span>Jadwal</span>
   </button>
-  <button class="mbn-item mbn-upload" id="mbn-upload" onclick="mbnNav('upload')">
+  <button class="mbn-item mbn-upload mbn-auth-only" id="mbn-upload" onclick="mbnNav('upload')">
     <i class="fa-solid fa-cloud-arrow-up"></i>
     <span>Upload</span>
   </button>
-  <button class="mbn-item mbn-status" id="mbn-status" onclick="mbnNav('status')">
+  <button class="mbn-item mbn-status mbn-auth-only" id="mbn-status" onclick="mbnNav('status')">
     <i class="fa-solid fa-list-check"></i>
     <span>Status</span>
   </button>
@@ -1428,6 +1463,7 @@ function setRole(role) {
   currentRole = role;
   renderSidebar();
   updateRoleUI();
+  updateMbnVisibility();
   if (role === 'pokja' || role === 'admin') loadSubmissionsFromSheet();
   if (role === 'admin') loadAdminForms();
   if (role === 'pokja') showPage('pokja');
@@ -1436,7 +1472,14 @@ function setRole(role) {
 }
 
 function doLogoutSilent() { currentRole = null; currentPenyedia = null; _submissions = []; }
-function doLogout() { currentRole = null; currentPenyedia = null; _submissions = []; renderSidebar(); updateRoleUI(); updateUploadFormLock(); showPage('beranda'); }
+function doLogout() { currentRole = null; currentPenyedia = null; _submissions = []; renderSidebar(); updateRoleUI(); updateMbnVisibility(); updateUploadFormLock(); showPage('beranda'); }
+
+function updateMbnVisibility() {
+  const loggedIn = !!currentRole;
+  document.querySelectorAll('.mbn-auth-only').forEach(el => {
+    el.classList.toggle('logged-in', loggedIn);
+  });
+}
 
 function updateRoleUI() {
   const indicator = document.getElementById('roleIndicator');
@@ -1750,9 +1793,10 @@ function placeCalendarEventBars(jadwal, year, month, firstOffset, daysInMonth, t
     if (slot > 12) eventSlots.push(-1);
   });
 
-  const BAR_H   = 20; // tinggi bar px
-  const BAR_GAP = 3;  // jarak antar bar
-  const DAY_NUM_H = 30; // tinggi area nomor tanggal (day-num-wrap + sedikit padding)
+  const isMobile  = window.innerWidth <= 768;
+  const BAR_H     = isMobile ? 14 : 20; // tinggi bar px
+  const BAR_GAP   = isMobile ? 2  : 3;  // jarak antar bar
+  const DAY_NUM_H = isMobile ? 22 : 30; // tinggi area nomor tanggal
 
   const overlayFrag = document.createDocumentFragment();
 
@@ -1795,6 +1839,10 @@ function placeCalendarEventBars(jadwal, year, month, firstOffset, daysInMonth, t
       const barLeft  = rFirst.left + 2;
       const barRight = rLast.left + rLast.width - 2;
       const barWidth = Math.max(barRight - barLeft, 4);
+
+      // Clip: jangan render bar jika melampaui batas bawah sel
+      const cellBottom = rFirst.top + rFirst.height;
+      if (barTop + BAR_H > cellBottom - 2) return;
 
       // Label hanya di segmen pertama (rowIdx===0), dan hanya jika bar cukup lebar
       const showLabel = rowIdx === 0 && barWidth > 40;
@@ -2708,7 +2756,22 @@ async function init() {
   if(cfg){hideSync();}
   else{showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.','error');setTimeout(hideSync,3000);}
   renderAll();
+  // Muat jumlah peserta publik tanpa perlu login
+  loadPublicPesertaCount();
   setInterval(async()=>{const cfg=await fetchGlobalConfig(true);if(cfg)renderAll();},60000);
+}
+
+// Muat jumlah peserta untuk tampilan publik (beranda)
+async function loadPublicPesertaCount() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'ok' && Array.isArray(data.submissions)) {
+      _submissions = data.submissions;
+      const el = document.getElementById('statPeserta');
+      if (el) el.textContent = data.submissions.length || '0';
+    }
+  } catch(e) {}
 }
 
 // =================================================================
@@ -2857,6 +2920,72 @@ async function kirimKlarifikasi() {
 // Klik di luar modal klarifikasi → tutup
 document.getElementById('modalKlarifikasi').addEventListener('click', function(e) {
   if (e.target === this) tutupModalKlarifikasi();
+});
+
+// =================================================================
+// MODAL PESERTA TERDAFTAR (publik)
+// =================================================================
+async function bukaModalPeserta() {
+  document.getElementById('modalPeserta').style.display = 'flex';
+  document.getElementById('pesertaSearch').value = '';
+  const listWrap = document.getElementById('pesertaListWrap');
+  listWrap.innerHTML = `<div style="text-align:center;padding:32px;color:var(--gray-400);"><i class="fa-solid fa-rotate fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;font-size:0.85rem;">Memuat data peserta…</p></div>`;
+
+  // Muat dari server jika belum ada
+  if (!_submissions.length) {
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+      const data = await res.json();
+      if (data.status === 'ok' && Array.isArray(data.submissions)) {
+        _submissions = data.submissions;
+        document.getElementById('statPeserta').textContent = _submissions.length || '–';
+      }
+    } catch(e) {}
+  }
+  renderPesertaList(_submissions);
+}
+
+function renderPesertaList(list) {
+  const listWrap = document.getElementById('pesertaListWrap');
+  const countEl  = document.getElementById('pesertaCount');
+  if (!list.length) {
+    countEl.textContent = '';
+    listWrap.innerHTML  = `<div style="text-align:center;padding:40px 20px;color:var(--gray-400);"><i class="fa-solid fa-inbox" style="font-size:36px;display:block;margin-bottom:12px;"></i><p style="font-size:0.85rem;">Belum ada peserta terdaftar.</p></div>`;
+    return;
+  }
+  countEl.textContent = `${list.length} peserta`;
+  listWrap.innerHTML = list.map((d, i) => {
+    const tgl = d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : '-';
+    const statusInfo = {
+      'Lulus / Memenuhi Syarat': { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus' },
+      'Tidak Memenuhi Syarat':   { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
+      'Perlu Revisi / Klarifikasi': { cls:'sb-revisi', icon:'fa-rotate',     label:'Perlu Revisi' },
+    };
+    const sm = statusInfo[d.reviewStatus] || null;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-100);">
+      <div style="width:32px;height:32px;background:var(--blue-50);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:var(--blue-700);">${i+1}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:0.88rem;color:var(--blue-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.namaPerusahaan||'–'}</div>
+        <div style="font-size:0.73rem;color:var(--gray-400);margin-top:2px;">Terdaftar: ${tgl} &nbsp;·&nbsp; ${d.jenisDok||'-'}</div>
+      </div>
+      ${sm ? `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:0.72rem;font-weight:700;" class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}"></i> ${sm.label}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function filterPeserta() {
+  const q = document.getElementById('pesertaSearch').value.toLowerCase();
+  const filtered = _submissions.filter(d =>
+    !q || (d.namaPerusahaan||'').toLowerCase().includes(q) || (d.jenisDok||'').toLowerCase().includes(q)
+  );
+  renderPesertaList(filtered);
+}
+
+function tutupModalPeserta() {
+  document.getElementById('modalPeserta').style.display = 'none';
+}
+document.getElementById('modalPeserta').addEventListener('click', function(e) {
+  if (e.target === this) tutupModalPeserta();
 });
 
 // =================================================================
