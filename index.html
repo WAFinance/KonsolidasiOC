@@ -414,13 +414,193 @@
     ::-webkit-scrollbar-thumb { background:var(--gray-200); border-radius:4px; }
 
     @media (max-width:768px) {
-      :root { --header-h:90px; --sidebar-w:220px; }
-      aside.sidebar { transform:translateX(-100%); width:var(--sidebar-w) !important; transition:transform var(--transition); }
-      aside.sidebar.mobile-open { transform:translateX(0); }
-      main.content { margin-left:0 !important; padding:18px 16px; }
-      .mobile-toggle { display:flex !important; }
-      .header-text h1 { font-size:0.92rem; }
+      :root { --header-h:72px; --sidebar-w:260px; }
+
+      /* ─── HEADER mobile ─── */
+      header { padding:0 12px; height:var(--header-h); }
+      .header-top { gap:8px; }
+      .header-logo img { height:40px; }
+      .header-logo { height:40px; }
+      .header-text h1 { font-size:0.82rem; line-height:1.25; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
       .header-text p { display:none; }
+      .running-text-bar { padding:3px 12px; font-size:0.70rem; }
+      #logoutTopBtn { font-size:0; padding:6px 8px; border-radius:6px; }
+      #logoutTopBtn i { font-size:14px; }
+      #roleIndicator { display:none !important; }
+
+      /* ─── SIDEBAR ─── */
+      aside.sidebar { transform:translateX(-100%); width:var(--sidebar-w) !important; transition:transform var(--transition); box-shadow:4px 0 24px rgba(0,0,0,0.2); z-index:200; }
+      aside.sidebar.mobile-open { transform:translateX(0); }
+      .mobile-toggle { display:flex !important; }
+      .sidebar-toggle { display:none; }
+
+      /* ─── MAIN CONTENT ─── */
+      main.content { margin-left:0 !important; padding:16px 14px 90px 14px; }
+      .layout { margin-top:var(--header-h); }
+
+      /* ─── PAGE TITLES ─── */
+      .page-title { font-size:1.1rem; }
+      .page-subtitle { font-size:0.80rem; margin-bottom:16px; }
+
+      /* ─── STAT GRID ─── */
+      .stat-grid { grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:18px; }
+      .stat-card { padding:14px 14px; }
+      .stat-card .stat-value { font-size:1.35rem; }
+      .stat-card .stat-label { font-size:0.73rem; }
+      .stat-card .stat-icon { width:34px; height:34px; margin-bottom:7px; }
+
+      /* ─── JADWAL TABS ─── */
+      .jadwal-tabs button { padding:9px 14px !important; font-size:0.78rem !important; }
+
+      /* ─── KALENDER ─── */
+      .calendar-day { min-height:68px; padding:3px 2px 18px 2px; }
+      .calendar-day-header { font-size:0.60rem; padding:7px 2px; }
+      .calendar-day .day-num-wrap { width:22px; height:22px; font-size:0.72rem; }
+      .cal-ev-bar { height:16px; line-height:16px; font-size:0.60rem; padding:0 3px; }
+      .calendar-nav h3 { font-size:0.88rem; min-width:0; }
+      .calendar-nav { padding:10px 14px 10px; gap:6px; }
+      .calendar-legend { gap:6px 10px; padding:10px 14px 12px; }
+      .legend-item { font-size:0.68rem; }
+      .legend-dot { width:20px; height:8px; }
+
+      /* ─── GANTT ─── */
+      .gantt-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .gantt-label { font-size:0.72rem; padding:8px 10px; min-width:110px; }
+      .gantt-bar { font-size:0.60rem; height:18px; }
+
+      /* ─── DOC GRID ─── */
+      .doc-grid { grid-template-columns:1fr; gap:14px; }
+      .doc-card { padding:16px 16px 14px; }
+
+      /* ─── ZOOM CARD ─── */
+      .zoom-card { padding:24px 18px; }
+      .zoom-icon-wrap { width:60px; height:60px; }
+      .zoom-icon-wrap i { font-size:26px; }
+      .zoom-card h2 { font-size:1.05rem; }
+      .btn-zoom { padding:11px 20px; font-size:0.9rem; }
+
+      /* ─── UPLOAD FORM ─── */
+      .form-card { padding:18px 16px; max-width:100%; }
+      .upload-instruction { padding:12px 14px; }
+      .upload-instruction ol { font-size:0.80rem; }
+
+      /* ─── STATUS CARDS ─── */
+      .status-welcome-card { padding:16px 18px; gap:12px; }
+      .status-welcome-card .sw-icon { width:44px; height:44px; font-size:18px; }
+      .status-welcome-card .sw-text h3 { font-size:0.95rem; }
+      .status-welcome-card .sw-text p { font-size:0.78rem; }
+      .status-doc-header { padding:12px 14px 10px; flex-direction:column; align-items:flex-start; gap:8px; }
+      .status-doc-body { padding:10px 14px 12px; }
+      .status-badge-lg { font-size:0.78rem; padding:5px 12px; }
+
+      /* ─── ADMIN PANEL ─── */
+      .admin-panel { margin-bottom:16px; }
+      .admin-tab-header { overflow-x:auto; white-space:nowrap; display:flex; padding-bottom:2px; }
+      .admin-tab-btn { white-space:nowrap; flex-shrink:0; }
+      .timeline-editor-grid { grid-template-columns:1fr !important; }
+      .gantt-editor-row { flex-direction:column; gap:8px; }
+      .gantt-editor-row .admin-form-group { min-width:100%; }
+      .form-field-row { flex-wrap:wrap; }
+
+      /* ─── LOGIN MODAL ─── */
+      .login-modal { width:min(98vw,460px); }
+      .login-modal-header { padding:16px 18px; }
+      .login-modal-body { padding:18px 18px; }
+
+      /* ─── REVIEW MODAL ─── */
+      #reviewModal > div { width:min(98vw,620px); max-height:95vh; border-radius:10px; }
+      #reviewModal > div > div:last-child { padding:16px 16px; }
+      #reviewDocButtons { gap:6px; }
+      .btn-view-doc, .btn-dl-doc { font-size:0.72rem; padding:5px 9px; }
+
+      /* ─── INFO BANNER ─── */
+      .info-banner { font-size:0.80rem; padding:11px 14px; }
+
+      /* ─── SECTION HEADING ─── */
+      .section-heading { font-size:0.92rem !important; }
+
+      /* ─── FOOTER ─── */
+      footer { font-size:0.72rem; padding:10px 12px; padding-bottom:72px; }
+
+      /* ─── SYNC INDICATOR ─── */
+      #syncIndicator { bottom:80px; right:12px; font-size:0.75rem; padding:6px 12px; }
+    }
+
+    /* ══════════════════════════════════════════
+       BOTTOM NAVIGATION BAR (mobile only)
+    ══════════════════════════════════════════ */
+    .mobile-bottom-nav {
+      display: none;
+    }
+    @media (max-width:768px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 62px;
+        background: var(--white);
+        border-top: 1px solid var(--gray-200);
+        z-index: 150;
+        box-shadow: 0 -2px 16px rgba(0,0,0,0.10);
+        align-items: stretch;
+      }
+      .mbn-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        text-decoration: none;
+        color: var(--gray-400);
+        font-size: 0.60rem;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        transition: color var(--transition), background var(--transition);
+        border-top: 3px solid transparent;
+        position: relative;
+      }
+      .mbn-item i { font-size: 18px; transition: color var(--transition); }
+      .mbn-item.active {
+        color: var(--blue-700);
+        border-top-color: var(--blue-600);
+        background: var(--blue-50);
+      }
+      .mbn-item.active i { color: var(--blue-600); }
+      .mbn-item.mbn-upload {
+        color: var(--white);
+        background: var(--green-700);
+        border-top-color: transparent;
+        border-radius: 0;
+      }
+      .mbn-item.mbn-upload i { color: var(--white); }
+      .mbn-item.mbn-status {
+        color: var(--white);
+        background: var(--teal-600);
+        border-top-color: transparent;
+      }
+      .mbn-item.mbn-status i { color: var(--white); }
+      .mbn-item.mbn-upload.active,
+      .mbn-item.mbn-status.active {
+        filter: brightness(1.1);
+      }
+      /* Badge notif (optional hook) */
+      .mbn-badge {
+        position: absolute;
+        top: 4px;
+        right: calc(50% - 16px);
+        background: #C0392B;
+        color: white;
+        font-size: 0.55rem;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 1px 5px;
+        line-height: 1.4;
+      }
     }
   </style>
 </head>
@@ -854,12 +1034,20 @@
       <div class="admin-form-group"><label>Status Review <span style="color:#C0392B;">*</span></label><select id="reviewStatus" onchange="updateNotifPreview()"><option value="Menunggu Review">⏳ Menunggu Review</option><option value="Lulus / Memenuhi Syarat">✅ Lulus / Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi / Klarifikasi</option></select></div>
       <div class="admin-form-group"><label><i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja</label><textarea id="reviewCatatan" rows="4" oninput="updateNotifPreview()" style="border-left:3px solid var(--blue-600);background:#F8FBFF;"></textarea></div>
       <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:0.85rem;font-weight:700;color:var(--gray-800);margin-bottom:8px;"><i class="fa-solid fa-bell"></i> &nbsp;Preview Notifikasi ke Penyedia</div>
-        <!-- PERBAIKAN 2: Info mode notifikasi -->
-        <div id="notifModeInfo" style="font-size:0.75rem;color:#856404;background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:6px 10px;margin-bottom:8px;display:none;">
-          <i class="fa-solid fa-circle-info"></i> Fonnte belum dikonfigurasi — WhatsApp akan dibuka secara manual di tab baru. Email akan dibuka di aplikasi email default.
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:0.85rem;font-weight:700;color:var(--gray-800);"><i class="fa-solid fa-bell"></i> &nbsp;Preview Notifikasi ke Penyedia</div>
+          <button id="btnEditNotifPreview" onclick="toggleEditNotifPreview()" title="Edit template notifikasi" style="background:none;border:1px solid var(--gray-200);border-radius:6px;cursor:pointer;color:var(--blue-600);padding:4px 8px;font-size:12px;display:inline-flex;align-items:center;gap:5px;transition:background 0.15s;" onmouseenter="this.style.background='var(--blue-50)'" onmouseleave="this.style.background='none'"><i class="fa-solid fa-pencil"></i> Edit</button>
         </div>
+        <div id="notifModeInfo" style="display:none;"></div>
         <div class="notif-tmpl-box" id="notifPreview"></div>
+        <div id="notifEditArea" style="display:none;margin-top:8px;">
+          <textarea id="notifEditInput" rows="6" style="width:100%;font-size:0.80rem;border:1px solid var(--blue-600);border-radius:6px;padding:8px 10px;font-family:monospace;resize:vertical;background:#F8FBFF;"></textarea>
+          <div style="font-size:0.72rem;color:var(--gray-400);margin:4px 0 8px;">Variabel: <code>{namaPerusahaan}</code> <code>{status}</code> <code>{catatan}</code> <code>{paketNama}</code></div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="simpanEditNotifPreview()" style="background:var(--blue-700);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:0.80rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-check"></i> Terapkan</button>
+            <button onclick="batalEditNotifPreview()" style="background:var(--gray-100);border:none;border-radius:6px;padding:6px 12px;font-size:0.80rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i> Batal</button>
+          </div>
+        </div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
         <button onclick="closeReviewModal()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
@@ -872,7 +1060,53 @@
   </div>
 </div>
 
+<!-- ══ MODAL KLARIFIKASI PENYEDIA ══ -->
+<div id="modalKlarifikasi" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:12px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);position:relative;animation:modalIn 0.2s ease;">
+    <div style="background:linear-gradient(135deg,#856404,#a07c10);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-message"></i> &nbsp;Ajukan Klarifikasi ke Pokja</span>
+      <button onclick="tutupModalKlarifikasi()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:22px 24px;">
+      <div id="klarInfoBox" style="background:#FFF8E1;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#6b5003;margin-bottom:16px;"></div>
+      <div class="admin-form-group">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#856404;"></i> Pesan Klarifikasi <span style="color:#C0392B;">*</span></label>
+        <textarea id="klarPesan" rows="5" placeholder="Tuliskan klarifikasi atau pertanyaan Anda kepada Pokja Pemilihan…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #856404;"></textarea>
+      </div>
+      <div id="klarMsg" style="display:none;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="tutupModalKlarifikasi()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
+        <button id="btnKirimKlarifikasi" onclick="kirimKlarifikasi()" style="display:inline-flex;align-items:center;gap:8px;background:#856404;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;transition:background 0.2s;"><i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <footer><strong>Portal Konsolidasi Jasa Tenaga Alih Daya</strong> &mdash; Bagian Pengadaan Barang dan Jasa, Pemerintah Kota Surakarta &copy; 2026</footer>
+
+<!-- ══ MOBILE BOTTOM NAVIGATION BAR ══ -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <button class="mbn-item active" id="mbn-beranda" onclick="mbnNav('beranda')">
+    <i class="fa-solid fa-house"></i>
+    <span>Beranda</span>
+  </button>
+  <button class="mbn-item" id="mbn-jadwal" onclick="mbnNav('jadwal')">
+    <i class="fa-regular fa-calendar"></i>
+    <span>Jadwal</span>
+  </button>
+  <button class="mbn-item mbn-upload" id="mbn-upload" onclick="mbnNav('upload')">
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <span>Upload</span>
+  </button>
+  <button class="mbn-item mbn-status" id="mbn-status" onclick="mbnNav('status')">
+    <i class="fa-solid fa-list-check"></i>
+    <span>Status</span>
+  </button>
+  <button class="mbn-item" id="mbn-more" onclick="document.getElementById('mobileToggle').click()">
+    <i class="fa-solid fa-grip"></i>
+    <span>Menu</span>
+  </button>
+</nav>
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmovWhDQTQgXQEHoPTlH6mShnPxXquVARQz1c42I72w8S6Rw3rVcDOF4hfyHgveUBL/exec';
@@ -1280,7 +1514,9 @@ function renderStatusPenyedia() {
     const sm      = statusMap[status] || statusMap['Menunggu Review'];
     const catatan = d.catatanPokja || '';
     const hasFile = d.fileLink && d.fileLink.startsWith('http');
-    return `<div class="status-doc-card"><div class="status-doc-header"><div><div class="status-doc-title">${d.jenisDok || 'Dokumen Pengajuan'}</div><div class="status-doc-meta"><i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i> Dikirim: ${tgl}${d.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${d.fileName}` : ''}</div></div><span class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}</span></div><div class="status-doc-body"><div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}${hasFile ? `<a href="${d.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` : ''}</div>${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}${status === 'Perlu Revisi / Klarifikasi' ? `<div style="margin-top:12px;"><a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</a></div>` : ''}</div></div>`;
+    const allIdx  = all.indexOf(d);
+    const klarifikasiLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
+    return `<div class="status-doc-card"><div class="status-doc-header"><div><div class="status-doc-title">${d.jenisDok || 'Dokumen Pengajuan'}</div><div class="status-doc-meta"><i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i> Dikirim: ${tgl}${d.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${d.fileName}` : ''}</div></div><span class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}</span></div><div class="status-doc-body"><div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}${hasFile ? `<a href="${d.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` : ''}</div>${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:6px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi</div>${klarifikasiLog.map(k=>`<div style="background:#F0F6FF;border:1px solid var(--blue-100);border-left:3px solid var(--blue-600);border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.72rem;margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${k.tgl||'-'}</div><div style="color:var(--gray-800);">${k.pesan||''}</div></div>`).join('')}</div>` : ''}${(catatan || status !== 'Menunggu Review') && status !== 'Lulus / Memenuhi Syarat' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${status==='Perlu Revisi / Klarifikasi' ? `<a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</a>` : ''}<button onclick="bukaModalKlarifikasi(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:#856404;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'"><i class="fa-solid fa-message"></i> Ajukan Klarifikasi</button></div>` : ''}</div></div>`;
   }).join('');
 }
 
@@ -1369,6 +1605,14 @@ function showPage(pageId) {
   if (activeLink) activeLink.classList.add('active');
   if (pageId === 'upload') updateUploadFormLock();
   window.scrollTo({ top:0, behavior:'smooth' });
+  // sync mobile bottom nav
+  if (typeof syncMbnWithPage === 'function') syncMbnWithPage(pageId);
+  // tutup sidebar mobile setelah navigasi
+  const sb = document.getElementById('sidebar');
+  if (sb && sb.classList.contains('mobile-open')) {
+    sb.classList.remove('mobile-open');
+    document.getElementById('mobileOverlay').classList.remove('active');
+  }
 }
 
 // =================================================================
@@ -2143,10 +2387,12 @@ function renderPokjaTable() {
     let fileCell='<span style="color:var(--gray-400);">-</span>';
     if(fileLink&&fileLink.startsWith('http')){fileCell=`<div style="display:flex;flex-direction:column;gap:3px;"><a href="${fileLink}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a><a href="${fileLink}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a></div>`;}
     else if(d.fileName){fileCell=`<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;}
+    const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
+    const klarBadge = klarLog.length ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#FFF8E1;border:1px solid #FFD54F;color:#856404;border-radius:12px;padding:1px 8px;font-size:0.70rem;font-weight:700;margin-left:4px;"><i class="fa-solid fa-comments" style="font-size:9px;"></i> ${klarLog.length} klarifikasi</span>` : '';
+    const klarHtml = klarLog.length ? `<div style="margin-top:6px;border-top:1px dashed var(--gray-200);padding-top:5px;">${klarLog.map(k=>`<div style="background:#FFFDE7;border:1px solid #FFD54F;border-radius:5px;padding:5px 8px;margin-bottom:4px;font-size:0.72rem;"><span style="color:var(--gray-400);">${k.tgl||''}</span><br><span style="color:var(--gray-800);">${k.pesan||''}</span></div>`).join('')}</div>` : '';
     const catatanHtml = `
       <div id="catatan-view-${origIdx}" style="display:flex;align-items:flex-start;gap:4px;min-width:120px;">
-        <span id="catatan-text-${origIdx}" style="font-size:0.78rem;flex:1;">${d.catatanPokja||'<em style="color:var(--gray-400);">-</em>'}</span>
-        <button onclick="startEditCatatan(${origIdx})" title="Edit catatan" style="background:none;border:none;cursor:pointer;color:var(--blue-600);padding:2px;flex-shrink:0;font-size:12px;opacity:0.7;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.7"><i class="fa-solid fa-pencil"></i></button>
+        <span id="catatan-text-${origIdx}" style="font-size:0.78rem;flex:1;">${d.catatanPokja||'<em style="color:var(--gray-400);">-</em>'}${klarBadge}</span>
       </div>
       <div id="catatan-edit-${origIdx}" style="display:none;min-width:160px;">
         <textarea id="catatan-input-${origIdx}" rows="2" style="width:100%;font-size:0.78rem;border:1px solid var(--blue-600);border-radius:5px;padding:4px 6px;resize:vertical;font-family:inherit;">${d.catatanPokja||''}</textarea>
@@ -2154,7 +2400,7 @@ function renderPokjaTable() {
           <button onclick="saveCatatanInline(${origIdx})" style="flex:1;background:var(--blue-700);color:#fff;border:none;border-radius:4px;padding:3px 6px;font-size:0.75rem;cursor:pointer;"><i class="fa-solid fa-check"></i> Simpan</button>
           <button onclick="cancelEditCatatan(${origIdx})" style="background:var(--gray-100);border:none;border-radius:4px;padding:3px 6px;font-size:0.75rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-      </div>`;
+      </div>${klarHtml}`;
     return `<tr><td>${origIdx+1}</td><td style="white-space:nowrap;">${tgl}</td><td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td><td style="font-family:monospace;">${d.npwp||'-'}</td><td style="max-width:180px;">${d.jenisDok||'-'}</td><td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td><td>${fileCell}</td><td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td><td>${catatanHtml}</td><td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td></tr>`;
   }).join('');
   renderPokjaStats();
@@ -2237,7 +2483,9 @@ function kirimEmailLangsung(idx) {
 function openReviewModal(idx) {
   const data=getSubmissions(); const d=data[idx]; if(!d) return;
   currentReviewIdx=idx;
-  document.getElementById('reviewModalInfo').innerHTML=`<strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br><span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br><span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} / ${d.email||'-'}</span>${d.fileName?`<br><span style="color:var(--blue-700);font-size:0.82rem;"><i class="fa-solid fa-file-arrow-up"></i> ${d.fileName}</span>`:''}`;
+  const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
+  const klarSection = klarLog.length ? `<div style="margin-top:10px;border-top:1px solid var(--blue-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:#856404;margin-bottom:6px;"><i class="fa-solid fa-comments"></i> Klarifikasi dari Penyedia (${klarLog.length})</div>${klarLog.map(k=>`<div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:#856404;">${k.pengirim||'Penyedia'}</strong></div><div style="color:var(--gray-800);">${k.pesan||''}</div></div>`).join('')}</div>` : '';
+  document.getElementById('reviewModalInfo').innerHTML=`<strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br><span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br><span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} / ${d.email||'-'}</span>${d.fileName?`<br><span style="color:var(--blue-700);font-size:0.82rem;"><i class="fa-solid fa-file-arrow-up"></i> ${d.fileName}</span>`:''}${klarSection}`;
   const btnWrap=document.getElementById('reviewDocButtons');
   if(d.fileLink&&d.fileLink.startsWith('http')){btnWrap.innerHTML=`<a href="${d.fileLink}" target="_blank" class="btn-view-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a><a href="${d.fileLink}" download target="_blank" class="btn-dl-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-download"></i> Download</a>`;}
   else{btnWrap.innerHTML='';}
@@ -2245,24 +2493,16 @@ function openReviewModal(idx) {
   document.getElementById('reviewCatatan').value=d.catatanPokja||'';
   document.getElementById('reviewModalMsg').style.display='none';
   document.getElementById('reviewLoadingOverlay').style.display='none';
-  // PERBAIKAN 2: Cek mode fonnte dan tampilkan info
-  updateNotifModeInfo();
+  // Reset edit preview state
+  document.getElementById('notifEditArea').style.display='none';
+  document.getElementById('notifPreview').style.display='block';
+  document.getElementById('btnEditNotifPreview').innerHTML='<i class="fa-solid fa-pencil"></i> Edit';
   updateNotifPreview();
   document.getElementById('reviewModal').classList.add('show');
 }
 
-// PERBAIKAN 2: Tampilkan info mode notifikasi (Fonnte atau manual)
-function updateNotifModeInfo() {
-  const fonnteConfig=gcGet('fonnteConfig',{});
-  const hasFonnte = fonnteConfig.token && fonnteConfig.token.trim() !== '';
-  const infoEl = document.getElementById('notifModeInfo');
-  if (!hasFonnte && infoEl) {
-    infoEl.style.display='block';
-    infoEl.innerHTML = `<i class="fa-solid fa-circle-info"></i> <strong>Mode Manual:</strong> Fonnte belum dikonfigurasi. WhatsApp akan dibuka otomatis di tab baru, Email via aplikasi email default.`;
-  } else if (infoEl) {
-    infoEl.style.display='none';
-  }
-}
+// PERBAIKAN 2: updateNotifModeInfo – dihapus (tidak lagi menampilkan info Fonnte)
+function updateNotifModeInfo() { /* tidak digunakan */ }
 
 function closeReviewModal(){ document.getElementById('reviewModal').classList.remove('show'); currentReviewIdx=null; }
 
@@ -2469,6 +2709,166 @@ async function init() {
   else{showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.','error');setTimeout(hideSync,3000);}
   renderAll();
   setInterval(async()=>{const cfg=await fetchGlobalConfig(true);if(cfg)renderAll();},60000);
+}
+
+// =================================================================
+// MOBILE BOTTOM NAV
+// =================================================================
+function mbnNav(pageId) {
+  // Map bottom nav id ke page id yang sesungguhnya
+  const pageMap = {
+    'beranda': 'beranda',
+    'jadwal': 'beranda',   // jadwal ada di beranda (scroll / switch tab)
+    'upload': 'upload',
+    'status': 'status',
+  };
+  const targetPage = pageMap[pageId] || pageId;
+  showPage(targetPage);
+  // Kalau jadwal, switch tab Gantt supaya langsung terlihat jadwal
+  if (pageId === 'jadwal') {
+    setTimeout(() => switchJadwalTab('kalender'), 100);
+  }
+  // Update active state semua mbn-item
+  document.querySelectorAll('.mbn-item').forEach(el => {
+    el.classList.remove('active');
+  });
+  const activeBtn = document.getElementById('mbn-' + pageId);
+  if (activeBtn) activeBtn.classList.add('active');
+}
+
+// =================================================================
+// EDIT PREVIEW NOTIFIKASI (tombol pencil di Review Modal)
+// =================================================================
+let _notifEditOriginal = ''; // simpan template asli sebelum diedit
+
+function toggleEditNotifPreview() {
+  const editArea  = document.getElementById('notifEditArea');
+  const previewEl = document.getElementById('notifPreview');
+  const btnEdit   = document.getElementById('btnEditNotifPreview');
+  if (editArea.style.display === 'none') {
+    // Ambil isi preview saat ini (plain text, tanpa <br>)
+    _notifEditOriginal = previewEl.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+    document.getElementById('notifEditInput').value = _notifEditOriginal;
+    editArea.style.display  = 'block';
+    previewEl.style.display = 'none';
+    btnEdit.innerHTML = '<i class="fa-solid fa-eye"></i> Preview';
+  } else {
+    batalEditNotifPreview();
+  }
+}
+
+function simpanEditNotifPreview() {
+  const val = document.getElementById('notifEditInput').value;
+  const previewEl = document.getElementById('notifPreview');
+  previewEl.innerHTML = val.replace(/\n/g,'<br>');
+  previewEl.style.display = 'block';
+  document.getElementById('notifEditArea').style.display = 'none';
+  const btnEdit = document.getElementById('btnEditNotifPreview');
+  btnEdit.innerHTML = '<i class="fa-solid fa-pencil"></i> Edit';
+}
+
+function batalEditNotifPreview() {
+  document.getElementById('notifEditArea').style.display = 'none';
+  document.getElementById('notifPreview').style.display  = 'block';
+  const btnEdit = document.getElementById('btnEditNotifPreview');
+  btnEdit.innerHTML = '<i class="fa-solid fa-pencil"></i> Edit';
+}
+
+// =================================================================
+// KLARIFIKASI PENYEDIA
+// =================================================================
+let _klarIdx = null; // index submisi yang akan diklarifikasi
+
+function bukaModalKlarifikasi(idx) {
+  _klarIdx = idx;
+  const data = getSubmissions();
+  const d    = data[idx];
+  if (!d) return;
+  const infoBox = document.getElementById('klarInfoBox');
+  infoBox.innerHTML = `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong><br>
+    <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span><br>
+    ${d.catatanPokja ? `<span style="font-size:0.78rem;">Catatan Pokja: <em>${d.catatanPokja}</em></span>` : ''}`;
+  document.getElementById('klarPesan').value = '';
+  const msgEl = document.getElementById('klarMsg');
+  msgEl.style.display = 'none';
+  document.getElementById('modalKlarifikasi').style.display = 'flex';
+}
+
+function tutupModalKlarifikasi() {
+  document.getElementById('modalKlarifikasi').style.display = 'none';
+  _klarIdx = null;
+}
+
+async function kirimKlarifikasi() {
+  if (_klarIdx === null) return;
+  const pesan = document.getElementById('klarPesan').value.trim();
+  const msgEl = document.getElementById('klarMsg');
+  if (!pesan) {
+    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Pesan klarifikasi tidak boleh kosong.';
+    return;
+  }
+  const btn = document.getElementById('btnKirimKlarifikasi');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
+
+  const data = getSubmissions();
+  const d    = data[_klarIdx];
+  if (!d) { btn.disabled=false; return; }
+
+  const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const logEntry = {
+    tgl:    tglNow,
+    pesan:  pesan,
+    pengirim: currentPenyedia?.nama || d.namaPerusahaan || 'Penyedia',
+  };
+  if (!Array.isArray(d.klarifikasiLog)) d.klarifikasiLog = [];
+  d.klarifikasiLog.push(logEntry);
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:         'kirimKlarifikasi',
+        namaPerusahaan: d.namaPerusahaan,
+        npwp:           d.npwp,
+        jenisDok:       d.jenisDok,
+        pesan:          pesan,
+        tgl:            tglNow,
+        pengirim:       logEntry.pengirim,
+        klarifikasiLog: d.klarifikasiLog,
+      })
+    });
+  } catch(e) {}
+
+  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Klarifikasi berhasil dikirim!</strong> Pokja akan segera merespons.';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi';
+
+  // Refresh tampilan setelah 1.5 detik
+  setTimeout(() => {
+    tutupModalKlarifikasi();
+    renderStatusPenyedia();
+  }, 1500);
+}
+
+// Klik di luar modal klarifikasi → tutup
+document.getElementById('modalKlarifikasi').addEventListener('click', function(e) {
+  if (e.target === this) tutupModalKlarifikasi();
+});
+
+// =================================================================
+// Sync bottom nav saat showPage dipanggil dari sidebar
+// =================================================================
+const _origShowPage = typeof showPage === 'function' ? showPage : null;
+function syncMbnWithPage(pageId) {
+  const mbnMap = { 'beranda':'beranda', 'upload':'upload', 'status':'status', 'download':'more', 'zoom':'more', 'admin':'more' };
+  const mbnId = mbnMap[pageId] || 'more';
+  document.querySelectorAll('.mbn-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('mbn-' + mbnId);
+  if (el) el.classList.add('active');
 }
 
 init();
