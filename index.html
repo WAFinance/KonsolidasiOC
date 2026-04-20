@@ -694,7 +694,7 @@
       </div>
       <div id="formDaftarPenyedia" style="display:none;">
         <div class="register-hint"><i class="fa-solid fa-circle-info"></i> <strong>Pendaftaran Baru</strong> — Isi data di bawah. Password yang Anda buat akan digunakan untuk login selanjutnya.</div>
-        <div class="admin-form-group"><label>Nama Perusahaan <span style="color:#C0392B;">*</span></label><input type="text" id="regNamaPerusahaan" placeholder="PT / CV / Firma / Koperasi…" autocomplete="organization" /></div>
+        <div class="admin-form-group"><label>Nama Perusahaan <span style="color:#C0392B;">*</span></label><input type="text" id="regNamaPerusahaan" placeholder="PT. / Koperasi / BUMD…" autocomplete="organization" /></div>
         <div class="admin-form-group"><label>Email <span style="color:#C0392B;">*</span></label><input type="email" id="regEmail" placeholder="perusahaan@domain.com" autocomplete="email" /></div>
         <div class="admin-form-group"><label>Buat Password <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="regPassword" placeholder="Min. 6 karakter" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('regPassword',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
         <div class="admin-form-group"><label>Konfirmasi Password <span style="color:#C0392B;">*</span></label><div class="pw-wrap"><input type="password" id="regPasswordConfirm" placeholder="Ulangi password" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('regPasswordConfirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
@@ -1350,7 +1350,7 @@ const DEFAULT_NOTIF_EMAIL_BODY = `Yth. {namaPerusahaan},\n\nKami informasikan ha
 
 // ===== PERBAIKAN 1: Alamat/Domisili Usaha sebagai field dedicated fixed =====
 const DEFAULT_FORM_FIELDS = [
-  { id:'fNamaPerusahaan', label:'Nama Perusahaan', type:'text', placeholder:'PT / CV / Firma…', required:true, fixed:true },
+  { id:'fNamaPerusahaan', label:'Nama Perusahaan', type:'text', placeholder:'PT. / Koperasi / BUMD…', required:true, fixed:true },
   { id:'fNpwp', label:'NPWP Perusahaan', type:'text', placeholder:'xx.xxx.xxx.x-xxx.xxx', required:true, fixed:true },
   { id:'fAlamat', label:'Alamat / Domisili Usaha', type:'textarea', placeholder:'Jl. …, Kelurahan …, Kecamatan …, Kota/Kab. …', required:true, fixed:true },
   { id:'fNamaDirektur', label:'Nama Direktur / Pimpinan', type:'text', placeholder:'Nama lengkap…', required:true, fixed:true },
@@ -2382,7 +2382,22 @@ function renderJudul() {
 // =================================================================
 // UPLOAD FORM RENDER
 // =================================================================
-function renderUploadForm() {
+function isUploadFormDirty() {
+  // Cek apakah ada field teks/select yang sudah diisi atau file sudah dipilih
+  const fieldIds = ['fNamaPerusahaan','fNpwp','fAlamat','fNamaDirektur','fTelp','fEmail','fJenisDok','fFileDok','fKeterangan'];
+  for (const id of fieldIds) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (el.type === 'file' && el.files && el.files.length > 0) return true;
+    if (el.tagName === 'SELECT' && el.value) return true;
+    if (el.value && el.value.trim() !== '') return true;
+  }
+  return false;
+}
+
+function renderUploadForm(force) {
+  // Jangan reset form jika sedang diisi user (kecuali dipaksa force=true)
+  if (!force && isUploadFormDirty()) return;
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   let html = '';
   fields.forEach(f => {
@@ -2497,7 +2512,7 @@ function updateFormFieldLabel(i, val) { const fields=gcGet('formFields',DEFAULT_
 function addFormField(type) { const fields=gcGet('formFields',DEFAULT_FORM_FIELDS); const insertAt=fields.length-2; fields.splice(insertAt,0,{id:'fCustom_'+Date.now(),label:'Field Baru',type,placeholder:'',required:false,fixed:false}); _globalConfig['formFields']=fields; renderFormFieldList(); }
 function removeFormField(i) { const fields=gcGet('formFields',DEFAULT_FORM_FIELDS); if(fields[i]&&!fields[i].fixed){fields.splice(i,1);_globalConfig['formFields']=fields;renderFormFieldList();} }
 function removeFixedFormField(i) { const fields=gcGet('formFields',DEFAULT_FORM_FIELDS); if(!fields[i]) return; if(!confirm(`⚠️ Hapus field "${fields[i].label}"?\n\nField ini adalah field bawaan (fixed). Lanjutkan hapus?`)) return; fields.splice(i,1);_globalConfig['formFields']=fields;renderFormFieldList(); }
-async function saveFormFields() { const fields=gcGet('formFields',DEFAULT_FORM_FIELDS); await pushConfig('formFields',fields); renderUploadForm(); flashMsg('msgForm'); }
+async function saveFormFields() { const fields=gcGet('formFields',DEFAULT_FORM_FIELDS); await pushConfig('formFields',fields); renderUploadForm(true); flashMsg('msgForm'); }
 
 async function changeAdminPassword() {
   const oldPass=document.getElementById('ak-admin-old').value; const newPass=document.getElementById('ak-admin-new').value; const confirm=document.getElementById('ak-admin-confirm').value; const msgEl=document.getElementById('msgAkunAdmin');
@@ -2963,6 +2978,7 @@ function switchJadwalTab(tab) {
 function renderAll() {
   renderJudul(); renderSidebar(); renderCalendar(); renderGantt(); renderDownload(); renderZoom();
   renderRunning(); renderUploadForm(); renderCustomPages(); renderPokjaStats();
+  // Catatan: renderUploadForm() di atas akan skip otomatis jika form sedang diisi
 }
 
 async function init() {
