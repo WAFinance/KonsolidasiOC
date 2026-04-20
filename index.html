@@ -369,6 +369,53 @@
     footer { background:var(--blue-900); color:rgba(255,255,255,0.75); text-align:center; padding:12px; font-size:0.80rem; }
     footer strong { color:var(--white); }
 
+    /* ===== PANDUAN PENGGUNAAN ===== */
+    .nav-panduan { background:linear-gradient(135deg,#7B2D8B,#9B3AAB) !important; color:#fff !important; border-left:3px solid #5c1a6e !important; margin:6px 10px !important; border-radius:8px !important; padding:11px 12px !important; font-weight:700 !important; }
+    .nav-panduan:hover { background:linear-gradient(135deg,#5c1a6e,#7B2D8B) !important; color:#fff !important; }
+    .nav-panduan .nav-icon { color:#fff !important; }
+    aside.sidebar.collapsed .nav-panduan { margin:6px 4px !important; padding:11px 8px !important; }
+
+    .panduan-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:1050; align-items:center; justify-content:center; }
+    .panduan-overlay.show { display:flex; }
+    .panduan-modal { background:var(--white); border-radius:14px; width:min(680px,96vw); max-height:90vh; display:flex; flex-direction:column; box-shadow:0 12px 48px rgba(0,0,0,0.3); animation:modalIn 0.2s ease; overflow:hidden; }
+    .panduan-header { background:linear-gradient(135deg,#7B2D8B,#9B3AAB); color:white; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .panduan-header h2 { font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:10px; }
+    .panduan-header p { font-size:0.78rem; opacity:0.85; margin-top:3px; }
+    .panduan-close { background:rgba(255,255,255,0.2); border:none; color:white; border-radius:6px; padding:5px 11px; cursor:pointer; font-size:15px; line-height:1; transition:background 0.2s; }
+    .panduan-close:hover { background:rgba(255,255,255,0.35); }
+
+    .panduan-tabs { display:flex; gap:0; border-bottom:2px solid var(--gray-100); flex-shrink:0; background:var(--gray-50); overflow-x:auto; }
+    .panduan-tab { padding:10px 18px; border:none; background:transparent; color:var(--gray-600); font-size:0.83rem; font-weight:600; cursor:pointer; white-space:nowrap; border-bottom:3px solid transparent; transition:all 0.2s; }
+    .panduan-tab:hover { color:#7B2D8B; background:rgba(123,45,139,0.05); }
+    .panduan-tab.active { color:#7B2D8B; border-bottom-color:#7B2D8B; background:white; }
+
+    .panduan-body { overflow-y:auto; flex:1; padding:22px 26px; }
+    .panduan-section { display:none; }
+    .panduan-section.active { display:block; }
+
+    .panduan-step { display:flex; gap:14px; margin-bottom:20px; align-items:flex-start; }
+    .panduan-step-num { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#7B2D8B,#9B3AAB); color:white; font-weight:800; font-size:0.88rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(123,45,139,0.3); }
+    .panduan-step-content h4 { font-size:0.92rem; font-weight:700; color:var(--blue-900); margin-bottom:4px; }
+    .panduan-step-content p { font-size:0.83rem; color:var(--gray-600); line-height:1.6; margin-bottom:0; }
+    .panduan-step-content .step-tip { background:#FFF8E1; border-left:3px solid #FFC107; border-radius:5px; padding:7px 11px; font-size:0.78rem; color:#856404; margin-top:7px; }
+    .panduan-step-content .step-tip i { margin-right:4px; }
+    .panduan-step-divider { border:none; border-top:1px dashed var(--gray-200); margin:4px 0 20px 46px; }
+
+    .panduan-intro-box { background:linear-gradient(135deg,rgba(123,45,139,0.07),rgba(24,95,165,0.07)); border:1px solid rgba(123,45,139,0.2); border-left:4px solid #7B2D8B; border-radius:10px; padding:14px 18px; margin-bottom:22px; }
+    .panduan-intro-box h3 { font-size:0.95rem; font-weight:700; color:#7B2D8B; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+    .panduan-intro-box p { font-size:0.82rem; color:var(--gray-600); line-height:1.6; margin:0; }
+
+    .panduan-badge { display:inline-flex; align-items:center; gap:5px; padding:2px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; }
+    .panduan-badge-purple { background:rgba(123,45,139,0.1); color:#7B2D8B; }
+    .panduan-badge-blue   { background:var(--blue-50); color:var(--blue-700); }
+    .panduan-badge-green  { background:#EAF3DE; color:#3B6D11; }
+    .panduan-badge-yellow { background:#FFF3CD; color:#856404; }
+
+    .panduan-footer { padding:14px 26px; border-top:1px solid var(--gray-100); background:var(--gray-50); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; gap:10px; flex-wrap:wrap; }
+    .panduan-footer-note { font-size:0.78rem; color:var(--gray-400); display:flex; align-items:center; gap:6px; }
+    .btn-panduan-close { background:linear-gradient(135deg,#7B2D8B,#9B3AAB); color:white; border:none; border-radius:8px; padding:9px 22px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.2s; }
+    .btn-panduan-close:hover { background:linear-gradient(135deg,#5c1a6e,#7B2D8B); }
+
     #syncIndicator { position:fixed; bottom:16px; right:16px; background:var(--blue-900); color:white; border-radius:10px; padding:8px 16px; font-size:0.8rem; display:none; z-index:9999; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.25); }
     #syncIndicator.show { display:flex; }
     #syncIndicator.error { background:#C0392B; }
@@ -806,7 +853,7 @@
         <h3><i class="fa-solid fa-circle-info"></i> &nbsp;Petunjuk Pengisian</h3>
         <ol>
           <li>Pastikan dokumen telah ditandatangani dan distempel perusahaan.</li>
-          <li>Format file: <strong>PDF, ZIP, atau RAR</strong> (maks. 25 MB).</li>
+          <li>Format file: <strong>PDF, ZIP, atau RAR</strong> (maks. 100 MB).</li>
           <li>Isi semua kolom bertanda <strong>(*)</strong> dengan lengkap dan benar.</li>
           <li>Periksa kembali nama perusahaan dan NPWP sebelum mengirim.</li>
           <li>Setelah berhasil upload, Anda dapat upload ulang untuk mengganti atau melengkapi dokumen.</li>
@@ -1142,6 +1189,111 @@
   </div>
 </div>
 
+<!-- ===== MODAL PANDUAN PENGGUNAAN ===== -->
+<div id="panduanOverlay" class="panduan-overlay">
+  <div class="panduan-modal">
+    <div class="panduan-header">
+      <div>
+        <h2><i class="fa-solid fa-book-open"></i> Panduan Penggunaan Portal</h2>
+        <p>Panduan lengkap untuk akun Penyedia — dari pendaftaran hingga klarifikasi</p>
+      </div>
+      <button class="panduan-close" onclick="tutupPanduan()">&#x2715;</button>
+    </div>
+    <div class="panduan-tabs" id="panduanTabs">
+      <button class="panduan-tab active" onclick="switchPanduanTab('daftar',this)"><i class="fa-solid fa-user-plus"></i> Daftar Baru</button>
+      <button class="panduan-tab" onclick="switchPanduanTab('login',this)"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+      <button class="panduan-tab" onclick="switchPanduanTab('upload',this)"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Penawaran</button>
+      <button class="panduan-tab" onclick="switchPanduanTab('status',this)"><i class="fa-solid fa-clipboard-list"></i> Review Status</button>
+      <button class="panduan-tab" onclick="switchPanduanTab('klarifikasi',this)"><i class="fa-solid fa-comments"></i> Klarifikasi</button>
+    </div>
+    <div class="panduan-body">
+      <!-- TAB: DAFTAR BARU -->
+      <div class="panduan-section active" id="panduan-daftar">
+        <div class="panduan-intro-box">
+          <h3><i class="fa-solid fa-circle-info"></i> Sebelum Mulai</h3>
+          <p>Penyedia wajib memiliki akun terlebih dahulu sebelum dapat menggunakan fitur <strong>Upload Dokumen</strong> dan <strong>Status Pengajuan</strong>. Proses pendaftaran hanya dilakukan sekali dan gratis.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Klik tombol <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-building"></i> Login Penyedia</span> di sidebar</h4><p>Tombol ini tersedia di bagian atas sidebar kiri, bahkan sebelum login. Di perangkat mobile, buka sidebar dengan mengetuk ikon menu di header.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Pilih tab <span class="panduan-badge panduan-badge-purple"><i class="fa-solid fa-user-plus"></i> Daftar Baru</span></h4><p>Pada pop-up login yang muncul, klik tab <strong>Daftar Baru</strong> di bagian atas form.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Isi data pendaftaran dengan lengkap</h4><p>Masukkan: <strong>Nama Perusahaan</strong> (sesuai akta/NIB), <strong>Email</strong> aktif yang dapat dihubungi, <strong>Password</strong> minimal 6 karakter, dan <strong>Konfirmasi Password</strong>.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Gunakan email perusahaan yang aktif karena notifikasi status dokumen akan dikirim ke alamat email ini.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Klik <strong>Daftar</strong> dan tunggu konfirmasi</h4><p>Sistem akan memverifikasi dan membuat akun baru. Setelah berhasil, Anda akan otomatis masuk dan dapat langsung menggunakan semua fitur penyedia.</p><div class="step-tip"><i class="fa-solid fa-triangle-exclamation"></i> Jika muncul pesan "Email sudah terdaftar", akun sudah ada — gunakan tab <strong>Masuk</strong> untuk login.</div></div></div>
+      </div>
+      <!-- TAB: LOGIN -->
+      <div class="panduan-section" id="panduan-login">
+        <div class="panduan-intro-box">
+          <h3><i class="fa-solid fa-circle-info"></i> Login Akun Penyedia</h3>
+          <p>Gunakan email dan password yang sudah didaftarkan. Akun penyedia <strong>berbeda</strong> dengan akun Pokja — pastikan menggunakan tombol <em>Login Penyedia</em>.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Klik <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-building"></i> Login Penyedia</span> di sidebar</h4><p>Tombol berwarna biru ini selalu tersedia di sidebar, bahkan sebelum login. Di perangkat mobile, buka sidebar dengan mengetuk ikon menu di header.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Masukkan Email dan Password, klik <strong>Masuk</strong></h4><p>Pastikan tab <strong>Masuk</strong> aktif. Isi email dan password terdaftar, lalu tekan tombol Masuk atau Enter.</p><div class="step-tip"><i class="fa-solid fa-eye"></i> Gunakan ikon mata di sebelah kolom password untuk memastikan password diketik dengan benar.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Menu penyedia otomatis muncul di sidebar</h4><p>Setelah login berhasil, sidebar menampilkan <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</span> dan <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</span>. Nama perusahaan Anda tampil di bagian atas sidebar.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Logout saat selesai</h4><p>Klik <span class="panduan-badge" style="background:#FDEDEC;color:#922B21;"><i class="fa-solid fa-right-from-bracket"></i> Logout</span> di bagian bawah sidebar atau di header kanan atas.</p><div class="step-tip"><i class="fa-solid fa-lock"></i> Selalu logout setelah selesai, terutama di komputer bersama atau komputer umum.</div></div></div>
+      </div>
+      <!-- TAB: UPLOAD -->
+      <div class="panduan-section" id="panduan-upload">
+        <div class="panduan-intro-box">
+          <h3><i class="fa-solid fa-circle-info"></i> Upload Dokumen Penawaran</h3>
+          <p>Dokumen penawaran dikirimkan melalui form digital dan tersimpan di Google Drive BPBJ. Anda harus <strong>login sebagai penyedia</strong> terlebih dahulu.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Siapkan dokumen sebelum upload</h4><p>Pastikan dokumen sudah ditandatangani dan distempel. Format: <strong>PDF, ZIP, atau RAR</strong>. Ukuran maksimal <strong>100 MB</strong>.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</span> di sidebar</h4><p>Halaman berisi form yang harus diisi lengkap sebelum mengirimkan dokumen.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Isi semua kolom bertanda <span style="color:#C0392B;">*</span> (wajib)</h4><p>Data yang wajib diisi: Nama Perusahaan, NPWP, Alamat, Nama Direktur, Telepon, Email, dan Jenis Dokumen. Pilih jenis sesuai layanan yang ditawarkan.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Periksa kembali NPWP dan Nama Perusahaan — data ini digunakan Pokja untuk identifikasi.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Pilih file dan klik <strong>Kirim Dokumen</strong></h4><p>Klik kolom upload, pilih file dari perangkat, lalu klik <strong>Kirim Dokumen</strong>. Progress bar menampilkan status pengiriman secara real-time.</p><div class="step-tip"><i class="fa-solid fa-rotate"></i> Anda dapat upload ulang kapan saja untuk mengganti atau melengkapi dokumen.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">5</div><div class="panduan-step-content"><h4>Konfirmasi berhasil</h4><p>Setelah sukses, muncul notifikasi hijau <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Dokumen berhasil dikirim!</span> — dokumen tersimpan di Google Drive BPBJ dan siap direview Pokja.</p></div></div>
+      </div>
+      <!-- TAB: STATUS -->
+      <div class="panduan-section" id="panduan-status">
+        <div class="panduan-intro-box">
+          <h3><i class="fa-solid fa-circle-info"></i> Memantau Status Pengajuan</h3>
+          <p>Setelah upload, pantau perkembangan review dokumen oleh Pokja melalui halaman <strong>Status Pengajuan</strong>. Halaman ini hanya bisa diakses setelah login.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</span> di sidebar</h4><p>Menu ini memuat daftar dokumen yang telah Anda kirimkan beserta status terkini dari masing-masing dokumen.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Pahami arti status yang ditampilkan</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-hourglass-half"></i> Menunggu Review</span><span style="color:var(--gray-600);">Dokumen diterima, sedang antre untuk dievaluasi Pokja.</span></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Lulus / Memenuhi Syarat</span><span style="color:var(--gray-600);">Dokumen dinyatakan memenuhi persyaratan administrasi.</span></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge" style="background:#FDEDEC;color:#922B21;"><i class="fa-solid fa-circle-xmark"></i> Tidak Memenuhi</span><span style="color:var(--gray-600);">Dokumen belum memenuhi syarat. Periksa catatan dari Pokja.</span></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Perlu Revisi / Klarifikasi</span><span style="color:var(--gray-600);">Ada pertanyaan atau perbaikan yang diminta Pokja.</span></div>
+          </div>
+        </div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Klik <strong>Refresh</strong> untuk memperbarui data</h4><p>Status diperbarui otomatis setiap <strong>20 detik</strong>. Anda juga dapat klik tombol <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Refresh</span> kapan saja untuk memuat data terbaru secara manual.</p><div class="step-tip"><i class="fa-solid fa-bell"></i> Notifikasi perubahan status juga dikirim melalui WhatsApp atau email oleh Pokja jika kontak Anda terdaftar.</div></div></div>
+      </div>
+      <!-- TAB: KLARIFIKASI -->
+      <div class="panduan-section" id="panduan-klarifikasi">
+        <div class="panduan-intro-box">
+          <h3><i class="fa-solid fa-circle-info"></i> Mengajukan Klarifikasi</h3>
+          <p>Jika status dokumen <strong>Perlu Revisi / Klarifikasi</strong>, Pokja mungkin memiliki pertanyaan. Anda dapat mengajukan klarifikasi langsung melalui portal.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</span></h4><p>Temukan dokumen berstatus <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Perlu Revisi</span> yang ingin diklarifikasi.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Klik tombol <strong>Ajukan Klarifikasi</strong> pada kartu dokumen</h4><p>Setiap kartu dokumen memiliki tombol Ajukan Klarifikasi di bagian bawah. Klik tombol tersebut untuk membuka form klarifikasi.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Tulis pesan klarifikasi dengan jelas dan kirim</h4><p>Jelaskan pertanyaan atau tanggapan Anda secara singkat dan jelas. Klik <strong>Kirim Klarifikasi</strong> setelah selesai.</p><div class="step-tip"><i class="fa-solid fa-pen"></i> Contoh: <em>"Mohon klarifikasi terkait persyaratan sertifikat di halaman 5 — apakah sertifikat yang habis masa berlaku 3 bulan lagi masih dapat diterima?"</em></div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Pantau tanggapan Pokja di halaman yang sama</h4><p>Tanggapan Pokja akan tampil langsung di kartu dokumen. Refresh halaman Status Pengajuan untuk memeriksa apakah sudah ada balasan.</p><div class="step-tip"><i class="fa-solid fa-clock"></i> Tanggapan Pokja biasanya diberikan dalam 1–2 hari kerja.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num">5</div><div class="panduan-step-content"><h4>Upload ulang jika diminta perbaikan dokumen</h4><p>Jika Pokja meminta revisi, lakukan upload ulang melalui menu <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</span>. Dokumen baru menggantikan yang lama secara otomatis.</p></div></div>
+      </div>
+    </div>
+    <div class="panduan-footer">
+      <div class="panduan-footer-note"><i class="fa-solid fa-circle-info" style="color:#7B2D8B;"></i> Butuh bantuan lebih lanjut? Hubungi Pokja Pemilihan BPBJ Kota Surakarta.</div>
+      <button class="btn-panduan-close" onclick="tutupPanduan()"><i class="fa-solid fa-circle-xmark"></i> Tutup Panduan</button>
+    </div>
+  </div>
+</div>
+
 <footer><strong>Portal Konsolidasi Jasa Tenaga Alih Daya</strong> &mdash; Bagian Pengadaan Barang dan Jasa, Pemerintah Kota Surakarta &copy; 2026</footer>
 
 <!-- ══ MOBILE BOTTOM NAVIGATION BAR ══ -->
@@ -1209,7 +1361,7 @@ const DEFAULT_FORM_FIELDS = [
     { group:'2. Tenaga Keamanan',   items:['Tenaga Keamanan – Ketua Regu','Tenaga Keamanan – Anggota'] },
     { group:'3. Tenaga Pengemudi',  items:['Tenaga Pengemudi – Kendaraan Berat <3500 kg','Tenaga Pengemudi – Kendaraan Berat ≥3500 kg'] },
   ]},
-  { id:'fFileDok', label:'Upload Dokumen', type:'file', hint:'PDF, ZIP, atau RAR – maks. 25 MB', required:true, fixed:true },
+  { id:'fFileDok', label:'Upload Dokumen', type:'file', hint:'PDF, ZIP, atau RAR – maks. 100 MB', required:true, fixed:true },
   { id:'fKeterangan', label:'Keterangan Tambahan', type:'textarea', placeholder:'Isi jika ada catatan khusus (opsional)…', required:false, fixed:true },
 ];
 
@@ -1667,6 +1819,7 @@ function renderSidebar() {
   });
   if (currentRole === 'pokja') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout Pokja</span></a></li>`; }
   if (currentRole === 'penyedia') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout</span></a></li>`; }
+  html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px 8px;"><a href="#" class="nav-link nav-panduan" onclick="event.preventDefault();bukaMenuPanduan();"><span class="nav-icon"><i class="fa-solid fa-book-open"></i></span><span class="nav-label">Panduan Penggunaan</span></a></li>`;
   nav.innerHTML = html;
   document.querySelectorAll('.nav-link[data-page]').forEach(link => {
     link.addEventListener('click', function(e) {
@@ -2235,7 +2388,7 @@ function renderUploadForm() {
   fields.forEach(f => {
     const fakeName = 'field_' + (Math.random().toString(36).slice(2,7));
     if (f.type === 'file') {
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="file" id="${f.id}" name="${fakeName}" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" /><div class="file-hint">${f.hint||'PDF, ZIP, atau RAR – maks. 25 MB.'}</div><div id="fUploadProgress" style="display:none;margin-top:10px;"><div class="upload-progress-wrap"><div class="upload-progress-bar" id="fProgressBar"></div></div><span class="upload-progress-label" id="fProgressText"></span></div></div>`;
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="file" id="${f.id}" name="${fakeName}" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" /><div class="file-hint">${f.hint||'PDF, ZIP, atau RAR – maks. 100 MB.'}</div><div id="fUploadProgress" style="display:none;margin-top:10px;"><div class="upload-progress-wrap"><div class="upload-progress-bar" id="fProgressBar"></div></div><span class="upload-progress-label" id="fProgressText"></span></div></div>`;
     } else if (f.type === 'textarea') {
       html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><textarea id="${f.id}" name="${fakeName}" autocomplete="off" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
     } else if (f.type === 'select') {
@@ -2410,7 +2563,7 @@ async function submitUpload() {
   const file=fileInput?fileInput.files[0]:null;
   if(!valid){showFormMsg('error','Harap lengkapi semua kolom bertanda (*).'); return;}
   if(!file){showFormMsg('error','Harap pilih file dokumen.'); return;}
-  if(file.size>25*1024*1024){showFormMsg('error','Ukuran file melebihi 25 MB.'); return;}
+  if(file.size>100*1024*1024){showFormMsg('error','Ukuran file melebihi 100 MB.'); return;}
   const btn=document.getElementById('btnSubmitUpload');
   btn.disabled=true;
   btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg> Mengirim…`;
@@ -2821,7 +2974,37 @@ async function init() {
   renderAll();
   // Muat jumlah peserta publik tanpa perlu login
   loadPublicPesertaCount();
+  // Auto-refresh config & tampilan setiap 60 detik
   setInterval(async()=>{const cfg=await fetchGlobalConfig(true);if(cfg)renderAll();},60000);
+  // Auto-refresh data submisi setiap 20 detik (silent, tanpa ganggu UI)
+  setInterval(autoRefreshSubmissions, 20000);
+}
+
+// Auto-refresh submissions setiap 20 detik – update data & tampilan secara diam-diam
+async function autoRefreshSubmissions() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'ok' && Array.isArray(data.submissions)) {
+      const prevCount = _submissions.length;
+      _submissions = data.submissions;
+      // Update stat peserta di beranda
+      const statEl = document.getElementById('statPeserta');
+      if (statEl) statEl.textContent = _submissions.length || '0';
+      // Re-render tabel/status sesuai role yang sedang aktif (tanpa flash)
+      if (currentRole === 'pokja' || currentRole === 'admin') {
+        renderPokjaTable();
+      }
+      if (currentRole === 'penyedia' && currentPenyedia) {
+        renderStatusPenyedia();
+      }
+      // Tampilkan indikator kecil jika ada data baru masuk
+      if (_submissions.length > prevCount) {
+        showSync('✓ ' + (_submissions.length - prevCount) + ' data baru masuk', 'success');
+        setTimeout(hideSync, 2500);
+      }
+    }
+  } catch(e) {}
 }
 
 // Muat jumlah peserta untuk tampilan publik (beranda)
@@ -3091,6 +3274,29 @@ async function kirimTanggapanKlarifikasi() {
 
 document.getElementById('modalTanggapan').addEventListener('click', function(e) {
   if (e.target === this) tutupTanggapanKlarifikasi();
+});
+
+// =================================================================
+// PANDUAN PENGGUNAAN
+// =================================================================
+function bukaMenuPanduan() {
+  document.getElementById('panduanOverlay').classList.add('show');
+}
+function tutupPanduan() {
+  document.getElementById('panduanOverlay').classList.remove('show');
+}
+function switchPanduanTab(tabId, btn) {
+  document.querySelectorAll('.panduan-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.panduan-tab').forEach(t => t.classList.remove('active'));
+  const sec = document.getElementById('panduan-' + tabId);
+  if (sec) sec.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') tutupPanduan();
+});
+document.getElementById('panduanOverlay').addEventListener('click', function(e) {
+  if (e.target === this) tutupPanduan();
 });
 
 // =================================================================
