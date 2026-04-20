@@ -2987,7 +2987,7 @@ function renderPokjaTable() {
           <button id="${btnId}" onclick="togglePokjaHistori(${origIdx})"
             style="display:inline-flex;align-items:center;gap:5px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-600);border-radius:5px;padding:3px 9px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:background 0.15s;white-space:nowrap;">
             <i id="phIcon-${origIdx}" class="fa-solid fa-clock-rotate-left"></i>
-            <span>${history.length} versi</span>
+            <span>${history.length} dok. sebelumnya</span>
           </button>
           <div id="${panelId}" style="display:none;margin-top:6px;min-width:180px;">
             ${history.map(({d:dv},vi)=>{
@@ -3089,7 +3089,14 @@ function togglePokjaHistori(origIdx) {
   if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
   if (btn) {
     const countEl = btn.querySelector('span');
-    if (countEl) countEl.textContent = isHidden ? 'Sembunyikan' : countEl.textContent;
+    if (countEl) {
+      if (isHidden) {
+        countEl.textContent = 'Sembunyikan';
+      } else {
+        const count = panel.children.length;
+        countEl.textContent = count + ' dok. sebelumnya';
+      }
+    }
   }
 }
 
@@ -3398,34 +3405,38 @@ async function init() {
   renderAll();
   // Muat jumlah peserta publik tanpa perlu login
   loadPublicPesertaCount();
-  // Auto-refresh config & tampilan setiap 60 detik
-  setInterval(async()=>{const cfg=await fetchGlobalConfig(true);if(cfg)renderAll();},60000);
-  // Auto-refresh data submisi setiap 20 detik (silent, tanpa ganggu UI)
+  // Auto-refresh data submisi setiap 20 detik (data saja, tidak render ulang UI)
   setInterval(autoRefreshSubmissions, 20000);
 }
 
 // Auto-refresh submissions setiap 20 detik – update data & tampilan secara diam-diam
 async function autoRefreshSubmissions() {
+  // HANYA update data di memori + angka statistik.
+  // TIDAK render ulang tabel/kartu agar state UI (buka/tutup panel dll) tidak reset.
   try {
     const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const prevCount = _submissions.length;
+      const prevHash  = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'')).join(';;');
       _submissions = data.submissions;
-      // Update stat peserta di beranda
+      const newHash   = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'')).join(';;');
+
+      // Update angka statistik saja (bukan render tabel)
       const statEl = document.getElementById('statPeserta');
       if (statEl) statEl.textContent = _submissions.length || '0';
-      // Re-render tabel/status sesuai role yang sedang aktif (tanpa flash)
       if (currentRole === 'pokja' || currentRole === 'admin') {
-        renderPokjaTable();
+        renderPokjaStats();
       }
-      if (currentRole === 'penyedia' && currentPenyedia) {
-        renderStatusPenyedia();
-      }
-      // Tampilkan indikator kecil jika ada data baru masuk
-      if (_submissions.length > prevCount) {
-        showSync('✓ ' + (_submissions.length - prevCount) + ' data baru masuk', 'success');
-        setTimeout(hideSync, 2500);
+
+      // Notifikasi kecil jika ada perubahan, tanpa re-render UI
+      if (prevHash !== newHash) {
+        const added = _submissions.length - prevCount;
+        const msg = added > 0
+          ? '✓ ' + added + ' data baru masuk'
+          : '✓ Ada pembaruan data pengajuan';
+        showSync(msg, 'success');
+        setTimeout(hideSync, 3000);
       }
     }
   } catch(e) {}
