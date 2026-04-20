@@ -671,7 +671,64 @@
   <span id="syncMsg">Menyinkronkan…</span>
 </div>
 
-<!-- ===== LOGIN OVERLAY PENYEDIA ===== -->
+<!-- ===== MODAL REVISI CEPAT ===== -->
+<div id="modalRevisiCepat" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--white);border-radius:14px;width:min(96vw,520px);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,var(--blue-700),var(--blue-900));color:#fff;padding:18px 22px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:1.05rem;font-weight:800;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</div>
+        <div style="font-size:0.78rem;opacity:0.85;margin-top:2px;" id="revisiModalSubtitle">Data perusahaan diisi otomatis dari pengajuan sebelumnya</div>
+      </div>
+      <button onclick="tutupModalRevisi()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <!-- Info dokumen sebelumnya -->
+    <div id="revisiInfoLama" style="margin:16px 20px 0;background:var(--blue-50);border:1px solid var(--blue-100);border-left:4px solid var(--blue-600);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--blue-900);">
+      <div style="font-weight:700;margin-bottom:4px;"><i class="fa-solid fa-circle-info"></i> Dokumen Sebelumnya</div>
+      <div id="revisiInfoLamaContent"></div>
+    </div>
+    <!-- Body form -->
+    <div style="padding:18px 20px;">
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;">
+          <i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> Pilih File Revisi <span style="color:#C0392B;">*</span>
+        </label>
+        <input type="file" id="revisiFileDok" accept=".pdf,.zip,.rar"
+          style="width:100%;padding:8px 10px;border:1.5px dashed var(--blue-600);border-radius:8px;font-size:0.88rem;background:#F8FBFF;cursor:pointer;" />
+        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Format: PDF, ZIP, atau RAR — maks. 100 MB</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;">
+          <i class="fa-solid fa-comment" style="color:var(--blue-600);"></i> Keterangan Revisi <span style="font-weight:400;color:var(--gray-400);">(opsional)</span>
+        </label>
+        <textarea id="revisiKeterangan" rows="3"
+          style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;"
+          placeholder="Contoh: Perbaikan lampiran halaman 3, penambahan stempel perusahaan…"></textarea>
+      </div>
+      <!-- Progress bar -->
+      <div id="revisiProgressWrap" style="display:none;margin-bottom:14px;">
+        <div style="background:var(--gray-100);border-radius:6px;height:8px;overflow:hidden;margin-bottom:5px;">
+          <div id="revisiProgressBar" style="height:100%;width:5%;background:linear-gradient(90deg,var(--blue-700),var(--blue-600));border-radius:6px;transition:width 0.3s;"></div>
+        </div>
+        <span id="revisiProgressText" style="font-size:0.75rem;color:var(--blue-700);font-weight:600;"></span>
+      </div>
+      <!-- Pesan sukses/error -->
+      <div id="revisiMsgSukses" style="display:none;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:8px;padding:12px 14px;font-size:0.85rem;margin-bottom:14px;"><i class="fa-solid fa-circle-check"></i> <strong>Revisi berhasil dikirim!</strong> Pokja akan mereview dokumen terbaru Anda.</div>
+      <div id="revisiMsgError" style="display:none;background:#FDE8E8;color:#C0392B;border:1px solid #F5C6C6;border-radius:8px;padding:12px 14px;font-size:0.85rem;margin-bottom:14px;"></div>
+      <!-- Tombol -->
+      <div style="display:flex;gap:10px;">
+        <button id="btnKirimRevisi" onclick="submitRevisiCepat()"
+          style="flex:1;background:var(--blue-700);color:#fff;border:none;border-radius:9px;padding:12px;font-size:0.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s;">
+          <i class="fa-solid fa-paper-plane"></i> Kirim Revisi
+        </button>
+        <button onclick="tutupModalRevisi()"
+          style="padding:12px 18px;border:1px solid var(--gray-200);background:var(--gray-50);border-radius:9px;cursor:pointer;font-size:0.88rem;color:var(--gray-600);">
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="loginOverlayPenyedia" class="login-overlay">
   <div class="login-modal" style="position:relative;">
     <div class="login-modal-header modal-header-penyedia">
@@ -1837,7 +1894,7 @@ function renderStatusPenyedia() {
         ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
         ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog)}</div>` : ''}
         ${historyHtml}
-        ${(catatan || status !== 'Menunggu Review') && status !== 'Lulus / Memenuhi Syarat' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${status==='Perlu Revisi / Klarifikasi' ? `<a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</a>` : ''}<button onclick="bukaModalKlarifikasi(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:#856404;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'"><i class="fa-solid fa-message"></i> Ajukan Klarifikasi</button></div>` : ''}
+        ${(catatan || status !== 'Menunggu Review') && status !== 'Lulus / Memenuhi Syarat' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${status==='Perlu Revisi / Klarifikasi' ? `<button onclick="bukaModalRevisiByIdx(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='var(--blue-900)'" onmouseleave="this.style.background='var(--blue-700)'"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</button>` : ''}<button onclick="bukaModalKlarifikasi(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:#856404;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'"><i class="fa-solid fa-message"></i> Ajukan Klarifikasi</button></div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2716,6 +2773,130 @@ function showFormMsg(type,msg) {
   if(type==='success') document.getElementById('uploadSuccess').style.display='block';
   else{document.getElementById('uploadErrorMsg').textContent=msg||'';document.getElementById('uploadError').style.display='block';}
 }
+
+// =================================================================
+// MODAL REVISI CEPAT
+// =================================================================
+let _revisiDocData = null; // simpan data dokumen yang akan direvisi
+
+function bukaModalRevisiByIdx(idx) {
+  const data = getSubmissions();
+  const d = data[idx];
+  if (!d) return;
+  bukaModalRevisi(d);
+}
+
+function bukaModalRevisi(docData) {
+  _revisiDocData = docData;
+  // Reset state
+  document.getElementById('revisiFileDok').value = '';
+  document.getElementById('revisiKeterangan').value = '';
+  document.getElementById('revisiMsgSukses').style.display = 'none';
+  document.getElementById('revisiMsgError').style.display = 'none';
+  document.getElementById('revisiProgressWrap').style.display = 'none';
+  document.getElementById('btnKirimRevisi').disabled = false;
+  document.getElementById('btnKirimRevisi').innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Revisi';
+
+  // Tampilkan info dokumen sebelumnya
+  const tglLama = docData.tanggal ? new Date(docData.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+  const hasFileLama = docData.fileLink && docData.fileLink.startsWith('http');
+  document.getElementById('revisiInfoLamaContent').innerHTML =
+    `<span style="color:var(--gray-600);"><i class="fa-solid fa-building" style="color:var(--blue-600);"></i> <strong>${docData.namaPerusahaan||'-'}</strong></span><br>` +
+    `<span style="color:var(--gray-600);"><i class="fa-solid fa-tag" style="color:var(--blue-600);"></i> ${docData.jenisDok||'-'}</span><br>` +
+    `<span style="color:var(--gray-400);font-size:0.78rem;"><i class="fa-solid fa-clock"></i> Upload terakhir: ${tglLama}</span>` +
+    (docData.fileName ? `<br><span style="color:var(--blue-800);font-size:0.78rem;"><i class="fa-solid fa-file"></i> ${docData.fileName}</span>` : '') +
+    (hasFileLama ? `<br><a href="${docData.fileLink}" target="_blank" rel="noopener" style="font-size:0.78rem;color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat dokumen lama</a>` : '');
+
+  document.getElementById('revisiModalSubtitle').textContent = `Revisi untuk: ${docData.jenisDok||'Dokumen Pengajuan'}`;
+  document.getElementById('modalRevisiCepat').style.display = 'flex';
+}
+
+function tutupModalRevisi() {
+  document.getElementById('modalRevisiCepat').style.display = 'none';
+  _revisiDocData = null;
+}
+
+async function submitRevisiCepat() {
+  if (!_revisiDocData || !currentPenyedia) return;
+  const fileInput = document.getElementById('revisiFileDok');
+  const file = fileInput.files[0];
+  const keterangan = document.getElementById('revisiKeterangan').value.trim();
+  const errEl = document.getElementById('revisiMsgError');
+  errEl.style.display = 'none';
+
+  if (!file) { errEl.textContent = '❌ Harap pilih file dokumen revisi.'; errEl.style.display = 'block'; return; }
+  if (file.size > 100*1024*1024) { errEl.textContent = '❌ Ukuran file melebihi 100 MB.'; errEl.style.display = 'block'; return; }
+
+  const btn = document.getElementById('btnKirimRevisi');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;flex-shrink:0;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg> Mengirim…`;
+
+  const progressWrap = document.getElementById('revisiProgressWrap');
+  const progressBar  = document.getElementById('revisiProgressBar');
+  const progressText = document.getElementById('revisiProgressText');
+  progressWrap.style.display = 'block';
+  progressBar.style.width = '5%';
+  progressText.textContent = 'Membaca file…';
+
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = () => reject(new Error('Gagal membaca file'));
+      reader.readAsDataURL(file);
+    });
+    progressBar.style.width = '40%';
+    progressText.textContent = 'Menyiapkan data…';
+    await new Promise(r => setTimeout(r, 300));
+    progressBar.style.width = '65%';
+    progressText.textContent = 'Mengunggah ke Google Drive…';
+
+    // Pakai semua data dari dokumen lama, ganti file & keterangan saja
+    const d = _revisiDocData;
+    const fullPayload = {
+      namaPerusahaan: d.namaPerusahaan || currentPenyedia.nama,
+      npwp:           d.npwp || '',
+      namaDirektur:   d.namaDirektur || '',
+      alamat:         d.alamat || '',
+      telp:           d.telp || '',
+      email:          d.email || currentPenyedia.email,
+      jenisDok:       d.jenisDok || '',
+      keterangan:     keterangan || ('Revisi dokumen – ' + new Date().toLocaleDateString('id-ID')),
+      fileName:       file.name,
+      fileType:       file.type,
+      fileData:       base64,
+    };
+
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(fullPayload)
+    });
+
+    progressBar.style.width = '100%';
+    progressBar.style.background = 'linear-gradient(90deg,#3B6D11,#56ab2f)';
+    progressText.textContent = '✓ Berhasil dikirim!';
+    document.getElementById('revisiMsgSukses').style.display = 'block';
+
+    // Tutup modal dan refresh status setelah 2 detik
+    setTimeout(() => {
+      tutupModalRevisi();
+      loadStatusPenyedia();
+    }, 2000);
+
+  } catch(err) {
+    progressWrap.style.display = 'none';
+    errEl.textContent = '❌ Gagal mengirim: ' + err.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Revisi';
+  }
+}
+
+// Tutup modal revisi saat klik backdrop
+document.getElementById('modalRevisiCepat').addEventListener('click', function(e) {
+  if (e.target === this) tutupModalRevisi();
+});
 
 // =================================================================
 // POKJA TABLE
