@@ -1459,7 +1459,7 @@ const DEFAULT_FORM_FIELDS = [
   { id:'fNpwp', label:'NPWP Perusahaan', type:'text', placeholder:'xx.xxx.xxx.x-xxx.xxx', required:true, fixed:true },
   { id:'fAlamat', label:'Alamat / Domisili Usaha', type:'textarea', placeholder:'Jl. …, Kelurahan …, Kecamatan …, Kota/Kab. …', required:true, fixed:true },
   { id:'fNamaDirektur', label:'Nama Direktur / Pimpinan', type:'text', placeholder:'Nama lengkap…', required:true, fixed:true },
-  { id:'fTelp', label:'No. Telepon / WhatsApp', type:'tel', placeholder:'08xxxxxxxxxx', required:true, fixed:true },
+  { id:'fTelp', label:'No. Telepon / WhatsApp', type:'tel', placeholder:'628xxxxxxxxxx', required:true, fixed:true },
   { id:'fEmail', label:'Email', type:'email', placeholder:'perusahaan@domain.com', required:true, fixed:true },
   { id:'fJenisDok', label:'Jenis Dokumen yang Diunggah', type:'select', required:true, fixed:true, options:[
     { group:'1. Tenaga Kebersihan', items:['Tenaga Kebersihan – Fasilitas Olahraga/Objek Wisata','Tenaga Kebersihan – Gedung Kantor','Tenaga Kebersihan – Pertamanan Kota','Tenaga Kebersihan – Persampahan Kota','Tenaga Kebersihan – Lingkungan Kelurahan'] },
@@ -1940,32 +1940,42 @@ function renderStatusPenyedia() {
     const status  = latest.reviewStatus || 'Menunggu Review';
     const sm      = statusMap[status] || statusMap['Menunggu Review'];
     const catatan = latest.catatanPokja || '';
-    const hasFile = latest.fileLink && latest.fileLink.startsWith('http');
     const klarifikasiLog = Array.isArray(latest.klarifikasiLog) ? latest.klarifikasiLog : [];
     const tgl     = latest.tanggal ? new Date(latest.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
     const revTgl  = latest.reviewTanggal ? new Date(latest.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
-    const totalVersi = grp.length;
     const grpId   = 'grp_' + btoa(encodeURIComponent(jenisDok)).replace(/[^a-z0-9]/gi,'').slice(0,12);
 
-    // Render history versi lama – gunakan revisiLinks dari data (kolom O, P, Q dst di sheet)
+    // revisiLinks[0]=Revisi 1, [1]=Revisi 2, dst (lama→baru)
     const revLinks = Array.isArray(latest.revisiLinks) ? latest.revisiLinks.filter(l => l && l.startsWith('http')) : [];
-    const historyHtml = revLinks.length ? `
+    // Dok. TERBARU = revisi terakhir jika ada, jika tidak = upload awal
+    const latestUrl  = revLinks.length ? revLinks[revLinks.length - 1] : (latest.fileLink || '');
+    const hasLatest  = latestUrl && latestUrl.startsWith('http');
+    // Total versi = 1 (upload awal) + jumlah revisi
+    const totalVersi = 1 + revLinks.length;
+
+    // Dok. SEBELUMNYA: upload awal + revisi ke-1 s/d ke-(n-1)
+    const prevDoksPenyedia = [];
+    if (latest.fileLink && latest.fileLink.startsWith('http')) prevDoksPenyedia.push({ label: 'Upload Awal', url: latest.fileLink });
+    revLinks.slice(0, revLinks.length > 0 ? revLinks.length - 1 : 0).forEach((url, vi) => {
+      prevDoksPenyedia.push({ label: 'Revisi ' + (vi + 1), url });
+    });
+
+    // Render riwayat dokumen sebelumnya
+    const historyHtml = prevDoksPenyedia.length ? `
       <div style="margin-top:14px;border-top:1px dashed var(--gray-200);padding-top:12px;">
         <button id="histBtn-${grpId}" onclick="toggleHistoriUpload('${grpId}')"
           style="display:inline-flex;align-items:center;gap:6px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-700);border-radius:7px;padding:6px 14px;font-size:0.80rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:background 0.15s;">
           <i id="histIcon-${grpId}" class="fa-solid fa-clock-rotate-left"></i>
-          <span id="histLabel-${grpId}">Lihat Riwayat Upload Sebelumnya (${revLinks.length} versi)</span>
+          <span id="histLabel-${grpId}">Lihat Dokumen Sebelumnya (${prevDoksPenyedia.length})</span>
         </button>
         <div id="histPanel-${grpId}" style="display:none;">
-          ${revLinks.map((url, hi) => `
+          ${prevDoksPenyedia.map(({label, url}) => `
             <div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:8px;padding:12px 14px;margin-bottom:8px;opacity:0.85;">
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-                <span style="font-size:0.80rem;font-weight:700;color:var(--gray-600);">
-                  <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i>
-                  Revisi ${hi+1}
-                </span>
+              <div style="font-size:0.80rem;font-weight:700;color:var(--gray-600);margin-bottom:8px;">
+                <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i> ${label}
               </div>
-              <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Revisi ${hi+1}</a>
+              <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;margin-right:10px;"><i class="fa-solid fa-eye"></i> Lihat</a>
+              <a href="${url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--green-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i> Download</a>
             </div>`).join('')}
         </div>
       </div>` : '';
@@ -1983,7 +1993,7 @@ function renderStatusPenyedia() {
       <div class="status-doc-body">
         <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">
           ${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}
-          ${hasFile ? `<a href="${latest.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Terbaru</a>` : ''}
+          ${hasLatest ? `<a href="${latestUrl}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Terbaru</a>` : ''}
         </div>
         ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
         ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog)}</div>` : ''}
@@ -2664,7 +2674,13 @@ function renderUploadForm(force) {
       const isEmail = f.type === 'email';
       const isTel   = f.type === 'tel';
       const acValue = isEmail ? 'new-password' : 'off';
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" /></div>`;
+      const hintHtml = isTel
+        ? `<div class="file-hint" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>). Jangan gunakan awalan 0 atau +62.</div>`
+        : '';
+      const onInputAttr = isTel
+        ? ` oninput="this.value=this.value.replace(/[^0-9]/g,'');if(this.value.startsWith('0')){this.value='62'+this.value.slice(1);}if(this.value.startsWith('+')){this.value=this.value.replace(/\\D/g,'');}"`
+        : '';
+      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}"${onInputAttr} />${hintHtml}</div>`;
     }
   });
   document.getElementById('uploadDynamicFields').innerHTML = html;
@@ -2828,6 +2844,14 @@ async function submitUpload() {
   const file=fileInput?fileInput.files[0]:null;
   if(!valid){showFormMsg('error','Harap lengkapi semua kolom bertanda (*).'); return;}
   if(!file){showFormMsg('error','Harap pilih file dokumen.'); return;}
+  // Validasi format nomor telepon: wajib diawali 62
+  const telpVal = (payload['fTelp']||'').replace(/\s/g,'');
+  if(!/^62\d{7,14}$/.test(telpVal)){
+    const telpEl = document.getElementById('fTelp');
+    if(telpEl){ telpEl.focus(); telpEl.style.borderColor='#C0392B'; telpEl.style.boxShadow='0 0 0 3px rgba(192,57,43,0.15)'; setTimeout(()=>{ telpEl.style.borderColor=''; telpEl.style.boxShadow=''; }, 2500); }
+    showFormMsg('error','Nomor telepon harus diawali <strong>62</strong> (contoh: 628123456789). Tidak boleh diawali 0 atau +.');
+    return;
+  }
   if(file.size>100*1024*1024){showFormMsg('error','Ukuran file melebihi 100 MB.'); return;}
   const btn=document.getElementById('btnSubmitUpload');
   btn.disabled=true;
@@ -3080,23 +3104,32 @@ function renderPokjaTable() {
     const history = grp.slice(0, -1); // versi sebelumnya
     const d       = latest.d;
     const origIdx = latest.origIdx;
-    const totalVer= grp.length;
 
     const tgl=d.tanggal?new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
     const fileLink=d.fileLink||'';
+    // revisiLinks[0]=Revisi 1, [1]=Revisi 2, dst (lama→baru)
+    const revLinks = Array.isArray(d.revisiLinks) ? d.revisiLinks.filter(l => l && l.startsWith('http')) : [];
+
+    // Dok. TERBARU = revisi terakhir jika ada, jika tidak = upload awal (fileLink)
+    const latestUrl = revLinks.length ? revLinks[revLinks.length - 1] : fileLink;
+    // Dok. SEBELUMNYA = upload awal + revisi ke-1 s/d ke-(n-1) [revisi terakhir sudah jadi Terbaru]
+    const prevDocs = [];
+    if (fileLink && fileLink.startsWith('http')) prevDocs.push({ label: 'Upload Awal', url: fileLink });
+    revLinks.slice(0, revLinks.length > 0 ? revLinks.length - 1 : 0).forEach((url, vi) => {
+      prevDocs.push({ label: 'Revisi ' + (vi + 1), url });
+    });
 
     let fileCell='<span style="color:var(--gray-400);">-</span>';
-    if(fileLink&&fileLink.startsWith('http')){
+    if(latestUrl&&latestUrl.startsWith('http')){
       fileCell=`<div style="display:flex;flex-direction:column;gap:3px;">
-        <a href="${fileLink}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a>
-        <a href="${fileLink}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a>
+        <a href="${latestUrl}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a>
+        <a href="${latestUrl}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a>
       </div>`;
     } else if(d.fileName){fileCell=`<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;}
 
-    // ── Kolom "Dok. Sebelumnya" – gunakan revisiLinks dari data (kolom O, P, Q dst di sheet) ──
+    // ── Kolom "Dok. Sebelumnya" ──
     let prevCol = '';
-    const revLinks = Array.isArray(d.revisiLinks) ? d.revisiLinks.filter(l => l && l.startsWith('http')) : [];
-    if(revLinks.length){
+    if(prevDocs.length){
       const btnId   = 'phBtn-' + origIdx;
       const panelId = 'phPanel-' + origIdx;
       prevCol = `
@@ -3104,12 +3137,12 @@ function renderPokjaTable() {
           <button id="${btnId}" onclick="togglePokjaHistori(${origIdx})"
             style="display:inline-flex;align-items:center;gap:5px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-600);border-radius:5px;padding:3px 9px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:background 0.15s;white-space:nowrap;">
             <i id="phIcon-${origIdx}" class="fa-solid fa-clock-rotate-left"></i>
-            <span>${revLinks.length} dok. sebelumnya</span>
+            <span>${prevDocs.length} dok. sebelumnya</span>
           </button>
           <div id="${panelId}" style="display:none;margin-top:6px;min-width:180px;">
-            ${revLinks.map((url, vi) => `
+            ${prevDocs.map(({label, url}) => `
               <div style="background:#F8F9FA;border:1px solid var(--gray-200);border-left:3px solid var(--blue-200);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.75rem;">
-                <div style="color:var(--gray-400);margin-bottom:5px;"><i class="fa-solid fa-clock-rotate-left"></i> <strong style="color:var(--gray-600);">Revisi ${vi+1}</strong></div>
+                <div style="color:var(--gray-500);margin-bottom:5px;font-weight:600;"><i class="fa-solid fa-clock-rotate-left"></i> ${label}</div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
                   <a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
                   <a href="${url}" download target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i></a>
@@ -3121,8 +3154,11 @@ function renderPokjaTable() {
       prevCol = `<span style="color:var(--gray-400);font-size:0.78rem;">–</span>`;
     }
 
-    const versiLabel = totalVer > 1
-      ? `<span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 7px;font-weight:600;margin-left:5px;vertical-align:middle;"><i class="fa-solid fa-layer-group"></i> ${totalVer}</span>`
+    // Label jumlah versi = 1 (upload awal) + jumlah revisi
+    const totalVersi = 1 + revLinks.length;
+
+    const versiLabel = totalVersi > 1
+      ? `<span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 7px;font-weight:600;margin-left:5px;vertical-align:middle;"><i class="fa-solid fa-layer-group"></i> ${totalVersi}</span>`
       : '';
 
     const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
