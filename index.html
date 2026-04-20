@@ -1747,17 +1747,104 @@ function renderStatusPenyedia() {
     'Tidak Memenuhi Syarat':    { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
     'Perlu Revisi / Klarifikasi':{ cls:'sb-revisi', icon:'fa-rotate',        label:'Perlu Revisi / Klarifikasi' },
   };
-  wrap.innerHTML = myDocs.map((d) => {
-    const tgl     = d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
-    const revTgl  = d.reviewTanggal ? new Date(d.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
-    const status  = d.reviewStatus || 'Menunggu Review';
+
+  // Kelompokkan dokumen per jenisDok, urutkan tiap grup dari lama ke baru
+  const docGroups = {};
+  myDocs.forEach(d => {
+    const key = (d.jenisDok || 'Dokumen Pengajuan').trim();
+    if (!docGroups[key]) docGroups[key] = [];
+    docGroups[key].push(d);
+  });
+  // Urutkan tiap grup: lama → baru (ascending)
+  Object.values(docGroups).forEach(grp => {
+    grp.sort((a,b) => (a.tanggal||'') < (b.tanggal||'') ? -1 : 1);
+  });
+
+  const renderKlarLog = (klarifikasiLog) => klarifikasiLog.map(k=>`<div style="background:${k.balasan?'#F0FFF4':'#F0F6FF'};border:1px solid ${k.balasan?'#B6DBA0':'var(--blue-100)'};border-left:3px solid ${k.balasan?'#3B6D11':'var(--blue-600)'};border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${k.tgl||'-'}</div><div style="color:var(--gray-800);margin-bottom:${k.balasan?'8px':'0'};">${k.pesan||''}</div>${k.balasan?`<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:7px 10px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Pokja:</strong><br><span style="color:var(--gray-800);">${k.balasan}</span>${k.balasanTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanTgl}</span>`:''}</div>`:`<span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Pokja</span>`}</div>`).join('');
+
+  wrap.innerHTML = Object.entries(docGroups).map(([jenisDok, grp]) => {
+    const latest  = grp[grp.length - 1]; // dokumen terbaru
+    const history = grp.slice(0, -1);    // versi-versi sebelumnya
+    const allIdx  = all.indexOf(latest);
+    const status  = latest.reviewStatus || 'Menunggu Review';
     const sm      = statusMap[status] || statusMap['Menunggu Review'];
-    const catatan = d.catatanPokja || '';
-    const hasFile = d.fileLink && d.fileLink.startsWith('http');
-    const allIdx  = all.indexOf(d);
-    const klarifikasiLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
-    return `<div class="status-doc-card"><div class="status-doc-header"><div><div class="status-doc-title">${d.jenisDok || 'Dokumen Pengajuan'}</div><div class="status-doc-meta"><i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i> Dikirim: ${tgl}${d.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${d.fileName}` : ''}</div></div><span class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}</span></div><div class="status-doc-body"><div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}${hasFile ? `<a href="${d.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` : ''}</div>${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${klarifikasiLog.map(k=>`<div style="background:${k.balasan?'#F0FFF4':'#F0F6FF'};border:1px solid ${k.balasan?'#B6DBA0':'var(--blue-100)'};border-left:3px solid ${k.balasan?'#3B6D11':'var(--blue-600)'};border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${k.tgl||'-'}</div><div style="color:var(--gray-800);margin-bottom:${k.balasan?'8px':'0'};">${k.pesan||''}</div>${k.balasan?`<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:7px 10px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Pokja:</strong><br><span style="color:var(--gray-800);">${k.balasan}</span>${k.balasanTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanTgl}</span>`:''}</div>`:`<span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Pokja</span>`}</div>`).join('')}</div>` : ''}${(catatan || status !== 'Menunggu Review') && status !== 'Lulus / Memenuhi Syarat' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${status==='Perlu Revisi / Klarifikasi' ? `<a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</a>` : ''}<button onclick="bukaModalKlarifikasi(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:#856404;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'"><i class="fa-solid fa-message"></i> Ajukan Klarifikasi</button></div>` : ''}</div></div>`;
+    const catatan = latest.catatanPokja || '';
+    const hasFile = latest.fileLink && latest.fileLink.startsWith('http');
+    const klarifikasiLog = Array.isArray(latest.klarifikasiLog) ? latest.klarifikasiLog : [];
+    const tgl     = latest.tanggal ? new Date(latest.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+    const revTgl  = latest.reviewTanggal ? new Date(latest.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
+    const totalVersi = grp.length;
+    const grpId   = 'grp_' + btoa(jenisDok).replace(/[^a-z0-9]/gi,'').slice(0,12);
+
+    // Render history versi lama
+    const historyHtml = history.length ? `
+      <div style="margin-top:14px;border-top:1px dashed var(--gray-200);padding-top:12px;">
+        <button id="histBtn-${grpId}" onclick="toggleHistoriUpload('${grpId}')"
+          style="display:inline-flex;align-items:center;gap:6px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-700);border-radius:7px;padding:6px 14px;font-size:0.80rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:background 0.15s;">
+          <i id="histIcon-${grpId}" class="fa-solid fa-clock-rotate-left"></i>
+          <span id="histLabel-${grpId}">Lihat Riwayat Upload Sebelumnya (${history.length} versi)</span>
+        </button>
+        <div id="histPanel-${grpId}" style="display:none;">
+          ${history.map((dOld, hi) => {
+            const tglOld  = dOld.tanggal ? new Date(dOld.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+            const stOld   = dOld.reviewStatus || 'Menunggu Review';
+            const smOld   = statusMap[stOld] || statusMap['Menunggu Review'];
+            const hasFileOld = dOld.fileLink && dOld.fileLink.startsWith('http');
+            return `<div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:8px;padding:12px 14px;margin-bottom:8px;opacity:0.85;">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+                <span style="font-size:0.80rem;font-weight:700;color:var(--gray-600);">
+                  <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i>
+                  Versi ${hi+1} <span style="font-weight:400;color:var(--gray-400);">(${tglOld})</span>
+                </span>
+                <span class="status-badge-lg ${smOld.cls}" style="font-size:0.70rem;padding:2px 8px;opacity:0.85;">
+                  <i class="fa-solid ${smOld.icon}"></i> ${smOld.label}
+                </span>
+              </div>
+              ${dOld.fileName ? `<div style="font-size:0.78rem;color:var(--blue-800);margin-bottom:4px;"><i class="fa-solid fa-file" style="color:var(--blue-600);"></i> ${dOld.fileName}</div>` : ''}
+              ${hasFileOld ? `<a href="${dOld.fileLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Lama</a>` : ''}
+              ${dOld.catatanPokja ? `<div style="margin-top:6px;background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:5px;padding:7px 10px;font-size:0.78rem;color:#5C4A00;"><i class="fa-solid fa-comment-dots"></i> <strong>Catatan Pokja:</strong> ${dOld.catatanPokja}</div>` : ''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : '';
+
+    return `<div class="status-doc-card">
+      <div class="status-doc-header">
+        <div>
+          <div class="status-doc-title">${jenisDok}${totalVersi > 1 ? ` <span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 8px;font-weight:600;margin-left:6px;vertical-align:middle;"><i class="fa-solid fa-layer-group"></i> ${totalVersi} versi</span>` : ''}</div>
+          <div class="status-doc-meta"><i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i>
+            Terbaru: ${tgl}${latest.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${latest.fileName}` : ''}
+          </div>
+        </div>
+        <span class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}</span>
+      </div>
+      <div class="status-doc-body">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.82rem;color:var(--gray-600);">
+          ${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}
+          ${hasFile ? `<a href="${latest.fileLink}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Terbaru</a>` : ''}
+        </div>
+        ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
+        ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog)}</div>` : ''}
+        ${historyHtml}
+        ${(catatan || status !== 'Menunggu Review') && status !== 'Lulus / Memenuhi Syarat' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${status==='Perlu Revisi / Klarifikasi' ? `<a href="#" onclick="showPage('upload');return false;" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</a>` : ''}<button onclick="bukaModalKlarifikasi(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:#856404;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'"><i class="fa-solid fa-message"></i> Ajukan Klarifikasi</button></div>` : ''}
+      </div>
+    </div>`;
   }).join('');
+}
+
+// Helper: toggle riwayat upload di status penyedia
+function toggleHistoriUpload(grpId) {
+  const panel = document.getElementById('histPanel-' + grpId);
+  const icon  = document.getElementById('histIcon-' + grpId);
+  const label = document.getElementById('histLabel-' + grpId);
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  if (icon)  icon.className  = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
+  if (label) {
+    const count = panel.querySelectorAll('[id^=""]').length || panel.children.length;
+    label.textContent = isHidden ? 'Sembunyikan Riwayat Upload' : `Lihat Riwayat Upload Sebelumnya (${count} versi)`;
+  }
 }
 
 // =================================================================
@@ -2658,9 +2745,55 @@ function renderPokjaTable() {
     const origIdx=data.indexOf(d);
     const tgl=d.tanggal?new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
     const fileLink=d.fileLink||'';
+
+    // --- Cari semua versi dokumen dari penyedia ini (email+jenisDok sama) ---
+    const sameEmail = (d.email||'').toLowerCase();
+    const sameJenis = (d.jenisDok||'').trim();
+    const allVersions = data.filter(x =>
+      (x.email||'').toLowerCase() === sameEmail &&
+      (x.jenisDok||'').trim() === sameJenis
+    ).sort((a,b) => (a.tanggal||'') < (b.tanggal||'') ? -1 : 1);
+    const versiKe  = allVersions.indexOf(d) + 1;
+    const totalVer = allVersions.length;
+    const prevVersions = allVersions.slice(0, versiKe - 1);
+
     let fileCell='<span style="color:var(--gray-400);">-</span>';
-    if(fileLink&&fileLink.startsWith('http')){fileCell=`<div style="display:flex;flex-direction:column;gap:3px;"><a href="${fileLink}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a><a href="${fileLink}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a></div>`;}
-    else if(d.fileName){fileCell=`<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;}
+    if(fileLink&&fileLink.startsWith('http')){
+      fileCell=`<div style="display:flex;flex-direction:column;gap:3px;">
+        <a href="${fileLink}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a>
+        <a href="${fileLink}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a>
+      </div>`;
+    } else if(d.fileName){fileCell=`<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;}
+
+    // Riwayat upload versi sebelumnya (pokja view)
+    const histPokjaId = 'pokjaHist_' + origIdx;
+    const histPokjaHtml = prevVersions.length ? `
+      <div style="margin-top:5px;">
+        <button id="phBtn-${origIdx}" onclick="togglePokjaHistori(${origIdx})"
+          style="display:inline-flex;align-items:center;gap:5px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-600);border-radius:5px;padding:3px 9px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:background 0.15s;">
+          <i id="phIcon-${origIdx}" class="fa-solid fa-clock-rotate-left"></i>
+          <span>${prevVersions.length} versi sebelumnya</span>
+        </button>
+        <div id="phPanel-${origIdx}" style="display:none;margin-top:6px;">
+          ${prevVersions.map((dv,vi)=>{
+            const tgv=dv.tanggal?new Date(dv.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
+            const flv=dv.fileLink&&dv.fileLink.startsWith('http');
+            return `<div style="background:#F8F9FA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.75rem;">
+              <div style="color:var(--gray-400);margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${tgv} &nbsp;·&nbsp; <strong style="color:var(--gray-600);">Versi ${vi+1}</strong></div>
+              ${dv.fileName?`<div style="color:var(--blue-800);margin-bottom:3px;"><i class="fa-solid fa-file" style="color:var(--blue-600);"></i> ${dv.fileName}</div>`:''}
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                ${flv?`<a href="${dv.fileLink}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>`:''}
+              </div>
+              ${dv.reviewStatus?`<div style="margin-top:4px;font-size:0.70rem;color:var(--gray-600);">Status: <strong>${dv.reviewStatus}</strong>${dv.catatanPokja?` – ${dv.catatanPokja}`:''}</div>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : '';
+
+    const versiLabel = totalVer > 1
+      ? `<div style="margin-top:3px;"><span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 7px;font-weight:600;"><i class="fa-solid fa-layer-group"></i> Versi ${versiKe}/${totalVer}</span></div>`
+      : '';
+
     const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
     const catatanHtml = `
       <div id="catatan-view-${origIdx}" style="display:flex;align-items:flex-start;gap:4px;min-width:120px;">
@@ -2697,7 +2830,7 @@ function renderPokjaTable() {
         </div>`
       : `<span style="color:var(--gray-400);font-size:0.78rem;font-style:italic;">–</span>`;
 
-    return `<tr><td>${rowNum}</td><td style="white-space:nowrap;">${tgl}</td><td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td><td style="font-family:monospace;">${d.npwp||'-'}</td><td style="max-width:180px;">${d.jenisDok||'-'}</td><td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td><td>${fileCell}</td><td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td><td>${catatanHtml}</td><td>${klarifikasiColHtml}</td><td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td></tr>`;
+    return `<tr><td>${rowNum}</td><td style="white-space:nowrap;">${tgl}${versiLabel}</td><td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span>${histPokjaHtml}</td><td style="font-family:monospace;">${d.npwp||'-'}</td><td style="max-width:180px;">${d.jenisDok||'-'}</td><td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td><td>${fileCell}</td><td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td><td>${catatanHtml}</td><td>${klarifikasiColHtml}</td><td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td></tr>`;
   }).join('');
   renderPokjaStats();
 }
@@ -2711,6 +2844,20 @@ function toggleKlarDetail(origIdx) {
   detail.style.display = isHidden ? 'block' : 'none';
   if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
   if (btn)  btn.innerHTML  = isHidden ? '<i class="fa-solid fa-chevron-up"></i> Sembunyikan' : '<i class="fa-solid fa-chevron-down"></i> Lihat';
+}
+
+function togglePokjaHistori(origIdx) {
+  const panel = document.getElementById('phPanel-' + origIdx);
+  const icon  = document.getElementById('phIcon-' + origIdx);
+  const btn   = document.getElementById('phBtn-' + origIdx);
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
+  if (btn) {
+    const countEl = btn.querySelector('span');
+    if (countEl) countEl.textContent = isHidden ? 'Sembunyikan' : countEl.textContent;
+  }
 }
 
 function startEditCatatan(idx) {
