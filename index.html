@@ -3651,33 +3651,31 @@ async function init() {
 
 // Auto-refresh submissions setiap 20 detik – update data & tampilan secara diam-diam
 async function autoRefreshSubmissions() {
-  // HANYA update data di memori + angka statistik.
-  // TIDAK render ulang tabel/kartu agar state UI (buka/tutup panel dll) tidak reset.
+  // Silent background refresh: tidak ada spinner, tidak reset halaman.
+  // Hanya update data di memori + render ulang jika ada perubahan.
   try {
     const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const prevCount = _submissions.length;
-      const prevHash  = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'')).join(';;');
+      const prevHash  = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
       _submissions = data.submissions;
-      const newHash   = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'')).join(';;');
+      const newHash   = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
 
-      // Update angka statistik saja (bukan render tabel)
+      // Update angka statistik saja (tidak mengganggu UI)
       const statEl = document.getElementById('statPeserta');
       if (statEl) statEl.textContent = _submissions.length || '0';
       if (currentRole === 'pokja' || currentRole === 'admin') {
         renderPokjaStats();
       }
 
-      // Jika ada perubahan data: re-render UI + notifikasi
+      // Hanya render ulang UI jika data benar-benar berubah
       if (prevHash !== newHash) {
         const added = _submissions.length - prevCount;
-        const msg = added > 0
-          ? '✓ ' + added + ' data baru masuk'
-          : '✓ Ada pembaruan data';
+        const msg = added > 0 ? '✓ ' + added + ' data baru masuk' : '✓ Ada pembaruan data';
         showSync(msg, 'success');
         setTimeout(hideSync, 3000);
-        // [FIX] Re-render tabel/kartu agar idx di tombol selalu sinkron
+        // Render tabel hanya jika modal review tidak sedang terbuka
         if ((currentRole === 'pokja' || currentRole === 'admin') && !document.getElementById('reviewModal').classList.contains('show')) {
           renderPokjaTable();
         }
@@ -4092,36 +4090,71 @@ function updateDataTimestamp() {
   };
 })();
 
-// Hook marquee: setiap kali running text selesai satu putaran → refresh data
+// Hook marquee: setiap kali running text selesai satu putaran → silent background refresh
 (function() {
+  // Refresh diam-diam: tidak ada spinner, tidak reset halaman, hanya update data & UI jika ada perubahan
+  async function silentRefresh() {
+    try {
+      let newSubs = null;
+
+      if (currentRole === 'penyedia' && currentPenyedia) {
+        // Ambil data khusus penyedia ini
+        const url = APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email) + '&t=' + Date.now();
+        const res  = await fetch(url);
+        const data = await res.json();
+        if (data.status === 'ok' && Array.isArray(data.submissions)) {
+          const emailLower = currentPenyedia.email.toLowerCase();
+          const otherSubs  = _submissions.filter(s => (s.email||'').toLowerCase() !== emailLower);
+          newSubs = [...otherSubs, ...data.submissions];
+        }
+      } else {
+        // Pokja / admin / publik: ambil semua
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+        const data = await res.json();
+        if (data.status === 'ok' && Array.isArray(data.submissions)) {
+          newSubs = data.submissions;
+        }
+      }
+
+      if (!newSubs) return;
+
+      // Bandingkan hash data lama vs baru
+      const prevHash = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
+      const newHash  = newSubs.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
+
+      // Update data di memori
+      _submissions = newSubs;
+
+      // Selalu update angka statistik (tidak mengganggu UI)
+      const statEl = document.getElementById('statPeserta');
+      if (statEl) statEl.textContent = _submissions.length || '0';
+      if (typeof renderPokjaStats === 'function') renderPokjaStats();
+      updateDataTimestamp();
+
+      // Hanya render ulang UI jika data benar-benar berubah
+      if (prevHash !== newHash) {
+        if ((currentRole === 'pokja' || currentRole === 'admin')) {
+          // Jangan render ulang jika modal review sedang terbuka
+          const reviewModal = document.getElementById('reviewModal');
+          if (!reviewModal || !reviewModal.classList.contains('show')) {
+            renderPokjaTable();
+          }
+        }
+        if (currentRole === 'penyedia') {
+          renderStatusPenyedia();
+        }
+      }
+    } catch(e) {}
+  }
+
   function attachMarqueeRefresh() {
     const marquee = document.getElementById('marqueeText');
     if (!marquee) return;
-    marquee.addEventListener('animationiteration', function() {
-      if (currentRole === 'pokja' || currentRole === 'admin') {
-        loadSubmissionsFromSheet();
-      } else if (currentRole === 'penyedia' && currentPenyedia) {
-        loadStatusPenyedia();
-      } else {
-        // Mode publik: refresh stat peserta
-        fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now())
-          .then(r => r.json())
-          .then(data => {
-            if (data.status === 'ok' && Array.isArray(data.submissions)) {
-              _submissions = data.submissions;
-              const el = document.getElementById('statPeserta');
-              if (el) el.textContent = _submissions.length || '–';
-              if (typeof renderPokjaStats === 'function') renderPokjaStats();
-            }
-            updateDataTimestamp();
-          })
-          .catch(() => {});
-      }
-    });
+    marquee.addEventListener('animationiteration', silentRefresh);
   }
-  // Jalankan setelah halaman siap
+
   document.addEventListener('DOMContentLoaded', attachMarqueeRefresh);
-  setTimeout(attachMarqueeRefresh, 2000); // fallback setelah init
+  setTimeout(attachMarqueeRefresh, 2000);
 })();
 
 init();
