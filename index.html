@@ -659,6 +659,51 @@
         line-height: 1.4;
       }
     }
+  /* ── Toast Notification ── */
+  #toastContainer {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1a2a1a;
+    color: #fff;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    min-width: 260px;
+    max-width: 360px;
+    pointer-events: auto;
+    animation: toastIn 0.32s cubic-bezier(0.21,1.02,0.73,1) forwards;
+    border-left: 5px solid #56ab2f;
+  }
+  .toast.toast-error   { border-left-color: #C0392B; background: #2a1a1a; }
+  .toast.toast-info    { border-left-color: #185FA5; background: #1a2030; }
+  .toast.toast-warning { border-left-color: #856404; background: #2a2410; }
+  .toast.toast-out     { animation: toastOut 0.28s ease forwards; }
+  .toast-icon { font-size: 1.15rem; flex-shrink: 0; }
+  .toast-body { flex: 1; line-height: 1.4; }
+  .toast-title { font-size: 0.90rem; font-weight: 700; }
+  .toast-sub   { font-size: 0.78rem; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+  .toast-close { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 14px; padding: 0 0 0 6px; flex-shrink: 0; }
+  .toast-close:hover { color: #fff; }
+  @keyframes toastIn  { from { opacity:0; transform: translateY(24px) scale(0.95); } to { opacity:1; transform: translateY(0) scale(1); } }
+  @keyframes toastOut { from { opacity:1; transform: translateY(0) scale(1);    } to { opacity:0; transform: translateY(10px) scale(0.95); } }
+  @media (max-width: 600px) {
+    #toastContainer { bottom: 16px; right: 8px; left: 8px; align-items: stretch; }
+    .toast { min-width: unset; max-width: unset; }
+  }
   </style>
 </head>
 <body>
@@ -729,6 +774,8 @@
     </div>
   </div>
 </div>
+<div id="toastContainer"></div>
+
 <div id="loginOverlayPenyedia" class="login-overlay">
   <div class="login-modal" style="position:relative;">
     <div class="login-modal-header modal-header-penyedia">
@@ -1590,6 +1637,38 @@ function shakeModal(modalId) {
 }
 
 // =================================================================
+// =================================================================
+// TOAST NOTIFICATION
+// =================================================================
+/**
+ * showToast(title, sub?, type?, duration?)
+ * type: 'success' | 'error' | 'info' | 'warning'
+ */
+function showToast(title, sub, type, duration) {
+  type     = type     || 'success';
+  duration = duration || 3200;
+  const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info', warning:'fa-triangle-exclamation' };
+  const colors= { success:'#56ab2f',          error:'#C0392B',         info:'#185FA5',        warning:'#d4a017' };
+
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const el = document.createElement('div');
+  el.className = 'toast' + (type !== 'success' ? ' toast-' + type : '');
+  el.innerHTML =
+    `<span class="toast-icon" style="color:${colors[type]||'#56ab2f'};"><i class="fa-solid ${icons[type]||icons.success}"></i></span>` +
+    `<span class="toast-body"><div class="toast-title">${title}</div>${sub ? `<div class="toast-sub">${sub}</div>` : ''}</span>` +
+    `<button class="toast-close" onclick="this.parentElement.remove()" title="Tutup">✕</button>`;
+  container.appendChild(el);
+
+  // Auto-dismiss
+  setTimeout(() => {
+    if (!el.parentElement) return;
+    el.classList.add('toast-out');
+    setTimeout(() => el.remove(), 300);
+  }, duration);
+}
+
 // AUTH
 // =================================================================
 let currentRole      = null;
@@ -2766,6 +2845,7 @@ async function submitUpload() {
     await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(fullPayload)});
     progressBar.style.width='100%'; progressText.textContent='✓ Berhasil dikirim!';
     progressBar.style.background='linear-gradient(90deg,#3B6D11,#56ab2f)';
+    showToast('Dokumen Berhasil Disimpan', 'File tersimpan di Google Drive BPBJ dan siap direview Pokja.', 'success', 4000);
     const successEl=document.getElementById('uploadSuccess');
     successEl.style.display='block';
     const statusHint=document.getElementById('uploadSuccessStatusHint');
@@ -2893,11 +2973,12 @@ async function submitRevisiCepat() {
     progressText.textContent = '✓ Berhasil dikirim!';
     document.getElementById('revisiMsgSukses').style.display = 'block';
 
-    // Tutup modal dan refresh status setelah 2 detik
+    // Tutup modal dan refresh status setelah 1 detik, lalu tampilkan toast
     setTimeout(() => {
       tutupModalRevisi();
+      showToast('Revisi Dokumen Berhasil Disimpan', 'Pokja akan mereview dokumen terbaru Anda.', 'success', 4000);
       loadStatusPenyedia();
-    }, 2000);
+    }, 1000);
 
   } catch(err) {
     progressWrap.style.display = 'none';
@@ -3287,10 +3368,9 @@ async function simpanReview() {
   loadingOverlay.style.display='none';
   btnSimpan.disabled=false;
 
-  const msgEl=document.getElementById('reviewModalMsg');
-  msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:12px 16px;font-size:0.85rem;margin-top:12px;';
-  msgEl.innerHTML=`<i class="fa-solid fa-circle-check" style="color:#3B6D11;margin-right:6px;"></i><strong>Review tersimpan!</strong>`;
-  setTimeout(()=>{ msgEl.style.display='none'; }, 2500);
+  // Tutup modal dan tampilkan toast
+  closeReviewModal();
+  showToast('Review Berhasil Disimpan', `Status <strong>${status}</strong> tersimpan untuk ${d.namaPerusahaan||'-'}.`, 'success', 4000);
 }
 
 // ===== Kirim Notifikasi WhatsApp =====
@@ -3661,11 +3741,12 @@ async function kirimKlarifikasi() {
   btn.disabled = false;
   btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi';
 
-  // Reload dari server setelah kirim, agar data tersinkron
+  // Tutup modal dan tampilkan toast
   setTimeout(() => {
     tutupModalKlarifikasi();
+    showToast('Klarifikasi Berhasil Dikirim', 'Pokja akan segera merespons pesan Anda.', 'success', 4000);
     loadStatusPenyedia();
-  }, 1500);
+  }, 600);
 }
 
 // Klik di luar modal klarifikasi → tutup
@@ -3779,8 +3860,9 @@ async function kirimTanggapanKlarifikasi() {
 
   setTimeout(() => {
     tutupTanggapanKlarifikasi();
+    showToast('Tanggapan Klarifikasi Terkirim', `Balasan untuk ${d.namaPerusahaan||'-'} berhasil disimpan.`, 'success', 4000);
     renderPokjaTable();
-  }, 1200);
+  }, 600);
 }
 
 document.getElementById('modalTanggapan').addEventListener('click', function(e) {
