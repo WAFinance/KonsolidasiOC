@@ -1954,12 +1954,15 @@ function renderStatusPenyedia() {
     // Total versi = 1 (upload awal) + jumlah revisi
     const totalVersi = 1 + revLinks.length;
 
-    // Dok. SEBELUMNYA: upload awal + revisi ke-1 s/d ke-(n-1)
+    // Dok. SEBELUMNYA: hanya tampil jika ada revisi.
+    // Isi: upload awal + revisi ke-1 s/d ke-(n-1). Jika tidak ada revisi → tidak ditampilkan.
     const prevDoksPenyedia = [];
-    if (latest.fileLink && latest.fileLink.startsWith('http')) prevDoksPenyedia.push({ label: 'Upload Awal', url: latest.fileLink });
-    revLinks.slice(0, revLinks.length > 0 ? revLinks.length - 1 : 0).forEach((url, vi) => {
-      prevDoksPenyedia.push({ label: 'Revisi ' + (vi + 1), url });
-    });
+    if (revLinks.length > 0) {
+      if (latest.fileLink && latest.fileLink.startsWith('http')) prevDoksPenyedia.push({ label: 'Upload Awal', url: latest.fileLink });
+      revLinks.slice(0, revLinks.length - 1).forEach((url, vi) => {
+        prevDoksPenyedia.push({ label: 'Revisi ' + (vi + 1), url });
+      });
+    }
 
     // Render riwayat dokumen sebelumnya
     const historyHtml = prevDoksPenyedia.length ? `
@@ -3164,12 +3167,15 @@ function renderPokjaTable() {
 
     // Dok. TERBARU = revisi terakhir jika ada, jika tidak = upload awal (fileLink)
     const latestUrl = revLinks.length ? revLinks[revLinks.length - 1] : fileLink;
-    // Dok. SEBELUMNYA = upload awal + revisi ke-1 s/d ke-(n-1) [revisi terakhir sudah jadi Terbaru]
+    // Dok. SEBELUMNYA: hanya tampil jika ada revisi.
+    // Isi: upload awal + revisi ke-1 s/d ke-(n-1). Jika tidak ada revisi → kosong.
     const prevDocs = [];
-    if (fileLink && fileLink.startsWith('http')) prevDocs.push({ label: 'Upload Awal', url: fileLink });
-    revLinks.slice(0, revLinks.length > 0 ? revLinks.length - 1 : 0).forEach((url, vi) => {
-      prevDocs.push({ label: 'Revisi ' + (vi + 1), url });
-    });
+    if (revLinks.length > 0) {
+      if (fileLink && fileLink.startsWith('http')) prevDocs.push({ label: 'Upload Awal', url: fileLink });
+      revLinks.slice(0, revLinks.length - 1).forEach((url, vi) => {
+        prevDocs.push({ label: 'Revisi ' + (vi + 1), url });
+      });
+    }
 
     let fileCell='<span style="color:var(--gray-400);">-</span>';
     if(latestUrl&&latestUrl.startsWith('http')){
