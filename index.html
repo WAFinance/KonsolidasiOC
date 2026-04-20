@@ -1868,35 +1868,26 @@ function renderStatusPenyedia() {
     const totalVersi = grp.length;
     const grpId   = 'grp_' + btoa(encodeURIComponent(jenisDok)).replace(/[^a-z0-9]/gi,'').slice(0,12);
 
-    // Render history versi lama
-    const historyHtml = history.length ? `
+    // Render history versi lama – gunakan revisiLinks dari data (kolom O, P, Q dst di sheet)
+    const revLinks = Array.isArray(latest.revisiLinks) ? latest.revisiLinks.filter(l => l && l.startsWith('http')) : [];
+    const historyHtml = revLinks.length ? `
       <div style="margin-top:14px;border-top:1px dashed var(--gray-200);padding-top:12px;">
         <button id="histBtn-${grpId}" onclick="toggleHistoriUpload('${grpId}')"
           style="display:inline-flex;align-items:center;gap:6px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-700);border-radius:7px;padding:6px 14px;font-size:0.80rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:background 0.15s;">
           <i id="histIcon-${grpId}" class="fa-solid fa-clock-rotate-left"></i>
-          <span id="histLabel-${grpId}">Lihat Riwayat Upload Sebelumnya (${history.length} versi)</span>
+          <span id="histLabel-${grpId}">Lihat Riwayat Upload Sebelumnya (${revLinks.length} versi)</span>
         </button>
         <div id="histPanel-${grpId}" style="display:none;">
-          ${history.map((dOld, hi) => {
-            const tglOld  = dOld.tanggal ? new Date(dOld.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
-            const stOld   = dOld.reviewStatus || 'Menunggu Review';
-            const smOld   = statusMap[stOld] || statusMap['Menunggu Review'];
-            const hasFileOld = dOld.fileLink && dOld.fileLink.startsWith('http');
-            return `<div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:8px;padding:12px 14px;margin-bottom:8px;opacity:0.85;">
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+          ${revLinks.map((url, hi) => `
+            <div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:8px;padding:12px 14px;margin-bottom:8px;opacity:0.85;">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
                 <span style="font-size:0.80rem;font-weight:700;color:var(--gray-600);">
                   <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i>
-                  Versi ${hi+1} <span style="font-weight:400;color:var(--gray-400);">(${tglOld})</span>
-                </span>
-                <span class="status-badge-lg ${smOld.cls}" style="font-size:0.70rem;padding:2px 8px;opacity:0.85;">
-                  <i class="fa-solid ${smOld.icon}"></i> ${smOld.label}
+                  Revisi ${hi+1}
                 </span>
               </div>
-              ${dOld.fileName ? `<div style="font-size:0.78rem;color:var(--blue-800);margin-bottom:4px;"><i class="fa-solid fa-file" style="color:var(--blue-600);"></i> ${dOld.fileName}</div>` : ''}
-              ${hasFileOld ? `<a href="${dOld.fileLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Lama</a>` : ''}
-              ${dOld.catatanPokja ? `<div style="margin-top:6px;background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:5px;padding:7px 10px;font-size:0.78rem;color:#5C4A00;"><i class="fa-solid fa-comment-dots"></i> <strong>Catatan Pokja:</strong> ${dOld.catatanPokja}</div>` : ''}
-            </div>`;
-          }).join('')}
+              <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Revisi ${hi+1}</a>
+            </div>`).join('')}
         </div>
       </div>` : '';
 
@@ -3021,9 +3012,10 @@ function renderPokjaTable() {
       </div>`;
     } else if(d.fileName){fileCell=`<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;}
 
-    // ── Kolom "Dok. Sebelumnya" – semua versi lama dalam satu kolom ──
+    // ── Kolom "Dok. Sebelumnya" – gunakan revisiLinks dari data (kolom O, P, Q dst di sheet) ──
     let prevCol = '';
-    if(history.length){
+    const revLinks = Array.isArray(d.revisiLinks) ? d.revisiLinks.filter(l => l && l.startsWith('http')) : [];
+    if(revLinks.length){
       const btnId   = 'phBtn-' + origIdx;
       const panelId = 'phPanel-' + origIdx;
       prevCol = `
@@ -3031,22 +3023,17 @@ function renderPokjaTable() {
           <button id="${btnId}" onclick="togglePokjaHistori(${origIdx})"
             style="display:inline-flex;align-items:center;gap:5px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-600);border-radius:5px;padding:3px 9px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:background 0.15s;white-space:nowrap;">
             <i id="phIcon-${origIdx}" class="fa-solid fa-clock-rotate-left"></i>
-            <span>${history.length} dok. sebelumnya</span>
+            <span>${revLinks.length} dok. sebelumnya</span>
           </button>
           <div id="${panelId}" style="display:none;margin-top:6px;min-width:180px;">
-            ${history.map(({d:dv},vi)=>{
-              const tgv=dv.tanggal?new Date(dv.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
-              const flv=dv.fileLink&&dv.fileLink.startsWith('http');
-              return `<div style="background:#F8F9FA;border:1px solid var(--gray-200);border-left:3px solid var(--blue-200);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.75rem;">
-                <div style="color:var(--gray-400);margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${tgv} &nbsp;·&nbsp; <strong style="color:var(--gray-600);">v${vi+1}</strong></div>
-                ${dv.fileName?`<div style="color:var(--blue-800);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;"><i class="fa-solid fa-file" style="color:var(--blue-600);"></i> ${dv.fileName}</div>`:''}
+            ${revLinks.map((url, vi) => `
+              <div style="background:#F8F9FA;border:1px solid var(--gray-200);border-left:3px solid var(--blue-200);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.75rem;">
+                <div style="color:var(--gray-400);margin-bottom:5px;"><i class="fa-solid fa-clock-rotate-left"></i> <strong style="color:var(--gray-600);">Revisi ${vi+1}</strong></div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
-                  ${flv?`<a href="${dv.fileLink}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>`:''}
-                  ${flv?`<a href="${dv.fileLink}" download target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i></a>`:''}
+                  <a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
+                  <a href="${url}" download target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i></a>
                 </div>
-                ${dv.reviewStatus?`<div style="margin-top:4px;font-size:0.70rem;color:var(--gray-600);">${statusLabel[dv.reviewStatus]||dv.reviewStatus}${dv.catatanPokja?` <span style="color:var(--gray-400);">– ${dv.catatanPokja}</span>`:''}</div>`:''}
-              </div>`;
-            }).join('')}
+              </div>`).join('')}
           </div>
         </div>`;
     } else {
