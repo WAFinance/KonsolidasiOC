@@ -922,6 +922,7 @@
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
               <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;"><input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, jenis dokumen…" oninput="renderPokjaTable()" /></div>
               <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Review">⏳ Menunggu Review</option><option value="Lulus / Memenuhi Syarat">✅ Lulus</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi</option></select></div>
+              <div class="admin-form-group" style="flex:1;min-width:160px;margin-bottom:0;"><select id="pokjaSort" onchange="renderPokjaTable()" style="font-size:0.83rem;"><option value="asc">⬆ Pengajuan Terlama</option><option value="desc">⬇ Pengajuan Terbaru</option></select></div>
             </div>
             <div style="overflow-x:auto;">
               <table class="pokja-table" id="pokjaTable">
@@ -2636,15 +2637,24 @@ function renderPokjaTable() {
   const data=getSubmissions();
   const q=(document.getElementById('pokjaSearch')?.value||'').toLowerCase();
   const fStat=document.getElementById('pokjaFilterStatus')?.value;
+  const sortDir=(document.getElementById('pokjaSort')?.value)||'asc';
   const tbody=document.getElementById('pokjaTableBody');
-  const filtered=data.filter(d=>{
+  let filtered=data.filter(d=>{
     const matchQ=!q||(d.namaPerusahaan||'').toLowerCase().includes(q)||(d.npwp||'').includes(q)||(d.jenisDok||'').toLowerCase().includes(q);
     const matchS=!fStat||(d.reviewStatus||'Menunggu Review')===fStat;
     return matchQ&&matchS;
   });
+  // Sort berdasarkan tanggal upload
+  filtered=[...filtered].sort((a,b)=>{
+    const tA=a.tanggal?new Date(a.tanggal).getTime():0;
+    const tB=b.tanggal?new Date(b.tanggal).getTime():0;
+    return sortDir==='asc'?(tA-tB):(tB-tA);
+  });
   if(!filtered.length){tbody.innerHTML=`<tr><td colspan="11" style="text-align:center;color:var(--gray-400);padding:28px;">Tidak ada data.</td></tr>`;renderPokjaStats();return;}
   const statusLabel={'Menunggu Review':'<span class="status-badge status-pending">⏳ Menunggu</span>','Lulus / Memenuhi Syarat':'<span class="status-badge status-lulus">✅ Lulus</span>','Tidak Memenuhi Syarat':'<span class="status-badge status-tidak_lulus">❌ Tidak Memenuhi</span>','Perlu Revisi / Klarifikasi':'<span class="status-badge status-revisi">🔄 Revisi</span>'};
+  let rowNum=0;
   tbody.innerHTML=filtered.map(d=>{
+    rowNum++;
     const origIdx=data.indexOf(d);
     const tgl=d.tanggal?new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
     const fileLink=d.fileLink||'';
@@ -2664,10 +2674,17 @@ function renderPokjaTable() {
         </div>
       </div>`;
 
-    // ── Kolom Klarifikasi (terpisah dari catatan) ──
+    // ── Kolom Klarifikasi dengan tombol show/hide ──
     const klarifikasiColHtml = klarLog.length
-      ? `<div style="min-width:180px;">
-          <div style="margin-bottom:6px;">${klarLog.map((k,ki)=>`
+      ? `<div style="min-width:160px;max-width:220px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
+            <span style="font-size:0.75rem;font-weight:700;color:#856404;white-space:nowrap;"><i class="fa-solid fa-comments"></i> ${klarLog.length} klarifikasi</span>
+            <button id="klarToggleBtn-${origIdx}" onclick="toggleKlarDetail(${origIdx})" style="display:inline-flex;align-items:center;gap:4px;background:#FFF8E1;border:1px solid #FFD54F;color:#856404;border-radius:5px;padding:2px 8px;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.15s;" title="Tampilkan/sembunyikan detail">
+              <i id="klarToggleIcon-${origIdx}" class="fa-solid fa-chevron-down"></i> Lihat
+            </button>
+          </div>
+          <div id="klarDetail-${origIdx}" style="display:none;">
+            ${klarLog.map((k,ki)=>`
             <div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
               <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''}</div>
               <div style="color:var(--gray-800);margin-bottom:${k.balasan?'4px':'0'};">${k.pesan||''}</div>
@@ -2680,9 +2697,20 @@ function renderPokjaTable() {
         </div>`
       : `<span style="color:var(--gray-400);font-size:0.78rem;font-style:italic;">–</span>`;
 
-    return `<tr><td>${origIdx+1}</td><td style="white-space:nowrap;">${tgl}</td><td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td><td style="font-family:monospace;">${d.npwp||'-'}</td><td style="max-width:180px;">${d.jenisDok||'-'}</td><td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td><td>${fileCell}</td><td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td><td>${catatanHtml}</td><td>${klarifikasiColHtml}</td><td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td></tr>`;
+    return `<tr><td>${rowNum}</td><td style="white-space:nowrap;">${tgl}</td><td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td><td style="font-family:monospace;">${d.npwp||'-'}</td><td style="max-width:180px;">${d.jenisDok||'-'}</td><td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td><td>${fileCell}</td><td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td><td>${catatanHtml}</td><td>${klarifikasiColHtml}</td><td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td></tr>`;
   }).join('');
   renderPokjaStats();
+}
+
+function toggleKlarDetail(origIdx) {
+  const detail = document.getElementById('klarDetail-' + origIdx);
+  const icon   = document.getElementById('klarToggleIcon-' + origIdx);
+  const btn    = document.getElementById('klarToggleBtn-' + origIdx);
+  if (!detail) return;
+  const isHidden = detail.style.display === 'none';
+  detail.style.display = isHidden ? 'block' : 'none';
+  if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+  if (btn)  btn.innerHTML  = isHidden ? '<i class="fa-solid fa-chevron-up"></i> Sembunyikan' : '<i class="fa-solid fa-chevron-down"></i> Lihat';
 }
 
 function startEditCatatan(idx) {
