@@ -1595,6 +1595,29 @@ function shakeModal(modalId) {
 let currentRole      = null;
 let currentPenyedia  = null;
 let adminClickCount  = 0;
+
+// ── Session persistence: tahan login saat browser di-refresh ──
+function saveSession() {
+  try {
+    if (currentRole) {
+      sessionStorage.setItem('_bpbj_role',     currentRole);
+      sessionStorage.setItem('_bpbj_penyedia', JSON.stringify(currentPenyedia || null));
+    } else {
+      sessionStorage.removeItem('_bpbj_role');
+      sessionStorage.removeItem('_bpbj_penyedia');
+    }
+  } catch(e) {}
+}
+
+function restoreSession() {
+  try {
+    const role = sessionStorage.getItem('_bpbj_role');
+    if (!role) return false;
+    currentRole     = role;
+    currentPenyedia = JSON.parse(sessionStorage.getItem('_bpbj_penyedia') || 'null');
+    return true;
+  } catch(e) { return false; }
+}
 let adminClickTimer  = null;
 
 function closeAllLoginOverlays() {
@@ -1725,6 +1748,7 @@ function initAuth() {
 
 function setRole(role) {
   currentRole = role;
+  saveSession();
   renderSidebar();
   updateRoleUI();
   updateMbnVisibility();
@@ -1735,8 +1759,8 @@ function setRole(role) {
   if (role === 'penyedia') { updateUploadFormLock(); loadStatusPenyedia(); showPage('status'); }
 }
 
-function doLogoutSilent() { currentRole = null; currentPenyedia = null; _submissions = []; }
-function doLogout() { currentRole = null; currentPenyedia = null; _submissions = []; renderSidebar(); updateRoleUI(); updateMbnVisibility(); updateUploadFormLock(); showPage('beranda'); }
+function doLogoutSilent() { currentRole = null; currentPenyedia = null; _submissions = []; saveSession(); }
+function doLogout() { currentRole = null; currentPenyedia = null; _submissions = []; saveSession(); renderSidebar(); updateRoleUI(); updateMbnVisibility(); updateUploadFormLock(); showPage('beranda'); }
 
 function updateMbnVisibility() {
   const loggedIn = !!currentRole;
@@ -3440,6 +3464,22 @@ async function init() {
   if(cfg){hideSync();}
   else{showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.','error');setTimeout(hideSync,3000);}
   renderAll();
+  // ── Restore session jika user refresh browser ──
+  if (restoreSession()) {
+    renderSidebar();
+    updateRoleUI();
+    updateMbnVisibility();
+    updateUploadFormLock();
+    if (currentRole === 'pokja' || currentRole === 'admin') {
+      loadSubmissionsFromSheet();
+      if (currentRole === 'admin') loadAdminForms();
+      showPage(currentRole);
+    }
+    if (currentRole === 'penyedia') {
+      loadStatusPenyedia();
+      showPage('status');
+    }
+  }
   // Muat jumlah peserta publik tanpa perlu login
   loadPublicPesertaCount();
   // Auto-refresh data submisi setiap 20 detik (data saja, tidak render ulang UI)
@@ -3565,13 +3605,13 @@ function batalEditNotifPreview() {
 // =================================================================
 // KLARIFIKASI PENYEDIA
 // =================================================================
-let _klarIdx = null; // index submisi yang akan diklarifikasi
+let _klarKey = null; // key stabil: npwp||nama + '||' + jenisDok (tahan saat _submissions di-refresh)
 
 function bukaModalKlarifikasi(idx) {
-  _klarIdx = idx;
   const data = getSubmissions();
   const d    = data[idx];
   if (!d) return;
+  _klarKey = makeSubKey(d); // simpan key stabil, bukan index angka
   const infoBox = document.getElementById('klarInfoBox');
   infoBox.innerHTML = `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong><br>
     <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span><br>
@@ -3584,11 +3624,14 @@ function bukaModalKlarifikasi(idx) {
 
 function tutupModalKlarifikasi() {
   document.getElementById('modalKlarifikasi').style.display = 'none';
-  _klarIdx = null;
+  _klarKey = null;
 }
 
 async function kirimKlarifikasi() {
-  if (_klarIdx === null) return;
+  if (!_klarKey) return;
+  // Resolve index dari key stabil – aman meski _submissions sudah di-refresh
+  const resolvedIdx = findIdxByKey(_klarKey);
+  if (resolvedIdx < 0) return;
   const pesan = document.getElementById('klarPesan').value.trim();
   const msgEl = document.getElementById('klarMsg');
   if (!pesan) {
@@ -3601,7 +3644,7 @@ async function kirimKlarifikasi() {
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
 
   const data = getSubmissions();
-  const d    = data[_klarIdx];
+  const d    = data[resolvedIdx];
   if (!d) { btn.disabled=false; return; }
 
   const tglNow   = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -3615,7 +3658,6 @@ async function kirimKlarifikasi() {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: {'Content-Type':'application/json'},
-      // Kirim hanya field yang dibutuhkan backend – backend append ke kolom 6 sheet Review
       body: JSON.stringify({
         action:         'kirimKlarifikasi',
         namaPerusahaan: d.namaPerusahaan,
@@ -3632,7 +3674,7 @@ async function kirimKlarifikasi() {
   btn.disabled = false;
   btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi';
 
-  // [FIX] Reload dari server setelah kirim, agar data tersinkron
+  // Reload dari server setelah kirim, agar data tersinkron
   setTimeout(() => {
     tutupModalKlarifikasi();
     loadStatusPenyedia();
@@ -3647,13 +3689,13 @@ document.getElementById('modalKlarifikasi').addEventListener('click', function(e
 // =================================================================
 // TANGGAPAN KLARIFIKASI (POKJA)
 // =================================================================
-let _tanggapanSubmisiIdx = null;
+let _tanggapanKey = null; // key stabil: npwp||nama + '||' + jenisDok (tahan saat _submissions di-refresh)
 
 function bukaTanggapanKlarifikasi(idx) {
-  _tanggapanSubmisiIdx = idx;
   const data = getSubmissions();
   const d    = data[idx];
   if (!d) return;
+  _tanggapanKey = makeSubKey(d); // simpan key stabil, bukan index angka
 
   const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
   if (!klarLog.length) {
@@ -3690,11 +3732,14 @@ function bukaTanggapanKlarifikasi(idx) {
 
 function tutupTanggapanKlarifikasi() {
   document.getElementById('modalTanggapan').style.display = 'none';
-  _tanggapanSubmisiIdx = null;
+  _tanggapanKey = null;
 }
 
 async function kirimTanggapanKlarifikasi() {
-  if (_tanggapanSubmisiIdx === null) return;
+  if (!_tanggapanKey) return;
+  // Resolve index dari key stabil – aman meski _submissions sudah di-refresh oleh polling
+  const resolvedIdx = findIdxByKey(_tanggapanKey);
+  if (resolvedIdx < 0) return;
   const pesan = document.getElementById('tanggapanPesan').value.trim();
   const msgEl = document.getElementById('tanggapanMsg');
   if (!pesan) {
@@ -3704,7 +3749,7 @@ async function kirimTanggapanKlarifikasi() {
   }
 
   const data = getSubmissions();
-  const d    = data[_tanggapanSubmisiIdx];
+  const d    = data[resolvedIdx];
   if (!d) return;
 
   const klarLog  = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
