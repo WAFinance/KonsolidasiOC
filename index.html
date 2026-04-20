@@ -863,6 +863,7 @@
       <p>Bagian Pengadaan Barang dan Jasa &nbsp;|&nbsp; Pemerintah Kota Surakarta</p>
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+      <div id="dataUpdateLabel" style="font-size:0.70rem;color:rgba(255,255,255,0.65);display:flex;align-items:center;gap:5px;white-space:nowrap;" title="Waktu terakhir data diperbarui"><i class="fa-solid fa-clock" style="font-size:0.65rem;"></i> <span id="dataUpdateTime">–</span></div>
       <div id="roleIndicator" style="display:none;"><span class="role-badge" id="roleBadge"></span></div>
       <button id="logoutTopBtn" style="display:none;background:#C0392B;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
     </div>
@@ -2673,13 +2674,42 @@ function renderUploadForm(force) {
     } else {
       const isEmail = f.type === 'email';
       const isTel   = f.type === 'tel';
+      const isNpwp  = f.id === 'fNpwp';
       const acValue = isEmail ? 'new-password' : 'off';
-      const hintHtml = isTel
-        ? `<div class="file-hint" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>). Jangan gunakan awalan 0 atau +62.</div>`
-        : '';
-      const onInputAttr = isTel
-        ? ` oninput="this.value=this.value.replace(/[^0-9]/g,'');if(this.value.startsWith('0')){this.value='62'+this.value.slice(1);}if(this.value.startsWith('+')){this.value=this.value.replace(/\\D/g,'');}"`
-        : '';
+
+      // Hint teks di bawah field
+      let hintHtml = '';
+      if (isTel) {
+        hintHtml = `<div class="file-hint" id="hint-${f.id}" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>). Jangan gunakan awalan 0 atau +62.</div>`;
+      } else if (isNpwp) {
+        hintHtml = `<div class="file-hint" id="hint-${f.id}" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> NPWP harus <strong>15 atau 16 digit angka</strong> (tanpa titik/strip).</div>`;
+      }
+
+      // oninput handler: sanitasi + validasi visual real-time
+      let onInputAttr = '';
+      if (isTel) {
+        onInputAttr = ` oninput="
+          this.value=this.value.replace(/[^0-9]/g,'');
+          if(this.value.startsWith('0')){this.value='62'+this.value.slice(1);}
+          if(this.value.startsWith('+')){this.value=this.value.replace(/\\D/g,'');}
+          var ok=/^62\\d{7,14}$/.test(this.value);
+          this.style.borderColor=this.value?( ok?'#3B6D11':'#C0392B'):'';
+          this.style.boxShadow=this.value?(ok?'0 0 0 3px rgba(59,109,17,0.12)':'0 0 0 3px rgba(192,57,43,0.12)'):'';
+          var h=document.getElementById('hint-${f.id}');
+          if(h){h.style.color=ok?'#3B6D11':'#C0392B';h.innerHTML=ok?'<i class=\\'fa-solid fa-circle-check\\'></i> Nomor valid.':'<i class=\\'fa-solid fa-triangle-exclamation\\'></i> Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>). Jangan gunakan awalan 0 atau +62.';}
+        "`;
+      } else if (isNpwp) {
+        onInputAttr = ` oninput="
+          this.value=this.value.replace(/[^0-9]/g,'');
+          var len=this.value.length;
+          var ok=len===15||len===16;
+          this.style.borderColor=len>0?(ok?'#3B6D11':'#C0392B'):'';
+          this.style.boxShadow=len>0?(ok?'0 0 0 3px rgba(59,109,17,0.12)':'0 0 0 3px rgba(192,57,43,0.12)'):'';
+          var h=document.getElementById('hint-${f.id}');
+          if(h){h.style.color=ok?'#3B6D11':'#C0392B';h.innerHTML=ok?'<i class=\\'fa-solid fa-circle-check\\'></i> NPWP valid ('+len+' digit).':'<i class=\\'fa-solid fa-triangle-exclamation\\'></i> NPWP harus <strong>15 atau 16 digit</strong> — sekarang <strong>'+len+' digit</strong>.';}
+        "`;
+      }
+
       html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}"${onInputAttr} />${hintHtml}</div>`;
     }
   });
@@ -2844,11 +2874,33 @@ async function submitUpload() {
   const file=fileInput?fileInput.files[0]:null;
   if(!valid){showFormMsg('error','Harap lengkapi semua kolom bertanda (*).'); return;}
   if(!file){showFormMsg('error','Harap pilih file dokumen.'); return;}
-  // Validasi format nomor telepon: wajib diawali 62
+
+  // ── Validasi NPWP: harus 15 atau 16 digit angka ──
+  const npwpVal = (payload['fNpwp']||'').replace(/\D/g,'');
+  if(npwpVal.length < 15 || npwpVal.length > 16){
+    const npwpEl = document.getElementById('fNpwp');
+    if(npwpEl){
+      npwpEl.focus();
+      npwpEl.style.borderColor='#C0392B';
+      npwpEl.style.boxShadow='0 0 0 3px rgba(192,57,43,0.15)';
+      setTimeout(()=>{ npwpEl.style.borderColor=''; npwpEl.style.boxShadow=''; }, 3000);
+    }
+    const hintNpwp = document.getElementById('hint-fNpwp');
+    if(hintNpwp){
+      hintNpwp.style.color='#C0392B';
+      hintNpwp.innerHTML='<i class="fa-solid fa-circle-xmark"></i> NPWP harus <strong>15 atau 16 digit angka</strong> — sekarang <strong>'+npwpVal.length+' digit</strong>. Pastikan tanpa titik atau strip.';
+    }
+    showFormMsg('error','NPWP tidak valid. Harus <strong>15 atau 16 digit angka</strong> (tanpa titik/strip). Sekarang '+npwpVal.length+' digit.');
+    return;
+  }
+
+  // ── Validasi format nomor telepon: wajib diawali 62 ──
   const telpVal = (payload['fTelp']||'').replace(/\s/g,'');
   if(!/^62\d{7,14}$/.test(telpVal)){
     const telpEl = document.getElementById('fTelp');
-    if(telpEl){ telpEl.focus(); telpEl.style.borderColor='#C0392B'; telpEl.style.boxShadow='0 0 0 3px rgba(192,57,43,0.15)'; setTimeout(()=>{ telpEl.style.borderColor=''; telpEl.style.boxShadow=''; }, 2500); }
+    if(telpEl){ telpEl.focus(); telpEl.style.borderColor='#C0392B'; telpEl.style.boxShadow='0 0 0 3px rgba(192,57,43,0.15)'; setTimeout(()=>{ telpEl.style.borderColor=''; telpEl.style.boxShadow=''; }, 3000); }
+    const hintTelp = document.getElementById('hint-fTelp');
+    if(hintTelp){ hintTelp.style.color='#C0392B'; hintTelp.innerHTML='<i class="fa-solid fa-circle-xmark"></i> Nomor tidak valid. Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>).'; }
     showFormMsg('error','Nomor telepon harus diawali <strong>62</strong> (contoh: 628123456789). Tidak boleh diawali 0 atau +.');
     return;
   }
@@ -2890,7 +2942,7 @@ async function submitUpload() {
 function showFormMsg(type,msg) {
   document.getElementById('uploadSuccess').style.display='none'; document.getElementById('uploadError').style.display='none';
   if(type==='success') document.getElementById('uploadSuccess').style.display='block';
-  else{document.getElementById('uploadErrorMsg').textContent=msg||'';document.getElementById('uploadError').style.display='block';}
+  else{document.getElementById('uploadErrorMsg').innerHTML=msg||'';document.getElementById('uploadError').style.display='block';}
 }
 
 // =================================================================
@@ -3587,6 +3639,8 @@ async function init() {
   loadPublicPesertaCount();
   // Auto-refresh data submisi setiap 20 detik (data saja, tidak render ulang UI)
   setInterval(autoRefreshSubmissions, 20000);
+  // Tampilkan waktu load pertama
+  updateDataTimestamp();
 }
 
 // Auto-refresh submissions setiap 20 detik – update data & tampilan secara diam-diam
@@ -3627,6 +3681,7 @@ async function autoRefreshSubmissions() {
       }
     }
   } catch(e) {}
+  updateDataTimestamp();
 }
 
 // Muat jumlah peserta untuk tampilan publik (beranda)
@@ -3639,6 +3694,7 @@ async function loadPublicPesertaCount() {
       const el = document.getElementById('statPeserta');
       if (el) el.textContent = data.submissions.length || '0';
     }
+    updateDataTimestamp();
   } catch(e) {}
 }
 
@@ -4005,6 +4061,62 @@ function syncMbnWithPage(pageId) {
   const el = document.getElementById('mbn-' + mbnId);
   if (el) el.classList.add('active');
 }
+
+// =================================================================
+// DATA TIMESTAMP & AUTO-REFRESH SAAT RUNNING TEXT SELESAI
+// =================================================================
+function updateDataTimestamp() {
+  const now = new Date();
+  const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const el  = document.getElementById('dataUpdateTime');
+  if (el) el.textContent = 'Diperbarui ' + jam;
+}
+
+// Patch loadSubmissionsFromSheet & loadStatusPenyedia agar update timestamp
+(function() {
+  const _origLoadSub = loadSubmissionsFromSheet;
+  window.loadSubmissionsFromSheet = async function() {
+    await _origLoadSub.apply(this, arguments);
+    updateDataTimestamp();
+  };
+  const _origLoadStatus = loadStatusPenyedia;
+  window.loadStatusPenyedia = async function() {
+    await _origLoadStatus.apply(this, arguments);
+    updateDataTimestamp();
+  };
+})();
+
+// Hook marquee: setiap kali running text selesai satu putaran → refresh data
+(function() {
+  function attachMarqueeRefresh() {
+    const marquee = document.getElementById('marqueeText');
+    if (!marquee) return;
+    marquee.addEventListener('animationiteration', function() {
+      if (currentRole === 'pokja' || currentRole === 'admin') {
+        loadSubmissionsFromSheet();
+      } else if (currentRole === 'penyedia' && currentPenyedia) {
+        loadStatusPenyedia();
+      } else {
+        // Mode publik: refresh stat peserta
+        fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now())
+          .then(r => r.json())
+          .then(data => {
+            if (data.status === 'ok' && Array.isArray(data.submissions)) {
+              _submissions = data.submissions;
+              const el = document.getElementById('statPeserta');
+              if (el) el.textContent = _submissions.length || '–';
+              if (typeof renderPokjaStats === 'function') renderPokjaStats();
+            }
+            updateDataTimestamp();
+          })
+          .catch(() => {});
+      }
+    });
+  }
+  // Jalankan setelah halaman siap
+  document.addEventListener('DOMContentLoaded', attachMarqueeRefresh);
+  setTimeout(attachMarqueeRefresh, 2000); // fallback setelah init
+})();
 
 init();
 </script>
