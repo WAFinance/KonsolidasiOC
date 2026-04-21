@@ -817,10 +817,11 @@
   <div class="login-modal" style="position:relative;">
     <div class="login-modal-header modal-header-pokja">
       <h2><i class="fa-solid fa-magnifying-glass-chart"></i> &nbsp;Login Pokja Pemilihan</h2>
-      <p>Masuk dengan akun Pokja Anda</p>
+      <p>Masuk dengan akun Pokja Anda (pokja, pokja1–pokja10)</p>
     </div>
     <div class="login-modal-body">
-      <div class="admin-form-group"><label>Username</label><input type="text" id="pokjaUsername" placeholder="Username Pokja…" autocomplete="username" onkeydown="if(event.key==='Enter')doLoginPokja()" /></div>
+      <div id="pokjaLockBanner" style="display:none;background:#FFF3CD;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:7px;padding:10px 14px;font-size:0.82rem;color:#6b5003;margin-bottom:12px;"><i class="fa-solid fa-lock"></i> <strong>Akun ini sedang digunakan</strong> oleh sesi lain. Hubungi Admin untuk reset lock jika diperlukan.</div>
+      <div class="admin-form-group"><label>Username</label><input type="text" id="pokjaUsername" placeholder="pokja / pokja1 / pokja2 …" autocomplete="username" onkeydown="if(event.key==='Enter')doLoginPokja()" /></div>
       <div class="admin-form-group"><label>Password</label><div class="pw-wrap"><input type="password" id="pokjaPasswordInput" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPokja()" /><button type="button" class="pw-eye" onclick="togglePw('pokjaPasswordInput',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
       <div style="font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginPokja"></div>
       <div style="display:flex;gap:10px;margin-top:14px;">
@@ -1155,22 +1156,45 @@
             </div>
 
             <div class="admin-section" id="atab-akun">
-              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Kelola akun Admin dan Pokja.</p>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;flex-wrap:wrap;">
-                <div class="timeline-editor-item">
-                  <div class="tei-head"><i class="fa-solid fa-gear" style="color:var(--blue-600);"></i> Ganti Password Admin</div>
-                  <div class="admin-form-group"><label>Password Lama</label><div class="pw-wrap"><input type="password" id="ak-admin-old" autocomplete="current-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-old',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-admin-new" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-admin-confirm" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <button class="btn-admin-save" onclick="changeAdminPassword()"><i class="fa-solid fa-key"></i> Ganti Password</button>
-                  <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunAdmin"></div>
+              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Kelola akun Admin dan semua akun Pokja (pokja, pokja1–pokja10). Setiap akun dapat login secara terpisah dan semua tindakan review tercatat atas nama akun masing-masing.</p>
+
+              <!-- Ganti Password Admin -->
+              <div class="timeline-editor-item" style="margin-bottom:16px;">
+                <div class="tei-head"><i class="fa-solid fa-gear" style="color:var(--blue-600);"></i> Ganti Password Admin</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end;">
+                  <div class="admin-form-group" style="margin-bottom:0;"><label>Password Lama</label><div class="pw-wrap"><input type="password" id="ak-admin-old" autocomplete="current-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-old',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group" style="margin-bottom:0;"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-admin-new" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                  <div class="admin-form-group" style="margin-bottom:0;"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-admin-confirm" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-admin-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
                 </div>
-                <div class="timeline-editor-item">
-                  <div class="tei-head"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> Ganti Password Pokja</div>
-                  <div class="admin-form-group"><label>Username Pokja</label><input type="text" id="ak-pokja-user" autocomplete="off" /></div>
-                  <div class="admin-form-group"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-pokja-new" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <div class="admin-form-group"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-pokja-confirm" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
-                  <button class="btn-admin-save" onclick="changePokjaPassword()"><i class="fa-solid fa-key"></i> Ganti Password</button>
+                <div style="margin-top:10px;display:flex;align-items:center;gap:12px;">
+                  <button class="btn-admin-save" onclick="changeAdminPassword()"><i class="fa-solid fa-key"></i> Ganti Password Admin</button>
+                  <span style="font-size:0.8rem;min-height:20px;" id="msgAkunAdmin"></span>
+                </div>
+              </div>
+
+              <!-- Manajemen Akun Pokja -->
+              <div class="timeline-editor-item">
+                <div class="tei-head"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> Manajemen Akun Pokja (pokja, pokja1–pokja10)</div>
+                <div style="background:#EAF3DE;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.81rem;color:#2D7D17;margin-bottom:14px;">
+                  <i class="fa-solid fa-circle-info"></i> Setiap akun hanya bisa digunakan <strong>satu sesi sekaligus</strong>. Status <span style="background:#856404;color:#fff;border-radius:4px;padding:1px 6px;font-size:0.75rem;">🔒 TERKUNCI</span> berarti akun sedang aktif digunakan.
+                </div>
+                <div id="pokjaAccountsTable" style="overflow-x:auto;"></div>
+                <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-200);">
+                  <div style="font-size:0.83rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-key"></i> Ganti Password Akun Pokja</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
+                    <div class="admin-form-group" style="margin-bottom:0;"><label>Username Pokja</label>
+                      <select id="ak-pokja-user" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.85rem;">
+                        <option value="pokja">pokja</option>
+                        <option value="pokja1">pokja1</option><option value="pokja2">pokja2</option><option value="pokja3">pokja3</option>
+                        <option value="pokja4">pokja4</option><option value="pokja5">pokja5</option><option value="pokja6">pokja6</option>
+                        <option value="pokja7">pokja7</option><option value="pokja8">pokja8</option><option value="pokja9">pokja9</option>
+                        <option value="pokja10">pokja10</option>
+                      </select>
+                    </div>
+                    <div class="admin-form-group" style="margin-bottom:0;"><label>Password Baru</label><div class="pw-wrap"><input type="password" id="ak-pokja-new" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-new',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                    <div class="admin-form-group" style="margin-bottom:0;"><label>Konfirmasi</label><div class="pw-wrap"><input type="password" id="ak-pokja-confirm" autocomplete="new-password" /><button type="button" class="pw-eye" onclick="togglePw('ak-pokja-confirm',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
+                    <button class="btn-admin-save" onclick="changePokjaPassword()" style="margin-bottom:0;white-space:nowrap;"><i class="fa-solid fa-key"></i> Simpan</button>
+                  </div>
                   <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunPokja"></div>
                 </div>
               </div>
@@ -1193,7 +1217,7 @@
       <p style="font-size:0.88rem;font-weight:600;color:var(--blue-800);" id="reviewLoadingMsg">Menyimpan review…</p>
     </div>
     <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-circle-check"></i> &nbsp;Review Dokumen</span>
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-circle-check"></i> &nbsp;Review Dokumen &nbsp;<span id="reviewModalPokjaTag" style="font-size:0.78rem;opacity:0.85;font-weight:400;background:rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;"></span></span>
       <button onclick="closeReviewModal()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
     </div>
     <div style="padding:22px 24px;">
@@ -1674,7 +1698,11 @@ function showToast(title, sub, type, duration) {
 // =================================================================
 let currentRole      = null;
 let currentPenyedia  = null;
+let currentPokjaUser = null; // username akun pokja yang sedang login (pokja/pokja1..pokja10)
 let adminClickCount  = 0;
+
+// Daftar semua username pokja yang dikenali
+const POKJA_USERNAMES = ['pokja','pokja1','pokja2','pokja3','pokja4','pokja5','pokja6','pokja7','pokja8','pokja9','pokja10'];
 
 // ── Session persistence: tahan login saat browser di-refresh ──
 function saveSession() {
@@ -1682,9 +1710,11 @@ function saveSession() {
     if (currentRole) {
       sessionStorage.setItem('_bpbj_role',     currentRole);
       sessionStorage.setItem('_bpbj_penyedia', JSON.stringify(currentPenyedia || null));
+      sessionStorage.setItem('_bpbj_pokjauser', currentPokjaUser || '');
     } else {
       sessionStorage.removeItem('_bpbj_role');
       sessionStorage.removeItem('_bpbj_penyedia');
+      sessionStorage.removeItem('_bpbj_pokjauser');
     }
   } catch(e) {}
 }
@@ -1695,6 +1725,7 @@ function restoreSession() {
     if (!role) return false;
     currentRole     = role;
     currentPenyedia = JSON.parse(sessionStorage.getItem('_bpbj_penyedia') || 'null');
+    currentPokjaUser = sessionStorage.getItem('_bpbj_pokjauser') || null;
     return true;
   } catch(e) { return false; }
 }
@@ -1770,24 +1801,95 @@ async function doLoginPenyedia() {
 }
 
 async function doLoginPokja() {
-  const username = document.getElementById('pokjaUsername').value.trim();
+  const username = document.getElementById('pokjaUsername').value.trim().toLowerCase();
   const password = document.getElementById('pokjaPasswordInput').value;
   const errEl    = document.getElementById('errorLoginPokja');
+  const lockBanner = document.getElementById('pokjaLockBanner');
   errEl.textContent = '';
+  lockBanner.style.display = 'none';
   if (!username || !password) { errEl.textContent = '❌ Username dan password wajib diisi.'; shakeModal('loginOverlayPokja'); return; }
+  if (!POKJA_USERNAMES.includes(username)) { errEl.textContent = '❌ Username tidak dikenali.'; shakeModal('loginOverlayPokja'); return; }
   setButtonLoading('btnDoLoginPokja', true, 'Memverifikasi…');
   const cfg = await fetchGlobalConfig(true);
-  const pokjaUser = (cfg && cfg.pokjaUsername) ? cfg.pokjaUsername : 'pokja';
-  const pokjaPass = (cfg && cfg.pokjaPassword) ? cfg.pokjaPassword : 'pokja2026';
-  if (username === pokjaUser && password === pokjaPass) {
-    showModalSuccess('loginOverlayPokja', 'Login berhasil! ✓', 1200);
-    setButtonLoading('btnDoLoginPokja', false);
-    setTimeout(() => { if (currentRole === 'penyedia') doLogoutSilent(); setRole('pokja'); closeAllLoginOverlays(); }, 1300);
+
+  // ── Ambil password akun pokja ini ──
+  // Config menyimpan: pokjaAccounts = { pokja:{password,lock}, pokja1:{...}, ... }
+  // Fallback: pokjaUsername/pokjaPassword untuk akun 'pokja' lama
+  const pokjaAccounts = (cfg && cfg.pokjaAccounts) ? cfg.pokjaAccounts : {};
+  let expectedPass, isLocked, lockToken;
+  if (pokjaAccounts[username]) {
+    expectedPass = pokjaAccounts[username].password || '';
+    isLocked     = pokjaAccounts[username].locked   || false;
+    lockToken    = pokjaAccounts[username].lockToken || '';
+  } else if (username === 'pokja') {
+    // Fallback ke config lama
+    expectedPass = (cfg && cfg.pokjaPassword) ? cfg.pokjaPassword : 'pokja2026';
+    isLocked = false;
   } else {
+    // Akun pokja1-10 belum punya password → default pokja2026
+    expectedPass = 'pokja2026';
+    isLocked = false;
+  }
+
+  if (password !== expectedPass) {
     setButtonLoading('btnDoLoginPokja', false);
     errEl.textContent = '❌ Username atau password salah.';
     shakeModal('loginOverlayPokja');
+    return;
   }
+
+  // ── Cek session lock ──
+  // Lock token disimpan di config server; jika ada & berbeda dengan token sesi ini → terkunci
+  const myToken = sessionStorage.getItem('_bpbj_locktoken_' + username) || '';
+  if (isLocked && lockToken && lockToken !== myToken) {
+    setButtonLoading('btnDoLoginPokja', false);
+    lockBanner.style.display = 'block';
+    shakeModal('loginOverlayPokja');
+    return;
+  }
+
+  // ── Buat lock token baru & simpan ke server ──
+  const newToken = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  sessionStorage.setItem('_bpbj_locktoken_' + username, newToken);
+  const updatedAccounts = Object.assign({}, pokjaAccounts);
+  if (!updatedAccounts[username]) updatedAccounts[username] = { password: expectedPass };
+  updatedAccounts[username].locked    = true;
+  updatedAccounts[username].lockToken = newToken;
+  updatedAccounts[username].loginAt   = new Date().toISOString();
+  // Push lock ke server (fire-and-forget)
+  try {
+    fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'setConfig', key:'pokjaAccounts', value: updatedAccounts }) });
+  } catch(e) {}
+  _globalConfig['pokjaAccounts'] = updatedAccounts;
+
+  showModalSuccess('loginOverlayPokja', `Login ${username} berhasil! ✓`, 1200);
+  setButtonLoading('btnDoLoginPokja', false);
+  currentPokjaUser = username;
+  setTimeout(() => { if (currentRole === 'penyedia') doLogoutSilent(); setRole('pokja'); closeAllLoginOverlays(); }, 1300);
+}
+
+// Helper: dapatkan nama tampilan pokja yang sedang login
+function getPokjaDisplayName() {
+  return currentPokjaUser ? currentPokjaUser.toUpperCase() : 'Pokja';
+}
+
+// Unlock sesi pokja di server saat logout
+async function releasePokjaLock(username) {
+  if (!username) return;
+  const cfg = _globalConfig;
+  const pokjaAccounts = (cfg && cfg.pokjaAccounts) ? Object.assign({}, cfg.pokjaAccounts) : {};
+  if (pokjaAccounts[username]) {
+    pokjaAccounts[username].locked    = false;
+    pokjaAccounts[username].lockToken = '';
+    pokjaAccounts[username].logoutAt  = new Date().toISOString();
+    try {
+      fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'setConfig', key:'pokjaAccounts', value: pokjaAccounts }) });
+    } catch(e) {}
+    _globalConfig['pokjaAccounts'] = pokjaAccounts;
+  }
+  sessionStorage.removeItem('_bpbj_locktoken_' + username);
 }
 
 async function doLoginAdmin() {
@@ -1839,8 +1941,14 @@ function setRole(role) {
   if (role === 'penyedia') { updateUploadFormLock(); loadStatusPenyedia(); showPage('status'); }
 }
 
-function doLogoutSilent() { currentRole = null; currentPenyedia = null; _submissions = []; saveSession(); }
-function doLogout() { currentRole = null; currentPenyedia = null; _submissions = []; saveSession(); renderSidebar(); updateRoleUI(); updateMbnVisibility(); updateUploadFormLock(); showPage('beranda'); }
+function doLogoutSilent() {
+  if (currentRole === 'pokja' && currentPokjaUser) releasePokjaLock(currentPokjaUser);
+  currentRole = null; currentPenyedia = null; currentPokjaUser = null; _submissions = []; saveSession();
+}
+function doLogout() {
+  if (currentRole === 'pokja' && currentPokjaUser) releasePokjaLock(currentPokjaUser);
+  currentRole = null; currentPenyedia = null; currentPokjaUser = null; _submissions = []; saveSession(); renderSidebar(); updateRoleUI(); updateMbnVisibility(); updateUploadFormLock(); showPage('beranda');
+}
 
 function updateMbnVisibility() {
   const loggedIn = !!currentRole;
@@ -1857,7 +1965,7 @@ function updateRoleUI() {
   if (currentRole) {
     indicator.style.display='block'; logoutBtn.style.display='block';
     if (currentRole==='admin') { badge.className='role-badge role-admin'; badge.innerHTML='<i class="fa-solid fa-gear"></i> Admin'; }
-    else if (currentRole==='pokja') { badge.className='role-badge role-pokja'; badge.innerHTML='<i class="fa-solid fa-shield-halved"></i> Pokja'; }
+    else if (currentRole==='pokja') { badge.className='role-badge role-pokja'; badge.innerHTML=`<i class="fa-solid fa-shield-halved"></i> ${getPokjaDisplayName()}`; }
     else if (currentRole==='penyedia' && currentPenyedia) {
       badge.className='role-badge role-penyedia';
       badge.innerHTML=`<i class="fa-solid fa-building"></i> ${currentPenyedia.nama.length>20?currentPenyedia.nama.slice(0,18)+'…':currentPenyedia.nama}`;
@@ -2081,7 +2189,7 @@ function renderSidebar() {
     let iconHtml = item.iconType==='img' && item.iconUrl ? `<img src="${item.iconUrl}" class="custom-nav-icon" alt="${item.label}" />` : `<i class="fa-solid ${item.icon||'fa-circle'}"></i>`;
     html += `<li><a href="#" class="nav-link" data-page="${item.id}"><span class="nav-icon">${iconHtml}</span><span class="nav-label">${item.label}</span></a></li>`;
   });
-  if (currentRole === 'pokja') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout Pokja</span></a></li>`; }
+  if (currentRole === 'pokja') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout (${getPokjaDisplayName()})</span></a></li>`; }
   if (currentRole === 'penyedia') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout</span></a></li>`; }
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px 8px;"><a href="#" class="nav-link nav-panduan" onclick="event.preventDefault();bukaMenuPanduan();"><span class="nav-icon"><i class="fa-solid fa-book-open"></i></span><span class="nav-label">Panduan Penggunaan</span></a></li>`;
   nav.innerHTML = html;
@@ -2825,13 +2933,69 @@ async function changeAdminPassword() {
   ['ak-admin-old','ak-admin-new','ak-admin-confirm'].forEach(id=>document.getElementById(id).value='');
 }
 async function changePokjaPassword() {
-  const username=document.getElementById('ak-pokja-user').value.trim(); const newPass=document.getElementById('ak-pokja-new').value; const confirm=document.getElementById('ak-pokja-confirm').value; const msgEl=document.getElementById('msgAkunPokja');
-  if(!username){msgEl.style.color='#C0392B';msgEl.textContent='❌ Masukkan username.';return;}
-  if(newPass.length<6){msgEl.style.color='#C0392B';msgEl.textContent='❌ Min. 6 karakter.';return;}
-  if(newPass!==confirm){msgEl.style.color='#C0392B';msgEl.textContent='❌ Konfirmasi tidak cocok.';return;}
-  await syncAccountToSheet('pokja',username,newPass);
-  msgEl.style.color='#3B6D11';msgEl.textContent='✓ Akun Pokja berhasil diperbarui.';
+  const username = document.getElementById('ak-pokja-user').value.trim();
+  const newPass  = document.getElementById('ak-pokja-new').value;
+  const confirm  = document.getElementById('ak-pokja-confirm').value;
+  const msgEl    = document.getElementById('msgAkunPokja');
+  if (!username) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Pilih username.'; return; }
+  if (newPass.length < 6) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Min. 6 karakter.'; return; }
+  if (newPass !== confirm) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
+  const pokjaAccounts = Object.assign({}, gcGet('pokjaAccounts', {}));
+  if (!pokjaAccounts[username]) pokjaAccounts[username] = {};
+  pokjaAccounts[username].password = newPass;
+  await pushConfig('pokjaAccounts', pokjaAccounts);
+  msgEl.style.color='#3B6D11'; msgEl.textContent=`✓ Password ${username} berhasil diperbarui.`;
   ['ak-pokja-new','ak-pokja-confirm'].forEach(id=>document.getElementById(id).value='');
+  renderPokjaAccountsTable();
+}
+
+async function resetPokjaLock(username) {
+  if (!confirm(`Reset lock untuk akun ${username}? Sesi aktif akun tersebut akan diputus.`)) return;
+  const pokjaAccounts = Object.assign({}, gcGet('pokjaAccounts', {}));
+  if (!pokjaAccounts[username]) pokjaAccounts[username] = {};
+  pokjaAccounts[username].locked    = false;
+  pokjaAccounts[username].lockToken = '';
+  await pushConfig('pokjaAccounts', pokjaAccounts);
+  showToast('Lock Direset', `Akun ${username.toUpperCase()} sudah tidak terkunci.`, 'success', 3000);
+  renderPokjaAccountsTable();
+}
+
+function renderPokjaAccountsTable() {
+  const el = document.getElementById('pokjaAccountsTable');
+  if (!el) return;
+  const pokjaAccounts = gcGet('pokjaAccounts', {});
+  const rows = POKJA_USERNAMES.map(u => {
+    const acc = pokjaAccounts[u] || {};
+    const locked = acc.locked || false;
+    const loginAt = acc.loginAt ? new Date(acc.loginAt).toLocaleString('id-ID') : '-';
+    const hasPass = !!acc.password;
+    const lockBadge = locked
+      ? `<span style="background:#856404;color:#fff;border-radius:4px;padding:2px 8px;font-size:0.72rem;font-weight:600;"><i class="fa-solid fa-lock"></i> TERKUNCI</span>`
+      : `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.72rem;font-weight:600;"><i class="fa-solid fa-lock-open"></i> Bebas</span>`;
+    const passBadge = hasPass
+      ? `<span style="color:#2D7D17;font-size:0.78rem;"><i class="fa-solid fa-check-circle"></i> Sudah diset</span>`
+      : `<span style="color:#856404;font-size:0.78rem;"><i class="fa-solid fa-triangle-exclamation"></i> Default (pokja2026)</span>`;
+    const resetBtn = locked
+      ? `<button onclick="resetPokjaLock('${u}')" style="background:#C0392B;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:0.75rem;cursor:pointer;font-weight:600;"><i class="fa-solid fa-unlock"></i> Reset Lock</button>`
+      : `<span style="color:var(--gray-400);font-size:0.75rem;">–</span>`;
+    return `<tr>
+      <td style="font-weight:700;font-size:0.85rem;">${u}</td>
+      <td>${passBadge}</td>
+      <td>${lockBadge}</td>
+      <td style="font-size:0.75rem;color:var(--gray-600);">${loginAt}</td>
+      <td>${resetBtn}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+    <thead><tr style="background:var(--blue-50);">
+      <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Username</th>
+      <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Password</th>
+      <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Status</th>
+      <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Login Terakhir</th>
+      <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Aksi</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
 }
 async function syncAccountToSheet(role,username,password) { try { await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateAccount',role,username,password})}); } catch(e){} }
 
@@ -2847,7 +3011,8 @@ function loadAdminForms() {
   document.getElementById('nt-wa').value=tmpl.wa||DEFAULT_NOTIF_WA; document.getElementById('nt-email-subject').value=tmpl.emailSubject||DEFAULT_NOTIF_EMAIL_SUBJECT; document.getElementById('nt-email-body').value=tmpl.emailBody||DEFAULT_NOTIF_EMAIL_BODY;
   const fCfg=gcGet('fonnteConfig',{});
   document.getElementById('fonnte-token').value=fCfg.token||''; document.getElementById('fonnte-sender').value=fCfg.sender||''; document.getElementById('email-replyto').value=fCfg.replyTo||''; document.getElementById('email-sendername').value=fCfg.senderName||'Pokja Pemilihan BPBJ Kota Surakarta';
-  document.getElementById('ak-pokja-user').value=gcGet('pokjaUsername','pokja');
+  document.getElementById('ak-pokja-user').value = 'pokja';
+  renderPokjaAccountsTable();
 }
 
 function switchAdminTab(name, btn) {
@@ -3247,7 +3412,7 @@ function renderPokjaTable() {
             <div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
               <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''}</div>
               <div style="color:var(--gray-800);margin-bottom:${k.balasan?'4px':'0'};">${k.pesan||''}</div>
-              ${k.balasan ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan Pokja:</strong><br>${k.balasan}</div>` : `<span style="font-size:0.68rem;color:var(--gray-400);font-style:italic;">Belum ditanggapi</span>`}
+              ${k.balasan ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan${k.balasanOleh ? ' ('+k.balasanOleh+')' : ' Pokja'}:</strong><br>${k.balasan}</div>` : `<span style="font-size:0.68rem;color:var(--gray-400);font-style:italic;">Belum ditanggapi</span>`}
             </div>`).join('')}
           </div>
           <button onclick="bukaTanggapanKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'">
@@ -3265,7 +3430,7 @@ function renderPokjaTable() {
       <td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td>
       <td>${fileCell}</td>
       <td>${prevCol}</td>
-      <td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}</td>
+      <td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
       <td>${catatanHtml}</td>
       <td>${klarifikasiColHtml}</td>
       <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
@@ -3324,7 +3489,7 @@ async function saveCatatanInline(idx) {
   const btn=document.querySelector(`#catatan-edit-${idx} button`);
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';}
   try {
-    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,reviewStatus:d.reviewStatus||'Menunggu Review',catatanPokja:newCatatan,reviewTanggal:new Date().toISOString()})});
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,reviewStatus:d.reviewStatus||'Menunggu Review',catatanPokja:newCatatan,reviewTanggal:new Date().toISOString(),reviewedBy:currentPokjaUser||'pokja'})});
   } catch(e){}
   d.catatanPokja=newCatatan;
   // Update tampilan tanpa full re-render
@@ -3399,6 +3564,9 @@ function openReviewModal(idx) {
   document.getElementById('reviewCatatan').value=d.catatanPokja||'';
   document.getElementById('reviewModalMsg').style.display='none';
   document.getElementById('reviewLoadingOverlay').style.display='none';
+  // Set pokja identity tag in modal header
+  const pkTag = document.getElementById('reviewModalPokjaTag');
+  if (pkTag) pkTag.textContent = currentPokjaUser ? '👤 ' + currentPokjaUser.toUpperCase() : '';
   // Reset edit preview state
   document.getElementById('notifEditArea').style.display='none';
   document.getElementById('notifPreview').style.display='block';
@@ -3452,11 +3620,11 @@ async function simpanReview() {
     await fetch(APPS_SCRIPT_URL,{
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ action:'updateReview', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, reviewStatus:status, catatanPokja:catatan, reviewTanggal:new Date().toISOString() })
+      body:JSON.stringify({ action:'updateReview', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, reviewStatus:status, catatanPokja:catatan, reviewTanggal:new Date().toISOString(), reviewedBy: currentPokjaUser || 'pokja' })
     });
   } catch(e) {}
 
-  d.reviewStatus=status; d.catatanPokja=catatan; d.reviewTanggal=new Date().toISOString();
+  d.reviewStatus=status; d.catatanPokja=catatan; d.reviewTanggal=new Date().toISOString(); d.reviewedBy=currentPokjaUser||'pokja';
   renderPokjaTable();
 
   loadingOverlay.style.display='none';
@@ -3464,7 +3632,7 @@ async function simpanReview() {
 
   // Tutup modal dan tampilkan toast
   closeReviewModal();
-  showToast('Review Berhasil Disimpan', `Status <strong>${status}</strong> tersimpan untuk ${d.namaPerusahaan||'-'}.`, 'success', 4000);
+  showToast('Review Berhasil Disimpan', `Status <strong>${status}</strong> oleh <strong>${(currentPokjaUser||'pokja').toUpperCase()}</strong> untuk ${d.namaPerusahaan||'-'}.`, 'success', 4000);
 }
 
 // ===== Kirim Notifikasi WhatsApp =====
@@ -3647,6 +3815,19 @@ async function init() {
   setInterval(autoRefreshSubmissions, 20000);
   // Tampilkan waktu load pertama
   updateDataTimestamp();
+
+  // ── Release pokja lock saat tab/browser ditutup ──
+  window.addEventListener('beforeunload', () => {
+    if (currentRole === 'pokja' && currentPokjaUser) {
+      // Gunakan sendBeacon agar tetap terkirim saat tab ditutup
+      const payload = JSON.stringify({ action:'setConfig', key:'pokjaAccounts', value: (() => {
+        const acc = Object.assign({}, gcGet('pokjaAccounts', {}));
+        if (acc[currentPokjaUser]) { acc[currentPokjaUser].locked = false; acc[currentPokjaUser].lockToken = ''; acc[currentPokjaUser].logoutAt = new Date().toISOString(); }
+        return acc;
+      })() });
+      try { navigator.sendBeacon(APPS_SCRIPT_URL, payload); } catch(e) {}
+    }
+  });
 }
 
 // Auto-refresh submissions setiap 20 detik – update data & tampilan secara diam-diam
@@ -3925,11 +4106,13 @@ async function kirimTanggapanKlarifikasi() {
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
 
   const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const pokjaNama = currentPokjaUser ? currentPokjaUser.toUpperCase() : 'Pokja';
 
   // Update data lokal agar tampilan Pokja langsung segar
   if (klarLog[klarIdx]) {
     klarLog[klarIdx].balasan    = pesan;
     klarLog[klarIdx].balasanTgl = tglNow;
+    klarLog[klarIdx].balasanOleh = pokjaNama;
   }
   d.klarifikasiLog = klarLog;
 
@@ -3937,13 +4120,13 @@ async function kirimTanggapanKlarifikasi() {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: {'Content-Type':'application/json'},
-      // Kirim hanya field yang dibutuhkan backend – backend append ke kolom 7 sheet Review
       body: JSON.stringify({
         action:         'tanggapanKlarifikasi',
         namaPerusahaan: d.namaPerusahaan,
         npwp:           d.npwp,
         balasan:        pesan,
         balasanTgl:     tglNow,
+        balasanOleh:    pokjaNama,
         klarIdx:        klarIdx,
       })
     });
