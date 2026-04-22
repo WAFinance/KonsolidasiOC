@@ -4067,9 +4067,15 @@ async function autoRefreshSubmissions() {
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const prevCount = _submissions.length;
-      const prevHash  = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
+      // Hash mencakup: status, tanggal, jumlah klarifikasi, dan ada/tidaknya balasanPenyedia
+      const makeHash = (list) => list.map(d => {
+        const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
+        const klarHash = klarLog.map(k => (k.pesan||'').slice(0,20) + '|' + (k.balasanPenyedia?'1':'0') + '|' + (k.balasan?'1':'0')).join(',');
+        return (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'') + '|' + klarHash;
+      }).join(';;');
+      const prevHash  = makeHash(_submissions);
       _submissions = data.submissions;
-      const newHash   = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
+      const newHash   = makeHash(_submissions);
 
       // Update angka statistik saja (tidak mengganggu UI)
       const statEl = document.getElementById('statPeserta');
@@ -4300,6 +4306,13 @@ async function kirimKlarifikasi() {
   const tglNow   = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const pengirim = currentPenyedia?.nama || d.namaPerusahaan || 'Penyedia';
 
+  // Ambil data klarifikasi Pokja yang dipilih untuk dikirim sebagai key pencarian di backend
+  const klarifikasiDipilih = d.klarifikasiLog?.[_klarSelectedIdx];
+  // klarPesanKey: kombinasi tgl + 30 karakter pertama pesan — unik dan tahan pergeseran index
+  const klarPesanKey = klarifikasiDipilih
+    ? ((klarifikasiDipilih.tgl||'').slice(0,20) + (klarifikasiDipilih.pesan||'').slice(0,30)).trim()
+    : '';
+
   // Update field balasanPenyedia pada klarifikasi yang dipilih
   if (!Array.isArray(d.klarifikasiLog)) d.klarifikasiLog = [];
   if (d.klarifikasiLog[_klarSelectedIdx]) {
@@ -4313,12 +4326,13 @@ async function kirimKlarifikasi() {
       method: 'POST', mode: 'no-cors',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        action:           'tanggapanKlarifikasiPenyedia',
-        namaPerusahaan:   d.namaPerusahaan,
-        npwp:             d.npwp,
-        klarIdx:          _klarSelectedIdx,
-        balasanPenyedia:  pesan,
-        balasanPenyediaTgl: tglNow,
+        action:              'tanggapanKlarifikasiPenyedia',
+        namaPerusahaan:      d.namaPerusahaan,
+        npwp:                d.npwp,
+        klarIdx:             _klarSelectedIdx,
+        klarPesanKey:        klarPesanKey,        // ← key konten untuk pencarian lebih akurat
+        balasanPenyedia:     pesan,
+        balasanPenyediaTgl:  tglNow,
         balasanPenyediaOleh: pengirim,
       })
     });
@@ -4432,6 +4446,37 @@ async function kirimTanggapanKlarifikasi() {
 
   const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const pokjaNama = currentPokjaUser ? currentPokjaUser.toUpperCase() : 'Pokja';
+
+  // Key konten klarifikasi Pokja untuk pencarian tepat di backend
+  const klarDipilih = klarLog[klarIdx];
+  const klarPesanKey = klarDipilih
+    ? ((klarDipilih.tgl||'').slice(0,20) + (klarDipilih.pesan||'').slice(0,30)).trim()
+    : '';
+
+  // Update data lokal agar tampilan Pokja langsung segar
+  if (klarLog[klarIdx]) {
+    klarLog[klarIdx].balasan    = pesan;
+    klarLog[klarIdx].balasanTgl = tglNow;
+    klarLog[klarIdx].balasanOleh = pokjaNama;
+  }
+  d.klarifikasiLog = klarLog;
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:         'tanggapanKlarifikasi',
+        namaPerusahaan: d.namaPerusahaan,
+        npwp:           d.npwp,
+        balasan:        pesan,
+        balasanTgl:     tglNow,
+        balasanOleh:    pokjaNama,
+        klarIdx:        klarIdx,
+        klarPesanKey:   klarPesanKey,   // ← key konten untuk pencarian akurat
+      })
+    });
+  } catch(e) {}
 
   // Update data lokal agar tampilan Pokja langsung segar
   if (klarLog[klarIdx]) {
@@ -4626,9 +4671,14 @@ function updateDataTimestamp() {
 
       if (!newSubs) return;
 
-      // Bandingkan hash data lama vs baru
-      const prevHash = _submissions.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
-      const newHash  = newSubs.map(d => (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'')).join(';;');
+      // Bandingkan hash data lama vs baru (termasuk status klarifikasi)
+      const makeHash2 = (list) => list.map(d => {
+        const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
+        const klarHash = klarLog.map(k => (k.pesan||'').slice(0,20) + '|' + (k.balasanPenyedia?'1':'0') + '|' + (k.balasan?'1':'0')).join(',');
+        return (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'') + '|' + klarHash;
+      }).join(';;');
+      const prevHash = makeHash2(_submissions);
+      const newHash  = makeHash2(newSubs);
 
       // Update data di memori
       _submissions = newSubs;
