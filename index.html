@@ -2171,8 +2171,20 @@ function renderStatusPenyedia() {
     grp.sort((a,b) => (a.tanggal||'') < (b.tanggal||'') ? -1 : 1);
   });
 
+  // Helper: deteksi apakah item klarifikasi dari Pokja — tahan terhadap data server yang tidak mengembalikan field dariPokja
+  const isDariPokja = (k) => {
+    if (k.dariPokja === true) return true;
+    if (k.dariPokja === 'true') return true;   // kadang JSON stringify → string
+    if (k.dariPokja === 1) return true;
+    // Fallback: cek pengirim — jika pengirim adalah salah satu username pokja atau mengandung 'POKJA'
+    const p = (k.pengirim || '').toLowerCase();
+    if (p === 'pokja' || p.startsWith('pokja')) return true;
+    if (POKJA_USERNAMES.some(u => p === u.toLowerCase())) return true;
+    return false;
+  };
+
   const renderKlarLog = (klarifikasiLog) => klarifikasiLog.map(k => {
-    const dariPokja = !!k.dariPokja;
+    const dariPokja = isDariPokja(k);
     if (dariPokja) {
       // Klarifikasi dari Pokja — tampilkan dengan warna biru
       const sudahDibalas = !!k.balasanPenyedia;
@@ -2263,8 +2275,13 @@ function renderStatusPenyedia() {
         ${historyHtml}
         ${(() => {
           const btnRevisi = (status === 'Perlu Revisi / Klarifikasi') ? `<button onclick="bukaModalRevisiByIdx(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='var(--blue-900)'" onmouseleave="this.style.background='var(--blue-700)'"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</button>` : '';
-          const hasUnreplied = klarifikasiLog.filter(k=>k.dariPokja&&!k.balasanPenyedia).length > 0;
-          const allReplied   = !hasUnreplied && klarifikasiLog.some(k=>k.dariPokja);
+          const isDariPokjaFn = (k) => {
+            if (k.dariPokja === true || k.dariPokja === 'true' || k.dariPokja === 1) return true;
+            const p = (k.pengirim || '').toLowerCase();
+            return p === 'pokja' || p.startsWith('pokja') || POKJA_USERNAMES.some(u => p === u.toLowerCase());
+          };
+          const hasUnreplied = klarifikasiLog.filter(k=>isDariPokjaFn(k)&&!k.balasanPenyedia).length > 0;
+          const allReplied   = !hasUnreplied && klarifikasiLog.some(k=>isDariPokjaFn(k));
           const btnKlar = hasUnreplied ? `<button onclick="bukaModalKlarifikasi(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:#185FA5;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'"><i class="fa-solid fa-reply"></i> Balas Klarifikasi Pokja</button>` : (allReplied ? `<span style="font-size:0.78rem;color:#3B6D11;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Semua klarifikasi sudah ditanggapi</span>` : '');
           const anyBtn = btnRevisi || btnKlar;
           return anyBtn ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${btnRevisi}${btnKlar}</div>` : '';
@@ -3579,6 +3596,11 @@ function renderPokjaTable() {
       </div>`;
 
     // ── Kolom Klarifikasi ──
+    const _kDP = (k) => {
+      if (k.dariPokja === true || k.dariPokja === 'true' || k.dariPokja === 1) return true;
+      const p = (k.pengirim||'').toLowerCase();
+      return p === 'pokja' || p.startsWith('pokja') || POKJA_USERNAMES.some(u=>p===u.toLowerCase());
+    };
     const klarifikasiColHtml = klarLog.length
       ? `<div style="min-width:160px;max-width:220px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
@@ -3588,21 +3610,23 @@ function renderPokjaTable() {
             </button>
           </div>
           <div id="klarDetail-${origIdx}" style="display:none;">
-            ${klarLog.map((k,ki)=>`
-            <div style="background:${k.dariPokja?'#E3F2FD':'#FFFDE7'};border:1px solid ${k.dariPokja?'#90CAF9':'#FFD54F'};border-left:3px solid ${k.dariPokja?'#185FA5':'#856404'};border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
-              <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:${k.dariPokja?'#185FA5':'#856404'}">${k.dariPokja?'Pokja':(k.pengirim||'Penyedia')}</strong></div>
+            ${klarLog.map((k,ki)=>{
+              const dp = _kDP(k);
+              return `
+            <div style="background:${dp?'#E3F2FD':'#FFFDE7'};border:1px solid ${dp?'#90CAF9':'#FFD54F'};border-left:3px solid ${dp?'#185FA5':'#856404'};border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
+              <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:${dp?'#185FA5':'#856404'}">${dp?'Pokja':(k.pengirim||'Penyedia')}</strong></div>
               <div style="color:var(--gray-800);margin-bottom:2px;">${k.pesan||''}</div>
-              ${k.dariPokja
+              ${dp
                 ? (k.balasanPenyedia
                     ? `<div style="background:white;border-left:2px solid #3B6D11;border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Penyedia:</strong><br>${k.balasanPenyedia}${k.balasanPenyediaTgl?`<br><span style="color:var(--gray-400);font-size:0.67rem;">${k.balasanPenyediaTgl}</span>`:''}</div>${k.balasan?`<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan Pokja:</strong><br>${k.balasan}</div>`:''}`
                     : `<span style="font-size:0.68rem;color:#856404;font-style:italic;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Penyedia</span>`)
                 : (k.balasan
-                    ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan${k.balasanOleh ? ' ('+k.balasanOleh+')' : ' Pokja'}:</strong><br>${k.balasan}</div>`
+                    ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan${k.balasanOleh?' ('+k.balasanOleh+')':' Pokja'}:</strong><br>${k.balasan}</div>`
                     : `<span style="font-size:0.68rem;color:var(--gray-400);font-style:italic;">Belum ditanggapi</span>`)}
-            </div>`).join('')}
+            </div>`;}).join('')}
           </div>
           <div style="display:flex;gap:4px;margin-top:4px;flex-direction:column;">
-            ${klarLog.some(k=>k.dariPokja && k.balasanPenyedia && !k.balasan) ? `<button onclick="bukaTanggapanKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'">
+            ${klarLog.some(k=>_kDP(k) && k.balasanPenyedia && !k.balasan) ? `<button onclick="bukaTanggapanKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'">
               <i class="fa-solid fa-reply"></i> Tanggapan Klarifikasi
             </button>` : ''}
             <button onclick="bukaModalKlarifikasiPokja(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#185FA5;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'">
@@ -4170,9 +4194,14 @@ function bukaModalKlarifikasi(idx) {
     <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span>
     ${d.catatanPokja ? `<br><span style="font-size:0.78rem;">Catatan Pokja: <em>${d.catatanPokja}</em></span>` : ''}`;
 
-  // Ambil klarifikasi dari Pokja saja
+  // Ambil klarifikasi dari Pokja saja — pakai helper tahan data server
   const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
-  const pokjaKlars = klarLog.map((k, i) => ({ ...k, _origIdx: i })).filter(k => k.dariPokja);
+  const _isDariPokja = (k) => {
+    if (k.dariPokja === true || k.dariPokja === 'true' || k.dariPokja === 1) return true;
+    const p = (k.pengirim || '').toLowerCase();
+    return p === 'pokja' || p.startsWith('pokja') || POKJA_USERNAMES.some(u => p === u.toLowerCase());
+  };
+  const pokjaKlars = klarLog.map((k, i) => ({ ...k, _origIdx: i })).filter(k => _isDariPokja(k));
 
   const listEl = document.getElementById('klarPokjaList');
 
@@ -4324,8 +4353,13 @@ function bukaTanggapanKlarifikasi(idx) {
   _tanggapanKey = makeSubKey(d); // simpan key stabil, bukan index angka
 
   const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
+  const _kDP2 = (k) => {
+    if (k.dariPokja === true || k.dariPokja === 'true' || k.dariPokja === 1) return true;
+    const p = (k.pengirim||'').toLowerCase();
+    return p === 'pokja' || p.startsWith('pokja') || POKJA_USERNAMES.some(u=>p===u.toLowerCase());
+  };
   // Hanya tampilkan klarifikasi yang dikirim Pokja dan sudah ada tanggapan dari Penyedia
-  const klarDenganBalasan = klarLog.filter(k => k.dariPokja && k.balasanPenyedia);
+  const klarDenganBalasan = klarLog.filter(k => _kDP2(k) && k.balasanPenyedia);
   if (!klarDenganBalasan.length) {
     alert('Belum ada tanggapan dari Penyedia yang perlu dibalas.');
     return;
@@ -4340,7 +4374,7 @@ function bukaTanggapanKlarifikasi(idx) {
   // Daftar klarifikasi dalam modal (tampilkan konteks lengkap: Pokja → Penyedia → Pokja)
   const listEl = document.getElementById('tanggapanKlarList');
   listEl.innerHTML = klarLog.map((k, ki) => {
-    if (!k.dariPokja || !k.balasanPenyedia) return '';
+    if (!_kDP2(k) || !k.balasanPenyedia) return '';
     const sudahDibalas = !!k.balasan;
     return `<div style="background:${sudahDibalas?'#F0FFF4':'#E3F2FD'};border:1px solid ${sudahDibalas?'#B6DBA0':'#90CAF9'};border-left:3px solid ${sudahDibalas?'#3B6D11':'#185FA5'};border-radius:7px;padding:9px 12px;margin-bottom:8px;font-size:0.80rem;">
       <div style="color:#1565C0;font-size:0.70rem;margin-bottom:3px;font-weight:600;"><i class="fa-solid fa-shield-halved"></i> Pokja &nbsp;·&nbsp; <i class="fa-solid fa-clock"></i> ${k.tgl||''}</div>
@@ -4357,7 +4391,7 @@ function bukaTanggapanKlarifikasi(idx) {
   // Dropdown — hanya klarifikasi yang belum dibalas Pokja
   const sel = document.getElementById('tanggapanKlarIdx');
   sel.innerHTML = klarLog.map((k, ki) => {
-    if (!k.dariPokja || !k.balasanPenyedia) return '';
+    if (!_kDP2(k) || !k.balasanPenyedia) return '';
     return `<option value="${ki}">${ki+1}. ${(k.pesan||'').slice(0,55)}${k.balasan?' ✅':' ⏳'}${k.balasan?'':' — belum dibalas'}</option>`;
   }).join('');
 
