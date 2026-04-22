@@ -1309,10 +1309,10 @@
       <div id="tanggapanInfoBox" style="background:var(--blue-50);border:1px solid var(--blue-100);border-left:4px solid var(--blue-600);border-radius:8px;padding:12px 16px;font-size:0.85rem;color:var(--blue-800);margin-bottom:16px;"></div>
       <div id="tanggapanKlarList" style="margin-bottom:16px;"></div>
       <div class="admin-form-group">
-        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-reply" style="color:#4A5568;"></i> Pilih klarifikasi yang ditanggapi</label>
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-reply" style="color:#4A5568;"></i> Pilih klarifikasi yang ingin dibalas</label>
         <select id="tanggapanKlarIdx" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.85rem;font-family:inherit;outline:none;margin-bottom:14px;"></select>
-        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#4A5568;"></i> Tanggapan Pokja <span style="color:#C0392B;">*</span></label>
-        <textarea id="tanggapanPesan" rows="4" placeholder="Tuliskan tanggapan / jawaban Pokja atas klarifikasi penyedia…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-left:3px solid #4A5568;border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;"></textarea>
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#4A5568;"></i> Balasan Pokja atas tanggapan Penyedia <span style="color:#C0392B;">*</span></label>
+        <textarea id="tanggapanPesan" rows="4" placeholder="Tuliskan balasan Pokja atas tanggapan yang diberikan Penyedia…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-left:3px solid #4A5568;border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;"></textarea>
       </div>
       <div id="tanggapanMsg" style="display:none;margin-bottom:12px;"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;">
@@ -2179,7 +2179,7 @@ function renderStatusPenyedia() {
         <div style="color:#1565C0;font-size:0.70rem;margin-bottom:3px;font-weight:600;"><i class="fa-solid fa-shield-halved"></i> Pokja &nbsp;·&nbsp; <i class="fa-solid fa-clock"></i> ${k.tgl||'-'}</div>
         <div style="color:var(--gray-800);margin-bottom:${sudahDibalas?'8px':'0'};">${k.pesan||''}</div>
         ${sudahDibalas
-          ? `<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:7px 10px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Anda:</strong><br><span style="color:var(--gray-800);">${k.balasanPenyedia}</span>${k.balasanPenyediaTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanPenyediaTgl}</span>`:''}</div>`
+          ? `<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:7px 10px;font-size:0.78rem;margin-top:6px;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Anda:</strong><br><span style="color:var(--gray-800);">${k.balasanPenyedia}</span>${k.balasanPenyediaTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanPenyediaTgl}</span>`:''}</div>${k.balasan?`<div style="background:#E8F2FF;border:1px solid #90CAF9;border-left:3px solid #185FA5;border-radius:5px;padding:7px 10px;font-size:0.78rem;margin-top:5px;"><i class="fa-solid fa-shield-halved" style="color:#185FA5;"></i> <strong style="color:#185FA5;">Tanggapan Pokja:</strong><br><span style="color:var(--gray-800);">${k.balasan}</span>${k.balasanTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanTgl}</span>`:''}</div>`:`<span style="font-size:0.70rem;color:#856404;font-weight:600;margin-top:5px;display:inline-block;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan balik dari Pokja</span>`}`
           : `<span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Anda</span>`}
       </div>`;
     } else {
@@ -3581,16 +3581,22 @@ function renderPokjaTable() {
           </div>
           <div id="klarDetail-${origIdx}" style="display:none;">
             ${klarLog.map((k,ki)=>`
-            <div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
-              <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''}</div>
-              <div style="color:var(--gray-800);margin-bottom:${k.balasan?'4px':'0'};">${k.pesan||''}</div>
-              ${k.balasan ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan${k.balasanOleh ? ' ('+k.balasanOleh+')' : ' Pokja'}:</strong><br>${k.balasan}</div>` : `<span style="font-size:0.68rem;color:var(--gray-400);font-style:italic;">Belum ditanggapi</span>`}
+            <div style="background:${k.dariPokja?'#E3F2FD':'#FFFDE7'};border:1px solid ${k.dariPokja?'#90CAF9':'#FFD54F'};border-left:3px solid ${k.dariPokja?'#185FA5':'#856404'};border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
+              <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:${k.dariPokja?'#185FA5':'#856404'}">${k.dariPokja?'Pokja':(k.pengirim||'Penyedia')}</strong></div>
+              <div style="color:var(--gray-800);margin-bottom:2px;">${k.pesan||''}</div>
+              ${k.dariPokja
+                ? (k.balasanPenyedia
+                    ? `<div style="background:white;border-left:2px solid #3B6D11;border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Penyedia:</strong><br>${k.balasanPenyedia}${k.balasanPenyediaTgl?`<br><span style="color:var(--gray-400);font-size:0.67rem;">${k.balasanPenyediaTgl}</span>`:''}</div>${k.balasan?`<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan Pokja:</strong><br>${k.balasan}</div>`:''}`
+                    : `<span style="font-size:0.68rem;color:#856404;font-style:italic;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Penyedia</span>`)
+                : (k.balasan
+                    ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan${k.balasanOleh ? ' ('+k.balasanOleh+')' : ' Pokja'}:</strong><br>${k.balasan}</div>`
+                    : `<span style="font-size:0.68rem;color:var(--gray-400);font-style:italic;">Belum ditanggapi</span>`)}
             </div>`).join('')}
           </div>
           <div style="display:flex;gap:4px;margin-top:4px;flex-direction:column;">
-            <button onclick="bukaTanggapanKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'">
+            ${klarLog.some(k=>k.dariPokja && k.balasanPenyedia && !k.balasan) ? `<button onclick="bukaTanggapanKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'">
               <i class="fa-solid fa-reply"></i> Tanggapan Klarifikasi
-            </button>
+            </button>` : ''}
             <button onclick="bukaModalKlarifikasiPokja(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#185FA5;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'">
               <i class="fa-solid fa-message"></i> Kirim Klarifikasi
             </button>
@@ -4310,32 +4316,42 @@ function bukaTanggapanKlarifikasi(idx) {
   _tanggapanKey = makeSubKey(d); // simpan key stabil, bukan index angka
 
   const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
-  if (!klarLog.length) {
-    alert('Belum ada klarifikasi dari penyedia untuk ditanggapi.');
+  // Hanya tampilkan klarifikasi yang dikirim Pokja dan sudah ada tanggapan dari Penyedia
+  const klarDenganBalasan = klarLog.filter(k => k.dariPokja && k.balasanPenyedia);
+  if (!klarDenganBalasan.length) {
+    alert('Belum ada tanggapan dari Penyedia yang perlu dibalas.');
     return;
   }
 
   // Info box
+  const belumDibalas = klarDenganBalasan.filter(k => !k.balasan).length;
   document.getElementById('tanggapanInfoBox').innerHTML =
     `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; ${d.jenisDok||'-'}<br>` +
-    `<span style="font-size:0.78rem;color:var(--blue-700);">${klarLog.length} klarifikasi masuk</span>`;
+    `<span style="font-size:0.78rem;color:var(--blue-700);">${klarDenganBalasan.length} tanggapan dari Penyedia${belumDibalas>0?' &nbsp;·&nbsp; <strong style="color:#856404;">'+belumDibalas+' belum dibalas</strong>':' &nbsp;·&nbsp; <span style="color:#3B6D11;">semua sudah dibalas</span>'}</span>`;
 
-  // Daftar klarifikasi dalam modal
+  // Daftar klarifikasi dalam modal (tampilkan konteks lengkap: Pokja → Penyedia → Pokja)
   const listEl = document.getElementById('tanggapanKlarList');
-  listEl.innerHTML = klarLog.map((k, ki) => `
-    <div style="background:${k.balasan ? '#F0FFF4' : '#FFFDE7'};border:1px solid ${k.balasan ? '#B6DBA0' : '#FFD54F'};border-left:3px solid ${k.balasan ? '#3B6D11' : '#856404'};border-radius:7px;padding:9px 12px;margin-bottom:8px;font-size:0.80rem;">
-      <div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:#856404;">${k.pengirim||'Penyedia'}</strong></div>
-      <div style="color:var(--gray-800);margin-bottom:${k.balasan?'6px':'0'};">${k.pesan||''}</div>
-      ${k.balasan
-        ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:5px;padding:6px 9px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan Pokja:</strong><br>${k.balasan}<br><span style="color:var(--gray-400);font-size:0.68rem;">${k.balasanTgl||''}</span></div>`
-        : `<span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-circle-exclamation"></i> Belum ditanggapi</span>`}
-    </div>`).join('');
+  listEl.innerHTML = klarLog.map((k, ki) => {
+    if (!k.dariPokja || !k.balasanPenyedia) return '';
+    const sudahDibalas = !!k.balasan;
+    return `<div style="background:${sudahDibalas?'#F0FFF4':'#E3F2FD'};border:1px solid ${sudahDibalas?'#B6DBA0':'#90CAF9'};border-left:3px solid ${sudahDibalas?'#3B6D11':'#185FA5'};border-radius:7px;padding:9px 12px;margin-bottom:8px;font-size:0.80rem;">
+      <div style="color:#1565C0;font-size:0.70rem;margin-bottom:3px;font-weight:600;"><i class="fa-solid fa-shield-halved"></i> Pokja &nbsp;·&nbsp; <i class="fa-solid fa-clock"></i> ${k.tgl||''}</div>
+      <div style="color:var(--gray-800);margin-bottom:6px;">${k.pesan||''}</div>
+      <div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:6px 9px;margin-bottom:${sudahDibalas?'6px':'0'};font-size:0.78rem;">
+        <i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Penyedia:</strong><br>${k.balasanPenyedia}${k.balasanPenyediaTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;">${k.balasanPenyediaTgl}</span>`:''}
+      </div>
+      ${sudahDibalas
+        ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:5px;padding:6px 9px;font-size:0.78rem;"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan Pokja:</strong><br>${k.balasan}<br><span style="color:var(--gray-400);font-size:0.68rem;">${k.balasanTgl||''}</span></div>`
+        : `<span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-circle-exclamation"></i> Belum dibalas Pokja</span>`}
+    </div>`;
+  }).join('');
 
-  // Dropdown pilih klarifikasi yang belum/sudah ditanggapi
+  // Dropdown — hanya klarifikasi yang belum dibalas Pokja
   const sel = document.getElementById('tanggapanKlarIdx');
-  sel.innerHTML = klarLog.map((k, ki) =>
-    `<option value="${ki}">${ki+1}. ${(k.pesan||'').slice(0,60)}${k.balasan?' ✅':' ⏳'}</option>`
-  ).join('');
+  sel.innerHTML = klarLog.map((k, ki) => {
+    if (!k.dariPokja || !k.balasanPenyedia) return '';
+    return `<option value="${ki}">${ki+1}. ${(k.pesan||'').slice(0,55)}${k.balasan?' ✅':' ⏳'}${k.balasan?'':' — belum dibalas'}</option>`;
+  }).join('');
 
   document.getElementById('tanggapanPesan').value = '';
   document.getElementById('tanggapanMsg').style.display = 'none';
