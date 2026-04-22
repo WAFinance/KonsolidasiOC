@@ -705,6 +705,224 @@
     .toast { min-width: unset; max-width: unset; }
   }
   </style>
+<!-- ══ MODAL NEGOSIASI HARGA v2 — sinkron dengan code.gs ══ -->
+<style>
+  #modalNegosiasi2 { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:310; align-items:center; justify-content:center; }
+  #modalNegosiasi2.show { display:flex; }
+
+  /* ── SINGLE PANEL WRAP ── */
+  .nego2-wrap { background:#fff; border-radius:14px; width:min(820px,98vw); max-height:92vh; display:flex; flex-direction:column; box-shadow:0 12px 48px rgba(0,0,0,0.35); animation:modalIn 0.2s ease; }
+  .nego2-header { background:linear-gradient(135deg,#1A237E,#283593); color:#fff; padding:13px 20px; border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .nego2-header h3 { font-size:0.97rem; font-weight:700; display:flex; align-items:center; gap:9px; margin:0; }
+  .nego2-header .nego2-sub { font-weight:400; font-size:0.82rem; opacity:0.8; margin-left:4px; }
+
+  /* ── BODY: single scroll area ── */
+  .nego2-body { flex:1; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; gap:14px; min-height:0; }
+
+  /* HPS summary box */
+  .nego2-hps-box { background:#F0F2FF; border:2px solid #1A237E; border-radius:10px; padding:13px 16px; }
+  .nego2-hps-box .hps-title { font-size:0.76rem; font-weight:700; color:#1A237E; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:9px; display:flex; align-items:center; gap:6px; }
+  .nego2-hps-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .nego2-hps-item { background:#fff; border:1px solid #C5CAE9; border-radius:7px; padding:8px 10px; text-align:center; }
+  .nego2-hps-item .v { font-size:0.92rem; font-weight:700; color:#1A237E; }
+  .nego2-hps-item .l { font-size:0.67rem; color:#7986CB; margin-top:2px; }
+
+  /* Giliran box */
+  .nego2-giliran-box { border-radius:9px; padding:10px 14px; font-size:0.83rem; font-weight:600; display:flex; align-items:center; gap:9px; }
+  .nego2-giliran-box.giliran-ok   { background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; }
+  .nego2-giliran-box.giliran-wait { background:#FFF8E1; border:1px solid #FFD54F; color:#856404; }
+  .nego2-giliran-box.giliran-done { background:#E0F2F1; border:1px solid #80CBC4; color:#004D40; }
+
+  /* Prev compare */
+  .nego2-prev-compare { background:#F3F4F6; border:1px solid #E0E0E0; border-radius:7px; padding:8px 13px; font-size:0.78rem; color:#555; }
+  .nego2-prev-compare strong { color:#1A237E; }
+
+  /* Histori */
+  .nego2-hist-list { display:flex; flex-direction:column; gap:9px; }
+  .nego2-hist-item { border-radius:9px; padding:10px 14px; border:1px solid; position:relative; }
+  .nego2-hist-item.role-hps         { background:#E8EAF6; border-color:#9FA8DA; }
+  .nego2-hist-item.role-penyedia    { background:#E8F5E9; border-color:#A5D6A7; }
+  .nego2-hist-item.role-pokja       { background:#FFEBEE; border-color:#EF9A9A; }
+  .nego2-hist-item.role-persetujuan { background:#E0F2F1; border-color:#80CBC4; }
+  .nego2-hist-item.is-last          { box-shadow:0 3px 12px rgba(0,0,0,0.12); }
+  .nego2-hist-item .hist-label      { font-size:0.71rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .nego2-hist-item .hist-prices     { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:5px; }
+  .nego2-hist-item .hist-price-box  { background:rgba(255,255,255,0.7); border-radius:5px; padding:5px 8px; text-align:center; }
+  .nego2-hist-item .hist-price-box .pv { font-size:0.80rem; font-weight:700; }
+  .nego2-hist-item .hist-price-box .pl { font-size:0.65rem; color:#666; }
+  .nego2-hist-item .hist-catatan    { font-size:0.74rem; color:#555; font-style:italic; margin-top:4px; }
+  .nego2-hist-item .hist-ts         { font-size:0.68rem; color:#888; margin-top:4px; }
+  .nego2-badge-last { position:absolute; top:8px; right:10px; background:#FF6F00; color:#fff; font-size:0.64rem; font-weight:700; padding:2px 7px; border-radius:10px; }
+  .nego2-empty-hist { text-align:center; padding:24px 16px; color:#9FA8DA; font-size:0.82rem; }
+
+  /* Form fields */
+  .nego2-field { margin-bottom:12px; }
+  .nego2-field label { font-size:0.79rem; font-weight:700; color:#1A237E; display:block; margin-bottom:5px; }
+  .nego2-input { width:100%; padding:8px 11px; border:1px solid var(--gray-200); border-radius:7px; font-size:0.87rem; font-family:inherit; outline:none; box-sizing:border-box; background:#fff; }
+  .nego2-input:focus { border-color:#1A237E; box-shadow:0 0 0 3px rgba(26,35,126,0.08); }
+  .nego2-input[readonly] { background:#F5F5F5; color:#555; cursor:not-allowed; }
+  .nego2-harga-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+
+  /* Paste area auto-parse */
+  .nego2-paste-wrap { background:#F1F8F4; border:1.5px solid #A5D6A7; border-radius:10px; padding:12px 14px; }
+  .nego2-paste-hint { font-size:0.73rem; color:#2E7D32; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  #hpsPasteArea { width:100%; padding:8px 10px; border:1.5px dashed #A5D6A7; border-radius:7px; font-size:0.75rem; font-family:monospace; resize:vertical; background:#fff; outline:none; box-sizing:border-box; color:#222; transition:border-color 0.2s; }
+  #hpsPasteArea:focus { border-color:#2E7D32; border-style:solid; }
+  #hpsPasteArea.has-content { border-color:#2E7D32; border-style:solid; background:#F9FFF9; }
+
+  /* Footer */
+  .nego2-footer { padding:12px 22px; border-top:1px solid var(--gray-100); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; background:var(--gray-50); border-radius:0 0 14px 14px; flex-wrap:wrap; }
+
+  /* Loading */
+  .nego2-loading { display:flex; align-items:center; justify-content:center; padding:50px 20px; gap:14px; color:#1A237E; font-size:0.88rem; flex-direction:column; }
+  .nego2-spinner { width:34px; height:34px; border:3px solid #C5CAE9; border-top-color:#1A237E; border-radius:50%; animation:spin2 0.7s linear infinite; }
+
+  @keyframes spin2 { to { transform:rotate(360deg); } }
+
+  @media(max-width:640px){
+    .nego2-harga-row { grid-template-columns:1fr 1fr; }
+    .nego2-hps-row   { grid-template-columns:1fr 1fr; }
+    .nego2-hist-prices { grid-template-columns:1fr 1fr; }
+    .nego2-wrap { max-height:98vh; }
+  }
+</style>
+
+<!-- ══ STYLE: TABEL HPS NEGOSIASI TERINTEGRASI ══ -->
+<style>
+  /* Modal wrapper lebih lebar untuk tabel negosiasi */
+  #modalNegosiasiHPS { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:320; align-items:flex-start; justify-content:center; padding:20px 10px; overflow-y:auto; }
+  #modalNegosiasiHPS.show { display:flex; }
+
+  .nhps-wrap { background:#fff; border-radius:14px; width:min(1100px,98vw); min-height:min(600px,80vh); display:flex; flex-direction:column; box-shadow:0 12px 48px rgba(0,0,0,0.35); animation:modalIn 0.2s ease; margin:auto; }
+  .nhps-header { background:linear-gradient(135deg,#1A237E,#283593); color:#fff; padding:14px 22px; border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .nhps-header h3 { font-size:1rem; font-weight:700; display:flex; align-items:center; gap:9px; margin:0; }
+  .nhps-sub { font-weight:400; font-size:0.80rem; opacity:0.8; }
+
+  .nhps-tabs { display:flex; border-bottom:2px solid #E8EAF6; background:#F8F9FF; flex-shrink:0; }
+  .nhps-tab { padding:10px 20px; border:none; background:transparent; font-size:0.83rem; font-weight:600; color:#7986CB; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s; white-space:nowrap; }
+  .nhps-tab:hover { color:#1A237E; background:rgba(26,35,126,0.04); }
+  .nhps-tab.active { color:#1A237E; border-bottom-color:#1A237E; background:white; }
+
+  .nhps-body { flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
+
+  .nhps-section { display:none; }
+  .nhps-section.active { display:flex; flex-direction:column; gap:14px; }
+
+  /* ── Panel input HPS (Pokja) ── */
+  .nhps-input-panel { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:768px){ .nhps-input-panel { grid-template-columns:1fr; } }
+
+  .nhps-paste-box { background:#F1F8F4; border:1.5px solid #A5D6A7; border-radius:10px; padding:14px; }
+  .nhps-paste-box .nhps-paste-hint { font-size:0.75rem; color:#2E7D32; margin-bottom:8px; display:flex; align-items:center; gap:6px; font-weight:600; }
+  #nhpsPasteArea { width:100%; padding:9px 11px; border:1.5px dashed #A5D6A7; border-radius:7px; font-size:0.74rem; font-family:monospace; resize:vertical; background:#fff; outline:none; box-sizing:border-box; color:#222; min-height:120px; }
+  #nhpsPasteArea:focus { border-color:#2E7D32; border-style:solid; }
+
+  .nhps-template-box { background:#EEF0FB; border:1.5px solid #C5CAE9; border-radius:10px; padding:14px; }
+  .nhps-template-box .nhps-tmpl-title { font-size:0.75rem; font-weight:700; color:#1A237E; margin-bottom:10px; display:flex; align-items:center; gap:7px; text-transform:uppercase; letter-spacing:0.4px; }
+  .nhps-tmpl-table { width:100%; border-collapse:collapse; font-size:0.70rem; }
+  .nhps-tmpl-table th { background:#1A237E; color:#fff; padding:5px 7px; text-align:left; white-space:nowrap; }
+  .nhps-tmpl-table th:not(:first-child) { text-align:center; }
+  .nhps-tmpl-table td { padding:5px 7px; border-bottom:1px dashed #C5CAE9; color:#9FA8DA; font-style:italic; text-align:center; }
+  .nhps-tmpl-table td:first-child { text-align:left; }
+
+  /* ── Tabel HPS Utama + Nego ── */
+  .nhps-table-wrap { overflow-x:auto; border-radius:10px; border:1px solid #C5CAE9; }
+  .nhps-main-table { width:100%; border-collapse:collapse; font-size:0.74rem; min-width:900px; }
+  .nhps-main-table thead tr.head-top th { padding:7px 9px; text-align:center; white-space:nowrap; font-weight:700; font-size:0.71rem; letter-spacing:0.3px; }
+  .nhps-main-table thead tr.head-top .th-hps    { background:#1A237E; color:#fff; }
+  .nhps-main-table thead tr.head-top .th-penyedia { background:#1B5E20; color:#fff; }
+  .nhps-main-table thead tr.head-top .th-pokja   { background:#B71C1C; color:#fff; }
+  .nhps-main-table thead tr.head-top .th-no      { background:#37474F; color:#fff; border-radius:7px 0 0 0; }
+  .nhps-main-table thead tr.head-sub th { padding:5px 8px; font-size:0.68rem; font-weight:600; white-space:nowrap; }
+  .nhps-main-table thead tr.head-sub .sub-hps    { background:#1A237E; color:rgba(255,255,255,0.85); }
+  .nhps-main-table thead tr.head-sub .sub-penyedia { background:#1B5E20; color:rgba(255,255,255,0.85); }
+  .nhps-main-table thead tr.head-sub .sub-pokja  { background:#B71C1C; color:rgba(255,255,255,0.85); }
+  .nhps-main-table thead tr.head-sub .sub-no     { background:#37474F; color:rgba(255,255,255,0.85); }
+
+  .nhps-main-table tbody tr { border-top:1px solid #ECEFF1; transition:background 0.12s; }
+  .nhps-main-table tbody tr:hover { background:#F8F9FF; }
+  .nhps-main-table tbody tr.row-group { background:#E8EAF6; }
+  .nhps-main-table tbody tr.row-group td { font-weight:700; color:#1A237E; padding:6px 10px; font-size:0.74rem; }
+  .nhps-main-table tbody tr.row-ket td { color:#9FA8DA; font-style:italic; padding:3px 10px 3px 20px; font-size:0.69rem; }
+  .nhps-main-table tbody tr.row-total { background:#1A237E !important; }
+  .nhps-main-table tbody tr.row-total td { color:#fff; font-weight:700; padding:8px 9px; font-size:0.78rem; }
+
+  .nhps-main-table td { padding:6px 9px; vertical-align:middle; }
+  .nhps-main-table td.td-no { text-align:center; color:#90A4AE; width:36px; }
+  .nhps-main-table td.td-uraian { text-align:left; min-width:160px; }
+  .nhps-main-table td.td-vol { text-align:center; color:#546E7A; white-space:nowrap; width:80px; }
+  .nhps-main-table td.td-num { text-align:right; font-variant-numeric:tabular-nums; }
+  .nhps-main-table td.td-hps-val { color:#1A237E; font-weight:600; }
+  .nhps-main-table td.td-penyedia-val { color:#1B5E20; font-weight:600; }
+  .nhps-main-table td.td-pokja-val { color:#B71C1C; font-weight:600; }
+
+  /* Input nego */
+  .nhps-nego-input { width:110px; padding:4px 7px; border:1.5px solid #A5D6A7; border-radius:6px; font-size:0.78rem; font-family:inherit; outline:none; box-sizing:border-box; text-align:right; }
+  .nhps-nego-input:focus { border-color:#1B5E20; box-shadow:0 0 0 2px rgba(27,94,32,0.1); }
+  .nhps-nego-input.pokja-input { border-color:#EF9A9A; }
+  .nhps-nego-input.pokja-input:focus { border-color:#B71C1C; box-shadow:0 0 0 2px rgba(183,28,28,0.1); }
+  .nhps-nego-input[readonly] { background:#F5F5F5; color:#9E9E9E; cursor:not-allowed; border-color:#E0E0E0; }
+
+  /* Highlight perbedaan */
+  .diff-higher { background:#FFEBEE !important; }
+  .diff-lower  { background:#E8F5E9 !important; }
+  .diff-same   { background:#E0F2F1 !important; }
+
+  /* Summary totals bar */
+  .nhps-totals-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .nhps-total-card { border-radius:9px; padding:11px 14px; text-align:center; border:1.5px solid; }
+  .nhps-total-card.hps   { background:#E8EAF6; border-color:#9FA8DA; }
+  .nhps-total-card.peny  { background:#E8F5E9; border-color:#A5D6A7; }
+  .nhps-total-card.pokja { background:#FFEBEE; border-color:#EF9A9A; }
+  .nhps-total-card .ntc-label { font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  .nhps-total-card.hps   .ntc-label { color:#1A237E; }
+  .nhps-total-card.peny  .ntc-label { color:#1B5E20; }
+  .nhps-total-card.pokja .ntc-label { color:#B71C1C; }
+  .nhps-total-card .ntc-excl { font-size:0.92rem; font-weight:700; }
+  .nhps-total-card.hps   .ntc-excl { color:#1A237E; }
+  .nhps-total-card.peny  .ntc-excl { color:#1B5E20; }
+  .nhps-total-card.pokja .ntc-excl { color:#B71C1C; }
+  .nhps-total-card .ntc-incl { font-size:0.70rem; color:#666; margin-top:2px; }
+  .nhps-total-card .ntc-diff { font-size:0.68rem; margin-top:3px; font-weight:600; }
+  .ntc-diff-up   { color:#B71C1C; }
+  .ntc-diff-down { color:#1B5E20; }
+  .ntc-diff-eq   { color:#00695C; }
+
+  /* Giliran/status indicator */
+  .nhps-giliran { border-radius:9px; padding:9px 14px; font-size:0.83rem; font-weight:600; display:flex; align-items:center; gap:9px; }
+  .nhps-giliran.ok   { background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; }
+  .nhps-giliran.wait { background:#FFF8E1; border:1px solid #FFD54F; color:#856404; }
+  .nhps-giliran.done { background:#E0F2F1; border:1px solid #80CBC4; color:#004D40; }
+
+  /* Riwayat */
+  .nhps-hist-item { border-radius:9px; padding:10px 14px; border:1px solid; margin-bottom:8px; position:relative; }
+  .nhps-hist-item.h-hps      { background:#E8EAF6; border-color:#9FA8DA; }
+  .nhps-hist-item.h-penyedia { background:#E8F5E9; border-color:#A5D6A7; }
+  .nhps-hist-item.h-pokja    { background:#FFEBEE; border-color:#EF9A9A; }
+  .nhps-hist-item.h-done     { background:#E0F2F1; border-color:#80CBC4; }
+  .nhps-hist-label { font-size:0.70rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:5px; }
+  .nhps-hist-totals { font-size:0.75rem; margin-bottom:3px; }
+  .nhps-hist-ts { font-size:0.67rem; color:#888; }
+
+  .nhps-footer { padding:12px 20px; border-top:1px solid #E8EAF6; display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; background:#F8F9FF; border-radius:0 0 14px 14px; flex-wrap:wrap; align-items:center; }
+  .nhps-btn { display:inline-flex; align-items:center; gap:7px; border:none; border-radius:8px; padding:9px 20px; font-size:0.86rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+  .nhps-btn-primary { background:#1A237E; color:#fff; }
+  .nhps-btn-primary:hover { background:#0D1557; }
+  .nhps-btn-green { background:#1B5E20; color:#fff; }
+  .nhps-btn-green:hover { background:#0a3d10; }
+  .nhps-btn-red { background:#B71C1C; color:#fff; }
+  .nhps-btn-red:hover { background:#7f1212; }
+  .nhps-btn-ghost { background:white; color:#555; border:1px solid #ddd; }
+  .nhps-btn-ghost:hover { background:#f5f5f5; }
+  .nhps-btn-teal { background:#00695C; color:#fff; }
+  .nhps-btn-teal:hover { background:#004D40; }
+
+  @media(max-width:640px){
+    .nhps-wrap { min-height:unset; }
+    .nhps-totals-bar { grid-template-columns:1fr; }
+  }
+</style>
+
 </head>
 <body>
 
@@ -1504,224 +1722,6 @@
   </div>
 </div>
 
-<!-- ══ MODAL NEGOSIASI HARGA v2 — sinkron dengan code.gs ══ -->
-<style>
-  #modalNegosiasi2 { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:310; align-items:center; justify-content:center; }
-  #modalNegosiasi2.show { display:flex; }
-
-  /* ── SINGLE PANEL WRAP ── */
-  .nego2-wrap { background:#fff; border-radius:14px; width:min(820px,98vw); max-height:92vh; display:flex; flex-direction:column; box-shadow:0 12px 48px rgba(0,0,0,0.35); animation:modalIn 0.2s ease; }
-  .nego2-header { background:linear-gradient(135deg,#1A237E,#283593); color:#fff; padding:13px 20px; border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-  .nego2-header h3 { font-size:0.97rem; font-weight:700; display:flex; align-items:center; gap:9px; margin:0; }
-  .nego2-header .nego2-sub { font-weight:400; font-size:0.82rem; opacity:0.8; margin-left:4px; }
-
-  /* ── BODY: single scroll area ── */
-  .nego2-body { flex:1; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; gap:14px; min-height:0; }
-
-  /* HPS summary box */
-  .nego2-hps-box { background:#F0F2FF; border:2px solid #1A237E; border-radius:10px; padding:13px 16px; }
-  .nego2-hps-box .hps-title { font-size:0.76rem; font-weight:700; color:#1A237E; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:9px; display:flex; align-items:center; gap:6px; }
-  .nego2-hps-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
-  .nego2-hps-item { background:#fff; border:1px solid #C5CAE9; border-radius:7px; padding:8px 10px; text-align:center; }
-  .nego2-hps-item .v { font-size:0.92rem; font-weight:700; color:#1A237E; }
-  .nego2-hps-item .l { font-size:0.67rem; color:#7986CB; margin-top:2px; }
-
-  /* Giliran box */
-  .nego2-giliran-box { border-radius:9px; padding:10px 14px; font-size:0.83rem; font-weight:600; display:flex; align-items:center; gap:9px; }
-  .nego2-giliran-box.giliran-ok   { background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; }
-  .nego2-giliran-box.giliran-wait { background:#FFF8E1; border:1px solid #FFD54F; color:#856404; }
-  .nego2-giliran-box.giliran-done { background:#E0F2F1; border:1px solid #80CBC4; color:#004D40; }
-
-  /* Prev compare */
-  .nego2-prev-compare { background:#F3F4F6; border:1px solid #E0E0E0; border-radius:7px; padding:8px 13px; font-size:0.78rem; color:#555; }
-  .nego2-prev-compare strong { color:#1A237E; }
-
-  /* Histori */
-  .nego2-hist-list { display:flex; flex-direction:column; gap:9px; }
-  .nego2-hist-item { border-radius:9px; padding:10px 14px; border:1px solid; position:relative; }
-  .nego2-hist-item.role-hps         { background:#E8EAF6; border-color:#9FA8DA; }
-  .nego2-hist-item.role-penyedia    { background:#E8F5E9; border-color:#A5D6A7; }
-  .nego2-hist-item.role-pokja       { background:#FFEBEE; border-color:#EF9A9A; }
-  .nego2-hist-item.role-persetujuan { background:#E0F2F1; border-color:#80CBC4; }
-  .nego2-hist-item.is-last          { box-shadow:0 3px 12px rgba(0,0,0,0.12); }
-  .nego2-hist-item .hist-label      { font-size:0.71rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
-  .nego2-hist-item .hist-prices     { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:5px; }
-  .nego2-hist-item .hist-price-box  { background:rgba(255,255,255,0.7); border-radius:5px; padding:5px 8px; text-align:center; }
-  .nego2-hist-item .hist-price-box .pv { font-size:0.80rem; font-weight:700; }
-  .nego2-hist-item .hist-price-box .pl { font-size:0.65rem; color:#666; }
-  .nego2-hist-item .hist-catatan    { font-size:0.74rem; color:#555; font-style:italic; margin-top:4px; }
-  .nego2-hist-item .hist-ts         { font-size:0.68rem; color:#888; margin-top:4px; }
-  .nego2-badge-last { position:absolute; top:8px; right:10px; background:#FF6F00; color:#fff; font-size:0.64rem; font-weight:700; padding:2px 7px; border-radius:10px; }
-  .nego2-empty-hist { text-align:center; padding:24px 16px; color:#9FA8DA; font-size:0.82rem; }
-
-  /* Form fields */
-  .nego2-field { margin-bottom:12px; }
-  .nego2-field label { font-size:0.79rem; font-weight:700; color:#1A237E; display:block; margin-bottom:5px; }
-  .nego2-input { width:100%; padding:8px 11px; border:1px solid var(--gray-200); border-radius:7px; font-size:0.87rem; font-family:inherit; outline:none; box-sizing:border-box; background:#fff; }
-  .nego2-input:focus { border-color:#1A237E; box-shadow:0 0 0 3px rgba(26,35,126,0.08); }
-  .nego2-input[readonly] { background:#F5F5F5; color:#555; cursor:not-allowed; }
-  .nego2-harga-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-
-  /* Paste area auto-parse */
-  .nego2-paste-wrap { background:#F1F8F4; border:1.5px solid #A5D6A7; border-radius:10px; padding:12px 14px; }
-  .nego2-paste-hint { font-size:0.73rem; color:#2E7D32; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
-  #hpsPasteArea { width:100%; padding:8px 10px; border:1.5px dashed #A5D6A7; border-radius:7px; font-size:0.75rem; font-family:monospace; resize:vertical; background:#fff; outline:none; box-sizing:border-box; color:#222; transition:border-color 0.2s; }
-  #hpsPasteArea:focus { border-color:#2E7D32; border-style:solid; }
-  #hpsPasteArea.has-content { border-color:#2E7D32; border-style:solid; background:#F9FFF9; }
-
-  /* Footer */
-  .nego2-footer { padding:12px 22px; border-top:1px solid var(--gray-100); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; background:var(--gray-50); border-radius:0 0 14px 14px; flex-wrap:wrap; }
-
-  /* Loading */
-  .nego2-loading { display:flex; align-items:center; justify-content:center; padding:50px 20px; gap:14px; color:#1A237E; font-size:0.88rem; flex-direction:column; }
-  .nego2-spinner { width:34px; height:34px; border:3px solid #C5CAE9; border-top-color:#1A237E; border-radius:50%; animation:spin2 0.7s linear infinite; }
-
-  @keyframes spin2 { to { transform:rotate(360deg); } }
-
-  @media(max-width:640px){
-    .nego2-harga-row { grid-template-columns:1fr 1fr; }
-    .nego2-hps-row   { grid-template-columns:1fr 1fr; }
-    .nego2-hist-prices { grid-template-columns:1fr 1fr; }
-    .nego2-wrap { max-height:98vh; }
-  }
-</style>
-
-<!-- ══ STYLE: TABEL HPS NEGOSIASI TERINTEGRASI ══ -->
-<style>
-  /* Modal wrapper lebih lebar untuk tabel negosiasi */
-  #modalNegosiasiHPS { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:320; align-items:flex-start; justify-content:center; padding:20px 10px; overflow-y:auto; }
-  #modalNegosiasiHPS.show { display:flex; }
-
-  .nhps-wrap { background:#fff; border-radius:14px; width:min(1100px,98vw); min-height:min(600px,80vh); display:flex; flex-direction:column; box-shadow:0 12px 48px rgba(0,0,0,0.35); animation:modalIn 0.2s ease; margin:auto; }
-  .nhps-header { background:linear-gradient(135deg,#1A237E,#283593); color:#fff; padding:14px 22px; border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-  .nhps-header h3 { font-size:1rem; font-weight:700; display:flex; align-items:center; gap:9px; margin:0; }
-  .nhps-sub { font-weight:400; font-size:0.80rem; opacity:0.8; }
-
-  .nhps-tabs { display:flex; border-bottom:2px solid #E8EAF6; background:#F8F9FF; flex-shrink:0; }
-  .nhps-tab { padding:10px 20px; border:none; background:transparent; font-size:0.83rem; font-weight:600; color:#7986CB; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s; white-space:nowrap; }
-  .nhps-tab:hover { color:#1A237E; background:rgba(26,35,126,0.04); }
-  .nhps-tab.active { color:#1A237E; border-bottom-color:#1A237E; background:white; }
-
-  .nhps-body { flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
-
-  .nhps-section { display:none; }
-  .nhps-section.active { display:flex; flex-direction:column; gap:14px; }
-
-  /* ── Panel input HPS (Pokja) ── */
-  .nhps-input-panel { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  @media(max-width:768px){ .nhps-input-panel { grid-template-columns:1fr; } }
-
-  .nhps-paste-box { background:#F1F8F4; border:1.5px solid #A5D6A7; border-radius:10px; padding:14px; }
-  .nhps-paste-box .nhps-paste-hint { font-size:0.75rem; color:#2E7D32; margin-bottom:8px; display:flex; align-items:center; gap:6px; font-weight:600; }
-  #nhpsPasteArea { width:100%; padding:9px 11px; border:1.5px dashed #A5D6A7; border-radius:7px; font-size:0.74rem; font-family:monospace; resize:vertical; background:#fff; outline:none; box-sizing:border-box; color:#222; min-height:120px; }
-  #nhpsPasteArea:focus { border-color:#2E7D32; border-style:solid; }
-
-  .nhps-template-box { background:#EEF0FB; border:1.5px solid #C5CAE9; border-radius:10px; padding:14px; }
-  .nhps-template-box .nhps-tmpl-title { font-size:0.75rem; font-weight:700; color:#1A237E; margin-bottom:10px; display:flex; align-items:center; gap:7px; text-transform:uppercase; letter-spacing:0.4px; }
-  .nhps-tmpl-table { width:100%; border-collapse:collapse; font-size:0.70rem; }
-  .nhps-tmpl-table th { background:#1A237E; color:#fff; padding:5px 7px; text-align:left; white-space:nowrap; }
-  .nhps-tmpl-table th:not(:first-child) { text-align:center; }
-  .nhps-tmpl-table td { padding:5px 7px; border-bottom:1px dashed #C5CAE9; color:#9FA8DA; font-style:italic; text-align:center; }
-  .nhps-tmpl-table td:first-child { text-align:left; }
-
-  /* ── Tabel HPS Utama + Nego ── */
-  .nhps-table-wrap { overflow-x:auto; border-radius:10px; border:1px solid #C5CAE9; }
-  .nhps-main-table { width:100%; border-collapse:collapse; font-size:0.74rem; min-width:900px; }
-  .nhps-main-table thead tr.head-top th { padding:7px 9px; text-align:center; white-space:nowrap; font-weight:700; font-size:0.71rem; letter-spacing:0.3px; }
-  .nhps-main-table thead tr.head-top .th-hps    { background:#1A237E; color:#fff; }
-  .nhps-main-table thead tr.head-top .th-penyedia { background:#1B5E20; color:#fff; }
-  .nhps-main-table thead tr.head-top .th-pokja   { background:#B71C1C; color:#fff; }
-  .nhps-main-table thead tr.head-top .th-no      { background:#37474F; color:#fff; border-radius:7px 0 0 0; }
-  .nhps-main-table thead tr.head-sub th { padding:5px 8px; font-size:0.68rem; font-weight:600; white-space:nowrap; }
-  .nhps-main-table thead tr.head-sub .sub-hps    { background:#1A237E; color:rgba(255,255,255,0.85); }
-  .nhps-main-table thead tr.head-sub .sub-penyedia { background:#1B5E20; color:rgba(255,255,255,0.85); }
-  .nhps-main-table thead tr.head-sub .sub-pokja  { background:#B71C1C; color:rgba(255,255,255,0.85); }
-  .nhps-main-table thead tr.head-sub .sub-no     { background:#37474F; color:rgba(255,255,255,0.85); }
-
-  .nhps-main-table tbody tr { border-top:1px solid #ECEFF1; transition:background 0.12s; }
-  .nhps-main-table tbody tr:hover { background:#F8F9FF; }
-  .nhps-main-table tbody tr.row-group { background:#E8EAF6; }
-  .nhps-main-table tbody tr.row-group td { font-weight:700; color:#1A237E; padding:6px 10px; font-size:0.74rem; }
-  .nhps-main-table tbody tr.row-ket td { color:#9FA8DA; font-style:italic; padding:3px 10px 3px 20px; font-size:0.69rem; }
-  .nhps-main-table tbody tr.row-total { background:#1A237E !important; }
-  .nhps-main-table tbody tr.row-total td { color:#fff; font-weight:700; padding:8px 9px; font-size:0.78rem; }
-
-  .nhps-main-table td { padding:6px 9px; vertical-align:middle; }
-  .nhps-main-table td.td-no { text-align:center; color:#90A4AE; width:36px; }
-  .nhps-main-table td.td-uraian { text-align:left; min-width:160px; }
-  .nhps-main-table td.td-vol { text-align:center; color:#546E7A; white-space:nowrap; width:80px; }
-  .nhps-main-table td.td-num { text-align:right; font-variant-numeric:tabular-nums; }
-  .nhps-main-table td.td-hps-val { color:#1A237E; font-weight:600; }
-  .nhps-main-table td.td-penyedia-val { color:#1B5E20; font-weight:600; }
-  .nhps-main-table td.td-pokja-val { color:#B71C1C; font-weight:600; }
-
-  /* Input nego */
-  .nhps-nego-input { width:110px; padding:4px 7px; border:1.5px solid #A5D6A7; border-radius:6px; font-size:0.78rem; font-family:inherit; outline:none; box-sizing:border-box; text-align:right; }
-  .nhps-nego-input:focus { border-color:#1B5E20; box-shadow:0 0 0 2px rgba(27,94,32,0.1); }
-  .nhps-nego-input.pokja-input { border-color:#EF9A9A; }
-  .nhps-nego-input.pokja-input:focus { border-color:#B71C1C; box-shadow:0 0 0 2px rgba(183,28,28,0.1); }
-  .nhps-nego-input[readonly] { background:#F5F5F5; color:#9E9E9E; cursor:not-allowed; border-color:#E0E0E0; }
-
-  /* Highlight perbedaan */
-  .diff-higher { background:#FFEBEE !important; }
-  .diff-lower  { background:#E8F5E9 !important; }
-  .diff-same   { background:#E0F2F1 !important; }
-
-  /* Summary totals bar */
-  .nhps-totals-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-  .nhps-total-card { border-radius:9px; padding:11px 14px; text-align:center; border:1.5px solid; }
-  .nhps-total-card.hps   { background:#E8EAF6; border-color:#9FA8DA; }
-  .nhps-total-card.peny  { background:#E8F5E9; border-color:#A5D6A7; }
-  .nhps-total-card.pokja { background:#FFEBEE; border-color:#EF9A9A; }
-  .nhps-total-card .ntc-label { font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
-  .nhps-total-card.hps   .ntc-label { color:#1A237E; }
-  .nhps-total-card.peny  .ntc-label { color:#1B5E20; }
-  .nhps-total-card.pokja .ntc-label { color:#B71C1C; }
-  .nhps-total-card .ntc-excl { font-size:0.92rem; font-weight:700; }
-  .nhps-total-card.hps   .ntc-excl { color:#1A237E; }
-  .nhps-total-card.peny  .ntc-excl { color:#1B5E20; }
-  .nhps-total-card.pokja .ntc-excl { color:#B71C1C; }
-  .nhps-total-card .ntc-incl { font-size:0.70rem; color:#666; margin-top:2px; }
-  .nhps-total-card .ntc-diff { font-size:0.68rem; margin-top:3px; font-weight:600; }
-  .ntc-diff-up   { color:#B71C1C; }
-  .ntc-diff-down { color:#1B5E20; }
-  .ntc-diff-eq   { color:#00695C; }
-
-  /* Giliran/status indicator */
-  .nhps-giliran { border-radius:9px; padding:9px 14px; font-size:0.83rem; font-weight:600; display:flex; align-items:center; gap:9px; }
-  .nhps-giliran.ok   { background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; }
-  .nhps-giliran.wait { background:#FFF8E1; border:1px solid #FFD54F; color:#856404; }
-  .nhps-giliran.done { background:#E0F2F1; border:1px solid #80CBC4; color:#004D40; }
-
-  /* Riwayat */
-  .nhps-hist-item { border-radius:9px; padding:10px 14px; border:1px solid; margin-bottom:8px; position:relative; }
-  .nhps-hist-item.h-hps      { background:#E8EAF6; border-color:#9FA8DA; }
-  .nhps-hist-item.h-penyedia { background:#E8F5E9; border-color:#A5D6A7; }
-  .nhps-hist-item.h-pokja    { background:#FFEBEE; border-color:#EF9A9A; }
-  .nhps-hist-item.h-done     { background:#E0F2F1; border-color:#80CBC4; }
-  .nhps-hist-label { font-size:0.70rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:5px; }
-  .nhps-hist-totals { font-size:0.75rem; margin-bottom:3px; }
-  .nhps-hist-ts { font-size:0.67rem; color:#888; }
-
-  .nhps-footer { padding:12px 20px; border-top:1px solid #E8EAF6; display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; background:#F8F9FF; border-radius:0 0 14px 14px; flex-wrap:wrap; align-items:center; }
-  .nhps-btn { display:inline-flex; align-items:center; gap:7px; border:none; border-radius:8px; padding:9px 20px; font-size:0.86rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
-  .nhps-btn-primary { background:#1A237E; color:#fff; }
-  .nhps-btn-primary:hover { background:#0D1557; }
-  .nhps-btn-green { background:#1B5E20; color:#fff; }
-  .nhps-btn-green:hover { background:#0a3d10; }
-  .nhps-btn-red { background:#B71C1C; color:#fff; }
-  .nhps-btn-red:hover { background:#7f1212; }
-  .nhps-btn-ghost { background:white; color:#555; border:1px solid #ddd; }
-  .nhps-btn-ghost:hover { background:#f5f5f5; }
-  .nhps-btn-teal { background:#00695C; color:#fff; }
-  .nhps-btn-teal:hover { background:#004D40; }
-
-  @media(max-width:640px){
-    .nhps-wrap { min-height:unset; }
-    .nhps-totals-bar { grid-template-columns:1fr; }
-  }
-</style>
-
 <!-- ══ MODAL NEGOSIASI HPS TERINTEGRASI ══ -->
 <div id="modalNegosiasiHPS">
   <div class="nhps-wrap">
@@ -2122,17 +2122,38 @@ function gcGet(key, def) {
 // =================================================================
 // APPS SCRIPT API
 // =================================================================
+function _mergeConfig(cfg) {
+  // Merge sidebarItems: jaga fixed & roleOnly dari DEFAULT
+  if (cfg['sidebarItems']) {
+    cfg['sidebarItems'] = DEFAULT_SIDEBAR_ITEMS.map(def => {
+      const sv = cfg['sidebarItems'].find(s => s.id === def.id);
+      return sv ? { ...def, ...sv, fixed: def.fixed, roleOnly: def.roleOnly } : { ...def };
+    }).concat(cfg['sidebarItems'].filter(s => !DEFAULT_SIDEBAR_ITEMS.find(d => d.id === s.id)));
+  } else {
+    cfg['sidebarItems'] = DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}));
+  }
+  return cfg;
+}
+
 async function fetchGlobalConfig(silent=false) {
   if (!silent) showSync('Memuat pengaturan global…');
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getConfig&t=' + Date.now());
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getConfig&t=' + Date.now(), { signal: ctrl.signal });
+    clearTimeout(timer);
     const data = await res.json();
     if (data.status === 'ok' && data.config) {
-      _globalConfig = data.config;
+      _globalConfig = _mergeConfig(data.config);
+      try { localStorage.setItem('bpbj_config_cache', JSON.stringify(_globalConfig)); } catch(e){}
       if (!silent) hideSync();
-      return data.config;
+      return _globalConfig;
+    } else {
+      console.warn('[Config] Response tidak OK:', data);
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn('[Config] Fetch gagal (mungkin file://):', e.message || e);
+  }
   if (!silent) hideSync();
   return null;
 }
@@ -2840,7 +2861,19 @@ function updateUploadFormLock() {
 function getSidebarItems() {
   const stored = gcGet('sidebarItems', null);
   const custom  = gcGet('customMenus', []);
-  const base = stored || DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}));
+  let base;
+  if (stored) {
+    // Merge: jaga fixed & roleOnly dari DEFAULT, ambil publik/label dari server
+    base = DEFAULT_SIDEBAR_ITEMS.map(def => {
+      const sv = stored.find(s => s.id === def.id);
+      return sv ? { ...def, ...sv, fixed: def.fixed, roleOnly: def.roleOnly } : { ...def };
+    });
+    stored.forEach(s => {
+      if (!DEFAULT_SIDEBAR_ITEMS.find(d => d.id === s.id)) base.push(s);
+    });
+  } else {
+    base = DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}));
+  }
   return [...base, ...custom];
 }
 
@@ -2879,7 +2912,9 @@ function renderSidebar() {
     if (item.id === 'upload') return;
     const isAdminOnly    = item.roleOnly && item.roleOnly.includes('admin') && !item.roleOnly.includes('pokja');
     const isPokjaOrAdmin = item.roleOnly && (item.roleOnly.includes('pokja') || item.roleOnly.includes('admin'));
-    if (currentRole === null && !item.publik) return;
+    // item fixed (Beranda/Download/Aanwijzing) SELALU tampil publik
+    const isFixed = item.fixed && !item.roleOnly;
+    if (currentRole === null && !item.publik && !isFixed) return;
     if (currentRole === 'penyedia' && (isAdminOnly || isPokjaOrAdmin)) return;
     if (currentRole === 'pokja' && isAdminOnly) return;
     if ((isAdminOnly || isPokjaOrAdmin) && !hasManageSection && currentRole && currentRole !== 'penyedia') { html += `<div class="sidebar-section-label">Manajemen</div>`; hasManageSection = true; }
@@ -4518,27 +4553,47 @@ function renderAll() {
 
 async function init() {
   initAuth();
-  showSync('Memuat pengaturan dari server…');
-  const cfg=await fetchGlobalConfig(true);
-  if(cfg){hideSync();}
-  else{showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.','error');setTimeout(hideSync,3000);}
+
+  // ── LANGKAH 1: Muat cache localStorage dulu agar sidebar langsung muncul ──
+  try {
+    const cached = localStorage.getItem('bpbj_config_cache');
+    if (cached) {
+      _globalConfig = _mergeConfig(JSON.parse(cached));
+    }
+  } catch(e) {}
+
+  // Jika tidak ada cache sama sekali, pakai DEFAULT agar sidebar tetap muncul
+  if (!_globalConfig['sidebarItems']) {
+    _globalConfig['sidebarItems'] = DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}));
+  }
+
+  // ── LANGKAH 2: Render segera pakai cache/default ──
   renderAll();
-  // ── Restore session jika user refresh browser ──
+
+  // ── LANGKAH 3: Restore session ──
   if (restoreSession()) {
-    renderSidebar();
-    updateRoleUI();
-    updateMbnVisibility();
-    updateUploadFormLock();
+    renderSidebar(); updateRoleUI(); updateMbnVisibility(); updateUploadFormLock();
     if (currentRole === 'pokja' || currentRole === 'admin') {
       loadSubmissionsFromSheet();
       if (currentRole === 'admin') loadAdminForms();
       showPage(currentRole);
     }
-    if (currentRole === 'penyedia') {
-      loadStatusPenyedia();
-      showPage('status');
-    }
+    if (currentRole === 'penyedia') { loadStatusPenyedia(); showPage('status'); }
   }
+
+  // ── LANGKAH 4: Fetch server di background (tidak blocking) ──
+  showSync('Memuat pengaturan dari server…');
+  fetchGlobalConfig(true).then(cfg => {
+    if (cfg) {
+      hideSync();
+      renderAll(); // Re-render dengan data terbaru dari server
+      if (restoreSession()) { renderSidebar(); updateRoleUI(); }
+    } else {
+      showSync('⚠ Server tidak terhubung — menggunakan pengaturan tersimpan.', 'error');
+      setTimeout(hideSync, 3000);
+    }
+  });
+
   // Muat jumlah peserta publik tanpa perlu login
   loadPublicPesertaCount();
   // Auto-refresh data submisi setiap 20 detik (data saja, tidak render ulang UI)
@@ -5258,6 +5313,9 @@ function renderNegosiasiPage() {
     });
   }
 
+  // Simpan origIdx sebelum deduplikasi agar tidak hilang
+  lulusList.forEach(s => { s._origIdx = all.indexOf(s); });
+
   // Deduplicate by perusahaan
   const byPerusahaan = {};
   lulusList.forEach(s => {
@@ -5286,7 +5344,7 @@ function renderNegosiasiPage() {
         <i class="fa-solid fa-circle-info"></i> Klik <strong>Buka Negosiasi</strong> untuk melihat riwayat dan mengirim penawaran Anda.</div>`;
 
   const cards = pesertaLulus.map((s, i) => {
-    const origIdx    = all.indexOf(s);
+    const origIdx    = (s._origIdx !== undefined && s._origIdx >= 0) ? s._origIdx : all.indexOf(s);
     const negoHistory = Array.isArray(s.negoHistory) ? s.negoHistory : [];
     const undangan    = s.undanganPembuktian;
 
@@ -5536,8 +5594,12 @@ function nego2RenderRight(state) {
 // ── Buka modal + fetch state dari backend ──
 async function bukaModalNegosiasi(idx) {
   const submissions = getSubmissions();
-  const d = submissions[idx];
-  if (!d) return;
+  let d = submissions[idx];
+  if (!d || idx < 0) {
+    console.warn('[Nego] idx tidak valid:', idx, '| submissions.length:', submissions.length);
+    showToast('Gagal Membuka Negosiasi', 'Data tidak ditemukan. Coba refresh halaman.', 'error', 4000);
+    return;
+  }
   _nego2Key   = idx;
   _nego2Data  = d;
   _nego2State = null;
@@ -6361,7 +6423,11 @@ function _nhpsSave(d, state) {
 async function nhpsOpenModal(idx) {
   const submissions = getSubmissions();
   const d = submissions[idx];
-  if (!d) return;
+  if (!d || idx < 0) {
+    console.warn('[NHPS] idx tidak valid:', idx);
+    showToast('Gagal Membuka HPS', 'Data tidak ditemukan. Coba refresh halaman.', 'error', 4000);
+    return;
+  }
   _nhpsIdx  = idx;
   _nhpsData = d;
 
