@@ -1041,6 +1041,13 @@
       </div>
     </section>
 
+    <!-- NEGOSIASI -->
+    <section class="page" id="page-negosiasi">
+      <h2 class="page-title"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</h2>
+      <p class="page-subtitle" id="negoSidebarSubtitle">Daftar penyedia yang telah Lulus / Memenuhi Syarat dan masuk ke tahap negosiasi.</p>
+      <div id="negosiasiPageContent"></div>
+    </section>
+
     <!-- ADMIN -->
     <section class="page" id="page-admin">
       <h2 class="page-title"><i class="fa-solid fa-gear"></i> Panel Admin</h2>
@@ -1254,107 +1261,39 @@
 
 <!-- ══ MODAL KLARIFIKASI PENYEDIA ══ -->
 <div id="modalKlarifikasi" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:12px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);position:relative;animation:modalIn 0.2s ease;">
-    <div style="background:linear-gradient(135deg,#856404,#a07c10);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-message"></i> &nbsp;Kirim Klarifikasi ke Penyedia</span>
+  <div style="background:var(--white);border-radius:12px;width:min(560px,96vw);max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);position:relative;animation:modalIn 0.2s ease;">
+    <div style="background:linear-gradient(135deg,#185FA5,#0C447C);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-reply"></i> &nbsp;Tanggapan Klarifikasi dari Pokja</span>
       <button onclick="tutupModalKlarifikasi()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
     </div>
     <div style="padding:22px 24px;">
-      <div id="klarInfoBox" style="background:#FFF8E1;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#6b5003;margin-bottom:16px;"></div>
-      <div class="admin-form-group">
-        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#856404;"></i> Pesan Klarifikasi <span style="color:#C0392B;">*</span></label>
-        <textarea id="klarPesan" rows="5" placeholder="Tuliskan pertanyaan atau permintaan klarifikasi kepada Penyedia…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #856404;"></textarea>
-      </div>
-      <div id="klarMsg" style="display:none;margin-bottom:12px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="tutupModalKlarifikasi()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
-        <button id="btnKirimKlarifikasi" onclick="kirimKlarifikasi()" style="display:inline-flex;align-items:center;gap:8px;background:#856404;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;transition:background 0.2s;"><i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi</button>
-      </div>
-    </div>
-  </div>
-</div>
+      <!-- Info dokumen -->
+      <div id="klarInfoBox" style="background:#E8EAF6;border:1px solid #C5CAE9;border-left:4px solid #185FA5;border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#1A237E;margin-bottom:14px;"></div>
 
-<!-- ══ MODAL UNDANGAN PEMBUKTIAN KUALIFIKASI (POKJA) ══ -->
-<div id="modalUndangan" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:310;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:12px;width:min(540px,95vw);max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
-    <div style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-envelope-open-text"></i> &nbsp;Undangan Pembuktian Kualifikasi</span>
-      <button onclick="tutupModalUndangan()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
-    </div>
-    <div style="padding:22px 24px;">
-      <div id="undanganInfoBox" style="background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid #1B5E20;border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#1B5E20;margin-bottom:16px;"></div>
-      <div class="admin-form-group">
-        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-calendar-days" style="color:#1B5E20;"></i> Tanggal & Waktu Pembuktian</label>
-        <input type="text" id="undanganTanggal" placeholder="Contoh: Senin, 5 Mei 2025 pukul 09.00 WIB" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.88rem;font-family:inherit;outline:none;" />
+      <!-- Info instruksi -->
+      <div style="background:#E3F2FD;border:1px solid #90CAF9;border-left:3px solid #185FA5;border-radius:7px;padding:9px 13px;font-size:0.81rem;color:#1565C0;margin-bottom:16px;">
+        <i class="fa-solid fa-circle-info"></i> Di bawah ini adalah klarifikasi yang dikirim oleh Pokja. Pilih klarifikasi yang ingin Anda tanggapi, lalu tulis jawaban Anda.
       </div>
-      <div class="admin-form-group">
-        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-location-dot" style="color:#1B5E20;"></i> Lokasi / Platform</label>
-        <input type="text" id="undanganLokasi" placeholder="Contoh: Ruang Rapat Lt. 3 / Google Meet" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.88rem;font-family:inherit;outline:none;" />
-      </div>
-      <div class="admin-form-group">
-        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#1B5E20;"></i> Pesan Undangan <span style="color:#C0392B;">*</span></label>
-        <textarea id="undanganPesan" rows="5" placeholder="Tuliskan pesan undangan pembuktian kualifikasi kepada penyedia…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #1B5E20;"></textarea>
-      </div>
-      <div id="undanganMsg" style="display:none;margin-bottom:12px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="tutupModalUndangan()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
-        <button id="btnKirimUndangan" onclick="kirimUndanganPembuktian()" style="display:inline-flex;align-items:center;gap:8px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> Kirim Undangan</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- ══ MODAL NEGOSIASI HARGA (POKJA) ══ -->
-<div id="modalNegosiasi" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:310;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:12px;width:min(900px,98vw);max-height:93vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
-    <div style="background:linear-gradient(135deg,#1A237E,#283593);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-handshake"></i> &nbsp;Negosiasi Harga &nbsp;<span id="negoNamaPerusahaan" style="font-weight:400;font-size:0.85rem;opacity:0.85;"></span></span>
-      <button onclick="tutupModalNegosiasi()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
-    </div>
-    <div style="overflow-y:auto;flex:1;padding:18px 22px;">
-      <!-- Info ringkas -->
-      <div id="negoInfoBox" style="background:#E8EAF6;border:1px solid #C5CAE9;border-left:4px solid #1A237E;border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#1A237E;margin-bottom:16px;"></div>
-      <!-- Toolbar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);"><i class="fa-solid fa-table-list"></i> Rincian Penawaran / HPS</div>
-        <button onclick="negoTambahBaris()" style="display:inline-flex;align-items:center;gap:6px;background:#1A237E;color:white;border:none;border-radius:7px;padding:7px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;"><i class="fa-solid fa-plus"></i> Tambah Baris</button>
+      <!-- Daftar klarifikasi dari Pokja -->
+      <div id="klarPokjaList" style="margin-bottom:16px;"></div>
+
+      <!-- Bagian tanggapan — muncul setelah pilih klarifikasi -->
+      <div id="klarTanggapanSection" style="display:none;">
+        <div style="background:#F0F6FF;border:1px solid var(--blue-100);border-radius:8px;padding:10px 14px;font-size:0.82rem;color:var(--blue-900);margin-bottom:12px;">
+          <i class="fa-solid fa-comment-dots" style="color:#185FA5;"></i> <strong>Menanggapi klarifikasi:</strong>
+          <div id="klarSelectedPreview" style="margin-top:6px;font-style:italic;color:var(--gray-600);font-size:0.80rem;border-left:3px solid #185FA5;padding-left:8px;margin-left:4px;"></div>
+        </div>
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#185FA5;"></i> Tanggapan Anda <span style="color:#C0392B;">*</span></label>
+        <textarea id="klarPesan" rows="4" placeholder="Tulis tanggapan / jawaban Anda atas klarifikasi Pokja di atas…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #185FA5;box-sizing:border-box;"></textarea>
       </div>
-      <!-- Tabel Rincian HPS -->
-      <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--gray-200);">
-        <table id="negoTable" style="width:100%;border-collapse:collapse;min-width:750px;font-size:0.82rem;">
-          <thead>
-            <tr style="background:#1A237E;color:white;">
-              <th style="padding:9px 8px;text-align:left;font-weight:600;min-width:30px;">#</th>
-              <th style="padding:9px 8px;text-align:left;font-weight:600;min-width:200px;">Jenis Barang/Jasa</th>
-              <th style="padding:9px 8px;text-align:left;font-weight:600;min-width:80px;">Satuan</th>
-              <th style="padding:9px 8px;text-align:center;font-weight:600;min-width:60px;">Vol</th>
-              <th style="padding:9px 8px;text-align:right;font-weight:600;min-width:120px;">Harga/Biaya</th>
-              <th style="padding:9px 8px;text-align:center;font-weight:600;min-width:75px;">Pajak (%)</th>
-              <th style="padding:9px 8px;text-align:right;font-weight:600;min-width:120px;">Total</th>
-              <th style="padding:9px 8px;text-align:left;font-weight:600;min-width:140px;">Keterangan</th>
-              <th style="padding:9px 8px;text-align:center;font-weight:600;min-width:40px;"></th>
-            </tr>
-          </thead>
-          <tbody id="negoTbody"></tbody>
-          <tfoot>
-            <tr style="background:#E8EAF6;font-weight:700;">
-              <td colspan="6" style="padding:9px 10px;text-align:right;color:#1A237E;">TOTAL KESELURUHAN</td>
-              <td id="negoGrandTotal" style="padding:9px 10px;text-align:right;color:#1A237E;font-size:0.9rem;"></td>
-              <td colspan="2"></td>
-            </tr>
-          </tfoot>
-        </table>
+
+      <div id="klarMsg" style="display:none;margin-top:10px;margin-bottom:4px;"></div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+        <button onclick="tutupModalKlarifikasi()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Tutup</button>
+        <button id="btnKirimKlarifikasi" onclick="kirimKlarifikasi()" style="display:none;align-items:center;gap:8px;background:#185FA5;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;transition:background 0.2s;"><i class="fa-solid fa-paper-plane"></i> Kirim Tanggapan</button>
       </div>
-      <!-- Catatan Negosiasi -->
-      <div style="margin-top:16px;">
-        <label style="font-size:0.83rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-comment-dots"></i> Catatan Negosiasi</label>
-        <textarea id="negoCatatan" rows="3" placeholder="Tuliskan hasil atau catatan negosiasi (opsional)…" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none;"></textarea>
-      </div>
-      <div id="negoMsg" style="display:none;margin-top:10px;"></div>
-    </div>
-    <div style="padding:14px 22px;border-top:1px solid var(--gray-100);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;background:var(--gray-50);border-radius:0 0 12px 12px;">
-      <button onclick="tutupModalNegosiasi()" style="padding:9px 20px;border-radius:7px;border:1px solid var(--gray-200);background:white;cursor:pointer;font-size:0.85rem;">Tutup</button>
-      <button id="btnSimpanNegosiasi" onclick="simpanNegosiasi()" style="display:inline-flex;align-items:center;gap:8px;background:#1A237E;color:white;border:none;border-radius:7px;padding:10px 24px;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-floppy-disk"></i> Simpan Negosiasi</button>
     </div>
   </div>
 </div>
@@ -1488,16 +1427,16 @@
       <!-- TAB: KLARIFIKASI -->
       <div class="panduan-section" id="panduan-klarifikasi">
         <div class="panduan-intro-box">
-          <h3><i class="fa-solid fa-circle-info"></i> Mengajukan Klarifikasi</h3>
-          <p>Jika status dokumen <strong>Perlu Revisi / Klarifikasi</strong>, Pokja mungkin memiliki pertanyaan. Anda dapat mengajukan klarifikasi langsung melalui portal.</p>
+          <h3><i class="fa-solid fa-reply"></i> Membalas Klarifikasi Pokja</h3>
+          <p>Pokja dapat mengajukan klarifikasi (pertanyaan) kepada Anda melalui portal. Anda <strong>hanya bisa membalas</strong> klarifikasi yang sudah dikirimkan oleh Pokja — Anda tidak dapat mengajukan klarifikasi sendiri.</p>
         </div>
-        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</span></h4><p>Temukan dokumen berstatus <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Perlu Revisi</span> yang ingin diklarifikasi.</p></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</span></h4><p>Cek kartu dokumen Anda. Jika Pokja telah mengirim klarifikasi yang belum dijawab, tombol <strong>Balas Klarifikasi Pokja</strong> berwarna biru akan muncul.</p></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Klik tombol <strong>Ajukan Klarifikasi</strong> pada kartu dokumen</h4><p>Setiap kartu dokumen memiliki tombol Ajukan Klarifikasi di bagian bawah. Klik tombol tersebut untuk membuka form klarifikasi.</p></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Klik <strong>Balas Klarifikasi Pokja</strong></h4><p>Modal akan terbuka dan menampilkan semua klarifikasi yang telah dikirim Pokja — beserta status apakah sudah atau belum dijawab.</p></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Tulis pesan klarifikasi dengan jelas dan kirim</h4><p>Jelaskan pertanyaan atau tanggapan Anda secara singkat dan jelas. Klik <strong>Kirim Klarifikasi</strong> setelah selesai.</p><div class="step-tip"><i class="fa-solid fa-pen"></i> Contoh: <em>"Mohon klarifikasi terkait persyaratan sertifikat di halaman 5 — apakah sertifikat yang habis masa berlaku 3 bulan lagi masih dapat diterima?"</em></div></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Pilih klarifikasi yang ingin ditanggapi</h4><p>Klik salah satu klarifikasi dari daftar. Item yang dipilih akan disorot, lalu kolom tanggapan akan muncul di bawahnya.</p><div class="step-tip"><i class="fa-solid fa-pen"></i> Contoh jawaban: <em>"Sertifikat yang kami lampirkan masih berlaku s.d. Desember 2026, sebagaimana tertera pada halaman terakhir dokumen."</em></div></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Pantau tanggapan Pokja di halaman yang sama</h4><p>Tanggapan Pokja akan tampil langsung di kartu dokumen. Refresh halaman Status Pengajuan untuk memeriksa apakah sudah ada balasan.</p><div class="step-tip"><i class="fa-solid fa-clock"></i> Tanggapan Pokja biasanya diberikan dalam 1–2 hari kerja.</div></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Tulis tanggapan dan klik <strong>Kirim Tanggapan</strong></h4><p>Jawaban Anda akan langsung tersimpan dan dapat dilihat oleh Pokja. Anda bisa membalas lebih dari satu klarifikasi secara bergantian.</p></div></div>
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num">5</div><div class="panduan-step-content"><h4>Upload ulang jika diminta perbaikan dokumen</h4><p>Jika Pokja meminta revisi, lakukan upload ulang melalui menu <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</span>. Dokumen baru menggantikan yang lama secara otomatis.</p></div></div>
       </div>
@@ -1535,24 +1474,83 @@
   </button>
 </nav>
 
-<!-- ══ MODAL BALAS KLARIFIKASI (PENYEDIA) ══ -->
-<div id="modalBalasKlar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:320;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:12px;width:min(500px,95vw);max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
-    <div style="background:linear-gradient(135deg,#856404,#a07c10);color:white;padding:14px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:700;font-size:0.95rem;"><i class="fa-solid fa-reply"></i> &nbsp;Balas Klarifikasi Pokja</span>
-      <button onclick="tutupBalasKlar()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+<!-- ══ MODAL UNDANGAN PEMBUKTIAN KUALIFIKASI ══ -->
+<div id="modalUndangan" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:310;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:12px;width:min(540px,95vw);max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+    <div style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-envelope-open-text"></i> &nbsp;Undangan Pembuktian Kualifikasi</span>
+      <button onclick="tutupModalUndangan()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
     </div>
-    <div style="padding:20px 22px;">
-      <div id="balasKlarInfoBox" style="background:#FFF8E1;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:11px 14px;font-size:0.83rem;color:#6b5003;margin-bottom:14px;"></div>
+    <div style="padding:22px 24px;">
+      <div id="undanganInfoBox" style="background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid #1B5E20;border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#1B5E20;margin-bottom:16px;"></div>
       <div class="admin-form-group">
-        <label style="font-size:0.84rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#856404;"></i> Jawaban Anda <span style="color:#C0392B;">*</span></label>
-        <textarea id="balasKlarPesan" rows="4" placeholder="Tuliskan jawaban atau tanggapan Anda atas klarifikasi Pokja…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.87rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #856404;"></textarea>
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-calendar-days" style="color:#1B5E20;"></i> Tanggal &amp; Waktu Pembuktian</label>
+        <input type="text" id="undanganTanggal" placeholder="Contoh: Senin, 5 Mei 2025 pukul 09.00 WIB" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.88rem;font-family:inherit;outline:none;" />
       </div>
-      <div id="balasKlarMsg" style="display:none;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
-        <button onclick="tutupBalasKlar()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
-        <button id="btnKirimBalasKlar" onclick="kirimBalasKlarifikasi()" style="display:inline-flex;align-items:center;gap:8px;background:#856404;color:white;border:none;border-radius:7px;padding:10px 20px;font-size:0.87rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> Kirim Jawaban</button>
+      <div class="admin-form-group">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-location-dot" style="color:#1B5E20;"></i> Lokasi / Platform</label>
+        <input type="text" id="undanganLokasi" placeholder="Contoh: Ruang Rapat Lt. 3 / Google Meet" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.88rem;font-family:inherit;outline:none;" />
       </div>
+      <div class="admin-form-group">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#1B5E20;"></i> Pesan Undangan <span style="color:#C0392B;">*</span></label>
+        <textarea id="undanganPesan" rows="5" placeholder="Tuliskan pesan undangan pembuktian kualifikasi…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #1B5E20;"></textarea>
+      </div>
+      <div id="undanganMsg" style="display:none;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="tutupModalUndangan()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
+        <button id="btnKirimUndangan" onclick="kirimUndanganPembuktian()" style="display:inline-flex;align-items:center;gap:8px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> Kirim Undangan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL NEGOSIASI HARGA ══ -->
+<div id="modalNegosiasi" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:310;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:12px;width:min(920px,98vw);max-height:93vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+    <div style="background:linear-gradient(135deg,#1A237E,#283593);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-handshake"></i> &nbsp;Negosiasi Harga &nbsp;<span id="negoNamaPerusahaan" style="font-weight:400;font-size:0.85rem;opacity:0.85;"></span></span>
+      <button onclick="tutupModalNegosiasi()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding:18px 22px;">
+      <div id="negoInfoBox" style="background:#E8EAF6;border:1px solid #C5CAE9;border-left:4px solid #1A237E;border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#1A237E;margin-bottom:16px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);"><i class="fa-solid fa-table-list"></i> Rincian Penawaran / HPS</div>
+        <button onclick="negoTambahBaris()" style="display:inline-flex;align-items:center;gap:6px;background:#1A237E;color:white;border:none;border-radius:7px;padding:7px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;"><i class="fa-solid fa-plus"></i> Tambah Baris</button>
+      </div>
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--gray-200);">
+        <table id="negoTable" style="width:100%;border-collapse:collapse;min-width:750px;font-size:0.82rem;">
+          <thead>
+            <tr style="background:#1A237E;color:white;">
+              <th style="padding:9px 8px;text-align:left;min-width:30px;">#</th>
+              <th style="padding:9px 8px;text-align:left;min-width:200px;">Jenis Barang/Jasa</th>
+              <th style="padding:9px 8px;min-width:80px;">Satuan</th>
+              <th style="padding:9px 8px;text-align:center;min-width:60px;">Vol</th>
+              <th style="padding:9px 8px;text-align:right;min-width:120px;">Harga/Biaya</th>
+              <th style="padding:9px 8px;text-align:center;min-width:75px;">Pajak (%)</th>
+              <th style="padding:9px 8px;text-align:right;min-width:120px;">Total</th>
+              <th style="padding:9px 8px;text-align:left;min-width:140px;">Keterangan</th>
+              <th style="padding:9px 8px;min-width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="negoTbody"></tbody>
+          <tfoot>
+            <tr style="background:#E8EAF6;font-weight:700;">
+              <td colspan="6" style="padding:9px 10px;text-align:right;color:#1A237E;">TOTAL KESELURUHAN</td>
+              <td id="negoGrandTotal" style="padding:9px 10px;text-align:right;color:#1A237E;font-size:0.9rem;">Rp 0</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div style="margin-top:16px;">
+        <label style="font-size:0.83rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-comment-dots"></i> Catatan Negosiasi</label>
+        <textarea id="negoCatatan" rows="3" placeholder="Tuliskan hasil atau catatan negosiasi (opsional)…" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none;"></textarea>
+      </div>
+      <div id="negoMsg" style="display:none;margin-top:10px;"></div>
+    </div>
+    <div style="padding:14px 22px;border-top:1px solid var(--gray-100);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;background:var(--gray-50);border-radius:0 0 12px 12px;">
+      <button onclick="tutupModalNegosiasi()" style="padding:9px 20px;border-radius:7px;border:1px solid var(--gray-200);background:white;cursor:pointer;font-size:0.85rem;">Tutup</button>
+      <button id="btnSimpanNegosiasi" onclick="simpanNegosiasi()" style="display:inline-flex;align-items:center;gap:8px;background:#1A237E;color:white;border:none;border-radius:7px;padding:10px 24px;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-floppy-disk"></i> Simpan Negosiasi</button>
     </div>
   </div>
 </div>
@@ -1606,7 +1604,6 @@ const DEFAULT_SIDEBAR_ITEMS = [
   { id:'beranda',    label:'Beranda',           icon:'fa-house',                  publik:true,  fixed:true },
   { id:'download',   label:'Download Dokumen',  icon:'fa-file-arrow-down',        publik:true,  fixed:true },
   { id:'aanwijzing', label:'Aanwijzing',         icon:'fa-video',                  publik:true,  fixed:true },
-  { id:'pokja',      label:'Review Pokja',       icon:'fa-magnifying-glass-chart', publik:false, fixed:true, roleOnly:['pokja','admin'] },
   { id:'admin',      label:'Panel Admin',        icon:'fa-gear',                   publik:false, fixed:true, roleOnly:['admin'] },
 ];
 
@@ -1929,20 +1926,46 @@ async function doLoginPokja() {
     isLocked     = pokjaAccounts[username].locked   || false;
     lockToken    = pokjaAccounts[username].lockToken || '';
   } else if (username === 'pokja') {
-    // Fallback ke config lama
-    expectedPass = (cfg && cfg.pokjaPassword) ? cfg.pokjaPassword : 'pokja2026';
+    // Fallback ke config lama (password dari sheet Akun)
+    expectedPass = (cfg && cfg.pokjaPassword) ? cfg.pokjaPassword : '';
     isLocked = false;
   } else {
-    // Akun pokja1-10 belum punya password → default pokja2026
-    expectedPass = 'pokja2026';
+    // Akun pokja1-10: ambil password dari sheet Akun
+    expectedPass = '';
     isLocked = false;
+    // Coba ambil dari data sheet (pokjaAccountsFromSheet) jika ada
+    if (cfg && cfg.pokjaAccountsFromSheet && cfg.pokjaAccountsFromSheet[username]) {
+      expectedPass = cfg.pokjaAccountsFromSheet[username].password || '';
+    }
+  }
+
+  // Coba juga dari array akun sheet (format berbeda)
+  if (!pokjaAccounts[username] && cfg && Array.isArray(cfg.accounts)) {
+    const sheetAcc = cfg.accounts.find(a => (a.username||'').toLowerCase() === username && (a.role||'').toLowerCase() === 'pokja');
+    if (sheetAcc && sheetAcc.password) expectedPass = sheetAcc.password;
   }
 
   if (password !== expectedPass) {
-    setButtonLoading('btnDoLoginPokja', false);
-    errEl.textContent = '❌ Username atau password salah.';
-    shakeModal('loginOverlayPokja');
-    return;
+    // Jika expectedPass kosong → password belum diatur di sheet Akun
+    if (!expectedPass) {
+      setButtonLoading('btnDoLoginPokja', false);
+      errEl.textContent = '❌ Password belum diatur. Hubungi Admin untuk mengatur password akun ini melalui sheet Akun.';
+      shakeModal('loginOverlayPokja');
+      return;
+    }
+    // Satu lagi fallback: coba fetch langsung dari endpoint akun di sheet
+    let verified = false;
+    try {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=loginPokja&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+      const data = await res.json();
+      if (data.status === 'ok') verified = true;
+    } catch(e) {}
+    if (!verified) {
+      setButtonLoading('btnDoLoginPokja', false);
+      errEl.textContent = '❌ Username atau password salah.';
+      shakeModal('loginOverlayPokja');
+      return;
+    }
   }
 
   // ── Cek session lock ──
@@ -2147,7 +2170,27 @@ function renderStatusPenyedia() {
     grp.sort((a,b) => (a.tanggal||'') < (b.tanggal||'') ? -1 : 1);
   });
 
-  const renderKlarLog = (klarifikasiLog, allIdxRef) => klarifikasiLog.map((k, ki)=>`<div style="background:${k.balasan?'#F0FFF4':'#FFF8E1'};border:1px solid ${k.balasan?'#B6DBA0':'#FFD54F'};border-left:3px solid ${k.balasan?'#3B6D11':'#856404'};border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${k.tgl||'-'} &nbsp;·&nbsp; <strong style="color:#856404;"><i class="fa-solid fa-shield-halved"></i> ${k.pengirim||'Pokja'}</strong></div><div style="color:var(--gray-800);margin-bottom:${k.balasan?'8px':'0'};">${k.pesan||''}</div>${k.balasan?`<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:7px 10px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Jawaban Penyedia:</strong><br><span style="color:var(--gray-800);">${k.balasan}</span>${k.balasanTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanTgl}</span>`:''}</div>`:`<div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> Belum dijawab</span>${currentRole==='penyedia'?`<button onclick="bukaBalasKlarifikasi(${allIdxRef},${ki})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:5px;padding:3px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;"><i class="fa-solid fa-reply"></i> Balas</button>`:''}</div>`}</div>`).join('');
+  const renderKlarLog = (klarifikasiLog) => klarifikasiLog.map(k => {
+    const dariPokja = !!k.dariPokja;
+    if (dariPokja) {
+      // Klarifikasi dari Pokja — tampilkan dengan warna biru
+      const sudahDibalas = !!k.balasanPenyedia;
+      return `<div style="background:#E3F2FD;border:1px solid #90CAF9;border-left:3px solid #185FA5;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:0.80rem;">
+        <div style="color:#1565C0;font-size:0.70rem;margin-bottom:3px;font-weight:600;"><i class="fa-solid fa-shield-halved"></i> Pokja &nbsp;·&nbsp; <i class="fa-solid fa-clock"></i> ${k.tgl||'-'}</div>
+        <div style="color:var(--gray-800);margin-bottom:${sudahDibalas?'8px':'0'};">${k.pesan||''}</div>
+        ${sudahDibalas
+          ? `<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:7px 10px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Anda:</strong><br><span style="color:var(--gray-800);">${k.balasanPenyedia}</span>${k.balasanPenyediaTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanPenyediaTgl}</span>`:''}</div>`
+          : `<span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Anda</span>`}
+      </div>`;
+    } else {
+      // Catatan lama (sebelum sistem baru) atau pesan sistem
+      return `<div style="background:#F0F6FF;border:1px solid var(--blue-100);border-left:3px solid var(--blue-600);border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:0.80rem;">
+        <div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:3px;"><i class="fa-solid fa-clock"></i> ${k.tgl||'-'}</div>
+        <div style="color:var(--gray-800);margin-bottom:${k.balasan?'8px':'0'};">${k.pesan||''}</div>
+        ${k.balasan?`<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:7px 10px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Pokja:</strong><br><span style="color:var(--gray-800);">${k.balasan}</span>${k.balasanTgl?`<br><span style="color:var(--gray-400);font-size:0.68rem;margin-top:2px;display:block;">${k.balasanTgl}</span>`:''}</div>`:`<span style="font-size:0.70rem;color:#856404;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Pokja</span>`}
+      </div>`;
+    }
+  }).join('');
 
   wrap.innerHTML = Object.entries(docGroups).map(([jenisDok, grp]) => {
     const latest  = grp[grp.length - 1]; // dokumen terbaru
@@ -2215,10 +2258,9 @@ function renderStatusPenyedia() {
           ${hasLatest ? `<a href="${latestUrl}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Terbaru</a>` : ''}
         </div>
         ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
-        ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Klarifikasi dari Pokja (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog, allIdx)}</div>` : ''}
-        ${status === 'Lulus / Memenuhi Syarat' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${latest.undanganPembuktian ? `<div style="width:100%;background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid #3B6D11;border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#2D7D17;"><i class="fa-solid fa-envelope-open-text"></i> <strong>Undangan Pembuktian Kualifikasi</strong><br><span style="font-size:0.8rem;color:var(--gray-700);">${latest.undanganPembuktian.pesan||''}</span>${latest.undanganPembuktian.tanggal?`<br><span style="font-size:0.72rem;color:var(--gray-400);"><i class="fa-solid fa-calendar"></i> ${latest.undanganPembuktian.tanggal}</span>`:''}</div>` : ''}</div>` : ''}
+        ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog)}</div>` : ''}
         ${historyHtml}
-        ${status === 'Perlu Revisi / Klarifikasi' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;"><button onclick="bukaModalRevisiByIdx(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='var(--blue-900)'" onmouseleave="this.style.background='var(--blue-700)'"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</button></div>` : ''}
+        ${(catatan || status !== 'Menunggu Review') && status !== 'Lulus / Memenuhi Syarat' ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">${status==='Perlu Revisi / Klarifikasi' ? `<button onclick="bukaModalRevisiByIdx(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='var(--blue-900)'" onmouseleave="this.style.background='var(--blue-700)'"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</button>` : ''}${klarifikasiLog.filter(k=>k.dariPokja&&!k.balasanPenyedia).length>0 ? `<button onclick="bukaModalKlarifikasi(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:#185FA5;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'"><i class="fa-solid fa-reply"></i> Balas Klarifikasi Pokja</button>` : klarifikasiLog.some(k=>k.dariPokja) ? `<span style="font-size:0.78rem;color:#3B6D11;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Semua klarifikasi sudah ditanggapi</span>` : ''}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2280,11 +2322,31 @@ function renderSidebar() {
   const nav   = document.getElementById('sidebarNav');
   let html    = '';
   let hasManageSection = false;
+
+  const negoBtn = `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="negosiasi" style="background:linear-gradient(135deg,#1A237E,#283593);color:#fff;border-left:3px solid #0d1660;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-handshake"></i></span><span class="nav-label">Negosiasi Harga</span></a></li>`;
+
   if (currentRole === 'penyedia') {
-    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-upload" data-page="upload"><span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="nav-label">Upload Dokumen</span></a></li><li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="status"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="nav-label">Status Pengajuan</span></a></li><li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Pengaturan Akun</span></a></li>`;
+    const allSubs = getSubmissions();
+    // Penyedia tampil di menu Negosiasi jika:
+    // 1. Saat ini statusnya Lulus / Memenuhi Syarat, ATAU
+    // 2. Sudah ada negoHistory dari spreadsheet (artinya pernah lulus dan nego sudah dimulai)
+    const lulusAny = allSubs.some(s =>
+      currentPenyedia &&
+      (s.namaPerusahaan === currentPenyedia.nama || s.email === currentPenyedia.email || s.npwp === currentPenyedia.npwp) &&
+      (s.reviewStatus === 'Lulus / Memenuhi Syarat' || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0))
+    );
+    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-upload" data-page="upload"><span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="nav-label">Upload Dokumen</span></a></li>`;
+    html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="status"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="nav-label">Status Pengajuan</span></a></li>`;
+    if (lulusAny) html += negoBtn;
+    html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Pengaturan Akun</span></a></li>`;
+  } else if (currentRole === 'pokja') {
+    // Sidebar lengkap untuk Pokja
+    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#0C447C,#185FA5);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Review Dokumen</span></a></li>`;
+    html += negoBtn;
   } else if (currentRole === null) {
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-building"></i></span><span class="nav-label">Login Penyedia</span></a></li><li style="padding:2px 10px 4px;"><a href="#" class="nav-link nav-login-pokja" onclick="event.preventDefault();document.getElementById('pokjaUsername').value='';document.getElementById('pokjaPasswordInput').value='';document.getElementById('errorLoginPokja').textContent='';document.getElementById('loginOverlayPokja').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Login Pokja</span></a></li>`;
   }
+
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
   items.forEach(item => {
     if (item.id === 'upload') return;
@@ -2297,7 +2359,7 @@ function renderSidebar() {
     let iconHtml = item.iconType==='img' && item.iconUrl ? `<img src="${item.iconUrl}" class="custom-nav-icon" alt="${item.label}" />` : `<i class="fa-solid ${item.icon||'fa-circle'}"></i>`;
     html += `<li><a href="#" class="nav-link" data-page="${item.id}"><span class="nav-icon">${iconHtml}</span><span class="nav-label">${item.label}</span></a></li>`;
   });
-  if (currentRole === 'pokja') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout (${getPokjaDisplayName()})</span></a></li>`; }
+  if (currentRole === 'pokja')   { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout (${getPokjaDisplayName()})</span></a></li>`; }
   if (currentRole === 'penyedia') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout</span></a></li>`; }
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px 8px;"><a href="#" class="nav-link nav-panduan" onclick="event.preventDefault();bukaMenuPanduan();"><span class="nav-icon"><i class="fa-solid fa-book-open"></i></span><span class="nav-label">Panduan Penggunaan</span></a></li>`;
   nav.innerHTML = html;
@@ -2324,9 +2386,11 @@ function showPage(pageId) {
   const activeLink = document.querySelector('[data-page="'+pageId+'"]');
   if (activeLink) activeLink.classList.add('active');
   if (pageId === 'upload') updateUploadFormLock();
-  // [FIX] Selalu reload data terbaru dari server saat penyedia buka halaman Status
   if (pageId === 'status' && currentRole === 'penyedia' && currentPenyedia) {
     loadStatusPenyedia();
+  }
+  if (pageId === 'negosiasi') {
+    renderNegosiasiPage();
   }
   window.scrollTo({ top:0, behavior:'smooth' });
   // sync mobile bottom nav
@@ -3082,7 +3146,7 @@ function renderPokjaAccountsTable() {
       : `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.72rem;font-weight:600;"><i class="fa-solid fa-lock-open"></i> Bebas</span>`;
     const passBadge = hasPass
       ? `<span style="color:#2D7D17;font-size:0.78rem;"><i class="fa-solid fa-check-circle"></i> Sudah diset</span>`
-      : `<span style="color:#856404;font-size:0.78rem;"><i class="fa-solid fa-triangle-exclamation"></i> Default (pokja2026)</span>`;
+      : `<span style="color:#856404;font-size:0.78rem;"><i class="fa-solid fa-triangle-exclamation"></i> Belum diset (atur di sheet Akun)</span>`;
     const resetBtn = locked
       ? `<button onclick="resetPokjaLock('${u}')" style="background:#C0392B;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:0.75rem;cursor:pointer;font-weight:600;"><i class="fa-solid fa-unlock"></i> Reset Lock</button>`
       : `<span style="color:var(--gray-400);font-size:0.75rem;">–</span>`;
@@ -3507,27 +3571,45 @@ function renderPokjaTable() {
       </div>`;
 
     // ── Kolom Klarifikasi ──
-    const klarBelumDibalas = klarLog.filter(k => !k.balasan).length;
-    const klarDibalas      = klarLog.filter(k =>  k.balasan).length;
     const klarifikasiColHtml = klarLog.length
       ? `<div style="min-width:160px;max-width:220px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
             <span style="font-size:0.75rem;font-weight:700;color:#856404;white-space:nowrap;"><i class="fa-solid fa-comments"></i> ${klarLog.length} klarifikasi</span>
-            ${klarBelumDibalas ? `<span style="font-size:0.68rem;background:#FDEDEC;color:#C0392B;border-radius:4px;padding:1px 6px;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> ${klarBelumDibalas} belum dijawab</span>` : `<span style="font-size:0.68rem;background:#EAF3DE;color:#2D7D17;border-radius:4px;padding:1px 6px;font-weight:600;"><i class="fa-solid fa-check"></i> Semua dijawab</span>`}
-            <button id="klarToggleBtn-${origIdx}" onclick="toggleKlarDetail(${origIdx})" style="display:inline-flex;align-items:center;gap:4px;background:#FFF8E1;border:1px solid #FFD54F;color:#856404;border-radius:5px;padding:2px 8px;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;" title="Tampilkan/sembunyikan detail">
+            <button id="klarToggleBtn-${origIdx}" onclick="toggleKlarDetail(${origIdx})" style="display:inline-flex;align-items:center;gap:4px;background:#FFF8E1;border:1px solid #FFD54F;color:#856404;border-radius:5px;padding:2px 8px;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.15s;" title="Tampilkan/sembunyikan detail">
               <i id="klarToggleIcon-${origIdx}" class="fa-solid fa-chevron-down"></i> Lihat
             </button>
           </div>
           <div id="klarDetail-${origIdx}" style="display:none;">
             ${klarLog.map((k,ki)=>`
-            <div style="background:${k.balasan?'#F0FFF4':'#FFFDE7'};border:1px solid ${k.balasan?'#B6DBA0':'#FFD54F'};border-left:3px solid ${k.balasan?'#3B6D11':'#856404'};border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
-              <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} · <strong style="color:#856404;">${k.pengirim||'Pokja'}</strong></div>
+            <div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
+              <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''}</div>
               <div style="color:var(--gray-800);margin-bottom:${k.balasan?'4px':'0'};">${k.pesan||''}</div>
-              ${k.balasan ? `<div style="background:#E8F2FF;border-left:2px solid #3B6D11;border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Jawaban${k.balasanOleh ? ' ('+k.balasanOleh+')' : ' Penyedia'}:</strong><br>${k.balasan}${k.balasanTgl?`<br><span style="color:var(--gray-400);font-size:0.67rem;">${k.balasanTgl}</span>`:''}</div>` : `<span style="font-size:0.68rem;color:#856404;font-style:italic;"><i class="fa-solid fa-hourglass-half"></i> Menunggu jawaban penyedia</span>`}
+              ${k.balasan ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan${k.balasanOleh ? ' ('+k.balasanOleh+')' : ' Pokja'}:</strong><br>${k.balasan}</div>` : `<span style="font-size:0.68rem;color:var(--gray-400);font-style:italic;">Belum ditanggapi</span>`}
             </div>`).join('')}
           </div>
+          <div style="display:flex;gap:4px;margin-top:4px;flex-direction:column;">
+            <button onclick="bukaTanggapanKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'">
+              <i class="fa-solid fa-reply"></i> Tanggapan Klarifikasi
+            </button>
+            <button onclick="bukaModalKlarifikasiPokja(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#185FA5;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'">
+              <i class="fa-solid fa-message"></i> Kirim Klarifikasi
+            </button>
+            <button onclick="bukaModalUndanganPembuktianKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#1B5E20;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#145214'" onmouseleave="this.style.background='#1B5E20'">
+              <i class="fa-solid fa-file-signature"></i> Undangan Pembuktian
+            </button>
+          </div>
         </div>`
-      : `<span style="color:var(--gray-400);font-size:0.78rem;font-style:italic;">–</span>`;
+      : `<div style="min-width:140px;">
+          <span style="color:var(--gray-400);font-size:0.75rem;font-style:italic;display:block;margin-bottom:6px;">Belum ada klarifikasi</span>
+          <div style="display:flex;gap:4px;flex-direction:column;">
+            <button onclick="bukaModalKlarifikasiPokja(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#185FA5;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'">
+              <i class="fa-solid fa-message"></i> Kirim Klarifikasi
+            </button>
+            <button onclick="bukaModalUndanganPembuktianKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#1B5E20;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#145214'" onmouseleave="this.style.background='#1B5E20'">
+              <i class="fa-solid fa-file-signature"></i> Undangan Pembuktian
+            </button>
+          </div>
+        </div>`;
 
     return `<tr>
       <td>${rowNum}</td>
@@ -3541,13 +3623,7 @@ function renderPokjaTable() {
       <td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
       <td>${catatanHtml}</td>
       <td>${klarifikasiColHtml}</td>
-      <td><div style="display:flex;flex-direction:column;gap:4px;">
-        <button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>
-        <button class="btn-review" style="background:#856404;border-color:#856404;" onclick="bukaModalKlarifikasi(${origIdx})"><i class="fa-solid fa-message"></i> Klarifikasi</button>
-        ${(d.reviewStatus==='Lulus / Memenuhi Syarat') ? `<button class="btn-review" style="background:#1B5E20;border-color:#1B5E20;" onclick="bukaModalUndangan(${origIdx})"><i class="fa-solid fa-envelope-open-text"></i> Undangan</button><button class="btn-review" style="background:#1A237E;border-color:#1A237E;" onclick="bukaModalNegosiasi(${origIdx})"><i class="fa-solid fa-handshake"></i> Negosiasi</button>` : ''}
-        ${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''}
-        ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}
-      </div></td>
+      <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
     </tr>`;
   }).join('');
   renderPokjaStats();
@@ -4061,86 +4137,163 @@ function batalEditNotifPreview() {
 }
 
 // =================================================================
-// KLARIFIKASI PENYEDIA
+// TANGGAPAN KLARIFIKASI — SISI PENYEDIA
+// (Penyedia hanya bisa membalas klarifikasi yang dikirim Pokja)
 // =================================================================
-let _klarKey = null; // key stabil: npwp||nama + '||' + jenisDok (tahan saat _submissions di-refresh)
+let _klarKey = null;        // key stabil submission
+let _klarSelectedIdx = null; // index klarifikasi Pokja yang dipilih
 
 function bukaModalKlarifikasi(idx) {
   const data = getSubmissions();
   const d    = data[idx];
   if (!d) return;
-  _klarKey = makeSubKey(d); // simpan key stabil, bukan index angka
+  _klarKey = makeSubKey(d);
+  _klarSelectedIdx = null;
+
+  // Info dokumen
   const infoBox = document.getElementById('klarInfoBox');
   infoBox.innerHTML = `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong><br>
-    <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span><br>
-    ${d.catatanPokja ? `<span style="font-size:0.78rem;">Catatan Pokja: <em>${d.catatanPokja}</em></span>` : ''}`;
+    <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span>
+    ${d.catatanPokja ? `<br><span style="font-size:0.78rem;">Catatan Pokja: <em>${d.catatanPokja}</em></span>` : ''}`;
+
+  // Ambil klarifikasi dari Pokja saja
+  const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
+  const pokjaKlars = klarLog.map((k, i) => ({ ...k, _origIdx: i })).filter(k => k.dariPokja);
+
+  const listEl = document.getElementById('klarPokjaList');
+
+  if (!pokjaKlars.length) {
+    listEl.innerHTML = `<div style="background:#FFF3CD;border:1px solid #FFD54F;border-radius:8px;padding:14px 16px;text-align:center;color:#856404;font-size:0.85rem;">
+      <i class="fa-solid fa-inbox" style="font-size:22px;display:block;margin-bottom:8px;opacity:0.6;"></i>
+      <strong>Belum ada klarifikasi dari Pokja</strong><br>
+      <span style="font-size:0.78rem;">Klarifikasi akan muncul di sini apabila Pokja mengirimkan pertanyaan kepada Anda.</span>
+    </div>`;
+    document.getElementById('klarTanggapanSection').style.display = 'none';
+    document.getElementById('btnKirimKlarifikasi').style.display = 'none';
+    document.getElementById('klarMsg').style.display = 'none';
+    document.getElementById('modalKlarifikasi').style.display = 'flex';
+    return;
+  }
+
+  // Render daftar klarifikasi dari Pokja — bisa diklik untuk dipilih
+  listEl.innerHTML = pokjaKlars.map((k, li) => {
+    const sudahDibalas = !!k.balasanPenyedia;
+    const badgeHtml = sudahDibalas
+      ? `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:4px;padding:1px 8px;font-size:0.70rem;font-weight:600;"><i class="fa-solid fa-check"></i> Sudah dibalas</span>`
+      : `<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:4px;padding:1px 8px;font-size:0.70rem;font-weight:600;"><i class="fa-solid fa-hourglass-half"></i> Belum dibalas</span>`;
+    return `<div id="klarPokjaItem-${li}" onclick="pilihKlarifikasiPokja(${li})"
+      style="background:#E3F2FD;border:2px solid #90CAF9;border-radius:8px;padding:10px 14px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+        <div style="font-size:0.72rem;color:#1565C0;font-weight:700;"><i class="fa-solid fa-shield-halved"></i> Pokja &nbsp;·&nbsp; <i class="fa-solid fa-clock"></i> ${k.tgl||'-'}</div>
+        ${badgeHtml}
+      </div>
+      <div style="font-size:0.82rem;color:var(--gray-800);line-height:1.5;">${k.pesan||''}</div>
+      ${sudahDibalas ? `<div style="background:white;border:1px solid #B6DBA0;border-left:3px solid #3B6D11;border-radius:5px;padding:6px 10px;margin-top:8px;font-size:0.78rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Balasan Anda:</strong> ${k.balasanPenyedia}</div>` : `<div style="font-size:0.75rem;color:#185FA5;font-weight:600;margin-top:6px;"><i class="fa-solid fa-hand-pointer"></i> Klik untuk membalas klarifikasi ini</div>`}
+    </div>`;
+  }).join('');
+
+  // Simpan data untuk diakses saat pilih
+  listEl._pokjaKlars = pokjaKlars;
+
+  document.getElementById('klarTanggapanSection').style.display = 'none';
+  document.getElementById('btnKirimKlarifikasi').style.display = 'none';
   document.getElementById('klarPesan').value = '';
-  const msgEl = document.getElementById('klarMsg');
-  msgEl.style.display = 'none';
+  document.getElementById('klarMsg').style.display = 'none';
   document.getElementById('modalKlarifikasi').style.display = 'flex';
+}
+
+function pilihKlarifikasiPokja(li) {
+  const listEl = document.getElementById('klarPokjaList');
+  const pokjaKlars = listEl._pokjaKlars;
+  if (!pokjaKlars || !pokjaKlars[li]) return;
+
+  _klarSelectedIdx = pokjaKlars[li]._origIdx;
+
+  // Highlight item terpilih
+  listEl.querySelectorAll('[id^="klarPokjaItem-"]').forEach((el, i) => {
+    el.style.borderColor  = i === li ? '#185FA5' : '#90CAF9';
+    el.style.background   = i === li ? '#C9E4FA' : '#E3F2FD';
+    el.style.boxShadow    = i === li ? '0 0 0 2px rgba(24,95,165,0.18)' : '';
+  });
+
+  // Tampilkan preview klarifikasi yang dipilih
+  document.getElementById('klarSelectedPreview').textContent = pokjaKlars[li].pesan || '';
+
+  // Tampilkan section tanggapan dan isi ulang jika sudah ada balasan sebelumnya
+  const section = document.getElementById('klarTanggapanSection');
+  section.style.display = 'block';
+  document.getElementById('klarPesan').value = pokjaKlars[li].balasanPenyedia || '';
+  document.getElementById('btnKirimKlarifikasi').style.display = 'inline-flex';
+  document.getElementById('klarMsg').style.display = 'none';
 }
 
 function tutupModalKlarifikasi() {
   document.getElementById('modalKlarifikasi').style.display = 'none';
   _klarKey = null;
+  _klarSelectedIdx = null;
 }
 
 async function kirimKlarifikasi() {
-  if (!_klarKey) return;
-  // Resolve index dari key stabil – aman meski _submissions sudah di-refresh
+  if (!_klarKey || _klarSelectedIdx === null) return;
   const resolvedIdx = findIdxByKey(_klarKey);
   if (resolvedIdx < 0) return;
+
   const pesan = document.getElementById('klarPesan').value.trim();
   const msgEl = document.getElementById('klarMsg');
   if (!pesan) {
-    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Pesan klarifikasi tidak boleh kosong.';
+    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-top:6px;';
+    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Tanggapan tidak boleh kosong.';
     return;
   }
+
   const btn = document.getElementById('btnKirimKlarifikasi');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
 
   const data = getSubmissions();
   const d    = data[resolvedIdx];
-  if (!d) { btn.disabled=false; return; }
+  if (!d) { btn.disabled = false; return; }
 
   const tglNow   = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const pengirim = currentPokjaUser ? currentPokjaUser.toUpperCase() : 'Pokja';
+  const pengirim = currentPenyedia?.nama || d.namaPerusahaan || 'Penyedia';
 
-  // Update data lokal agar tampilan langsung segar
+  // Update field balasanPenyedia pada klarifikasi yang dipilih
   if (!Array.isArray(d.klarifikasiLog)) d.klarifikasiLog = [];
-  d.klarifikasiLog.push({ tgl: tglNow, pesan: pesan, pengirim: pengirim });
+  if (d.klarifikasiLog[_klarSelectedIdx]) {
+    d.klarifikasiLog[_klarSelectedIdx].balasanPenyedia    = pesan;
+    d.klarifikasiLog[_klarSelectedIdx].balasanPenyediaTgl = tglNow;
+    d.klarifikasiLog[_klarSelectedIdx].balasanPenyediaOleh = pengirim;
+  }
 
   try {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        action:         'kirimKlarifikasi',
-        namaPerusahaan: d.namaPerusahaan,
-        npwp:           d.npwp,
-        pesan:          pesan,
-        tgl:            tglNow,
-        pengirim:       pengirim,
+        action:           'tanggapanKlarifikasiPenyedia',
+        namaPerusahaan:   d.namaPerusahaan,
+        npwp:             d.npwp,
+        klarIdx:          _klarSelectedIdx,
+        balasanPenyedia:  pesan,
+        balasanPenyediaTgl: tglNow,
+        balasanPenyediaOleh: pengirim,
       })
     });
   } catch(e) {}
 
-  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Klarifikasi berhasil dikirim!</strong> Pokja akan segera merespons.';
+  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-top:6px;';
+  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Tanggapan berhasil dikirim kepada Pokja!</strong>';
   btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi';
+  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Tanggapan';
 
-  // Tutup modal dan tampilkan toast
   setTimeout(() => {
     tutupModalKlarifikasi();
-    showToast('Klarifikasi Berhasil Dikirim', 'Pokja akan segera merespons pesan Anda.', 'success', 4000);
+    showToast('Tanggapan Terkirim', 'Balasan klarifikasi Anda telah disampaikan kepada Pokja.', 'success', 4000);
     loadStatusPenyedia();
-  }, 600);
+  }, 700);
 }
 
-// Klik di luar modal klarifikasi → tutup
+// Klik di luar modal → tutup
 document.getElementById('modalKlarifikasi').addEventListener('click', function(e) {
   if (e.target === this) tutupModalKlarifikasi();
 });
@@ -4260,200 +4413,6 @@ async function kirimTanggapanKlarifikasi() {
 
 document.getElementById('modalTanggapan').addEventListener('click', function(e) {
   if (e.target === this) tutupTanggapanKlarifikasi();
-});
-
-// =================================================================
-// UNDANGAN PEMBUKTIAN KUALIFIKASI
-// =================================================================
-let _undanganKey = null;
-
-function bukaModalUndangan(idx) {
-  const data = getSubmissions();
-  const d    = data[idx];
-  if (!d) return;
-  _undanganKey = makeSubKey(d);
-  document.getElementById('undanganInfoBox').innerHTML =
-    `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br>
-     <span style="font-size:0.78rem;">Status: ✅ Lulus / Memenuhi Syarat</span>`;
-  // Isi ulang dari data jika sudah ada undangan sebelumnya
-  const prev = d.undanganPembuktian || {};
-  document.getElementById('undanganTanggal').value = prev.tanggal || '';
-  document.getElementById('undanganLokasi').value  = prev.lokasi  || '';
-  document.getElementById('undanganPesan').value   = prev.pesan   || '';
-  document.getElementById('undanganMsg').style.display = 'none';
-  document.getElementById('modalUndangan').style.display = 'flex';
-}
-
-function tutupModalUndangan() {
-  document.getElementById('modalUndangan').style.display = 'none';
-  _undanganKey = null;
-}
-
-async function kirimUndanganPembuktian() {
-  if (!_undanganKey) return;
-  const resolvedIdx = findIdxByKey(_undanganKey);
-  if (resolvedIdx < 0) return;
-  const tanggal = document.getElementById('undanganTanggal').value.trim();
-  const lokasi  = document.getElementById('undanganLokasi').value.trim();
-  const pesan   = document.getElementById('undanganPesan').value.trim();
-  const msgEl   = document.getElementById('undanganMsg');
-  if (!pesan) {
-    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Pesan undangan tidak boleh kosong.';
-    return;
-  }
-  const btn = document.getElementById('btnKirimUndangan');
-  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
-  const data = getSubmissions();
-  const d    = data[resolvedIdx];
-  if (!d) { btn.disabled=false; return; }
-  const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  d.undanganPembuktian = { tanggal, lokasi, pesan, dikirimOleh: currentPokjaUser||'pokja', dikirimTgl: tglNow };
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'undanganPembuktian', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, tanggal, lokasi, pesan, dikirimOleh:currentPokjaUser||'pokja', dikirimTgl:tglNow })
-    });
-  } catch(e) {}
-  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;';
-  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Undangan berhasil dikirim!</strong>';
-  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Undangan';
-  setTimeout(() => {
-    tutupModalUndangan();
-    showToast('Undangan Terkirim', `Undangan Pembuktian Kualifikasi untuk ${d.namaPerusahaan||'-'} berhasil dikirim.`, 'success', 4000);
-    renderPokjaTable();
-    loadStatusPenyedia();
-  }, 700);
-}
-
-document.getElementById('modalUndangan').addEventListener('click', function(e) {
-  if (e.target === this) tutupModalUndangan();
-});
-
-// =================================================================
-// NEGOSIASI HARGA
-// =================================================================
-let _negoKey   = null;
-let _negoRows  = [];
-
-function bukaModalNegosiasi(idx) {
-  const data = getSubmissions();
-  const d    = data[idx];
-  if (!d) return;
-  _negoKey = makeSubKey(d);
-  document.getElementById('negoNamaPerusahaan').textContent = d.namaPerusahaan || '';
-  document.getElementById('negoInfoBox').innerHTML =
-    `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'} &nbsp;|&nbsp; Kontak: ${d.email||d.telp||'-'}`;
-  // Load existing rows or start with 3 empty rows
-  const saved = d.negosiasi;
-  _negoRows = (saved && Array.isArray(saved.baris) && saved.baris.length) ? saved.baris.map(r=>({...r})) : [negoEmptyRow(),negoEmptyRow(),negoEmptyRow()];
-  document.getElementById('negoCatatan').value = (saved && saved.catatan) || '';
-  document.getElementById('negoMsg').style.display = 'none';
-  renderNegoTable();
-  document.getElementById('modalNegosiasi').style.display = 'flex';
-}
-
-function tutupModalNegosiasi() {
-  document.getElementById('modalNegosiasi').style.display = 'none';
-  _negoKey = null; _negoRows = [];
-}
-
-function negoEmptyRow() {
-  return { uraian:'', satuan:'', vol:'', harga:'', pajak:'', keterangan:'' };
-}
-
-function negoTambahBaris() {
-  _negoRows.push(negoEmptyRow());
-  renderNegoTable();
-}
-
-function negoHapusBaris(i) {
-  _negoRows.splice(i, 1);
-  if (!_negoRows.length) _negoRows.push(negoEmptyRow());
-  renderNegoTable();
-}
-
-function negoUpdateField(i, field, val) {
-  if (!_negoRows[i]) return;
-  _negoRows[i][field] = val;
-  // Recalculate total for this row
-  const harga  = parseFloat(String(_negoRows[i].harga).replace(/[^0-9.]/g,''))||0;
-  const vol    = parseFloat(String(_negoRows[i].vol).replace(/[^0-9.]/g,''))||0;
-  const pajak  = parseFloat(String(_negoRows[i].pajak).replace(/[^0-9.]/g,''))||0;
-  const subtot = harga * vol;
-  const total  = subtot + (subtot * pajak / 100);
-  _negoRows[i]._total = total;
-  // Update display
-  const totalEl = document.getElementById(`negoRowTotal_${i}`);
-  if (totalEl) totalEl.textContent = total > 0 ? formatRp(total) : '';
-  updateNegoGrandTotal();
-}
-
-function updateNegoGrandTotal() {
-  const grand = _negoRows.reduce((s,r)=>(s + (r._total||0)), 0);
-  const el = document.getElementById('negoGrandTotal');
-  if (el) el.textContent = grand > 0 ? formatRp(grand) : 'Rp 0';
-}
-
-function formatRp(n) {
-  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
-}
-
-function renderNegoTable() {
-  const tbody = document.getElementById('negoTbody');
-  if (!tbody) return;
-  tbody.innerHTML = _negoRows.map((r, i) => {
-    const harga = parseFloat(String(r.harga).replace(/[^0-9.]/g,''))||0;
-    const vol   = parseFloat(String(r.vol).replace(/[^0-9.]/g,''))||0;
-    const pajak = parseFloat(String(r.pajak).replace(/[^0-9.]/g,''))||0;
-    const subtot = harga * vol;
-    const total  = subtot + (subtot * pajak / 100);
-    _negoRows[i]._total = total;
-    const inputStyle = 'width:100%;padding:5px 7px;border:1px solid var(--gray-200);border-radius:5px;font-size:0.80rem;font-family:inherit;outline:none;background:white;';
-    return `<tr style="border-bottom:1px solid var(--gray-100);">
-      <td style="padding:6px 8px;text-align:center;color:var(--gray-400);font-size:0.78rem;">${i+1}</td>
-      <td style="padding:5px 6px;"><input type="text" value="${r.uraian||''}" oninput="negoUpdateField(${i},'uraian',this.value)" placeholder="Nama barang/jasa…" style="${inputStyle}" /></td>
-      <td style="padding:5px 6px;"><input type="text" value="${r.satuan||''}" oninput="negoUpdateField(${i},'satuan',this.value)" placeholder="Unit…" style="${inputStyle}max-width:80px;" /></td>
-      <td style="padding:5px 6px;"><input type="number" value="${r.vol||''}" oninput="negoUpdateField(${i},'vol',this.value)" placeholder="0" style="${inputStyle}text-align:center;max-width:70px;" /></td>
-      <td style="padding:5px 6px;"><input type="number" value="${r.harga||''}" oninput="negoUpdateField(${i},'harga',this.value)" placeholder="0" style="${inputStyle}text-align:right;" /></td>
-      <td style="padding:5px 6px;"><input type="number" value="${r.pajak||''}" oninput="negoUpdateField(${i},'pajak',this.value)" placeholder="0" style="${inputStyle}text-align:center;max-width:70px;" /></td>
-      <td id="negoRowTotal_${i}" style="padding:6px 8px;text-align:right;font-weight:600;color:#1A237E;font-size:0.80rem;white-space:nowrap;">${total>0?formatRp(total):''}</td>
-      <td style="padding:5px 6px;"><input type="text" value="${r.keterangan||''}" oninput="negoUpdateField(${i},'keterangan',this.value)" placeholder="Opsional…" style="${inputStyle}" /></td>
-      <td style="padding:5px 8px;text-align:center;"><button onclick="negoHapusBaris(${i})" style="background:#FDEDEC;color:#C0392B;border:1px solid #F5B7B1;border-radius:5px;padding:3px 8px;cursor:pointer;font-size:12px;" title="Hapus baris">✕</button></td>
-    </tr>`;
-  }).join('');
-  updateNegoGrandTotal();
-}
-
-async function simpanNegosiasi() {
-  if (!_negoKey) return;
-  const resolvedIdx = findIdxByKey(_negoKey);
-  if (resolvedIdx < 0) return;
-  const catatan = document.getElementById('negoCatatan').value.trim();
-  const btn = document.getElementById('btnSimpanNegosiasi');
-  const msgEl = document.getElementById('negoMsg');
-  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…';
-  const data = getSubmissions();
-  const d    = data[resolvedIdx];
-  if (!d) { btn.disabled=false; return; }
-  const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const grand  = _negoRows.reduce((s,r)=>(s+(r._total||0)),0);
-  const barisBersih = _negoRows.map(({uraian,satuan,vol,harga,pajak,keterangan,_total})=>({uraian,satuan,vol,harga,pajak,keterangan,total:_total||0}));
-  d.negosiasi = { baris: barisBersih, catatan, grandTotal: grand, diisioOleh: currentPokjaUser||'pokja', tanggal: tglNow };
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'simpanNegosiasi', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, negosiasi: d.negosiasi })
-    });
-  } catch(e) {}
-  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;';
-  msgEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Negosiasi berhasil disimpan!</strong> Grand total: ${formatRp(grand)}`;
-  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Negosiasi';
-  setTimeout(() => { showToast('Negosiasi Tersimpan', `Data negosiasi ${d.namaPerusahaan||'-'} berhasil disimpan.`, 'success', 4000); }, 500);
-}
-
-document.getElementById('modalNegosiasi').addEventListener('click', function(e) {
-  if (e.target === this) tutupModalNegosiasi();
 });
 
 // =================================================================
@@ -4649,83 +4608,919 @@ function updateDataTimestamp() {
 })();
 
 // =================================================================
-// PENYEDIA: BALAS KLARIFIKASI DARI POKJA
+// NEGOSIASI PAGE
 // =================================================================
-let _balasKlarIdx    = null; // submission index
-let _balasKlarItemIdx = null; // klarifikasi item index
+let _negoKey  = null;
+let _negoRows = [];
 
-function bukaBalasKlarifikasi(subIdx, klarItemIdx) {
-  const data = getSubmissions();
-  const d    = data[subIdx];
-  if (!d) return;
-  _balasKlarIdx     = subIdx;
-  _balasKlarItemIdx = klarItemIdx;
-  const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
-  const k       = klarLog[klarItemIdx];
-  if (!k) return;
-  document.getElementById('balasKlarInfoBox').innerHTML =
-    `<strong><i class="fa-solid fa-shield-halved" style="color:#856404;"></i> Klarifikasi dari ${k.pengirim||'Pokja'}</strong><br>
-     <span style="font-size:0.82rem;color:var(--gray-700);">${k.pesan||''}</span>
-     <br><span style="font-size:0.70rem;color:var(--gray-400);"><i class="fa-solid fa-clock"></i> ${k.tgl||''}</span>`;
-  document.getElementById('balasKlarPesan').value = '';
-  document.getElementById('balasKlarMsg').style.display = 'none';
-  document.getElementById('modalBalasKlar').style.display = 'flex';
+function formatRp(n) {
+  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
 }
 
-function tutupBalasKlar() {
-  document.getElementById('modalBalasKlar').style.display = 'none';
-  _balasKlarIdx = null; _balasKlarItemIdx = null;
+function negoEmptyRow() {
+  return { uraian:'', satuan:'', vol:'', harga:'', pajak:'', keterangan:'', _total:0 };
 }
 
-async function kirimBalasKlarifikasi() {
-  if (_balasKlarIdx === null || _balasKlarItemIdx === null) return;
-  const pesan = document.getElementById('balasKlarPesan').value.trim();
-  const msgEl = document.getElementById('balasKlarMsg');
-  if (!pesan) {
-    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:9px 13px;font-size:0.83rem;margin-top:10px;';
-    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Pesan jawaban tidak boleh kosong.';
+function renderNegosiasiPage() {
+  const wrap = document.getElementById('negosiasiPageContent');
+  if (!wrap) return;
+
+  const all = getSubmissions();
+
+  // ── Filter: hanya Lulus / Memenuhi Syarat ──
+  // Untuk Pokja: semua penyedia lulus
+  // Untuk Penyedia: hanya yang milik penyedia ini
+  let lulusList = all.filter(s => s.reviewStatus === 'Lulus / Memenuhi Syarat');
+  if (currentRole === 'penyedia' && currentPenyedia) {
+    // Penyedia: ambil juga data yang pernah lulus (meski status sudah berubah di loop refresh)
+    // Tampilkan semua milik penyedia ini yang pernah memiliki negoHistory
+    lulusList = all.filter(s => {
+      const milik = s.namaPerusahaan === currentPenyedia.nama ||
+                    s.email === currentPenyedia.email ||
+                    s.npwp  === currentPenyedia.npwp;
+      const lulus = s.reviewStatus === 'Lulus / Memenuhi Syarat';
+      const adaNego = s.negoHistory && s.negoHistory.length > 0;
+      return milik && (lulus || adaNego);
+    });
+  }
+
+  // Deduplicate by perusahaan (latest per company)
+  const byPerusahaan = {};
+  lulusList.forEach(s => {
+    const key = s.npwp || s.namaPerusahaan;
+    if (!byPerusahaan[key] || (s.tanggal||'') > (byPerusahaan[key].tanggal||'')) {
+      byPerusahaan[key] = s;
+    }
+  });
+  const pesertaLulus = Object.values(byPerusahaan);
+
+  const isPokja    = currentRole === 'pokja';
+  const isPenyedia = currentRole === 'penyedia';
+
+  if (!pesertaLulus.length) {
+    wrap.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
+      <i class="fa-solid fa-handshake" style="font-size:48px;display:block;margin-bottom:16px;opacity:0.3;"></i>
+      <p style="font-size:0.92rem;font-weight:600;">${isPenyedia ? 'Anda belum memiliki dokumen berstatus Lulus / Memenuhi Syarat.' : 'Belum ada penyedia yang Lulus / Memenuhi Syarat.'}</p>
+      <p style="font-size:0.82rem;margin-top:6px;">Tahap negosiasi akan tersedia setelah proses review selesai.</p>
+    </div>`;
     return;
   }
-  const btn = document.getElementById('btnKirimBalasKlar');
+
+  const cards = pesertaLulus.map((s, i) => {
+    const origIdx    = all.indexOf(s);
+    const negoHistory = Array.isArray(s.negoHistory) ? s.negoHistory : [];
+    // Tampilkan round terbaru di depan
+    const nego       = negoHistory.length ? negoHistory[negoHistory.length - 1].data : (s.negosiasi || null);
+    const hasNego    = nego && Array.isArray(nego.baris) && nego.baris.length;
+    const grandTotal = hasNego ? nego.grandTotal || nego.baris.reduce((sum,r)=>(sum+(r.total||0)),0) : 0;
+    const tglNego    = hasNego ? nego.tanggal || '' : '';
+    const undangan   = s.undanganPembuktian;
+
+    const negoStatus = hasNego
+      ? `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-check-circle"></i> Data Tersimpan</span>`
+      : `<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-clock"></i> Belum Ada Data</span>`;
+
+    // ─── BLOK PENYEDIA ───
+    // Tabel rincian nego terbaru + kolom Harga/Biaya Nego penyedia
+    // Di bawahnya: histori semua round sebelumnya
+    let negoViewBlock = '';
+
+    if (isPenyedia) {
+      if (!hasNego) {
+        negoViewBlock = `<div style="margin-top:12px;background:#FFF8E1;border:1px solid #FFD54F;border-radius:7px;padding:10px 14px;font-size:0.82rem;color:#856404;">
+          <i class="fa-solid fa-hourglass-half"></i> Menunggu Pokja mengisi rincian negosiasi untuk Anda.
+        </div>`;
+      } else {
+        // Tawaran penyedia terakhir (dari round ini)
+        const tawaranList = Array.isArray(nego.tawaranPenyedia) ? nego.tawaranPenyedia : [];
+        const tawaranTerakhir = tawaranList.length ? tawaranList[tawaranList.length - 1] : null;
+        const sudahKirimTawaran = !!tawaranTerakhir;
+
+        const tabelTerbaru = `
+          <div style="margin-top:14px;border-top:1px solid var(--gray-100);padding-top:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+              <div style="font-size:0.82rem;font-weight:700;color:#1A237E;">
+                <i class="fa-solid fa-table-list"></i> Rincian Negosiasi
+                ${negoHistory.length > 1 ? `<span style="background:#E8EAF6;color:#1A237E;border-radius:4px;padding:1px 8px;font-size:0.72rem;font-weight:600;margin-left:6px;">Round ${negoHistory.length}</span>` : ''}
+              </div>
+              ${tglNego ? `<span style="font-size:0.71rem;color:var(--gray-400);"><i class="fa-solid fa-clock"></i> ${tglNego}</span>` : ''}
+            </div>
+            <div style="overflow-x:auto;border-radius:7px;border:1px solid #C5CAE9;">
+              <table style="width:100%;border-collapse:collapse;font-size:0.78rem;min-width:580px;">
+                <thead><tr style="background:#1A237E;color:white;">
+                  <th style="padding:7px 8px;text-align:left;">#</th>
+                  <th style="padding:7px 8px;text-align:left;">Jenis Barang/Jasa</th>
+                  <th style="padding:7px 8px;">Satuan</th>
+                  <th style="padding:7px 8px;text-align:center;">Vol</th>
+                  <th style="padding:7px 8px;text-align:right;">Harga/Biaya (Pokja)</th>
+                  <th style="padding:7px 8px;text-align:right;background:#1B5E20;">Harga/Biaya Nego (Anda)</th>
+                  <th style="padding:7px 8px;text-align:center;">Pajak (%)</th>
+                  <th style="padding:7px 8px;text-align:right;">Total</th>
+                  <th style="padding:7px 8px;text-align:left;">Keterangan</th>
+                </tr></thead>
+                <tbody>${nego.baris.map((r,ri)=>`<tr style="border-bottom:1px solid #E8EAF6;background:${ri%2===0?'white':'#F8F9FF'};">
+                  <td style="padding:6px 8px;color:var(--gray-400);">${ri+1}</td>
+                  <td style="padding:6px 8px;font-weight:500;">${r.uraian||'-'}</td>
+                  <td style="padding:6px 8px;text-align:center;">${r.satuan||'-'}</td>
+                  <td style="padding:6px 8px;text-align:center;">${r.vol||'-'}</td>
+                  <td style="padding:6px 8px;text-align:right;">${r.harga?formatRp(parseFloat(r.harga)||0):'-'}</td>
+                  <td style="padding:6px 8px;text-align:right;background:#F1F8E9;font-weight:600;color:#2D7D17;">${sudahKirimTawaran&&tawaranTerakhir.hargaPerBaris&&tawaranTerakhir.hargaPerBaris[ri]!==undefined ? formatRp(parseFloat(tawaranTerakhir.hargaPerBaris[ri])||0) : '<span style="color:#ccc;font-style:italic;">—</span>'}</td>
+                  <td style="padding:6px 8px;text-align:center;">${r.pajak||0}%</td>
+                  <td style="padding:6px 8px;text-align:right;font-weight:600;color:#1A237E;">${r.total?formatRp(r.total):'-'}</td>
+                  <td style="padding:6px 8px;color:var(--gray-600);">${r.keterangan||''}</td>
+                </tr>`).join('')}</tbody>
+                <tfoot><tr style="background:#E8EAF6;font-weight:700;">
+                  <td colspan="7" style="padding:8px 10px;text-align:right;color:#1A237E;">TOTAL KESELURUHAN</td>
+                  <td style="padding:8px 10px;text-align:right;color:#1A237E;">${formatRp(grandTotal)}</td>
+                  <td></td>
+                </tr></tfoot>
+              </table>
+            </div>
+            ${nego.catatan?`<div style="margin-top:8px;background:#E8EAF6;border-radius:6px;padding:8px 12px;font-size:0.80rem;color:#1A237E;"><i class="fa-solid fa-comment-dots"></i> <strong>Catatan Pokja:</strong> ${nego.catatan}</div>`:''}
+
+            <!-- Form Input Harga Nego Penyedia -->
+            <div style="margin-top:12px;background:#F1F8E9;border:1px solid #C8E6C9;border-left:4px solid #2D7D17;border-radius:8px;padding:12px 14px;">
+              <div style="font-size:0.82rem;font-weight:700;color:#2D7D17;margin-bottom:8px;"><i class="fa-solid fa-pen-to-square"></i> Ajukan Harga Nego Anda</div>
+              ${sudahKirimTawaran ? `
+                <div style="background:#EAF3DE;border:1px solid #B6DBA0;border-radius:6px;padding:8px 12px;font-size:0.81rem;color:#2D7D17;margin-bottom:8px;">
+                  <i class="fa-solid fa-circle-check"></i> <strong>Tawaran terkirim:</strong>
+                  Total: <strong>${formatRp(tawaranTerakhir.totalTawaran||tawaranTerakhir.harga||0)}</strong>
+                  · ${tawaranTerakhir.tgl||''}
+                  ${tawaranTerakhir.catatan?`<br><em style="color:var(--gray-600);">"${tawaranTerakhir.catatan}"</em>`:''}
+                </div>` : ''}
+              <div id="negoFormPenyedia_${origIdx}" style="${sudahKirimTawaran?'display:none;':''}">
+                <div style="overflow-x:auto;margin-bottom:8px;border-radius:6px;border:1px solid #C8E6C9;">
+                  <table style="width:100%;border-collapse:collapse;font-size:0.79rem;min-width:400px;">
+                    <thead><tr style="background:#2D7D17;color:white;">
+                      <th style="padding:6px 8px;">#</th>
+                      <th style="padding:6px 8px;text-align:left;">Uraian</th>
+                      <th style="padding:6px 8px;text-align:right;">Harga Pokja</th>
+                      <th style="padding:6px 8px;text-align:right;">Tawaran Anda (Rp)</th>
+                    </tr></thead>
+                    <tbody>${nego.baris.map((r,ri)=>`<tr style="background:${ri%2===0?'white':'#F9FBE7'};">
+                      <td style="padding:5px 8px;text-align:center;color:var(--gray-400);">${ri+1}</td>
+                      <td style="padding:5px 8px;">${r.uraian||'-'} <span style="color:var(--gray-400);font-size:0.72rem;">× ${r.vol||1} ${r.satuan||''}</span></td>
+                      <td style="padding:5px 8px;text-align:right;color:#1A237E;">${r.harga?formatRp(parseFloat(r.harga)||0):'-'}</td>
+                      <td style="padding:5px 8px;"><input type="number" id="tawarBaris_${origIdx}_${ri}" placeholder="${r.harga||0}" style="width:100%;padding:4px 7px;border:1px solid #A5D6A7;border-radius:5px;font-size:0.79rem;text-align:right;outline:none;" oninput="hitungTotalTawaranPenyedia(${origIdx},${nego.baris.length})" /></td>
+                    </tr>`).join('')}</tbody>
+                    <tfoot><tr style="background:#C8E6C9;font-weight:700;">
+                      <td colspan="3" style="padding:7px 8px;text-align:right;color:#2D7D17;">TOTAL TAWARAN ANDA</td>
+                      <td id="totalTawaranPenyedia_${origIdx}" style="padding:7px 8px;text-align:right;color:#2D7D17;">Rp 0</td>
+                    </tr></tfoot>
+                  </table>
+                </div>
+                <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+                  <div style="flex:1;min-width:200px;">
+                    <label style="font-size:0.78rem;font-weight:600;color:#2D7D17;display:block;margin-bottom:3px;"><i class="fa-solid fa-comment-dots"></i> Catatan (opsional)</label>
+                    <input type="text" id="tawarCatatan_${origIdx}" placeholder="Misal: sudah termasuk biaya transport…" style="width:100%;padding:6px 10px;border:1px solid #A5D6A7;border-radius:6px;font-size:0.80rem;outline:none;" />
+                  </div>
+                  <button onclick="kirimHargaNegoPenyedia(${origIdx})" style="display:inline-flex;align-items:center;gap:6px;background:#2D7D17;color:white;border:none;border-radius:7px;padding:8px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Tawaran
+                  </button>
+                </div>
+              </div>
+              ${sudahKirimTawaran ? `<button onclick="document.getElementById('negoFormPenyedia_${origIdx}').style.display='block';this.style.display='none';" style="background:#F1F8E9;border:1px solid #A5D6A7;color:#2D7D17;border-radius:6px;padding:5px 14px;font-size:0.79rem;cursor:pointer;margin-top:6px;"><i class="fa-solid fa-pen"></i> Ubah Tawaran</button>` : ''}
+            </div>
+          </div>`;
+
+        const historiRounds = negoHistory.slice(0, -1).reverse().map((nh) => {
+          const hd = nh.data;
+          const hTotal = hd.grandTotal || (Array.isArray(hd.baris) ? hd.baris.reduce((s,r)=>s+(r.total||0),0) : 0);
+          const hTawaran = Array.isArray(hd.tawaranPenyedia) && hd.tawaranPenyedia.length
+            ? hd.tawaranPenyedia[hd.tawaranPenyedia.length-1] : null;
+          return `<div style="margin-top:6px;background:#F8F9FA;border:1px solid var(--gray-200);border-left:4px solid #9E9E9E;border-radius:7px;padding:10px 14px;font-size:0.79rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+              <span style="font-weight:700;color:var(--gray-600);"><i class="fa-solid fa-clock-rotate-left"></i> Round ${nh.round}</span>
+              <span style="color:var(--gray-400);font-size:0.71rem;">${hd.tanggal||''}</span>
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+              <span><i class="fa-solid fa-coins" style="color:#1A237E;"></i> Total Pokja: <strong style="color:#1A237E;">${formatRp(hTotal)}</strong></span>
+              ${hTawaran ? `<span><i class="fa-solid fa-handshake" style="color:#2D7D17;"></i> Tawaran Anda: <strong style="color:#2D7D17;">${formatRp(hTawaran.totalTawaran||hTawaran.harga||0)}</strong></span>` : '<span style="color:#856404;"><i class="fa-solid fa-hourglass-half"></i> Belum ada tawaran</span>'}
+            </div>
+            ${hd.catatan?`<div style="margin-top:5px;color:var(--gray-600);"><em>"${hd.catatan}"</em></div>`:''}
+          </div>`;
+        }).join('');
+
+        const historiWrapper = historiRounds ? `
+          <div style="margin-top:12px;">
+            <button id="histNegoBtn_${origIdx}" onclick="toggleHistoriNego('${origIdx}')" style="display:inline-flex;align-items:center;gap:6px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-700);border-radius:7px;padding:5px 13px;font-size:0.79rem;font-weight:600;cursor:pointer;margin-bottom:8px;">
+              <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Round Sebelumnya (${negoHistory.length - 1})
+            </button>
+            <div id="histNegoPanel_${origIdx}" style="display:none;">${historiRounds}</div>
+          </div>` : '';
+
+        negoViewBlock = tabelTerbaru + historiWrapper;
+      }
+
+    } else {
+      // ─── BLOK POKJA ─── tampilkan rincian + tawaran penyedia
+      negoViewBlock = hasNego ? `
+        <div style="margin-top:14px;border-top:1px solid var(--gray-100);padding-top:12px;">
+          <div style="font-size:0.82rem;font-weight:700;color:#1A237E;margin-bottom:8px;"><i class="fa-solid fa-table-list"></i> Rincian Negosiasi Terbaru ${negoHistory.length > 1 ? `<span style="background:#E8EAF6;color:#1A237E;border-radius:4px;padding:1px 8px;font-size:0.72rem;">Round ${negoHistory.length}</span>` : ''}</div>
+          <div style="overflow-x:auto;border-radius:7px;border:1px solid #C5CAE9;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.78rem;min-width:560px;">
+              <thead><tr style="background:#1A237E;color:white;">
+                <th style="padding:7px 8px;text-align:left;">#</th>
+                <th style="padding:7px 8px;text-align:left;">Jenis Barang/Jasa</th>
+                <th style="padding:7px 8px;">Satuan</th>
+                <th style="padding:7px 8px;text-align:center;">Vol</th>
+                <th style="padding:7px 8px;text-align:right;">Harga/Biaya</th>
+                <th style="padding:7px 8px;text-align:center;">Pajak (%)</th>
+                <th style="padding:7px 8px;text-align:right;">Total</th>
+                <th style="padding:7px 8px;text-align:left;">Keterangan</th>
+              </tr></thead>
+              <tbody>${nego.baris.map((r,ri)=>`<tr style="border-bottom:1px solid #E8EAF6;background:${ri%2===0?'white':'#F8F9FF'};">
+                <td style="padding:6px 8px;color:var(--gray-400);">${ri+1}</td>
+                <td style="padding:6px 8px;font-weight:500;">${r.uraian||'-'}</td>
+                <td style="padding:6px 8px;text-align:center;">${r.satuan||'-'}</td>
+                <td style="padding:6px 8px;text-align:center;">${r.vol||'-'}</td>
+                <td style="padding:6px 8px;text-align:right;">${r.harga?formatRp(parseFloat(r.harga)||0):'-'}</td>
+                <td style="padding:6px 8px;text-align:center;">${r.pajak||0}%</td>
+                <td style="padding:6px 8px;text-align:right;font-weight:600;color:#1A237E;">${r.total?formatRp(r.total):'-'}</td>
+                <td style="padding:6px 8px;color:var(--gray-600);">${r.keterangan||''}</td>
+              </tr>`).join('')}</tbody>
+              <tfoot><tr style="background:#E8EAF6;font-weight:700;">
+                <td colspan="6" style="padding:8px 10px;text-align:right;color:#1A237E;">TOTAL KESELURUHAN</td>
+                <td style="padding:8px 10px;text-align:right;color:#1A237E;">${formatRp(grandTotal)}</td>
+                <td></td>
+              </tr></tfoot>
+            </table>
+          </div>
+          ${nego.catatan?`<div style="margin-top:8px;background:#E8EAF6;border-radius:6px;padding:8px 12px;font-size:0.80rem;color:#1A237E;"><i class="fa-solid fa-comment-dots"></i> <strong>Catatan:</strong> ${nego.catatan}</div>`:''}
+          ${(()=>{
+            const tw = Array.isArray(nego.tawaranPenyedia) && nego.tawaranPenyedia.length ? nego.tawaranPenyedia[nego.tawaranPenyedia.length-1] : null;
+            return tw ? `<div style="margin-top:8px;background:#F1F8E9;border:1px solid #C8E6C9;border-left:4px solid #2D7D17;border-radius:6px;padding:9px 13px;font-size:0.81rem;color:#2D7D17;">
+              <i class="fa-solid fa-handshake"></i> <strong>Tawaran Penyedia:</strong> ${formatRp(tw.totalTawaran||tw.harga||0)} &nbsp;·&nbsp; ${tw.tgl||''}
+              ${tw.catatan?`<br><em style="color:var(--gray-600);">"${tw.catatan}"</em>`:''}
+            </div>` : '';
+          })()}
+        </div>` : '';
+    }
+
+    const pokjaActions = isPokja ? `
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="bukaModalNegosiasi(${origIdx})" style="display:inline-flex;align-items:center;gap:6px;background:#1A237E;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
+          <i class="fa-solid fa-${hasNego?'pen-to-square':'plus'}"></i> ${hasNego?'Nego Lagi (Round '+(negoHistory.length+1)+')':'Input Negosiasi'}
+        </button>
+        <button onclick="bukaModalUndangan(${origIdx})" style="display:inline-flex;align-items:center;gap:6px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
+          <i class="fa-solid fa-envelope-open-text"></i> ${undangan?'Edit Undangan':'Kirim Undangan'}
+        </button>
+      </div>` : '';
+
+    const undanganBox = undangan ? `
+      <div style="background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid #1B5E20;border-radius:7px;padding:10px 13px;font-size:0.81rem;color:#1B5E20;margin-top:10px;">
+        <i class="fa-solid fa-envelope-open-text"></i> <strong>Undangan Pembuktian Kualifikasi</strong>
+        ${undangan.tanggal?`<br><i class="fa-solid fa-calendar" style="color:#1B5E20;"></i> ${undangan.tanggal}`:''}
+        ${undangan.lokasi?`<br><i class="fa-solid fa-location-dot" style="color:#1B5E20;"></i> ${undangan.lokasi}`:''}
+        <br><span style="color:var(--gray-700);font-size:0.79rem;">${undangan.pesan||''}</span>
+      </div>` : '';
+
+    return `<div style="background:white;border:1px solid var(--gray-200);border-left:4px solid #1A237E;border-radius:10px;padding:16px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(26,35,126,0.07);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:700;font-size:0.95rem;color:var(--blue-900);">${i+1}. ${s.namaPerusahaan||'-'}</div>
+          <div style="font-size:0.78rem;color:var(--gray-500);margin-top:2px;">
+            NPWP: ${s.npwp||'-'} &nbsp;·&nbsp;
+            ${s.email?`<i class="fa-solid fa-envelope"></i> ${s.email} &nbsp;·&nbsp;`:''}
+            ${s.telp?`<i class="fa-solid fa-phone"></i> ${s.telp}`:''}
+          </div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Lulus / Memenuhi Syarat</span>
+            ${negoStatus}
+            ${hasNego ? `<span style="font-size:0.75rem;color:#1A237E;font-weight:600;"><i class="fa-solid fa-coins"></i> ${formatRp(grandTotal)}</span>` : ''}
+            ${negoHistory.length > 1 ? `<span style="background:#E8EAF6;color:#1A237E;border-radius:4px;padding:1px 8px;font-size:0.72rem;font-weight:600;"><i class="fa-solid fa-repeat"></i> ${negoHistory.length} Round</span>` : ''}
+            ${tglNego ? `<span style="font-size:0.72rem;color:var(--gray-400);"><i class="fa-solid fa-clock"></i> ${tglNego}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${undanganBox}
+      ${negoViewBlock}
+      ${pokjaActions}
+    </div>`;
+  }).join('');
+
+  const title = isPokja
+    ? `<div style="background:#E8EAF6;border:1px solid #C5CAE9;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.83rem;color:#1A237E;"><i class="fa-solid fa-circle-info"></i> Menampilkan <strong>${pesertaLulus.length} penyedia</strong> yang telah Lulus / Memenuhi Syarat. Klik <strong>Input Negosiasi / Nego Lagi</strong> untuk memulai round baru.</div>`
+    : `<div style="background:#E8EAF6;border:1px solid #C5CAE9;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.83rem;color:#1A237E;"><i class="fa-solid fa-circle-info"></i> Berikut rincian negosiasi dari Pokja. Anda dapat mengajukan <strong>Harga/Biaya Nego</strong> pada kolom hijau.</div>`;
+
+  wrap.innerHTML = title + cards;
+}
+
+// =================================================================
+// MODAL UNDANGAN PEMBUKTIAN KUALIFIKASI
+// =================================================================
+let _undanganKey = null;
+
+function bukaModalUndangan(idx) {
+  const data = getSubmissions();
+  const d = data[idx];
+  if (!d) return;
+  _undanganKey = idx;
+  document.getElementById('undanganInfoBox').innerHTML =
+    `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br>
+     <span style="font-size:0.78rem;">Status: ✅ Lulus / Memenuhi Syarat</span>`;
+  const prev = d.undanganPembuktian || {};
+  document.getElementById('undanganTanggal').value = prev.tanggal || '';
+  document.getElementById('undanganLokasi').value  = prev.lokasi  || '';
+  document.getElementById('undanganPesan').value   = prev.pesan   || '';
+  document.getElementById('undanganMsg').style.display = 'none';
+  document.getElementById('modalUndangan').style.display = 'flex';
+}
+
+function tutupModalUndangan() {
+  document.getElementById('modalUndangan').style.display = 'none';
+  _undanganKey = null;
+}
+
+async function kirimUndanganPembuktian() {
+  if (_undanganKey === null) return;
+  const tanggal = document.getElementById('undanganTanggal').value.trim();
+  const lokasi  = document.getElementById('undanganLokasi').value.trim();
+  const pesan   = document.getElementById('undanganPesan').value.trim();
+  const msgEl   = document.getElementById('undanganMsg');
+  if (!pesan) {
+    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;';
+    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Pesan undangan tidak boleh kosong.';
+    return;
+  }
+  const btn = document.getElementById('btnKirimUndangan');
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
   const data = getSubmissions();
-  const d    = data[_balasKlarIdx];
-  if (!d) { btn.disabled=false; return; }
-  const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
-  const tglNow  = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  if (klarLog[_balasKlarItemIdx]) {
-    klarLog[_balasKlarItemIdx].balasan    = pesan;
-    klarLog[_balasKlarItemIdx].balasanTgl = tglNow;
-    klarLog[_balasKlarItemIdx].balasanOleh = currentPenyedia?.nama || d.namaPerusahaan || 'Penyedia';
-  }
-  d.klarifikasiLog = klarLog;
+  const d = data[_undanganKey];
+  if (!d) { btn.disabled = false; return; }
+  const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  d.undanganPembuktian = { tanggal, lokasi, pesan, dikirimOleh: currentPokjaUser||'pokja', dikirimTgl: tglNow };
   try {
     await fetch(APPS_SCRIPT_URL, {
       method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action:'balasKlarifikasi', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp,
-        balasan:pesan, balasanTgl:tglNow,
-        balasanOleh: currentPenyedia?.nama || d.namaPerusahaan || 'Penyedia',
-        klarIdx: _balasKlarItemIdx
-      })
+      body: JSON.stringify({ action:'undanganPembuktian', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, tanggal, lokasi, pesan, dikirimOleh:currentPokjaUser||'pokja', dikirimTgl:tglNow })
     });
   } catch(e) {}
-  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:9px 13px;font-size:0.83rem;margin-top:10px;';
-  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Jawaban berhasil dikirim!</strong>';
-  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Jawaban';
+  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;';
+  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Undangan berhasil dikirim!</strong>';
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Undangan';
   setTimeout(() => {
-    tutupBalasKlar();
-    showToast('Jawaban Terkirim', 'Jawaban klarifikasi Anda berhasil dikirim ke Pokja.', 'success', 4000);
-    loadStatusPenyedia();
+    tutupModalUndangan();
+    showToast('Undangan Terkirim', `Undangan Pembuktian Kualifikasi untuk ${d.namaPerusahaan||'-'} berhasil dikirim.`, 'success', 4000);
+    renderNegosiasiPage();
+    renderStatusPenyedia && renderStatusPenyedia();
   }, 700);
 }
 
-document.getElementById('modalBalasKlar').addEventListener('click', function(e) {
-  if (e.target === this) tutupBalasKlar();
+document.getElementById('modalUndangan').addEventListener('click', function(e) {
+  if (e.target === this) tutupModalUndangan();
 });
+
+// =================================================================
+// MODAL NEGOSIASI HARGA
+// =================================================================
+
+function bukaModalNegosiasi(idx) {
+  const data = getSubmissions();
+  const d = data[idx];
+  if (!d) return;
+  _negoKey = idx;
+  const negoHistory = Array.isArray(d.negoHistory) ? d.negoHistory : [];
+  const roundBaru = negoHistory.length + 1;
+  document.getElementById('negoNamaPerusahaan').textContent = (d.namaPerusahaan || '') + (roundBaru > 1 ? ` — Round ${roundBaru}` : '');
+  document.getElementById('negoInfoBox').innerHTML =
+    `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'} &nbsp;|&nbsp; Kontak: ${d.email||d.telp||'-'}
+     ${roundBaru > 1 ? `<br><span style="font-size:0.78rem;color:#1A237E;font-weight:600;"><i class="fa-solid fa-repeat"></i> Ini adalah Round <strong>${roundBaru}</strong>. Round sebelumnya tetap tersimpan sebagai histori.</span>` : ''}`;
+  // Selalu mulai baris kosong untuk round baru (tidak pre-fill dari round sebelumnya)
+  _negoRows = [negoEmptyRow(), negoEmptyRow(), negoEmptyRow()];
+  document.getElementById('negoCatatan').value = '';
+  document.getElementById('negoMsg').style.display = 'none';
+  renderNegoTable();
+  document.getElementById('modalNegosiasi').style.display = 'flex';
+}
+
+function tutupModalNegosiasi() {
+  document.getElementById('modalNegosiasi').style.display = 'none';
+  _negoKey = null; _negoRows = [];
+}
+
+function negoTambahBaris() {
+  _negoRows.push(negoEmptyRow());
+  renderNegoTable();
+}
+
+function negoHapusBaris(i) {
+  _negoRows.splice(i, 1);
+  if (!_negoRows.length) _negoRows.push(negoEmptyRow());
+  renderNegoTable();
+}
+
+function negoUpdateField(i, field, val) {
+  if (!_negoRows[i]) return;
+  _negoRows[i][field] = val;
+  const harga  = parseFloat(String(_negoRows[i].harga).replace(/[^0-9.]/g,''))||0;
+  const vol    = parseFloat(String(_negoRows[i].vol).replace(/[^0-9.]/g,''))||0;
+  const pajak  = parseFloat(String(_negoRows[i].pajak).replace(/[^0-9.]/g,''))||0;
+  const subtot = harga * vol;
+  _negoRows[i]._total = subtot + (subtot * pajak / 100);
+  const el = document.getElementById(`negoRowTotal_${i}`);
+  if (el) el.textContent = _negoRows[i]._total > 0 ? formatRp(_negoRows[i]._total) : '';
+  updateNegoGrandTotal();
+}
+
+function updateNegoGrandTotal() {
+  const grand = _negoRows.reduce((s,r) => s + (r._total||0), 0);
+  const el = document.getElementById('negoGrandTotal');
+  if (el) el.textContent = grand > 0 ? formatRp(grand) : 'Rp 0';
+}
+
+function renderNegoTable() {
+  const tbody = document.getElementById('negoTbody');
+  if (!tbody) return;
+  const inputStyle = 'width:100%;padding:5px 7px;border:1px solid var(--gray-200);border-radius:5px;font-size:0.80rem;font-family:inherit;outline:none;background:white;box-sizing:border-box;';
+  tbody.innerHTML = _negoRows.map((r, i) => {
+    const harga  = parseFloat(String(r.harga||'').replace(/[^0-9.]/g,''))||0;
+    const vol    = parseFloat(String(r.vol||'').replace(/[^0-9.]/g,''))||0;
+    const pajak  = parseFloat(String(r.pajak||'').replace(/[^0-9.]/g,''))||0;
+    const subtot = harga * vol;
+    const total  = subtot + (subtot * pajak / 100);
+    _negoRows[i]._total = total;
+    return `<tr style="border-bottom:1px solid var(--gray-100);">
+      <td style="padding:6px 8px;text-align:center;color:var(--gray-400);font-size:0.78rem;">${i+1}</td>
+      <td style="padding:5px 6px;"><input type="text" value="${r.uraian||''}" oninput="negoUpdateField(${i},'uraian',this.value)" placeholder="Nama barang/jasa…" style="${inputStyle}" /></td>
+      <td style="padding:5px 6px;"><input type="text" value="${r.satuan||''}" oninput="negoUpdateField(${i},'satuan',this.value)" placeholder="Unit…" style="${inputStyle}max-width:80px;" /></td>
+      <td style="padding:5px 6px;"><input type="number" value="${r.vol||''}" oninput="negoUpdateField(${i},'vol',this.value)" placeholder="0" style="${inputStyle}text-align:center;" /></td>
+      <td style="padding:5px 6px;"><input type="number" value="${r.harga||''}" oninput="negoUpdateField(${i},'harga',this.value)" placeholder="0" style="${inputStyle}text-align:right;" /></td>
+      <td style="padding:5px 6px;"><input type="number" value="${r.pajak||''}" oninput="negoUpdateField(${i},'pajak',this.value)" placeholder="0" style="${inputStyle}text-align:center;" /></td>
+      <td id="negoRowTotal_${i}" style="padding:6px 8px;text-align:right;font-weight:600;color:#1A237E;font-size:0.80rem;white-space:nowrap;">${total>0?formatRp(total):''}</td>
+      <td style="padding:5px 6px;"><input type="text" value="${r.keterangan||''}" oninput="negoUpdateField(${i},'keterangan',this.value)" placeholder="Opsional…" style="${inputStyle}" /></td>
+      <td style="padding:5px 8px;text-align:center;"><button onclick="negoHapusBaris(${i})" style="background:#FDEDEC;color:#C0392B;border:1px solid #F5B7B1;border-radius:5px;padding:3px 8px;cursor:pointer;font-size:12px;" title="Hapus">✕</button></td>
+    </tr>`;
+  }).join('');
+  updateNegoGrandTotal();
+}
+
+async function simpanNegosiasi() {
+  if (_negoKey === null) return;
+  const catatan = document.getElementById('negoCatatan').value.trim();
+  const btn = document.getElementById('btnSimpanNegosiasi');
+  const msgEl = document.getElementById('negoMsg');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…';
+  const data = getSubmissions();
+  const d = data[_negoKey];
+  if (!d) { btn.disabled = false; return; }
+  const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const grand = _negoRows.reduce((s,r) => s + (r._total||0), 0);
+  const barisBersih = _negoRows.map(({uraian,satuan,vol,harga,pajak,keterangan,_total}) => ({uraian,satuan,vol,harga,pajak,keterangan,total:_total||0}));
+  const negoBaruData = { baris:barisBersih, catatan, grandTotal:grand, diisiOleh:currentPokjaUser||'pokja', tanggal:tglNow };
+
+  // Append round baru ke negoHistory
+  if (!Array.isArray(d.negoHistory)) d.negoHistory = [];
+  const roundBaru = d.negoHistory.length + 1;
+  d.negoHistory.push({ round: roundBaru, label: 'Nego ' + roundBaru, data: negoBaruData });
+  d.negosiasi = negoBaruData; // juga update field negosiasi terbaru
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'simpanNegosiasi', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, negosiasi:negoBaruData })
+    });
+  } catch(e) {}
+  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;';
+  msgEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Tersimpan (Round ${roundBaru})!</strong> Grand total: ${formatRp(grand)}`;
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Negosiasi';
+  setTimeout(() => {
+    tutupModalNegosiasi();
+    showToast('Negosiasi Tersimpan', `Round ${roundBaru} negosiasi ${d.namaPerusahaan||'-'} berhasil disimpan.`, 'success', 4000);
+    renderNegosiasiPage();
+  }, 600);
+}
+
+document.getElementById('modalNegosiasi').addEventListener('click', function(e) {
+  if (e.target === this) tutupModalNegosiasi();
+});
+
+// =================================================================
+// FUNGSI HELPER NEGO PENYEDIA
+// =================================================================
+function hitungTotalTawaranPenyedia(origIdx, jumlahBaris) {
+  let total = 0;
+  for (let ri = 0; ri < jumlahBaris; ri++) {
+    const el = document.getElementById(`tawarBaris_${origIdx}_${ri}`);
+    if (el) total += parseFloat(el.value) || 0;
+  }
+  const elTotal = document.getElementById(`totalTawaranPenyedia_${origIdx}`);
+  if (elTotal) elTotal.textContent = formatRp(total);
+}
+
+function toggleHistoriNego(origIdx) {
+  const panel = document.getElementById(`histNegoPanel_${origIdx}`);
+  const btn   = document.getElementById(`histNegoBtn_${origIdx}`);
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  if (btn) {
+    const count = btn.textContent.match(/\((\d+)\)/)?.[1] || '';
+    btn.innerHTML = isHidden
+      ? `<i class="fa-solid fa-chevron-up"></i> Sembunyikan Riwayat`
+      : `<i class="fa-solid fa-clock-rotate-left"></i> Riwayat Round Sebelumnya (${count})`;
+  }
+}
+
+async function kirimHargaNegoPenyedia(origIdx) {
+  const data = getSubmissions();
+  const d = data[origIdx];
+  if (!d) return;
+
+  const negoHistory = Array.isArray(d.negoHistory) ? d.negoHistory : [];
+  const nego = negoHistory.length ? negoHistory[negoHistory.length - 1].data : d.negosiasi;
+  if (!nego || !Array.isArray(nego.baris)) {
+    showToast('Belum Ada Data', 'Pokja belum mengisi rincian negosiasi.', 'error'); return;
+  }
+
+  // Kumpulkan harga per baris dari input
+  const hargaPerBaris = nego.baris.map((r, ri) => {
+    const el = document.getElementById(`tawarBaris_${origIdx}_${ri}`);
+    return el ? (parseFloat(el.value) || 0) : 0;
+  });
+  const totalTawaran = hargaPerBaris.reduce((s, v) => s + v, 0);
+  const catatan = (document.getElementById(`tawarCatatan_${origIdx}`)?.value || '').trim();
+  const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  // Update data lokal — simpan tawaran ke negosiasi terbaru
+  if (!Array.isArray(nego.tawaranPenyedia)) nego.tawaranPenyedia = [];
+  nego.tawaranPenyedia.push({ hargaPerBaris, totalTawaran, catatan, tgl: tglNow, pengirim: currentPenyedia?.nama || d.namaPerusahaan });
+  nego.hargaTerakhirPenyedia = totalTawaran;
+  nego.tglTawaranTerakhir = tglNow;
+
+  // Kirim ke backend
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'kirimHargaNego',
+        namaPerusahaan: d.namaPerusahaan, npwp: d.npwp,
+        hargaTawaran: totalTawaran, hargaPerBaris,
+        catatan, namaPenyedia: currentPenyedia?.nama || d.namaPerusahaan, tgl: tglNow
+      })
+    });
+  } catch(e) {}
+
+  showToast('Tawaran Terkirim', `Harga nego Anda sebesar ${formatRp(totalTawaran)} berhasil dikirim ke Pokja.`, 'success', 4000);
+  renderNegosiasiPage();
+}
 
 init();
 </script>
 
+<!-- ══ MODAL KLARIFIKASI POKJA (kirim pertanyaan/klarifikasi ke penyedia) ══ -->
+<div id="modalKlarifikasiPokja" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:310;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:12px;width:min(520px,95vw);max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+    <div style="background:linear-gradient(135deg,#185FA5,#0C447C);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-message"></i> &nbsp;Kirim Klarifikasi ke Penyedia</span>
+      <button onclick="tutupModalKlarifikasiPokja()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:20px 24px;">
+      <div id="klarPokjaInfoBox" style="background:#E8EAF6;border:1px solid #C5CAE9;border-left:4px solid #185FA5;border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#1A237E;margin-bottom:16px;"></div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#185FA5;"></i> Pesan Klarifikasi <span style="color:#C0392B;">*</span></label>
+        <textarea id="klarPokjaPesan" rows="5" placeholder="Tulis pertanyaan atau permintaan klarifikasi kepada penyedia…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #185FA5;box-sizing:border-box;"></textarea>
+      </div>
+      <div id="klarPokjaMsg" style="display:none;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="tutupModalKlarifikasiPokja()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;font-weight:600;">Batal</button>
+        <button id="btnKirimKlarifikasiPokja" onclick="kirimKlarifikasiPokja()" style="display:inline-flex;align-items:center;gap:8px;background:#185FA5;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================================================================
+// KLARIFIKASI DARI POKJA (Pokja mengirim klarifikasi ke penyedia)
+// =================================================================
+let _klarPokjaKey = null;
+
+function bukaModalKlarifikasiPokja(idx) {
+  const data = getSubmissions();
+  const d    = data[idx];
+  if (!d) return;
+  _klarPokjaKey = makeSubKey(d);
+  const infoBox = document.getElementById('klarPokjaInfoBox');
+  infoBox.innerHTML = `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; <span style="font-size:0.78rem;">NPWP: ${d.npwp||'-'}</span><br>
+    <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span><br>
+    ${d.email ? `<span style="font-size:0.78rem;"><i class="fa-solid fa-envelope" style="color:#185FA5;"></i> ${d.email}</span>` : ''}`;
+  document.getElementById('klarPokjaPesan').value = '';
+  document.getElementById('klarPokjaMsg').style.display = 'none';
+  document.getElementById('modalKlarifikasiPokja').style.display = 'flex';
+}
+
+function tutupModalKlarifikasiPokja() {
+  document.getElementById('modalKlarifikasiPokja').style.display = 'none';
+  _klarPokjaKey = null;
+}
+
+async function kirimKlarifikasiPokja() {
+  if (!_klarPokjaKey) return;
+  const resolvedIdx = findIdxByKey(_klarPokjaKey);
+  if (resolvedIdx < 0) return;
+  const pesan = document.getElementById('klarPokjaPesan').value.trim();
+  const msgEl = document.getElementById('klarPokjaMsg');
+  if (!pesan) {
+    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Pesan klarifikasi tidak boleh kosong.';
+    return;
+  }
+  const btn = document.getElementById('btnKirimKlarifikasiPokja');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
+
+  const data = getSubmissions();
+  const d    = data[resolvedIdx];
+  if (!d) { btn.disabled=false; return; }
+
+  const tglNow   = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const pengirim = currentPokjaUser ? currentPokjaUser.toUpperCase() : 'Pokja';
+
+  // Simpan sebagai klarifikasi dengan pengirim = pokja
+  if (!Array.isArray(d.klarifikasiLog)) d.klarifikasiLog = [];
+  d.klarifikasiLog.push({ tgl: tglNow, pesan: pesan, pengirim: pengirim, dariPokja: true });
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:         'kirimKlarifikasi',
+        namaPerusahaan: d.namaPerusahaan,
+        npwp:           d.npwp,
+        pesan:          pesan,
+        tgl:            tglNow,
+        pengirim:       pengirim,
+        dariPokja:      true,
+      })
+    });
+  } catch(e) {}
+
+  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Klarifikasi berhasil dikirim kepada penyedia!</strong>';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi';
+
+  setTimeout(() => {
+    tutupModalKlarifikasiPokja();
+    showToast('Klarifikasi Dikirim ke Penyedia', `Pesan klarifikasi untuk ${d.namaPerusahaan||'-'} berhasil disimpan.`, 'success', 4000);
+    renderPokjaTable();
+  }, 600);
+}
+
+document.getElementById('modalKlarifikasiPokja').addEventListener('click', function(e) {
+  if (e.target === this) tutupModalKlarifikasiPokja();
+});
+</script>
+
+<!-- ══ MODAL UNDANGAN PEMBUKTIAN (dari kolom Klarifikasi) ══ -->
+<div id="modalUndanganKlarifikasi" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:320;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:12px;width:min(560px,96vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+    <div style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-signature"></i> &nbsp;Undangan Pembuktian Dokumen</span>
+      <button onclick="tutupModalUndanganKlarifikasi()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:20px 24px;">
+      <!-- Info penyedia -->
+      <div id="undanganKlarInfoBox" style="background:#E8F5E9;border:1px solid #A5D6A7;border-left:4px solid #1B5E20;border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#1B5E20;margin-bottom:16px;"></div>
+
+      <!-- Info konteks klarifikasi -->
+      <div style="background:#FFF8E1;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:9px 13px;font-size:0.81rem;color:#6b5003;margin-bottom:16px;">
+        <i class="fa-solid fa-comments"></i> <strong>Konteks:</strong> Undangan ini dikirim dalam rangka proses klarifikasi — penyedia perlu hadir untuk membuktikan dokumen yang diajukan.
+      </div>
+
+      <div style="margin-bottom:13px;">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-calendar" style="color:#1B5E20;"></i> Tanggal & Waktu Pembuktian <span style="color:#C0392B;">*</span></label>
+        <input type="text" id="undanganKlarTanggal" placeholder="cth: Senin, 20 Mei 2026 pukul 09.00 WIB" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;border-left:3px solid #1B5E20;box-sizing:border-box;" />
+      </div>
+      <div style="margin-bottom:13px;">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-location-dot" style="color:#1B5E20;"></i> Lokasi / Tempat <span style="color:#C0392B;">*</span></label>
+        <input type="text" id="undanganKlarLokasi" placeholder="cth: Ruang Rapat BPBJ Lt.2, Balaikota Surakarta" style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;border-left:3px solid #1B5E20;box-sizing:border-box;" />
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#1B5E20;"></i> Pesan / Isi Undangan <span style="color:#C0392B;">*</span></label>
+        <textarea id="undanganKlarPesan" rows="5" placeholder="Tuliskan pesan undangan pembuktian dokumen kepada penyedia…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #1B5E20;box-sizing:border-box;"></textarea>
+      </div>
+
+      <div id="undanganKlarMsg" style="display:none;margin-bottom:12px;"></div>
+
+      <!-- Tombol aksi: Kirim WA, Email, Simpan -->
+      <div style="border-top:1px solid var(--gray-100);padding-top:14px;">
+        <div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:10px;"><i class="fa-solid fa-paper-plane" style="color:#1B5E20;"></i> Kirim Undangan Via:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          <button id="btnUndanganKlarWA" onclick="kirimUndanganKlarWA()" style="display:inline-flex;align-items:center;gap:7px;background:#25D366;color:white;border:none;border-radius:7px;padding:9px 18px;font-size:0.85rem;font-weight:700;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='#1aab55'" onmouseleave="this.style.background='#25D366'">
+            <i class="fa-brands fa-whatsapp"></i> Kirim WhatsApp
+          </button>
+          <button id="btnUndanganKlarEmail" onclick="kirimUndanganKlarEmail()" style="display:inline-flex;align-items:center;gap:7px;background:#E05C2A;color:white;border:none;border-radius:7px;padding:9px 18px;font-size:0.85rem;font-weight:700;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='#b8461e'" onmouseleave="this.style.background='#E05C2A'">
+            <i class="fa-solid fa-envelope"></i> Kirim Email
+          </button>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button onclick="tutupModalUndanganKlarifikasi()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;font-weight:600;">Batal</button>
+          <button id="btnSimpanUndanganKlar" onclick="simpanUndanganKlarifikasi()" style="display:inline-flex;align-items:center;gap:8px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-floppy-disk"></i> Simpan Undangan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================================================================
+// UNDANGAN PEMBUKTIAN DARI KOLOM KLARIFIKASI (Pokja)
+// =================================================================
+let _undanganKlarKey = null;
+
+function bukaModalUndanganPembuktianKlarifikasi(idx) {
+  const data = getSubmissions();
+  const d    = data[idx];
+  if (!d) return;
+  _undanganKlarKey = makeSubKey(d);
+
+  const infoBox = document.getElementById('undanganKlarInfoBox');
+  infoBox.innerHTML =
+    `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br>
+     <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span><br>
+     ${d.telp  ? `<span style="font-size:0.78rem;"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> ${d.telp}</span>&nbsp;&nbsp;` : ''}
+     ${d.email ? `<span style="font-size:0.78rem;"><i class="fa-solid fa-envelope" style="color:#E05C2A;"></i> ${d.email}</span>` : ''}`;
+
+  // Isi nilai sebelumnya jika sudah ada
+  const prev = d.undanganPembuktianKlarifikasi || d.undanganPembuktian || {};
+  document.getElementById('undanganKlarTanggal').value = prev.tanggal || '';
+  document.getElementById('undanganKlarLokasi').value  = prev.lokasi  || '';
+  document.getElementById('undanganKlarPesan').value   = prev.pesan   || '';
+  document.getElementById('undanganKlarMsg').style.display = 'none';
+
+  document.getElementById('modalUndanganKlarifikasi').style.display = 'flex';
+}
+
+function tutupModalUndanganKlarifikasi() {
+  document.getElementById('modalUndanganKlarifikasi').style.display = 'none';
+  _undanganKlarKey = null;
+}
+
+// Helper: ambil data & validasi form
+function _getUndanganKlarData() {
+  if (!_undanganKlarKey) return null;
+  const resolvedIdx = findIdxByKey(_undanganKlarKey);
+  if (resolvedIdx < 0) return null;
+  const data = getSubmissions();
+  const d    = data[resolvedIdx];
+  if (!d) return null;
+
+  const tanggal = document.getElementById('undanganKlarTanggal').value.trim();
+  const lokasi  = document.getElementById('undanganKlarLokasi').value.trim();
+  const pesan   = document.getElementById('undanganKlarPesan').value.trim();
+  const msgEl   = document.getElementById('undanganKlarMsg');
+
+  if (!tanggal || !lokasi || !pesan) {
+    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Tanggal, lokasi, dan pesan undangan tidak boleh kosong.';
+    return null;
+  }
+  return { d, resolvedIdx, tanggal, lokasi, pesan };
+}
+
+// Bangun teks undangan lengkap
+function _buildUndanganKlarText(d, tanggal, lokasi, pesan) {
+  const pokjaNama = currentPokjaUser ? currentPokjaUser.toUpperCase() : 'Pokja';
+  const paketNama = (gcGet('judulConfig',{})).headerTitle || 'Konsolidasi Jasa Tenaga Alih Daya 2026';
+  return `Yth. ${d.namaPerusahaan||'-'},\n\nDengan hormat,\nSehubungan dengan proses klarifikasi dokumen penawaran pada paket:\n*${paketNama}*\n\nKami mengundang Saudara/i untuk hadir dalam *Pembuktian Dokumen* dengan ketentuan sebagai berikut:\n\n📅 Tanggal/Waktu: ${tanggal}\n📍 Lokasi: ${lokasi}\n\n${pesan}\n\nKehadiran Saudara/i sangat diharapkan. Ketidakhadiran dapat mempengaruhi proses evaluasi.\n\nHormat kami,\n${pokjaNama}\nPokja Pemilihan – BPBJ Kota Surakarta`;
+}
+
+// Simpan data undangan ke submission lokal & server
+async function _simpanDataUndanganKlar(d, resolvedIdx, tanggal, lokasi, pesan) {
+  const tglNow   = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const pokjaNama = currentPokjaUser || 'pokja';
+  const payload = { tanggal, lokasi, pesan, dikirimOleh: pokjaNama, dikirimTgl: tglNow };
+  d.undanganPembuktianKlarifikasi = payload;
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'undanganPembuktianKlarifikasi', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, tanggal, lokasi, pesan, dikirimOleh:pokjaNama, dikirimTgl:tglNow })
+    });
+  } catch(e) {}
+  return tglNow;
+}
+
+// Kirim WhatsApp
+async function kirimUndanganKlarWA() {
+  const info = _getUndanganKlarData();
+  if (!info) return;
+  const { d, resolvedIdx, tanggal, lokasi, pesan } = info;
+
+  const telp = String(d.telp||'').trim();
+  if (!telp) {
+    const msgEl = document.getElementById('undanganKlarMsg');
+    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Nomor telepon penyedia tidak tersedia.';
+    return;
+  }
+
+  const btn   = document.getElementById('btnUndanganKlarWA');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
+
+  const teks   = _buildUndanganKlarText(d, tanggal, lokasi, pesan);
+  const waNum  = telp.replace(/\D/g,'').replace(/^0/,'62');
+  const fonnteConfig = gcGet('fonnteConfig',{});
+  const hasFonnte    = fonnteConfig.token && fonnteConfig.token.trim() !== '';
+
+  await _simpanDataUndanganKlar(d, resolvedIdx, tanggal, lokasi, pesan);
+
+  if (hasFonnte) {
+    try {
+      await fetch('https://api.fonnte.com/send',{
+        method:'POST',
+        headers:{'Authorization':fonnteConfig.token,'Content-Type':'application/json'},
+        body: JSON.stringify({target:waNum, message:teks, countryCode:'62'})
+      });
+    } catch(e) {}
+    const msgEl = document.getElementById('undanganKlarMsg');
+    msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = `<i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> <strong>WhatsApp Undangan terkirim via Fonnte ke ${d.namaPerusahaan||'-'}!</strong>`;
+  } else {
+    window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(teks)}`,'_blank');
+    const msgEl = document.getElementById('undanganKlarMsg');
+    msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = `<i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> <strong>WhatsApp dibuka di tab baru.</strong> Kirim undangan ke ${d.namaPerusahaan||'-'}.`;
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Kirim WhatsApp';
+  showToast('Undangan WA Disiapkan', `Undangan Pembuktian untuk ${d.namaPerusahaan||'-'} telah disiapkan.`, 'success', 3500);
+  renderPokjaTable();
+}
+
+// Kirim Email
+async function kirimUndanganKlarEmail() {
+  const info = _getUndanganKlarData();
+  if (!info) return;
+  const { d, resolvedIdx, tanggal, lokasi, pesan } = info;
+
+  const emailPenyedia = d.email || '';
+  if (!emailPenyedia) {
+    const msgEl = document.getElementById('undanganKlarMsg');
+    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Alamat email penyedia tidak tersedia.';
+    return;
+  }
+
+  const btn = document.getElementById('btnUndanganKlarEmail');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
+
+  const paketNama  = (gcGet('judulConfig',{})).headerTitle || 'Konsolidasi Jasa Tenaga Alih Daya 2026';
+  const subjek     = `[Undangan Pembuktian] ${d.namaPerusahaan||'-'} – ${paketNama}`;
+  const teks       = _buildUndanganKlarText(d, tanggal, lokasi, pesan);
+  const fonnteConfig = gcGet('fonnteConfig',{});
+  const hasFonnte    = fonnteConfig.token && fonnteConfig.token.trim() !== '';
+
+  await _simpanDataUndanganKlar(d, resolvedIdx, tanggal, lokasi, pesan);
+
+  const msgEl = document.getElementById('undanganKlarMsg');
+  if (hasFonnte) {
+    try {
+      await fetch(APPS_SCRIPT_URL,{
+        method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({action:'sendEmail', to:emailPenyedia, subject:subjek, body:teks, replyTo:fonnteConfig.replyTo||'', senderName:fonnteConfig.senderName||'Pokja Pemilihan BPBJ'})
+      });
+    } catch(e) {}
+    msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = `<i class="fa-solid fa-envelope" style="color:#E05C2A;"></i> <strong>Email Undangan terkirim ke ${emailPenyedia}!</strong>`;
+  } else {
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailPenyedia)}&su=${encodeURIComponent(subjek)}&body=${encodeURIComponent(teks)}`;
+    window.open(gmailUrl,'_blank');
+    msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML = `<i class="fa-solid fa-envelope" style="color:#E05C2A;"></i> <strong>Gmail dibuka di tab baru.</strong> Kirim undangan ke ${emailPenyedia}.`;
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-envelope"></i> Kirim Email';
+  showToast('Undangan Email Disiapkan', `Undangan Pembuktian untuk ${d.namaPerusahaan||'-'} telah dikirim via email.`, 'success', 3500);
+  renderPokjaTable();
+}
+
+// Simpan undangan tanpa kirim notifikasi
+async function simpanUndanganKlarifikasi() {
+  const info = _getUndanganKlarData();
+  if (!info) return;
+  const { d, resolvedIdx, tanggal, lokasi, pesan } = info;
+
+  const btn = document.getElementById('btnSimpanUndanganKlar');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…';
+
+  await _simpanDataUndanganKlar(d, resolvedIdx, tanggal, lokasi, pesan);
+
+  const msgEl = document.getElementById('undanganKlarMsg');
+  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Undangan berhasil disimpan!</strong> Gunakan tombol WA atau Email untuk mengirimkan ke penyedia.';
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Undangan';
+
+  setTimeout(() => {
+    tutupModalUndanganKlarifikasi();
+    showToast('Undangan Tersimpan', `Data undangan pembuktian untuk ${d.namaPerusahaan||'-'} tersimpan.`, 'success', 3500);
+    renderPokjaTable();
+  }, 700);
+}
+
+document.getElementById('modalUndanganKlarifikasi').addEventListener('click', function(e) {
+  if (e.target === this) tutupModalUndanganKlarifikasi();
+});
+</script>
 </body>
 </html>
