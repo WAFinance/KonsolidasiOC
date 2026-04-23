@@ -5197,31 +5197,34 @@ const NHPS_TEMPLATES = [
   {
     name : 'Tenaga Kebersihan',
     items: [
-      { uraian:'Gaji Pokok', vol:1, sat:'Orang/Bulan', hargaSat:2300000 },
-      { uraian:'Tunjangan Tetap', vol:1, sat:'Orang/Bulan', hargaSat:500000 },
-      { uraian:'BPJS Kesehatan (4%)', vol:1, sat:'Orang/Bulan', hargaSat:112000 },
-      { uraian:'BPJS Ketenagakerjaan (3,7%)', vol:1, sat:'Orang/Bulan', hargaSat:103600 },
-      { uraian:'Overhead & Keuntungan (10%)', vol:1, sat:'Lumpsum', hargaSat:301560 },
+      { uraian:'Upah',                          vol:12, sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'THR',                           vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'Kompensasi',                    vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'BPJS Kesehatan dan Ketenagakerjaan', vol:12, sat:'Orang/Bulan', hargaSat:123678.68, usePpn:false },
+      { uraian:'Seragam dan Kelengkapan',       vol:1,  sat:'Paket',       hargaSat:300000,   usePpn:true  },
+      { uraian:'Management Fee',                vol:12, sat:'Bulan',       hargaSat:166176.20,usePpn:true  },
     ]
   },
   {
-    name : 'Tenaga Keamanan',
+    name : 'Tenaga Keamanan (Ketua Regu)',
     items: [
-      { uraian:'Gaji Pokok', vol:1, sat:'Orang/Bulan', hargaSat:2400000 },
-      { uraian:'Tunjangan Jabatan', vol:1, sat:'Orang/Bulan', hargaSat:600000 },
-      { uraian:'BPJS Kesehatan (4%)', vol:1, sat:'Orang/Bulan', hargaSat:120000 },
-      { uraian:'BPJS Ketenagakerjaan (3,7%)', vol:1, sat:'Orang/Bulan', hargaSat:111000 },
-      { uraian:'Overhead & Keuntungan (10%)', vol:1, sat:'Lumpsum', hargaSat:323100 },
+      { uraian:'Upah',                          vol:12, sat:'Orang/Bulan', hargaSat:2774200,  usePpn:false },
+      { uraian:'THR',                           vol:1,  sat:'Orang/Bulan', hargaSat:2774200,  usePpn:false },
+      { uraian:'Kompensasi',                    vol:1,  sat:'Orang/Bulan', hargaSat:2774200,  usePpn:false },
+      { uraian:'BPJS Kesehatan dan Ketenagakerjaan', vol:12, sat:'Orang/Bulan', hargaSat:125948.68, usePpn:false },
+      { uraian:'Seragam dan Kelengkapan',       vol:1,  sat:'Paket',       hargaSat:1200000,  usePpn:true  },
+      { uraian:'Management Fee',                vol:12, sat:'Bulan',       hargaSat:221936,   usePpn:true  },
     ]
   },
   {
     name : 'Tenaga Pengemudi',
     items: [
-      { uraian:'Gaji Pokok', vol:1, sat:'Orang/Bulan', hargaSat:2500000 },
-      { uraian:'Uang Makan', vol:22, sat:'Hari', hargaSat:30000 },
-      { uraian:'BPJS Kesehatan (4%)', vol:1, sat:'Orang/Bulan', hargaSat:126400 },
-      { uraian:'BPJS Ketenagakerjaan (3,7%)', vol:1, sat:'Orang/Bulan', hargaSat:116820 },
-      { uraian:'Overhead & Keuntungan (10%)', vol:1, sat:'Lumpsum', hargaSat:337322 },
+      { uraian:'Upah',                          vol:12, sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'THR',                           vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'Kompensasi',                    vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'BPJS Kesehatan dan Ketenagakerjaan', vol:12, sat:'Orang/Bulan', hargaSat:123678.68, usePpn:false },
+      { uraian:'Seragam dan Kelengkapan',       vol:1,  sat:'Paket',       hargaSat:300000,   usePpn:true  },
+      { uraian:'Management Fee',                vol:12, sat:'Bulan',       hargaSat:166176.20,usePpn:true  },
     ]
   }
 ];
@@ -5293,9 +5296,9 @@ function nhpsSwitchTab(tabId) {
   _nhps.activeTab = tabId;
   document.querySelectorAll('.nhps-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
   document.querySelectorAll('.nhps-panel').forEach(p => p.style.display = p.dataset.panel === tabId ? 'block' : 'none');
-  if (tabId === 'parse')   nhpsRenderInputTable();
-  if (tabId === 'tabel')   nhpsRenderTabel();
-  if (tabId === 'histori') nhpsRenderHistori();
+  if (tabId === 'parse') nhpsRenderInputTable();
+  if (tabId === 'tabel') nhpsRenderTabel();
+  // 'histori' kini modal terpisah — bukaRiwayatNego()
 }
 
 // ── Pesan inline ──────────────────────────────────────────────────────
@@ -5311,8 +5314,7 @@ function nhpsSetMsg(type, html) {
 
 // ── Render seluruh UI ─────────────────────────────────────────────────
 function nhpsRenderAll() {
-  if (_nhps.activeTab === 'tabel')   nhpsRenderTabel();
-  if (_nhps.activeTab === 'histori') nhpsRenderHistori();
+  if (_nhps.activeTab === 'tabel') nhpsRenderTabel();
   nhpsRenderGiliran();
 }
 
@@ -5553,33 +5555,59 @@ function nhpsRenderTabel() {
     return;
   }
 
-  // Hitung total per kolom
-  const totHPS  = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
-  const totPeny = items.reduce((s, it, i) => s + (negoPeny[i]  != null ? Math.round((it.vol||1)*(negoPeny[i]||0))  : 0), 0);
-  const totPokja= items.reduce((s, it, i) => s + (negoPokja[i] != null ? Math.round((it.vol||1)*(negoPokja[i]||0)) : 0), 0);
+  // Hitung total per kolom — menggunakan usePpn per item untuk akurasi PPN
+  const totHPS     = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
+  const totHPSIncl = items.reduce((s, it) => {
+    const excl = Math.round((it.vol||1)*(it.hargaSat||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0);
+  const totHPSPpn  = totHPSIncl - totHPS;
+
+  const totPeny = items.reduce((s, it, i) => s + (negoPeny[i] != null ? Math.round((it.vol||1)*(negoPeny[i]||0)) : 0), 0);
+  const totPenyIncl = items.reduce((s, it, i) => {
+    if (negoPeny[i] == null) return s;
+    const excl = Math.round((it.vol||1)*(negoPeny[i]||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0);
+
+  const totPokja = items.reduce((s, it, i) => s + (negoPokja[i] != null ? Math.round((it.vol||1)*(negoPokja[i]||0)) : 0), 0);
+  const totPokjaIncl = items.reduce((s, it, i) => {
+    if (negoPokja[i] == null) return s;
+    const excl = Math.round((it.vol||1)*(negoPokja[i]||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0);
+
   const hasPeny  = negoPeny.some(v => v !== null && v !== undefined);
   const hasPokja = negoPokja.some(v => v !== null && v !== undefined);
 
   nhpsRenderSummary(
-    [totHPS, nhPpn(totHPS), nhIncl(totHPS)],
-    hasPeny  ? [totPeny,  nhPpn(totPeny),  nhIncl(totPeny)]  : null,
-    hasPokja ? [totPokja, nhPpn(totPokja), nhIncl(totPokja)] : null
+    [totHPS, totHPSPpn, totHPSIncl],
+    hasPeny  ? [totPeny,  totPenyIncl  - totPeny,  totPenyIncl]  : null,
+    hasPokja ? [totPokja, totPokjaIncl - totPokja, totPokjaIncl] : null
   );
 
   // Build header
-  let thPeny  = `<th class="col-peny"  colspan="2">Nego Penyedia<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">(Harga Satuan | Total)</span></th>`;
-  let thPokja = `<th class="col-pokja" colspan="2">Nego Pokja<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">(Harga Satuan | Total)</span></th>`;
+  let thPeny  = `<th class="col-peny"  colspan="3">Nego Penyedia<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">(Harga Satuan | PPN | Total)</span></th>`;
+  let thPokja = `<th class="col-pokja" colspan="3">Nego Pokja<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">(Harga Satuan | PPN | Total)</span></th>`;
   let thDiff  = `<th style="background:rgba(60,20,80,0.28);">Selisih<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">Peny vs HPS</span></th>`;
 
   // Build rows
   const rows = items.map((it, i) => {
-    const totalHPS     = Math.round((it.vol||1) * (it.hargaSat||0));
+    const usePpn       = it.usePpn !== false;
+    const ppnLabel     = usePpn ? '<span style="font-size:0.72rem;font-weight:700;color:#5C6BC0;">11%</span>' : '<span style="font-size:0.72rem;color:#aaa;">–</span>';
+    const exclHPS      = Math.round((it.vol||1) * (it.hargaSat||0));
+    const ppnHPS       = usePpn ? Math.round(exclHPS * 0.11) : 0;
+    const totalHPS     = exclHPS + ppnHPS;
     const vPeny        = negoPeny[i];
     const vPokja       = negoPokja[i];
-    const totalPeny    = vPeny  != null ? Math.round((it.vol||1)*(vPeny||0))  : null;
-    const totalPokja   = vPokja != null ? Math.round((it.vol||1)*(vPokja||0)) : null;
+    const exclPeny     = vPeny  != null ? Math.round((it.vol||1)*(vPeny||0))  : null;
+    const exclPokja    = vPokja != null ? Math.round((it.vol||1)*(vPokja||0)) : null;
+    const ppnPeny      = exclPeny  != null ? (usePpn ? Math.round(exclPeny  * 0.11) : 0) : null;
+    const ppnPokja     = exclPokja != null ? (usePpn ? Math.round(exclPokja * 0.11) : 0) : null;
+    const totalPeny    = exclPeny  != null ? exclPeny  + (ppnPeny  || 0) : null;
+    const totalPokja   = exclPokja != null ? exclPokja + (ppnPokja || 0) : null;
 
-    // Diff peny vs HPS
+    // Diff peny vs HPS (bandingkan harga satuan, bukan total incl.)
     const pct = nhPct(vPeny, it.hargaSat);
     let diffClass = '', diffBadge = '';
     if (pct !== null) {
@@ -5592,22 +5620,28 @@ function nhpsRenderTabel() {
     // HPS editable saat pokja & hps belum dikunci
     const hpsCell = hpsEditable
       ? `<td class="td-hps td-num"><input id="nhpsHargaSat_${i}" type="number" class="nhps-input" value="${it.hargaSat||0}" oninput="nhpsUpdateHPS(${i})" style="width:115px;"/></td>
+         <td class="td-hps td-num" style="font-size:0.75rem;">${ppnLabel}</td>
          <td class="td-hps td-num" id="nhpsTotalHPS_${i}">${nhFmtRp(totalHPS)}</td>`
       : `<td class="td-hps td-num">${nhFmtRp(it.hargaSat||0)}</td>
+         <td class="td-hps td-num" style="font-size:0.75rem;">${ppnLabel}</td>
          <td class="td-hps td-num">${nhFmtRp(totalHPS)}</td>`;
 
     // Nego Penyedia
     const penyCell = canPeny
       ? `<td class="td-peny td-num"><input id="nhpsPeny_${i}" type="number" class="nhps-input nhps-input-peny" value="${vPeny||''}" placeholder="0" oninput="nhpsUpdatePeny(${i})" style="width:115px;"/></td>
+         <td class="td-peny td-num" style="font-size:0.75rem;">${ppnLabel}</td>
          <td class="td-peny td-num" id="nhpsTotalPeny_${i}">${vPeny!=null ? nhFmtRp(totalPeny) : '<span style="color:#ccc;">–</span>'}</td>`
       : `<td class="td-peny td-num">${vPeny!=null ? nhFmtRp(vPeny) : '<span style="color:#ccc;">–</span>'}</td>
+         <td class="td-peny td-num" style="font-size:0.75rem;">${vPeny!=null ? ppnLabel : '<span style="color:#ccc;">–</span>'}</td>
          <td class="td-peny td-num">${totalPeny!=null ? nhFmtRp(totalPeny) : '<span style="color:#ccc;">–</span>'}</td>`;
 
     // Nego Pokja
     const pokjaCell = canPokja
       ? `<td class="td-pokja td-num"><input id="nhpsPokja_${i}" type="number" class="nhps-input nhps-input-pokja" value="${vPokja||''}" placeholder="0" oninput="nhpsUpdatePokja(${i})" style="width:115px;"/></td>
+         <td class="td-pokja td-num" style="font-size:0.75rem;">${ppnLabel}</td>
          <td class="td-pokja td-num" id="nhpsTotalPokja_${i}">${vPokja!=null ? nhFmtRp(totalPokja) : '<span style="color:#ccc;">–</span>'}</td>`
       : `<td class="td-pokja td-num">${vPokja!=null ? nhFmtRp(vPokja) : '<span style="color:#ccc;">–</span>'}</td>
+         <td class="td-pokja td-num" style="font-size:0.75rem;">${vPokja!=null ? ppnLabel : '<span style="color:#ccc;">–</span>'}</td>
          <td class="td-pokja td-num">${totalPokja!=null ? nhFmtRp(totalPokja) : '<span style="color:#ccc;">–</span>'}</td>`;
 
     return `<tr>
@@ -5623,31 +5657,37 @@ function nhpsRenderTabel() {
   }).join('');
 
   // Total rows
-  const mkTotRow = (lbl, excl, cls1, cls2) => {
-    if (excl == null) return `<tr class="row-total"><td colspan="6" style="text-align:right;">${lbl} (Excl. PPN)</td><td class="${cls1} td-num" colspan="2" style="color:#bbb;">–</td><td class="${cls2} td-num" colspan="2" style="color:#bbb;">–</td><td></td></tr>
-    <tr class="row-total"><td colspan="6" style="text-align:right;">${lbl} (Incl. PPN)</td><td class="${cls1} td-num" colspan="2" style="color:#bbb;">–</td><td class="${cls2} td-num" colspan="2" style="color:#bbb;">–</td><td></td></tr>`;
-    return '';
-  };
-
   const totRow = `<tr class="row-total">
     <td colspan="4" style="text-align:right;font-size:0.82rem;">TOTAL Excl. PPN</td>
-    <td class="td-hps td-num" colspan="2">${nhFmtRp(totHPS)}</td>
-    <td class="td-peny td-num" colspan="2">${hasPeny  ? nhFmtRp(totPeny)  : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-pokja td-num" colspan="2">${hasPokja ? nhFmtRp(totPokja) : '<span style="color:#bbb;">–</span>'}</td>
+    <td class="td-hps td-num">${nhFmtRp(totHPS)}</td>
+    <td class="td-hps td-num" style="font-size:0.70rem;"></td>
+    <td class="td-hps td-num"></td>
+    <td class="td-peny td-num">${hasPeny  ? nhFmtRp(totPeny)  : '<span style="color:#bbb;">–</span>'}</td>
+    <td class="td-peny td-num" style="font-size:0.70rem;"></td>
+    <td class="td-peny td-num"></td>
+    <td class="td-pokja td-num">${hasPokja ? nhFmtRp(totPokja) : '<span style="color:#bbb;">–</span>'}</td>
+    <td class="td-pokja td-num" style="font-size:0.70rem;"></td>
+    <td class="td-pokja td-num"></td>
     <td></td>
   </tr>
   <tr class="row-total">
-    <td colspan="4" style="text-align:right;font-size:0.82rem;">PPN 11%</td>
-    <td class="td-hps td-num" colspan="2">${nhFmtRp(nhPpn(totHPS))}</td>
-    <td class="td-peny td-num" colspan="2">${hasPeny  ? nhFmtRp(nhPpn(totPeny))  : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-pokja td-num" colspan="2">${hasPokja ? nhFmtRp(nhPpn(totPokja)) : '<span style="color:#bbb;">–</span>'}</td>
+    <td colspan="4" style="text-align:right;font-size:0.82rem;">PPN 11% (per item)</td>
+    <td class="td-hps td-num">${nhFmtRp(totHPSPpn)}</td>
+    <td class="td-hps td-num"></td>
+    <td class="td-hps td-num"></td>
+    <td class="td-peny td-num">${hasPeny  ? nhFmtRp(totPenyIncl  - totPeny)  : '<span style="color:#bbb;">–</span>'}</td>
+    <td class="td-peny td-num"></td>
+    <td class="td-peny td-num"></td>
+    <td class="td-pokja td-num">${hasPokja ? nhFmtRp(totPokjaIncl - totPokja) : '<span style="color:#bbb;">–</span>'}</td>
+    <td class="td-pokja td-num"></td>
+    <td class="td-pokja td-num"></td>
     <td></td>
   </tr>
   <tr class="row-total" style="font-size:0.85rem;">
     <td colspan="4" style="text-align:right;color:#1A237E;font-weight:800;">TOTAL Incl. PPN</td>
-    <td class="td-hps td-num" colspan="2" style="color:#1A237E;">${nhFmtRp(nhIncl(totHPS))}</td>
-    <td class="td-peny td-num" colspan="2" style="color:#1B5E20;">${hasPeny  ? nhFmtRp(nhIncl(totPeny))  : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-pokja td-num" colspan="2" style="color:#B71C1C;">${hasPokja ? nhFmtRp(nhIncl(totPokja)) : '<span style="color:#bbb;">–</span>'}</td>
+    <td class="td-hps td-num" colspan="3" style="color:#1A237E;">${nhFmtRp(totHPSIncl)}</td>
+    <td class="td-peny td-num" colspan="3" style="color:#1B5E20;">${hasPeny  ? nhFmtRp(totPenyIncl)  : '<span style="color:#bbb;">–</span>'}</td>
+    <td class="td-pokja td-num" colspan="3" style="color:#B71C1C;">${hasPokja ? nhFmtRp(totPokjaIncl) : '<span style="color:#bbb;">–</span>'}</td>
     <td></td>
   </tr>`;
 
@@ -5666,17 +5706,20 @@ function nhpsRenderTabel() {
           <th rowspan="2">Uraian / Komponen</th>
           <th rowspan="2" class="col-hps">Volume</th>
           <th rowspan="2" class="col-hps">Satuan</th>
-          <th class="col-hps"  colspan="2">HPS Pokja</th>
+          <th class="col-hps"  colspan="3">HPS Pokja</th>
           ${thPeny}
           ${thPokja}
           <th rowspan="2" style="background:rgba(60,20,80,0.28);text-align:center;">Selisih</th>
         </tr>
         <tr>
           <th class="col-hps" style="font-size:0.70rem;font-weight:500;">Harga Sat.</th>
+          <th class="col-hps" style="font-size:0.70rem;font-weight:500;">PPN</th>
           <th class="col-hps" style="font-size:0.70rem;font-weight:500;">Total</th>
           <th class="col-peny" style="font-size:0.70rem;font-weight:500;">Harga Sat.</th>
+          <th class="col-peny" style="font-size:0.70rem;font-weight:500;">PPN</th>
           <th class="col-peny" style="font-size:0.70rem;font-weight:500;">Total</th>
           <th class="col-pokja" style="font-size:0.70rem;font-weight:500;">Harga Sat.</th>
+          <th class="col-pokja" style="font-size:0.70rem;font-weight:500;">PPN</th>
           <th class="col-pokja" style="font-size:0.70rem;font-weight:500;">Total</th>
         </tr>
       </thead>
@@ -5689,9 +5732,14 @@ function nhpsRenderTabel() {
 function nhpsUpdateHPS(i) {
   const v = parseFloat(document.getElementById('nhpsHargaSat_'+i)?.value) || 0;
   if (_nhps.hpsItems[i]) _nhps.hpsItems[i].hargaSat = v;
-  const vol   = _nhps.hpsItems[i]?.vol || 1;
-  const total = document.getElementById('nhpsTotalHPS_'+i);
-  if (total) total.textContent = nhFmtRp(Math.round(vol * v));
+  const vol    = _nhps.hpsItems[i]?.vol || 1;
+  const usePpn = _nhps.hpsItems[i]?.usePpn !== false;
+  const total  = document.getElementById('nhpsTotalHPS_'+i);
+  if (total) {
+    const excl = Math.round(vol * v);
+    const incl = excl + (usePpn ? Math.round(excl * 0.11) : 0);
+    total.textContent = nhFmtRp(incl);
+  }
   nhpsRenderSummaryLive();
 }
 
@@ -5699,7 +5747,16 @@ function nhpsUpdatePeny(i) {
   const v   = parseFloat(document.getElementById('nhpsPeny_'+i)?.value);
   const el  = document.getElementById('nhpsTotalPeny_'+i);
   const vol = _nhps.hpsItems[i]?.vol || 1;
-  if (el) el.textContent = !isNaN(v) ? nhFmtRp(Math.round(vol * v)) : '–';
+  const usePpn = _nhps.hpsItems[i]?.usePpn !== false;
+  if (el) {
+    if (!isNaN(v)) {
+      const excl = Math.round(vol * v);
+      const incl = excl + (usePpn ? Math.round(excl * 0.11) : 0);
+      el.textContent = nhFmtRp(incl);
+    } else {
+      el.textContent = '–';
+    }
+  }
   nhpsRenderSummaryLive();
 }
 
@@ -5707,7 +5764,16 @@ function nhpsUpdatePokja(i) {
   const v   = parseFloat(document.getElementById('nhpsPokja_'+i)?.value);
   const el  = document.getElementById('nhpsTotalPokja_'+i);
   const vol = _nhps.hpsItems[i]?.vol || 1;
-  if (el) el.textContent = !isNaN(v) ? nhFmtRp(Math.round(vol * v)) : '–';
+  const usePpn = _nhps.hpsItems[i]?.usePpn !== false;
+  if (el) {
+    if (!isNaN(v)) {
+      const excl = Math.round(vol * v);
+      const incl = excl + (usePpn ? Math.round(excl * 0.11) : 0);
+      el.textContent = nhFmtRp(incl);
+    } else {
+      el.textContent = '–';
+    }
+  }
   nhpsRenderSummaryLive();
 }
 
@@ -5718,6 +5784,12 @@ function nhpsRenderSummaryLive() {
     const inp = document.getElementById('nhpsHargaSat_'+i);
     const hs  = inp ? (parseFloat(inp.value)||0) : (it.hargaSat||0);
     return s + Math.round((it.vol||1) * hs);
+  }, 0);
+  const totHPSIncl = items.reduce((s, it, i) => {
+    const inp = document.getElementById('nhpsHargaSat_'+i);
+    const hs  = inp ? (parseFloat(inp.value)||0) : (it.hargaSat||0);
+    const excl = Math.round((it.vol||1) * hs);
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
   }, 0);
 
   const penyVals = items.map((it, i) => {
@@ -5734,11 +5806,19 @@ function nhpsRenderSummaryLive() {
 
   const totPeny  = hasPeny  ? items.reduce((s,it,i) => s + Math.round((it.vol||1)*(penyVals[i]||0)),  0) : null;
   const totPokja = hasPokja ? items.reduce((s,it,i) => s + Math.round((it.vol||1)*(pokjaVals[i]||0)), 0) : null;
+  const totPenyIncl = hasPeny ? items.reduce((s,it,i) => {
+    const excl = Math.round((it.vol||1)*(penyVals[i]||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0) : null;
+  const totPokjaIncl = hasPokja ? items.reduce((s,it,i) => {
+    const excl = Math.round((it.vol||1)*(pokjaVals[i]||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0) : null;
 
   nhpsRenderSummary(
-    [totHPS, nhPpn(totHPS), nhIncl(totHPS)],
-    totPeny  != null ? [totPeny,  nhPpn(totPeny),  nhIncl(totPeny)]  : null,
-    totPokja != null ? [totPokja, nhPpn(totPokja), nhIncl(totPokja)] : null
+    [totHPS, totHPSIncl - totHPS, totHPSIncl],
+    totPeny     != null ? [totPeny,  totPenyIncl  - totPeny,  totPenyIncl]  : null,
+    totPokja    != null ? [totPokja, totPokjaIncl - totPokja, totPokjaIncl] : null
   );
 }
 
@@ -6047,7 +6127,7 @@ async function nhpsSetujuiOlehPokja() {
     if (json.status === 'ok') {
       nhpsSetMsg('ok', '<i class="fa-solid fa-handshake"></i> <strong>DEAL!</strong> Negosiasi selesai. Data terkunci.');
       await nhpsLoadFromServer();
-      nhpsSwitchTab('histori');
+      nhpsSwitchTab('tabel');
     } else {
       nhpsSetMsg('err', `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message||'Gagal.'}`);
     }
@@ -6191,9 +6271,33 @@ function renderNegosiasiPage() {
     const negoHistory = Array.isArray(s.negoHistory) ? s.negoHistory : [];
     const undangan    = s.undanganPembuktian;
 
-    const negoBadge = negoHistory.length
-      ? `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #A5D6A7;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-check"></i> Ada Data Nego Lokal</span>`
-      : `<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-clock"></i> Belum Ada Nego</span>`;
+    // ── Status Nego yang akurat — baca dari field negosiasi (server) ──
+    const negosiasi  = s.negosiasi || null;
+    const isSelesai  = negosiasi && (
+      negosiasi.giliran === 'Selesai' ||
+      negosiasi.status  === 'Harga Disetujui Oleh Penyedia' ||
+      (typeof negosiasi.status === 'string' && negosiasi.status.toLowerCase().includes('disetujui'))
+    );
+    const isOngoing  = !isSelesai && negosiasi && negosiasi.hpsLocked === true;
+    const hasHistory = negosiasi && (
+      (Array.isArray(negosiasi.histori) && negosiasi.histori.length > 0) ||
+      (Array.isArray(s.negoHistory)     && s.negoHistory.length  > 0)
+    );
+    const hpsAdaSaja = !isSelesai && !isOngoing && negosiasi && Array.isArray(negosiasi.hpsItems) && negosiasi.hpsItems.length > 0;
+
+    let negoBadge;
+    if (isSelesai) {
+      negoBadge = `<span style="background:#C8E6C9;color:#1B5E20;border:1px solid #81C784;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-handshake"></i> Negosiasi Selesai — DEAL ✓</span>`;
+    } else if (isOngoing) {
+      negoBadge = `<span style="background:#E8EAF6;color:#1A237E;border:1px solid #9FA8DA;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-rotate"></i> Negosiasi Sedang Berjalan</span>`;
+    } else if (hpsAdaSaja) {
+      negoBadge = `<span style="background:#E3F2FD;color:#0D47A1;border:1px solid #90CAF9;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-landmark"></i> HPS Sudah Di-input</span>`;
+    } else {
+      negoBadge = `<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-clock"></i> Belum Ada Nego</span>`;
+    }
+
+    // Warna border-left kartu sesuai status
+    const borderColor = isSelesai ? '#1B5E20' : isOngoing ? '#1A237E' : hpsAdaSaja ? '#1565C0' : '#856404';
 
     const undanganBox = undangan ? `
       <div style="background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid #1B5E20;border-radius:7px;padding:9px 13px;font-size:0.80rem;color:#1B5E20;margin-top:10px;">
@@ -6201,6 +6305,70 @@ function renderNegosiasiPage() {
         ${undangan.tanggal ? `<br><i class="fa-solid fa-calendar"></i> ${undangan.tanggal}` : ''}
         ${undangan.lokasi  ? `<br><i class="fa-solid fa-location-dot"></i> ${undangan.lokasi}` : ''}
       </div>` : '';
+
+    // ── Kotak Hasil Negosiasi — tampil hanya jika DEAL sudah terjadi ──
+    let hasilNegoBox = '';
+    if (isSelesai && negosiasi) {
+      const dealExcl = negosiasi.hargaDisepakatiExcl || negosiasi.hargaExcl || 0;
+      const dealIncl = negosiasi.hargaDisepakatiIncl || negosiasi.hargaIncl || nhIncl(dealExcl);
+      // Coba ambil dari entri Persetujuan di histori jika field atas kosong
+      if (!dealExcl && Array.isArray(negosiasi.histori)) {
+        const entryDeal = negosiasi.histori.filter(h => h.role === 'Persetujuan' || h.role === 'Penyedia');
+        if (entryDeal.length) {
+          const last = entryDeal[entryDeal.length - 1];
+          const ex = last.totalExcl || last.hargaExcl || last.hargaExcl || 0;
+          const ic = last.totalIncl || last.hargaIncl || nhIncl(ex);
+          hasilNegoBox = `
+            <div style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #66BB6A;border-left:4px solid #1B5E20;border-radius:8px;padding:11px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:1.4rem;">🤝</span>
+                <div>
+                  <div style="font-size:0.75rem;font-weight:700;color:#1B5E20;letter-spacing:0.3px;">HASIL NEGOSIASI — HARGA DEAL</div>
+                  <div style="font-size:0.72rem;color:#388E3C;margin-top:1px;">Negosiasi selesai dan harga telah disepakati</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:14px;flex-wrap:wrap;">
+                <div style="text-align:right;">
+                  <div style="font-size:0.68rem;color:#555;font-weight:600;">Excl. PPN</div>
+                  <div style="font-size:0.88rem;font-weight:800;color:#1B5E20;">${nhFmtRp(ex)}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:0.68rem;color:#555;font-weight:600;">Incl. PPN</div>
+                  <div style="font-size:0.92rem;font-weight:800;color:#1B5E20;border-left:2px solid #A5D6A7;padding-left:10px;">${nhFmtRp(ic)}</div>
+                </div>
+              </div>
+            </div>`;
+        }
+      } else if (dealExcl || dealIncl) {
+        hasilNegoBox = `
+          <div style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #66BB6A;border-left:4px solid #1B5E20;border-radius:8px;padding:11px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.4rem;">🤝</span>
+              <div>
+                <div style="font-size:0.75rem;font-weight:700;color:#1B5E20;letter-spacing:0.3px;">HASIL NEGOSIASI — HARGA DEAL</div>
+                <div style="font-size:0.72rem;color:#388E3C;margin-top:1px;">Negosiasi selesai dan harga telah disepakati</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;">
+              <div style="text-align:right;">
+                <div style="font-size:0.68rem;color:#555;font-weight:600;">Excl. PPN</div>
+                <div style="font-size:0.88rem;font-weight:800;color:#1B5E20;">${nhFmtRp(dealExcl)}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.68rem;color:#555;font-weight:600;">Incl. PPN</div>
+                <div style="font-size:0.92rem;font-weight:800;color:#1B5E20;border-left:2px solid #A5D6A7;padding-left:10px;">${nhFmtRp(dealIncl)}</div>
+              </div>
+            </div>
+          </div>`;
+      }
+    }
+
+    // Tombol Riwayat Nego — selalu sejajar dengan Kirim Undangan di baris bawah
+    const riwayatBtn = (hasHistory || isOngoing || isSelesai) ? `
+      <button onclick="bukaRiwayatNego(${origIdx})"
+        style="display:inline-flex;align-items:center;gap:6px;background:#F3E5F5;color:#6A1B9A;border:1px solid #CE93D8;border-radius:7px;padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
+        <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Nego
+      </button>` : '';
 
     const pokjaActions = isPokja ? `
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
@@ -6212,6 +6380,7 @@ function renderNegosiasiPage() {
           style="display:inline-flex;align-items:center;gap:6px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
           <i class="fa-solid fa-envelope-open-text"></i> ${undangan ? 'Edit' : 'Kirim'} Undangan
         </button>
+        ${riwayatBtn}
       </div>` : '';
 
     const penyediaActions = isPenyedia ? `
@@ -6220,9 +6389,10 @@ function renderNegosiasiPage() {
           style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0d1b6e,#1A237E);color:white;border:none;border-radius:7px;padding:9px 18px;font-size:0.83rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,35,126,0.22);">
           <i class="fa-solid fa-table"></i> Negosiasi HPS (Tabel)
         </button>
+        ${riwayatBtn}
       </div>` : '';
 
-    return `<div style="background:white;border:1px solid var(--gray-200);border-left:4px solid #1A237E;border-radius:10px;padding:16px 20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(26,35,126,0.07);">
+    return `<div style="background:white;border:1px solid var(--gray-200);border-left:4px solid ${borderColor};border-radius:10px;padding:16px 20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(26,35,126,0.07);">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div>
           <div style="font-weight:700;font-size:0.95rem;color:var(--blue-900);">${i+1}. ${s.namaPerusahaan||'-'}</div>
@@ -6238,12 +6408,146 @@ function renderNegosiasiPage() {
         </div>
       </div>
       ${undanganBox}
+      ${hasilNegoBox}
       ${pokjaActions}
       ${penyediaActions}
     </div>`;
   }).join('');
 
   wrap.innerHTML = infoBar + cards;
+}
+
+// ── Buka Modal Riwayat Nego — terpisah dari modal utama ──────────────
+let _riwayatNegoIdx = null;
+
+async function bukaRiwayatNego(idx) {
+  _riwayatNegoIdx = idx;
+  const all = getSubmissions();
+  const d   = all[idx];
+  if (!d) return;
+
+  // Tampilkan modal
+  const modal = document.getElementById('modalRiwayatNego');
+  if (!modal) return;
+  document.getElementById('riwayatNegoNama').textContent = d.namaPerusahaan || '';
+  document.getElementById('riwayatNegoWrap').innerHTML =
+    `<div style="text-align:center;padding:40px 20px;color:#9FA8DA;"><i class="fa-solid fa-rotate fa-spin" style="font-size:28px;display:block;margin-bottom:12px;"></i><div>Memuat riwayat…</div></div>`;
+  modal.style.display = 'flex';
+
+  // Fetch data
+  try {
+    const qs  = new URLSearchParams({ action:'getNegoHPS', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
+    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
+    const json = await res.json();
+    const s    = (json.status === 'ok' && json.data) ? json.data : null;
+    renderRiwayatNegoModal(s, d.namaPerusahaan);
+  } catch(e) {
+    document.getElementById('riwayatNegoWrap').innerHTML =
+      `<div style="text-align:center;padding:40px 20px;color:#EF9A9A;"><i class="fa-solid fa-triangle-exclamation" style="font-size:28px;display:block;margin-bottom:12px;"></i><div>Gagal memuat data. Coba lagi.</div></div>`;
+  }
+}
+
+function tutupRiwayatNego() {
+  const modal = document.getElementById('modalRiwayatNego');
+  if (modal) modal.style.display = 'none';
+  _riwayatNegoIdx = null;
+}
+
+function renderRiwayatNegoModal(s, nama) {
+  const wrap = document.getElementById('riwayatNegoWrap');
+  if (!wrap) return;
+
+  // Status badge
+  const isSelesai = s && (s.giliran === 'Selesai' || (typeof s.status === 'string' && s.status.toLowerCase().includes('disetujui')));
+  const statusHtml = isSelesai
+    ? `<div style="background:#C8E6C9;color:#1B5E20;border:1px solid #81C784;border-radius:7px;padding:8px 14px;margin-bottom:14px;font-size:0.83rem;font-weight:700;display:flex;align-items:center;gap:8px;">
+         <i class="fa-solid fa-handshake"></i> Negosiasi Selesai — Harga DEAL ✓
+       </div>`
+    : (s && s.hpsLocked
+        ? `<div style="background:#E8EAF6;color:#1A237E;border:1px solid #9FA8DA;border-radius:7px;padding:8px 14px;margin-bottom:14px;font-size:0.83rem;font-weight:700;display:flex;align-items:center;gap:8px;">
+             <i class="fa-solid fa-rotate"></i> Negosiasi Sedang Berjalan — Giliran: ${s.giliran||'-'}
+           </div>`
+        : '');
+
+  if (!s || !Array.isArray(s.histori) || !s.histori.length) {
+    wrap.innerHTML = statusHtml + `<div style="text-align:center;padding:40px 20px;color:#9FA8DA;">
+      <i class="fa-solid fa-clock-rotate-left" style="font-size:36px;display:block;margin-bottom:12px;opacity:0.3;"></i>
+      <div style="font-weight:700;">Belum ada riwayat negosiasi</div>
+      <div style="font-size:0.80rem;margin-top:6px;">Riwayat akan muncul setelah proses negosiasi dimulai.</div>
+    </div>`;
+    return;
+  }
+
+  const items_html = s.histori.map((h, hi) => {
+    const colorMap = { HPS:'#1A237E', Penyedia:'#1B5E20', Pokja:'#B71C1C', Persetujuan:'#004D40' };
+    const bgMap    = { HPS:'#E8EAF6', Penyedia:'#E8F5E9', Pokja:'#FFEBEE', Persetujuan:'#E0F2F1' };
+    const c  = colorMap[h.role] || '#555';
+    const bg = bgMap[h.role]   || '#F5F5F5';
+    const isTerbaru = (hi === s.histori.length - 1);
+
+    let detailHtml = '';
+    if (Array.isArray(h.items) && h.items.length) {
+      const rows = h.items.map((it, ii) => `<tr>
+        <td style="padding:4px 8px;">${ii+1}</td>
+        <td style="padding:4px 8px;font-weight:600;">${it.uraian||'-'}</td>
+        <td style="padding:4px 8px;text-align:right;">${(it.vol||1).toLocaleString('id-ID')}</td>
+        <td style="padding:4px 8px;">${it.sat||'-'}</td>
+        <td style="padding:4px 8px;text-align:right;">${nhFmtRp(it.hargaSat||it.hargaNego||0)}</td>
+        <td style="padding:4px 8px;text-align:right;">${nhFmtRp(Math.round((it.vol||1)*(it.hargaSat||it.hargaNego||0)))}</td>
+      </tr>`).join('');
+      const gt = h.items.reduce((acc, it) => acc + Math.round((it.vol||1)*(it.hargaSat||it.hargaNego||0)), 0);
+      detailHtml = `<details style="margin-top:10px;">
+        <summary style="cursor:pointer;font-size:0.78rem;color:${c};font-weight:700;"><i class="fa-solid fa-table"></i> Lihat Rincian ${h.items.length} Item</summary>
+        <div style="overflow-x:auto;margin-top:8px;border-radius:7px;border:1px solid #ddd;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
+            <thead><tr style="background:${bg};">
+              <th style="padding:5px 8px;">#</th><th style="padding:5px 8px;">Uraian</th>
+              <th style="padding:5px 8px;">Vol</th><th style="padding:5px 8px;">Sat</th>
+              <th style="padding:5px 8px;text-align:right;">Harga Sat.</th>
+              <th style="padding:5px 8px;text-align:right;">Total</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot>
+              <tr style="background:${bg};font-weight:700;">
+                <td colspan="5" style="padding:5px 8px;text-align:right;">Total Excl. PPN</td>
+                <td style="padding:5px 8px;text-align:right;">${nhFmtRp(gt)}</td>
+              </tr>
+              <tr style="background:${bg};font-weight:700;">
+                <td colspan="5" style="padding:5px 8px;text-align:right;">Total Incl. PPN</td>
+                <td style="padding:5px 8px;text-align:right;color:${c};">${nhFmtRp(nhIncl(gt))}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </details>`;
+    }
+
+    return `<div style="background:${bg};border:1.5px solid ${c}33;border-left:4px solid ${c};border-radius:10px;padding:12px 16px;margin-bottom:12px;position:relative;">
+      ${isTerbaru ? `<span style="position:absolute;top:8px;right:12px;background:${c};color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:10px;">Terbaru</span>` : ''}
+      <div style="font-size:0.78rem;font-weight:700;color:${c};margin-bottom:6px;display:flex;align-items:center;gap:7px;">
+        <i class="fa-solid ${h.role==='HPS'?'fa-landmark':h.role==='Persetujuan'?'fa-circle-check':h.role==='Pokja'?'fa-users':'fa-building'}"></i>
+        ${h.label||h.role} &nbsp;·&nbsp; <span style="font-weight:400;opacity:0.8;">${h.timestamp||''}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px;">
+        <div style="background:rgba(255,255,255,0.65);border-radius:6px;padding:6px 10px;text-align:center;">
+          <div style="font-size:0.85rem;font-weight:700;color:${c};">${nhFmtRp(h.totalExcl||h.hargaExcl||0)}</div>
+          <div style="font-size:0.68rem;color:#666;">Total Excl. PPN</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.65);border-radius:6px;padding:6px 10px;text-align:center;">
+          <div style="font-size:0.85rem;font-weight:700;">${nhFmtRp(nhPpn(h.totalExcl||h.hargaExcl||0))}</div>
+          <div style="font-size:0.68rem;color:#666;">PPN 11%</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.65);border-radius:6px;padding:6px 10px;text-align:center;">
+          <div style="font-size:0.85rem;font-weight:700;color:${c};">${nhFmtRp(h.totalIncl||h.hargaIncl||nhIncl(h.totalExcl||h.hargaExcl||0))}</div>
+          <div style="font-size:0.68rem;color:#666;">Total Incl. PPN</div>
+        </div>
+      </div>
+      ${h.catatan ? `<div style="font-size:0.75rem;color:#555;font-style:italic;margin-top:4px;"><i class="fa-solid fa-comment-dots"></i> "${h.catatan}"</div>` : ''}
+      ${detailHtml}
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = statusHtml + items_html;
 }
 
 </script>
@@ -6271,9 +6575,6 @@ function renderNegosiasiPage() {
       </button>
       <button class="nhps-tab" data-tab="tabel" onclick="nhpsSwitchTab('tabel')">
         <i class="fa-solid fa-table-cells-large"></i> Tabel Negosiasi
-      </button>
-      <button class="nhps-tab" data-tab="histori" onclick="nhpsSwitchTab('histori')">
-        <i class="fa-solid fa-clock-rotate-left"></i> Riwayat
       </button>
     </div>
 
@@ -6360,16 +6661,6 @@ function renderNegosiasiPage() {
       </div>
     </div><!-- /panel tabel -->
 
-    <!-- Body: Tab Histori -->
-    <div class="nhps-body nhps-panel" data-panel="histori" style="display:none;">
-      <div id="nhpsHistoriWrap">
-        <div class="nhps-tbl-empty">
-          <i class="fa-solid fa-rotate fa-spin"></i>
-          <div>Memuat riwayat…</div>
-        </div>
-      </div>
-    </div><!-- /panel histori -->
-
     <!-- Footer -->
     <div class="nhps-footer" id="nhpsFooter">
       <button class="nhps-btn nhps-btn-gray" onclick="tutupModalNegoHPS()"><i class="fa-solid fa-xmark"></i> Tutup</button>
@@ -6379,5 +6670,35 @@ function renderNegosiasiPage() {
 </div><!-- /#modalNegoHPS -->
 
 </script>
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- MODAL RIWAYAT NEGOSIASI — berdiri sendiri               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="modalRiwayatNego" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9100;align-items:center;justify-content:center;padding:16px;"
+     onclick="if(event.target===this)tutupRiwayatNego()">
+  <div style="background:var(--white);border-radius:14px;width:min(96vw,680px);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#4A148C,#6A1B9A);color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-size:1.05rem;font-weight:800;"><i class="fa-solid fa-clock-rotate-left"></i> &nbsp;Riwayat Negosiasi</div>
+        <div style="font-size:0.80rem;opacity:0.85;margin-top:2px;" id="riwayatNegoNama"></div>
+      </div>
+      <button onclick="tutupRiwayatNego()" style="background:rgba(255,255,255,0.18);border:none;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:15px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <!-- Body scrollable -->
+    <div id="riwayatNegoWrap" style="overflow-y:auto;flex:1;padding:20px 22px;">
+      <div style="text-align:center;padding:40px 20px;color:#9FA8DA;">
+        <i class="fa-solid fa-rotate fa-spin" style="font-size:28px;display:block;margin-bottom:12px;"></i>
+        <div>Memuat riwayat…</div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:14px 22px;border-top:1px solid var(--gray-100);display:flex;justify-content:flex-end;flex-shrink:0;">
+      <button onclick="tutupRiwayatNego()" style="background:var(--gray-100);border:1px solid var(--gray-200);color:var(--gray-700);border-radius:8px;padding:9px 20px;font-size:0.88rem;font-weight:600;cursor:pointer;">
+        <i class="fa-solid fa-xmark"></i> Tutup
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
