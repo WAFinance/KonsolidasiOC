@@ -1750,7 +1750,7 @@ async function loadSubmissionsFromSheet() {
     clearTimeout(timeout);
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
-      _submissions = data.submissions;
+      _submissions = normalizeSubmissions(data.submissions);
       document.getElementById('statPeserta').textContent = _submissions.length || '–';
       if (currentRole === 'pokja' || currentRole === 'admin') renderPokjaTable();
       if (currentRole === 'penyedia') renderStatusPenyedia();
@@ -1779,7 +1779,7 @@ async function loadStatusPenyedia() {
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const emailLower = currentPenyedia.email.toLowerCase();
       const otherSubs  = _submissions.filter(s => (s.email||'').toLowerCase() !== emailLower);
-      _submissions     = [...otherSubs, ...data.submissions];
+      _submissions     = [...otherSubs, ...normalizeSubmissions(data.submissions)];
       hideSync();
       renderSidebar(); // update sidebar agar Negosiasi muncul jika status sudah Lulus
     } else { hideSync(); }
@@ -1797,6 +1797,20 @@ async function loadStatusPenyedia() {
 }
 
 function getSubmissions() { return _submissions; }
+
+// Normalisasi field yang bisa datang sebagai number dari Google Sheets
+function normalizeSubmission(s) {
+  s.npwp            = String(s.npwp            ?? '').trim();
+  s.namaPerusahaan  = String(s.namaPerusahaan  ?? '').trim();
+  s.email           = String(s.email           ?? '').trim();
+  s.telp            = String(s.telp            ?? '').trim();
+  s.alamat          = String(s.alamat          ?? '').trim();
+  s.namaDirektur    = String(s.namaDirektur    ?? '').trim();
+  s.jenisDok        = String(s.jenisDok        ?? '').trim();
+  s.reviewStatus    = String(s.reviewStatus    ?? '').trim();
+  return s;
+}
+function normalizeSubmissions(arr) { return Array.isArray(arr) ? arr.map(normalizeSubmission) : []; }
 
 function togglePw(id, btn) {
   const inp = document.getElementById(id);
@@ -3578,7 +3592,7 @@ function renderPokjaTable() {
   let groups = Array.from(groupMap.values());
   groups = groups.filter(grp => {
     const d = grp[grp.length-1].d;
-    const matchQ=!q||(d.namaPerusahaan||'').toLowerCase().includes(q)||(d.npwp||'').includes(q)||(d.jenisDok||'').toLowerCase().includes(q);
+    const matchQ=!q||(d.namaPerusahaan||'').toLowerCase().includes(q)||String(d.npwp||'').includes(q)||(d.jenisDok||'').toLowerCase().includes(q);
     const matchS=!fStat||(d.reviewStatus||'Menunggu Review')===fStat;
     return matchQ&&matchS;
   });
@@ -4152,7 +4166,7 @@ async function autoRefreshSubmissions() {
         return (d.namaPerusahaan||'') + '|' + (d.reviewStatus||'') + '|' + (d.tanggal||'') + '|' + klarHash;
       }).join(';;');
       const prevHash  = makeHash(_submissions);
-      _submissions = data.submissions;
+      _submissions = normalizeSubmissions(data.submissions);
       const newHash   = makeHash(_submissions);
 
       // Update angka statistik saja (tidak mengganggu UI)
@@ -4187,9 +4201,9 @@ async function loadPublicPesertaCount() {
     const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
-      _submissions = data.submissions;
+      _submissions = normalizeSubmissions(data.submissions);
       const el = document.getElementById('statPeserta');
-      if (el) el.textContent = data.submissions.length || '0';
+      if (el) el.textContent = _submissions.length || '0';
     }
     updateDataTimestamp();
   } catch(e) {}
@@ -4634,7 +4648,7 @@ async function bukaModalPeserta() {
       const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
       const data = await res.json();
       if (data.status === 'ok' && Array.isArray(data.submissions)) {
-        _submissions = data.submissions;
+        _submissions = normalizeSubmissions(data.submissions);
         document.getElementById('statPeserta').textContent = _submissions.length || '–';
       }
     } catch(e) {}
@@ -4736,14 +4750,14 @@ function updateDataTimestamp() {
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           const emailLower = currentPenyedia.email.toLowerCase();
           const otherSubs  = _submissions.filter(s => (s.email||'').toLowerCase() !== emailLower);
-          newSubs = [...otherSubs, ...data.submissions];
+          newSubs = [...otherSubs, ...normalizeSubmissions(data.submissions)];
         }
       } else {
         // Pokja / admin / publik: ambil semua
         const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
-          newSubs = data.submissions;
+          newSubs = normalizeSubmissions(data.submissions);
         }
       }
 
