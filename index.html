@@ -4962,9 +4962,134 @@ function cacheSetTimestamp(key, ts) {
 })();
 
 // =================================================================
-// NEGOSIASI FINAL — POKJA INPUT HARGA FINAL
+// NEGOSIASI FINAL — POKJA INPUT HARGA FINAL (TABEL PER ITEM)
 // =================================================================
-let _negoFinalIdx = null;
+let _negoFinalIdx  = null;
+let _negoFinalItems = []; // array item HPS yang akan ditampilkan di tabel
+
+/** Ambil item HPS dari state negosiasi untuk ditampilkan di tabel final */
+function _getNegoFinalItemsFromState(d) {
+  const negosiasi = d.negosiasi || null;
+  if (!negosiasi) return [];
+
+  // Prioritas 1: hpsItems langsung (negosiasi model tabel)
+  if (Array.isArray(negosiasi.hpsItems) && negosiasi.hpsItems.length) {
+    // Ambil harga satuan terbaik: negoPokja terakhir → negoPenyedia → hargaSat HPS
+    const negoPeny  = Array.isArray(negosiasi.negoPenyedia) ? negosiasi.negoPenyedia : [];
+    const negoPokja = Array.isArray(negosiasi.negoPokja)    ? negosiasi.negoPokja    : [];
+    return negosiasi.hpsItems.map((it, i) => {
+      const hsSarankan = negoPokja[i] != null ? negoPokja[i]
+                       : negoPeny[i] != null  ? negoPeny[i]
+                       : (it.hargaSat || 0);
+      return {
+        uraian    : it.uraian || '',
+        vol       : parseFloat(it.vol) || 1,
+        sat       : it.sat || '',
+        hpsSat    : parseFloat(it.hargaSat) || 0,    // referensi HPS
+        usePpn    : it.usePpn !== false,
+        hargaFinal: parseFloat(hsSarankan) || 0      // kolom yang diisi Pokja
+      };
+    }).filter(it => it.uraian);
+  }
+
+  // Prioritas 2: ambil dari histori items (model lama)
+  if (Array.isArray(negosiasi.histori) && negosiasi.histori.length) {
+    const persetujuan = negosiasi.histori.filter(h => h.role === 'Persetujuan');
+    const penyediaH   = negosiasi.histori.filter(h => h.role === 'Penyedia');
+    const acuan = persetujuan.length ? persetujuan[persetujuan.length-1]
+                : penyediaH.length   ? penyediaH[penyediaH.length-1]
+                : negosiasi.histori[negosiasi.histori.length-1];
+    if (acuan && Array.isArray(acuan.items) && acuan.items.length) {
+      return acuan.items.map(it => ({
+        uraian    : it.uraian || '',
+        vol       : parseFloat(it.vol) || 1,
+        sat       : it.sat || '',
+        hpsSat    : parseFloat(it.hargaSat || it.hargaNego) || 0,
+        usePpn    : it.usePpn !== false,
+        hargaFinal: parseFloat(it.hargaNego || it.hargaSat) || 0
+      })).filter(it => it.uraian);
+    }
+  }
+  return [];
+}
+
+function _renderNegoFinalTabel(items) {
+  const tbody = document.getElementById('negoFinalTbody');
+  const tfoot = document.getElementById('negoFinalTfoot');
+  if (!tbody) return;
+
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:#9FA8DA;">
+      <i class="fa-solid fa-triangle-exclamation" style="font-size:22px;display:block;margin-bottom:8px;color:#FFD54F;"></i>
+      Data item HPS tidak ditemukan. Pastikan negosiasi HPS sudah dilakukan terlebih dahulu.<br>
+      <small style="display:block;margin-top:8px;">Anda tetap bisa mengirim harga final menggunakan baris tambahan di bawah.</small>
+    </td></tr>`;
+    tfoot.innerHTML = '';
+    _negoFinalUpdateSummary();
+    return;
+  }
+
+  tbody.innerHTML = items.map((it, i) => {
+    const totalHps   = Math.round(it.vol * it.hpsSat);
+    const totalFinal = Math.round(it.vol * (it.hargaFinal || 0));
+    const ppnFlag    = it.usePpn ? '<span style="background:#E8F5E9;color:#1B5E20;font-size:0.68rem;padding:1px 5px;border-radius:4px;border:1px solid #A5D6A7;">PPN</span>' : '<span style="background:#F5F5F5;color:#9E9E9E;font-size:0.68rem;padding:1px 5px;border-radius:4px;border:1px solid #ddd;">-</span>';
+    const rowBg = i % 2 === 0 ? '#fff' : '#F8F9FA';
+    return `<tr style="background:${rowBg};">
+      <td style="padding:7px 10px;text-align:center;color:#9FA8DA;font-size:0.78rem;">${i+1}</td>
+      <td style="padding:7px 10px;font-weight:600;color:var(--blue-900);">${it.uraian} &nbsp;${ppnFlag}</td>
+      <td style="padding:7px 10px;text-align:center;">${it.vol.toLocaleString('id-ID')}</td>
+      <td style="padding:7px 10px;text-align:center;color:#555;">${it.sat}</td>
+      <td style="padding:7px 10px;text-align:right;color:#555;font-size:0.80rem;">${(it.hpsSat||0).toLocaleString('id-ID')}</td>
+      <td style="padding:5px 8px;background:#EFF3FF;border-left:2px solid #9FA8DA;">
+        <input type="number" id="negoFinalSat_${i}"
+          value="${it.hargaFinal || ''}"
+          placeholder="0"
+          min="0" step="1000"
+          oninput="_negoFinalUpdateRow(${i})"
+          style="width:100%;padding:5px 8px;border:1px solid #C5CAE9;border-radius:6px;font-size:0.83rem;text-align:right;outline:none;font-family:inherit;background:#fff;" />
+      </td>
+      <td id="negoFinalTotal_${i}" style="padding:7px 10px;text-align:right;font-weight:700;color:#1A237E;">${totalFinal > 0 ? totalFinal.toLocaleString('id-ID') : '<span style="color:#ccc;">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  tfoot.innerHTML = '';
+  _negoFinalUpdateSummary();
+}
+
+function _negoFinalUpdateRow(i) {
+  const el   = document.getElementById('negoFinalSat_' + i);
+  const tot  = document.getElementById('negoFinalTotal_' + i);
+  if (!el || !tot) return;
+  const sat  = parseFloat(el.value) || 0;
+  const vol  = _negoFinalItems[i] ? (_negoFinalItems[i].vol || 1) : 1;
+  const total = Math.round(sat * vol);
+  tot.innerHTML = total > 0 ? total.toLocaleString('id-ID') : '<span style="color:#ccc;">—</span>';
+  _negoFinalUpdateSummary();
+}
+
+function _negoFinalCollectItems() {
+  return _negoFinalItems.map((it, i) => {
+    const el = document.getElementById('negoFinalSat_' + i);
+    const hs = el ? (parseFloat(el.value) || 0) : 0;
+    return { ...it, hargaFinal: hs };
+  });
+}
+
+function _negoFinalUpdateSummary() {
+  const items = _negoFinalCollectItems();
+  const totalExcl = items.reduce((s, it) => s + Math.round(it.vol * (it.hargaFinal || 0)), 0);
+  const ppnAmt    = items.reduce((s, it) => {
+    if (!it.usePpn) return s;
+    return s + Math.round(Math.round(it.vol * (it.hargaFinal || 0)) * 0.11);
+  }, 0);
+  const totalIncl = totalExcl + ppnAmt;
+  const el = document.getElementById('negoFinalTotalSummary');
+  if (el) {
+    el.innerHTML = totalExcl > 0
+      ? `Total Excl. PPN: <strong>Rp ${totalExcl.toLocaleString('id-ID')}</strong> &nbsp;|&nbsp; PPN: <strong>Rp ${ppnAmt.toLocaleString('id-ID')}</strong> &nbsp;|&nbsp; <span style="color:#1B5E20;">Total Incl. PPN: <strong>Rp ${totalIncl.toLocaleString('id-ID')}</strong></span>`
+      : '';
+  }
+}
 
 function bukaModalNegoFinal(idx) {
   _negoFinalIdx = idx;
@@ -4972,100 +5097,26 @@ function bukaModalNegoFinal(idx) {
   const d   = all[idx];
   if (!d) return;
 
-  // ── Ambil harga deal dari data negosiasi (auto-fill) ──────────────────
-  const negosiasi = d.negosiasi || null;
-  let dealExcl = parseFloat(d.negoFinalHargaExcl) || 0;
-
-  // Prioritas 1: hargaDisepakati dari state negosiasi HPS tabel
-  if (!dealExcl && negosiasi) {
-    dealExcl = parseFloat(negosiasi.hargaDisepakatiExcl) || 0;
-  }
-  // Prioritas 2: ambil dari histori Persetujuan
-  if (!dealExcl && negosiasi && Array.isArray(negosiasi.histori) && negosiasi.histori.length) {
-    const persetujuan = negosiasi.histori.filter(h => h.role === 'Persetujuan');
-    const penyediaH   = negosiasi.histori.filter(h => h.role === 'Penyedia');
-    const acuan = persetujuan.length ? persetujuan[persetujuan.length-1]
-                : penyediaH.length   ? penyediaH[penyediaH.length-1]
-                : negosiasi.histori[negosiasi.histori.length-1];
-    if (acuan) dealExcl = parseFloat(acuan.totalExcl || acuan.hargaExcl) || 0;
-  }
-  // Prioritas 3: hitung dari hpsItems dengan negoPenyedia
-  if (!dealExcl && negosiasi && Array.isArray(negosiasi.hpsItems) && negosiasi.hpsItems.length) {
-    const negoPeny = Array.isArray(negosiasi.negoPenyedia) ? negosiasi.negoPenyedia : [];
-    dealExcl = negosiasi.hpsItems.reduce((acc, it, i) => {
-      const hs = negoPeny[i] != null ? negoPeny[i] : (it.hargaSat || 0);
-      return acc + Math.round((parseFloat(it.vol)||1) * parseFloat(hs));
-    }, 0);
-  }
-
-  const dealExclFmt = dealExcl > 0 ? dealExcl : '';
-
   document.getElementById('negoFinalSubtitle').textContent = d.namaPerusahaan || '-';
-
-  // Info box dengan ringkasan harga deal jika ada
-  let dealInfo = '';
-  if (dealExcl > 0) {
-    const dealIncl = Math.round(dealExcl * 1.11);
-    dealInfo = `<br><hr style="border:none;border-top:1px solid #C5CAE9;margin:8px 0;">
-    <div style="font-size:0.80rem;color:#1A237E;font-weight:700;"><i class="fa-solid fa-handshake"></i> Harga Deal (referensi):</div>
-    <div style="display:flex;gap:16px;margin-top:4px;font-size:0.82rem;">
-      <span>Excl. PPN: <strong>Rp ${dealExcl.toLocaleString('id-ID')}</strong></span>
-      <span>Incl. PPN: <strong>Rp ${dealIncl.toLocaleString('id-ID')}</strong></span>
-    </div>`;
-  }
-
   document.getElementById('negoFinalInfoBox').innerHTML =
-    `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong><br>
-    NPWP: <strong>${d.npwp||'-'}</strong><br>
-    Jenis Dok: <span style="font-style:italic;">${d.jenisDok||'-'}</span>${dealInfo}`;
+    `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: <strong>${d.npwp||'-'}</strong><br>
+    Jenis Dok: <span style="font-style:italic;">${d.jenisDok||'-'}</span>
+    <span style="margin-left:10px;background:#C8E6C9;color:#1B5E20;font-size:0.75rem;padding:2px 8px;border-radius:5px;font-weight:700;"><i class="fa-solid fa-handshake"></i> Negosiasi HPS Selesai (DEAL)</span>`;
 
-  // Pre-fill harga dari data deal
-  document.getElementById('negoFinalHarga').value = dealExclFmt;
   document.getElementById('negoFinalCatatan').value = d.negoFinalCatatan || '';
   document.getElementById('negoFinalMsg').style.display = 'none';
 
-  // Tampilkan preview harga jika sudah ada nilai
-  const prev = document.getElementById('negoFinalPreviewHarga');
-  if (dealExcl > 0) {
-    const incl = Math.round(dealExcl * 1.11);
-    const ppn  = Math.round(dealExcl * 0.11);
-    prev.style.display = 'block';
-    prev.innerHTML = `Excl. PPN: <strong>Rp ${dealExcl.toLocaleString('id-ID')}</strong><br>
-      PPN 11%: <strong>Rp ${ppn.toLocaleString('id-ID')}</strong><br>
-      Incl. PPN: <strong style="color:#1A237E;">Rp ${incl.toLocaleString('id-ID')}</strong>`;
-  } else {
-    prev.style.display = 'none';
-  }
+  // Ambil dan render items
+  _negoFinalItems = _getNegoFinalItemsFromState(d);
+  _renderNegoFinalTabel(_negoFinalItems);
 
   document.getElementById('modalNegoFinal').style.display = 'flex';
 }
 
-function _attachNegoFinalHargaListener() {
-  const el = document.getElementById('negoFinalHarga');
-  if (!el || el._listenerAttached) return;
-  el._listenerAttached = true;
-  el.addEventListener('input', function() {
-    const excl = parseFloat(this.value) || 0;
-    const incl  = Math.round(excl * 1.11);
-    const ppn   = Math.round(excl * 0.11);
-    const prev  = document.getElementById('negoFinalPreviewHarga');
-    if (excl > 0) {
-      prev.style.display = 'block';
-      prev.innerHTML = `
-        Excl. PPN: <strong>Rp ${excl.toLocaleString('id-ID')}</strong><br>
-        PPN 11%: <strong>Rp ${ppn.toLocaleString('id-ID')}</strong><br>
-        Incl. PPN: <strong style="color:#1A237E;">Rp ${incl.toLocaleString('id-ID')}</strong>`;
-    } else {
-      prev.style.display = 'none';
-    }
-  });
-}
-document.addEventListener('DOMContentLoaded', _attachNegoFinalHargaListener);
-setTimeout(_attachNegoFinalHargaListener, 1000);
-
 function tutupModalNegoFinal() {
   document.getElementById('modalNegoFinal').style.display = 'none';
-  _negoFinalIdx = null;
+  _negoFinalIdx  = null;
+  _negoFinalItems = [];
 }
 
 async function simpanNegoFinal() {
@@ -5075,27 +5126,34 @@ async function simpanNegoFinal() {
   const d   = all[idx];
   if (!d) return;
 
-  const harga = parseFloat(document.getElementById('negoFinalHarga').value);
-  if (!harga || harga <= 0) {
+  const items = _negoFinalCollectItems();
+  const totalExcl = items.reduce((s, it) => s + Math.round(it.vol * (it.hargaFinal || 0)), 0);
+  const ppnAmt    = items.reduce((s, it) => {
+    if (!it.usePpn) return s;
+    return s + Math.round(Math.round(it.vol * (it.hargaFinal || 0)) * 0.11);
+  }, 0);
+  const totalIncl = totalExcl + ppnAmt;
+
+  if (totalExcl <= 0) {
     const msg = document.getElementById('negoFinalMsg');
     msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-    msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Harga final tidak boleh kosong.';
+    msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Isi minimal satu Harga Satuan Final sebelum menyimpan.';
     return;
   }
 
   const catatan = document.getElementById('negoFinalCatatan').value.trim();
-  const incl    = Math.round(harga * 1.11);
   const tgl     = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
   const btn = document.getElementById('btnSimpanNegoFinal');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…';
 
-  // Update status submission lokal
-  d.negoFinalHargaExcl = harga;
-  d.negoFinalHargaIncl = incl;
+  // Update data submission lokal
+  d.negoFinalHargaExcl = totalExcl;
+  d.negoFinalHargaIncl = totalIncl;
   d.negoFinalCatatan   = catatan;
   d.negoFinalTgl       = tgl;
+  d.negoFinalItems     = items;
   d.negoFinalStatus    = STATUS_MENUNGGU_PERSETUJUAN;
   d.penetapanStatus    = STATUS_MENUNGGU_PERSETUJUAN;
 
@@ -5104,20 +5162,21 @@ async function simpanNegoFinal() {
       method: 'POST', mode: 'no-cors',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        action: 'simpanNegoFinal',
-        namaPerusahaan: d.namaPerusahaan,
-        npwp: d.npwp,
-        hargaExcl: harga,
-        hargaIncl: incl,
+        action         : 'simpanNegoFinal',
+        namaPerusahaan : d.namaPerusahaan,
+        npwp           : d.npwp,
+        hargaExcl      : totalExcl,
+        hargaIncl      : totalIncl,
+        items          : items,
         catatan,
         tgl,
-        status: STATUS_MENUNGGU_PERSETUJUAN,
-        pokja: currentPokjaUser || 'Pokja'
+        status         : STATUS_MENUNGGU_PERSETUJUAN,
+        pokja          : currentPokjaUser || 'Pokja'
       })
     });
   } catch(e) {}
 
-  // Invalidate cache setelah perubahan
+  // Invalidate cache
   cacheDel(CACHE_KEY_SUBMISSIONS);
   cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
 
@@ -5126,16 +5185,14 @@ async function simpanNegoFinal() {
 
   const msg = document.getElementById('negoFinalMsg');
   msg.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-  msg.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Harga final berhasil dikirim!</strong> Menunggu persetujuan penyedia.`;
+  msg.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Harga final berhasil dikirim!</strong> Total: Rp ${totalIncl.toLocaleString('id-ID')} (Incl. PPN) — Menunggu persetujuan penyedia.`;
 
   setTimeout(() => {
     tutupModalNegoFinal();
     showToast('Negosiasi Final Terkirim', `Harga final untuk ${d.namaPerusahaan||'-'} menunggu persetujuan penyedia.`, 'success', 4000);
-    // Re-render penetapan dan invalidate cache agar data langsung sinkron
     cacheDel(CACHE_KEY_SUBMISSIONS);
     cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
     renderPenetapanPage();
-    // Background sync ke server agar status terbaca di penyedia
     fetchPenetapanData();
   }, 900);
 }
@@ -5239,6 +5296,8 @@ async function fetchPenetapanData() {
           if (row.catatan)             _submissions[idx].negoFinalCatatan   = row.catatan;
           if (row.tglUpdate)           _submissions[idx].negoFinalTgl       = row.tglUpdate;
           if (row.keputusanPenyedia)   _submissions[idx].keputusanPenyedia  = row.keputusanPenyedia;
+          if (Array.isArray(row.items) && row.items.length)
+                                       _submissions[idx].negoFinalItems     = row.items;
         }
       });
       renderPenetapanPage();
@@ -5343,26 +5402,77 @@ function renderPenetapanPage() {
       borderColor = '#1B5E20';
     }
 
-    // Harga final box
-    const hargaBox = (s.negoFinalHargaExcl || dealExcl) ? `
-      <div style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #66BB6A;border-left:4px solid #1B5E20;border-radius:8px;padding:11px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:1.3rem;">🏆</span>
-          <div>
-            <div style="font-size:0.73rem;font-weight:700;color:#1B5E20;letter-spacing:0.3px;">HARGA FINAL / DEAL</div>
-            ${s.negoFinalTgl ? `<div style="font-size:0.70rem;color:#388E3C;">${s.negoFinalTgl}</div>` : ''}
+    // Harga final box — tampilkan tabel rincian per item jika ada
+    const finalItems = Array.isArray(s.negoFinalItems) && s.negoFinalItems.length ? s.negoFinalItems : [];
+    const showFinalHarga = !!(s.negoFinalHargaExcl || dealExcl);
+
+    let itemsTabelHtml = '';
+    if (finalItems.length) {
+      const itemRows = finalItems.map((it, ii) => {
+        const total = Math.round((it.vol||1) * (it.hargaFinal||0));
+        return `<tr style="background:${ii%2===0?'#fff':'#F8F9FA'};">
+          <td style="padding:5px 8px;text-align:center;color:#9FA8DA;font-size:0.75rem;">${ii+1}</td>
+          <td style="padding:5px 8px;font-weight:600;">${it.uraian||'-'}</td>
+          <td style="padding:5px 8px;text-align:center;">${(it.vol||1).toLocaleString('id-ID')}</td>
+          <td style="padding:5px 8px;text-align:center;color:#555;">${it.sat||'-'}</td>
+          <td style="padding:5px 8px;text-align:right;color:#1A237E;font-weight:700;">${(it.hargaFinal||0).toLocaleString('id-ID')}</td>
+          <td style="padding:5px 8px;text-align:right;font-weight:700;color:#1B5E20;">${total.toLocaleString('id-ID')}</td>
+        </tr>`;
+      }).join('');
+      const totalFinalExcl = finalItems.reduce((acc,it) => acc + Math.round((it.vol||1)*(it.hargaFinal||0)), 0);
+      const totalFinalIncl = s.negoFinalHargaIncl || Math.round(totalFinalExcl * 1.11);
+      itemsTabelHtml = `
+        <div style="margin-top:10px;border-radius:8px;overflow:hidden;border:1px solid #A5D6A7;">
+          <div style="background:#1B5E20;color:#fff;padding:7px 12px;font-size:0.78rem;font-weight:700;"><i class="fa-solid fa-table"></i> Rincian Harga Final per Item</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+              <thead><tr style="background:#E8F5E9;color:#1B5E20;">
+                <th style="padding:6px 8px;text-align:center;">#</th>
+                <th style="padding:6px 8px;text-align:left;">Uraian</th>
+                <th style="padding:6px 8px;text-align:center;">Vol</th>
+                <th style="padding:6px 8px;text-align:center;">Sat</th>
+                <th style="padding:6px 8px;text-align:right;">Harga Sat. Final</th>
+                <th style="padding:6px 8px;text-align:right;">Total</th>
+              </tr></thead>
+              <tbody>${itemRows}</tbody>
+              <tfoot>
+                <tr style="background:#E8F5E9;font-weight:700;">
+                  <td colspan="5" style="padding:5px 8px;text-align:right;color:#1B5E20;">Total Excl. PPN</td>
+                  <td style="padding:5px 8px;text-align:right;color:#1B5E20;">Rp ${totalFinalExcl.toLocaleString('id-ID')}</td>
+                </tr>
+                <tr style="background:#C8E6C9;font-weight:700;">
+                  <td colspan="5" style="padding:5px 8px;text-align:right;color:#1B5E20;">Total Incl. PPN</td>
+                  <td style="padding:5px 8px;text-align:right;color:#1B5E20;font-size:0.88rem;">Rp ${totalFinalIncl.toLocaleString('id-ID')}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    const hargaBox = showFinalHarga ? `
+      <div style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #66BB6A;border-left:4px solid #1B5E20;border-radius:8px;padding:11px 16px;margin-top:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:1.3rem;">🏆</span>
+            <div>
+              <div style="font-size:0.73rem;font-weight:700;color:#1B5E20;letter-spacing:0.3px;">HARGA FINAL — PERSETUJUAN POKJA</div>
+              ${s.negoFinalTgl ? `<div style="font-size:0.70rem;color:#388E3C;">${s.negoFinalTgl}</div>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;text-align:right;">
+            <div>
+              <div style="font-size:0.85rem;font-weight:700;color:#1B5E20;">Rp ${fmt(s.negoFinalHargaExcl||dealExcl)}</div>
+              <div style="font-size:0.68rem;color:#388E3C;">Excl. PPN</div>
+            </div>
+            <div>
+              <div style="font-size:0.85rem;font-weight:700;color:#1B5E20;">Rp ${fmt(s.negoFinalHargaIncl||dealIncl)}</div>
+              <div style="font-size:0.68rem;color:#388E3C;">Incl. PPN</div>
+            </div>
           </div>
         </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;text-align:right;">
-          <div>
-            <div style="font-size:0.85rem;font-weight:700;color:#1B5E20;">Rp ${fmt(s.negoFinalHargaExcl||dealExcl)}</div>
-            <div style="font-size:0.68rem;color:#388E3C;">Excl. PPN</div>
-          </div>
-          <div>
-            <div style="font-size:0.85rem;font-weight:700;color:#1B5E20;">Rp ${fmt(s.negoFinalHargaIncl||dealIncl)}</div>
-            <div style="font-size:0.68rem;color:#388E3C;">Incl. PPN</div>
-          </div>
-        </div>
+        ${itemsTabelHtml}
+        ${s.negoFinalCatatan ? `<div style="margin-top:8px;font-size:0.75rem;color:#555;font-style:italic;"><i class="fa-solid fa-comment-dots"></i> "${s.negoFinalCatatan}"</div>` : ''}
       </div>` : '';
 
     // Aksi Pokja
@@ -7650,34 +7760,63 @@ function renderRiwayatNegoModal(s, nama) {
   </div>
 </div>
 
-<!-- ══ MODAL NEGOSIASI FINAL (Pokja input harga final) ══ -->
+<!-- ══ MODAL NEGOSIASI FINAL (Pokja input harga final per item) ══ -->
 <div id="modalNegoFinal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9200;align-items:center;justify-content:center;padding:16px;"
      onclick="if(event.target===this)tutupModalNegoFinal()">
-  <div style="background:var(--white);border-radius:14px;width:min(96vw,520px);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
-    <div style="background:linear-gradient(135deg,#1A237E,#283593);color:#fff;padding:18px 22px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;">
+  <div style="background:var(--white);border-radius:14px;width:min(96vw,860px);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#1A237E,#283593);color:#fff;padding:18px 22px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div>
-        <div style="font-size:1.05rem;font-weight:800;"><i class="fa-solid fa-gavel"></i> &nbsp;Negosiasi Final (Pokja)</div>
-        <div style="font-size:0.78rem;opacity:0.85;margin-top:2px;" id="negoFinalSubtitle">Input harga final untuk penyedia</div>
+        <div style="font-size:1.05rem;font-weight:800;"><i class="fa-solid fa-gavel"></i> &nbsp;Negosiasi Final — Persetujuan Harga (Pokja)</div>
+        <div style="font-size:0.78rem;opacity:0.85;margin-top:2px;" id="negoFinalSubtitle">Input harga satuan final per item untuk penyedia</div>
       </div>
       <button onclick="tutupModalNegoFinal()" style="background:rgba(255,255,255,0.18);border:none;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:15px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div style="padding:20px 22px;">
-      <div id="negoFinalInfoBox" style="background:#E8EAF6;border:1px solid #C5CAE9;border-left:4px solid #1A237E;border-radius:8px;padding:12px 16px;font-size:0.83rem;color:#1A237E;margin-bottom:16px;"></div>
-      <div class="admin-form-group">
-        <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-coins" style="color:#1A237E;"></i> Harga Final (Excl. PPN) <span style="color:#C0392B;">*</span></label>
-        <input type="number" id="negoFinalHarga" placeholder="Contoh: 15000000" min="0" step="1000"
-          style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-left:3px solid #1A237E;border-radius:8px;font-size:0.9rem;font-family:inherit;outline:none;" />
-        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info"></i> PPN 11% akan dihitung otomatis</div>
-        <div id="negoFinalPreviewHarga" style="display:none;background:#E8EAF6;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:0.82rem;color:#1A237E;"></div>
+    <!-- Scrollable body -->
+    <div style="overflow-y:auto;flex:1;padding:20px 22px;">
+      <!-- Info box -->
+      <div id="negoFinalInfoBox" style="background:#E8EAF6;border:1px solid #C5CAE9;border-left:4px solid #1A237E;border-radius:8px;padding:12px 16px;font-size:0.83rem;color:#1A237E;margin-bottom:14px;"></div>
+
+      <!-- Panduan -->
+      <div style="background:#FFF8E1;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:9px 14px;font-size:0.80rem;color:#6b5003;margin-bottom:14px;">
+        <i class="fa-solid fa-circle-info"></i> <strong>Petunjuk:</strong> Kolom <strong>Harga Satuan Final</strong> dapat diisi/diedit Pokja untuk persetujuan harga final. Kolom lainnya mengacu HPS. Setelah disimpan, penyedia akan diminta untuk menyetujui atau menolak.
       </div>
-      <div class="admin-form-group">
+
+      <!-- Tabel Negosiasi Final -->
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid #C5CAE9;margin-bottom:14px;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <thead>
+            <tr style="background:linear-gradient(135deg,#1A237E,#283593);color:#fff;">
+              <th style="padding:8px 10px;text-align:center;width:38px;">NO</th>
+              <th style="padding:8px 10px;text-align:left;min-width:180px;">URAIAN PEKERJAAN</th>
+              <th style="padding:8px 10px;text-align:center;width:70px;">VOL</th>
+              <th style="padding:8px 10px;text-align:center;width:80px;">SAT</th>
+              <th style="padding:8px 10px;text-align:right;width:140px;">HPS SATUAN<br><span style="font-weight:400;opacity:0.85;font-size:0.72rem;">(Referensi)</span></th>
+              <th style="padding:8px 10px;text-align:right;width:150px;background:rgba(255,255,255,0.18);">HARGA SATUAN FINAL <i class="fa-solid fa-pen-to-square" style="font-size:10px;"></i><br><span style="font-weight:400;opacity:0.85;font-size:0.72rem;">(Diisi Pokja)</span></th>
+              <th style="padding:8px 10px;text-align:right;width:130px;">TOTAL FINAL</th>
+            </tr>
+          </thead>
+          <tbody id="negoFinalTbody">
+            <tr><td colspan="7" style="text-align:center;padding:24px;color:#9FA8DA;"><i class="fa-solid fa-rotate fa-spin"></i> Memuat data…</td></tr>
+          </tbody>
+          <tfoot id="negoFinalTfoot"></tfoot>
+        </table>
+      </div>
+
+      <!-- Catatan -->
+      <div style="margin-bottom:14px;">
         <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-comment" style="color:#1A237E;"></i> Catatan (opsional)</label>
-        <textarea id="negoFinalCatatan" rows="3" placeholder="Catatan hasil negosiasi final…"
-          style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;"></textarea>
+        <textarea id="negoFinalCatatan" rows="2" placeholder="Catatan hasil negosiasi final untuk penyedia…"
+          style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none;"></textarea>
       </div>
+
       <div id="negoFinalMsg" style="display:none;margin-bottom:12px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="tutupModalNegoFinal()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
+    </div>
+    <!-- Footer tetap -->
+    <div style="padding:14px 22px;border-top:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;flex-wrap:wrap;gap:10px;">
+      <div id="negoFinalTotalSummary" style="font-size:0.83rem;color:#1A237E;font-weight:700;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="tutupModalNegoFinal()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;font-weight:600;">Batal</button>
         <button id="btnSimpanNegoFinal" onclick="simpanNegoFinal()"
           style="background:linear-gradient(135deg,#1A237E,#283593);color:#fff;border:none;border-radius:9px;padding:10px 24px;font-size:0.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;">
           <i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia
