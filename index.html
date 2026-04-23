@@ -1504,64 +1504,6 @@
   </div>
 </div>
 
-<!-- ══ MODAL NEGOSIASI HARGA v2 — sinkron dengan code.gs ══ -->
-<style>
-  #modalNegosiasi2 { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:310; align-items:center; justify-content:center; }
-  #modalNegosiasi2.show { display:flex; }
-  .nego2-wrap { background:#fff; border-radius:14px; width:min(1100px,98vw); max-height:95vh; display:flex; flex-direction:column; box-shadow:0 12px 48px rgba(0,0,0,0.35); animation:modalIn 0.2s ease; }
-  .nego2-header { background:linear-gradient(135deg,#1A237E,#283593); color:#fff; padding:14px 22px; border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-  .nego2-header h3 { font-size:1rem; font-weight:700; display:flex; align-items:center; gap:9px; margin:0; }
-  .nego2-header .nego2-sub { font-weight:400; font-size:0.82rem; opacity:0.8; margin-left:4px; }
-  .nego2-body { display:flex; flex:1; overflow:hidden; min-height:0; }
-  /* LEFT PANEL */
-  .nego2-left { width:52%; border-right:1px solid #e3e6f0; overflow-y:auto; padding:18px 20px; background:#F8F9FF; }
-  .nego2-hps-box { background:#fff; border:2px solid #1A237E; border-radius:10px; padding:14px 16px; margin-bottom:16px; }
-  .nego2-hps-box .hps-title { font-size:0.78rem; font-weight:700; color:#1A237E; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
-  .nego2-hps-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
-  .nego2-hps-item { background:#E8EAF6; border-radius:7px; padding:8px 12px; text-align:center; }
-  .nego2-hps-item .v { font-size:0.95rem; font-weight:700; color:#1A237E; }
-  .nego2-hps-item .l { font-size:0.68rem; color:#5C6BC0; margin-top:2px; }
-  /* Histori list */
-  .nego2-hist-list { display:flex; flex-direction:column; gap:10px; }
-  .nego2-hist-item { border-radius:9px; padding:11px 14px; border:1px solid; position:relative; }
-  .nego2-hist-item.role-hps    { background:#E8EAF6; border-color:#9FA8DA; }
-  .nego2-hist-item.role-penyedia { background:#E8F5E9; border-color:#A5D6A7; }
-  .nego2-hist-item.role-pokja  { background:#FFEBEE; border-color:#EF9A9A; }
-  .nego2-hist-item.role-persetujuan { background:#E0F2F1; border-color:#80CBC4; }
-  .nego2-hist-item.is-last     { box-shadow:0 3px 12px rgba(0,0,0,0.14); }
-  .nego2-hist-item .hist-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
-  .nego2-hist-item .hist-prices { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:6px; }
-  .nego2-hist-item .hist-price-box { background:rgba(255,255,255,0.7); border-radius:5px; padding:5px 8px; text-align:center; }
-  .nego2-hist-item .hist-price-box .pv { font-size:0.82rem; font-weight:700; }
-  .nego2-hist-item .hist-price-box .pl { font-size:0.66rem; color:#666; }
-  .nego2-hist-item .hist-catatan { font-size:0.75rem; color:#555; font-style:italic; margin-top:4px; }
-  .nego2-hist-item .hist-ts { font-size:0.69rem; color:#888; margin-top:4px; }
-  .nego2-badge-last { position:absolute; top:8px; right:10px; background:#FF6F00; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:10px; }
-  .nego2-empty-hist { text-align:center; padding:30px 16px; color:#9FA8DA; font-size:0.82rem; }
-  /* RIGHT PANEL */
-  .nego2-right { width:48%; overflow-y:auto; padding:18px 20px; }
-  .nego2-giliran-box { border-radius:9px; padding:11px 14px; margin-bottom:14px; font-size:0.83rem; font-weight:600; display:flex; align-items:center; gap:9px; }
-  .nego2-giliran-box.giliran-ok  { background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; }
-  .nego2-giliran-box.giliran-wait { background:#FFF8E1; border:1px solid #FFD54F; color:#856404; }
-  .nego2-giliran-box.giliran-done { background:#E0F2F1; border:1px solid #80CBC4; color:#004D40; }
-  .nego2-field label { font-size:0.80rem; font-weight:700; color:#1A237E; display:block; margin-bottom:5px; }
-  .nego2-field { margin-bottom:13px; }
-  .nego2-input { width:100%; padding:9px 12px; border:1px solid var(--gray-200); border-radius:7px; font-size:0.88rem; font-family:inherit; outline:none; box-sizing:border-box; background:#fff; }
-  .nego2-input:focus { border-color:#1A237E; box-shadow:0 0 0 3px rgba(26,35,126,0.08); }
-  .nego2-input[readonly] { background:#F5F5F5; color:#555; cursor:not-allowed; }
-  .nego2-harga-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-  .nego2-footer { padding:13px 22px; border-top:1px solid var(--gray-100); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; background:var(--gray-50); border-radius:0 0 14px 14px; flex-wrap:wrap; }
-  .nego2-prev-compare { background:#F3F4F6; border:1px solid #E0E0E0; border-radius:7px; padding:8px 12px; margin-bottom:12px; font-size:0.78rem; color:#555; }
-  .nego2-prev-compare strong { color:#1A237E; }
-  .nego2-loading { display:flex; align-items:center; justify-content:center; padding:60px 20px; gap:14px; color:#1A237E; font-size:0.88rem; flex-direction:column; }
-  .nego2-spinner { width:36px; height:36px; border:3px solid #C5CAE9; border-top-color:#1A237E; border-radius:50%; animation:spin2 0.7s linear infinite; }
-  @media(max-width:768px){
-    .nego2-body { flex-direction:column; }
-    .nego2-left,.nego2-right { width:100%; border-right:none; border-bottom:1px solid #e3e6f0; max-height:none; }
-    .nego2-harga-row { grid-template-columns:1fr 1fr; }
-    .nego2-hps-row,.nego2-hist-prices { grid-template-columns:1fr 1fr; }
-  }
-</style>
 
 <!-- ═══════════════════════════════════════════════════════ -->
 <!-- NEGOSIASI HPS — STYLES                                  -->
@@ -1690,99 +1632,6 @@
 }
 </style>
 
-<!-- Modal lama tetap ada tapi tidak dipakai — dipertahankan agar tidak breaking -->
-<div id="modalNegosiasi" style="display:none;"></div>
-
-<!-- Modal Baru v2 -->
-<div id="modalNegosiasi2">
-  <div class="nego2-wrap">
-    <!-- Header -->
-    <div class="nego2-header">
-      <h3><i class="fa-solid fa-handshake"></i> Negosiasi Harga <span class="nego2-sub" id="nego2NamaPerusahaan"></span></h3>
-      <button onclick="tutupModalNegosiasi()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:14px;line-height:1;">✕</button>
-    </div>
-
-    <!-- Body split -->
-    <div class="nego2-body">
-
-      <!-- ─── KIRI: Riwayat (Read Only) ─── -->
-      <div class="nego2-left" id="nego2LeftPanel">
-        <div class="nego2-loading" id="nego2Loading">
-          <div class="nego2-spinner"></div>
-          <p>Memuat data negosiasi…</p>
-        </div>
-        <div id="nego2LeftContent" style="display:none;">
-          <!-- HPS Box -->
-          <div class="nego2-hps-box" id="nego2HpsBox">
-            <div class="hps-title"><i class="fa-solid fa-landmark"></i> HPS Pokja (Harga Perkiraan Sendiri)</div>
-            <div class="nego2-hps-row" id="nego2HpsRow"></div>
-            <div style="font-size:0.70rem;color:#7986CB;margin-top:6px;" id="nego2HpsTs"></div>
-          </div>
-          <!-- Riwayat -->
-          <div style="font-size:0.78rem;font-weight:700;color:#1A237E;margin-bottom:10px;display:flex;align-items:center;gap:7px;">
-            <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Negosiasi
-          </div>
-          <div class="nego2-hist-list" id="nego2HistList"></div>
-        </div>
-      </div>
-
-      <!-- ─── KANAN: Form Input ─── -->
-      <div class="nego2-right" id="nego2RightPanel">
-        <!-- Info giliran -->
-        <div class="nego2-giliran-box giliran-wait" id="nego2GiliranBox">
-          <i class="fa-solid fa-hourglass-half"></i> <span id="nego2GiliranText">Memuat…</span>
-        </div>
-
-        <!-- Perbandingan harga sebelumnya -->
-        <div class="nego2-prev-compare" id="nego2PrevCompare" style="display:none;"></div>
-
-        <!-- Harga Disepakati Box (saat selesai) -->
-        <div id="nego2DisepakatiBox" style="display:none;background:#E0F2F1;border:2px solid #26A69A;border-radius:10px;padding:14px 16px;margin-bottom:14px;text-align:center;">
-          <div style="font-size:0.78rem;font-weight:700;color:#004D40;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;"><i class="fa-solid fa-circle-check"></i> Harga Telah Disetujui</div>
-          <div id="nego2DisepakatiRow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-        </div>
-
-        <!-- Form input harga -->
-        <div id="nego2FormInput">
-          <div class="nego2-harga-row">
-            <div class="nego2-field">
-              <label><i class="fa-solid fa-tag" style="color:#1A237E;"></i> Harga Nego (Excl. PPN) <span style="color:#C0392B;">*</span></label>
-              <input type="number" id="nego2HargaExcl" class="nego2-input" placeholder="0" min="1" oninput="nego2HitungIncl()" />
-            </div>
-            <div class="nego2-field">
-              <label><i class="fa-solid fa-percent" style="color:#856404;"></i> PPN 11%</label>
-              <input type="text" id="nego2HargaPpn" class="nego2-input" readonly placeholder="Auto" />
-            </div>
-            <div class="nego2-field">
-              <label><i class="fa-solid fa-coins" style="color:#2D7D17;"></i> Harga Incl. PPN</label>
-              <input type="text" id="nego2HargaIncl" class="nego2-input" readonly placeholder="Auto" />
-            </div>
-          </div>
-          <div class="nego2-field">
-            <label><i class="fa-solid fa-comment-dots" style="color:#1A237E;"></i> Catatan (opsional)</label>
-            <textarea id="nego2Catatan" class="nego2-input" rows="3" placeholder="Tuliskan catatan atau alasan pengajuan harga ini…" style="resize:vertical;"></textarea>
-          </div>
-        </div>
-
-        <!-- Pesan hasil aksi -->
-        <div id="nego2Msg" style="display:none;margin-bottom:12px;border-radius:8px;padding:10px 14px;font-size:0.83rem;"></div>
-      </div>
-    </div>
-
-    <!-- Footer tombol -->
-    <div class="nego2-footer" id="nego2Footer">
-      <button onclick="tutupModalNegosiasi()" style="padding:9px 20px;border-radius:7px;border:1px solid var(--gray-200);background:white;cursor:pointer;font-size:0.85rem;font-weight:600;">Tutup</button>
-      <!-- Tombol Kirim (Pokja: submitHPSByPokja / submitNegoPokja; Penyedia: submitNegoPenyedia) -->
-      <button id="nego2BtnKirim" style="display:none;align-items:center;gap:8px;background:#1A237E;color:white;border:none;border-radius:7px;padding:10px 24px;font-size:0.88rem;font-weight:700;cursor:pointer;" onclick="nego2KirimNegosiasi()">
-        <i class="fa-solid fa-paper-plane"></i> <span id="nego2BtnKirimLabel">Kirim Negosiasi</span>
-      </button>
-      <!-- Tombol Setujui (hanya Penyedia) -->
-      <button id="nego2BtnSetujui" style="display:none;align-items:center;gap:8px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:10px 24px;font-size:0.88rem;font-weight:700;cursor:pointer;" onclick="nego2SetujuiNegosiasi()">
-        <i class="fa-solid fa-circle-check"></i> Setujui Negosiasi
-      </button>
-    </div>
-  </div>
-</div>
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmovWhDQTQgXQEHoPTlH6mShnPxXquVARQz1c42I72w8S6Rw3rVcDOF4hfyHgveUBL/exec';
@@ -4945,494 +4794,6 @@ function updateDataTimestamp() {
   setTimeout(attachMarqueeRefresh, 2000);
 })();
 
-// =================================================================
-// NEGOSIASI PAGE v2 — sinkron dengan code.gs
-// =================================================================
-
-// ── State modal v2 ──
-let _nego2Key = null, _nego2Data = null, _nego2State = null, _nego2Action = null;
-// Variabel lama dipertahankan agar fungsi lain tidak break
-let _negoKey = null, _negoRows = [];
-
-function formatRp(n) { return 'Rp ' + Math.round(n||0).toLocaleString('id-ID'); }
-function _ppn(excl)  { return Math.round((parseFloat(excl)||0)*0.11*100)/100; }
-function _incl(excl) { return Math.round((parseFloat(excl)||0)*1.11*100)/100; }
-
-function nego2HitungIncl() {
-  const excl = parseFloat(document.getElementById('nego2HargaExcl').value)||0;
-  document.getElementById('nego2HargaPpn').value  = excl ? formatRp(_ppn(excl))  : '';
-  document.getElementById('nego2HargaIncl').value = excl ? formatRp(_incl(excl)) : '';
-}
-
-// =================================================================
-// renderNegosiasiPage — Kartu penyedia di halaman Negosiasi
-// =================================================================
-function renderNegosiasiPage() {
-  const wrap = document.getElementById('negosiasiPageContent');
-  if (!wrap) return;
-
-  const all = getSubmissions();
-  let lulusList = all.filter(s => s.reviewStatus === 'Lulus / Memenuhi Syarat');
-
-  if (currentRole === 'penyedia' && currentPenyedia) {
-    lulusList = all.filter(s => {
-      const milik = s.namaPerusahaan === currentPenyedia.nama ||
-                    s.email          === currentPenyedia.email ||
-                    s.npwp           === currentPenyedia.npwp;
-      const lulus   = s.reviewStatus === 'Lulus / Memenuhi Syarat';
-      const adaNego = s.negoHistory && s.negoHistory.length > 0;
-      return milik && (lulus || adaNego);
-    });
-  }
-
-  // Deduplicate by perusahaan
-  const byPerusahaan = {};
-  lulusList.forEach(s => {
-    const key = s.npwp || s.namaPerusahaan;
-    if (!byPerusahaan[key] || (s.tanggal||'') > (byPerusahaan[key].tanggal||'')) byPerusahaan[key] = s;
-  });
-  const pesertaLulus = Object.values(byPerusahaan);
-
-  const isPokja    = currentRole === 'pokja';
-  const isPenyedia = currentRole === 'penyedia';
-
-  if (!pesertaLulus.length) {
-    wrap.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
-      <i class="fa-solid fa-handshake" style="font-size:48px;display:block;margin-bottom:16px;opacity:0.3;"></i>
-      <p style="font-size:0.92rem;font-weight:600;">${isPenyedia ? 'Anda belum memiliki dokumen berstatus Lulus / Memenuhi Syarat.' : 'Belum ada penyedia yang Lulus / Memenuhi Syarat.'}</p>
-      <p style="font-size:0.82rem;margin-top:6px;">Tahap negosiasi akan tersedia setelah proses review selesai.</p>
-    </div>`;
-    return;
-  }
-
-  const infoBar = isPokja
-    ? `<div style="background:#E8EAF6;border:1px solid #C5CAE9;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.83rem;color:#1A237E;">
-        <i class="fa-solid fa-circle-info"></i> <strong>${pesertaLulus.length} penyedia</strong> masuk tahap negosiasi.
-        Klik <strong>Buka Negosiasi</strong> untuk membuka panel negosiasi interaktif.</div>`
-    : `<div style="background:#E8EAF6;border:1px solid #C5CAE9;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.83rem;color:#1A237E;">
-        <i class="fa-solid fa-circle-info"></i> Klik <strong>Buka Negosiasi</strong> untuk melihat riwayat dan mengirim penawaran Anda.</div>`;
-
-  const cards = pesertaLulus.map((s, i) => {
-    const origIdx    = all.indexOf(s);
-    const negoHistory = Array.isArray(s.negoHistory) ? s.negoHistory : [];
-    const undangan    = s.undanganPembuktian;
-
-    // Status badge (dari lokal — state backend ditampilkan di modal)
-    const hasLocalNego = negoHistory.length > 0;
-    const negoBadge = hasLocalNego
-      ? `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #A5D6A7;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-check"></i> Ada Data Nego Lokal</span>`
-      : `<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-clock"></i> Buka Modal untuk Status Terkini</span>`;
-
-    const undanganBox = undangan ? `
-      <div style="background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid #1B5E20;border-radius:7px;padding:9px 13px;font-size:0.80rem;color:#1B5E20;margin-top:10px;">
-        <i class="fa-solid fa-envelope-open-text"></i> <strong>Undangan Pembuktian Kualifikasi</strong>
-        ${undangan.tanggal ? `<br><i class="fa-solid fa-calendar"></i> ${undangan.tanggal}` : ''}
-        ${undangan.lokasi  ? `<br><i class="fa-solid fa-location-dot"></i> ${undangan.lokasi}` : ''}
-        ${undangan.pesan   ? `<br><span style="color:var(--gray-700);font-size:0.78rem;">${undangan.pesan}</span>` : ''}
-      </div>` : '';
-
-    const pokjaActions = isPokja ? `
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-        <button onclick="bukaModalNegosiasi(${origIdx})" style="display:inline-flex;align-items:center;gap:6px;background:#1A237E;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
-          <i class="fa-solid fa-handshake"></i> Buka Negosiasi
-        </button>
-        <button onclick="bukaModalUndangan(${origIdx})" style="display:inline-flex;align-items:center;gap:6px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
-          <i class="fa-solid fa-envelope-open-text"></i> ${undangan ? 'Edit Undangan' : 'Kirim Undangan'}
-        </button>
-      </div>` : '';
-
-    const penyediaActions = isPenyedia ? `
-      <div style="margin-top:12px;">
-        <button onclick="bukaModalNegosiasi(${origIdx})" style="display:inline-flex;align-items:center;gap:6px;background:#1A237E;color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
-          <i class="fa-solid fa-handshake"></i> Buka Negosiasi
-        </button>
-      </div>` : '';
-
-    return `<div style="background:white;border:1px solid var(--gray-200);border-left:4px solid #1A237E;border-radius:10px;padding:16px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(26,35,126,0.07);">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:700;font-size:0.95rem;color:var(--blue-900);">${i+1}. ${s.namaPerusahaan||'-'}</div>
-          <div style="font-size:0.78rem;color:var(--gray-500);margin-top:2px;">
-            NPWP: ${s.npwp||'-'}
-            ${s.email ? ` &nbsp;·&nbsp; <i class="fa-solid fa-envelope"></i> ${s.email}` : ''}
-            ${s.telp  ? ` &nbsp;·&nbsp; <i class="fa-solid fa-phone"></i> ${s.telp}`  : ''}
-          </div>
-          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Lulus / Memenuhi Syarat</span>
-            ${negoBadge}
-          </div>
-        </div>
-      </div>
-      ${undanganBox}
-      ${pokjaActions}
-      ${penyediaActions}
-    </div>`;
-  }).join('');
-
-  wrap.innerHTML = infoBar + cards;
-}
-
-// ── Render panel KIRI (riwayat) ──
-function nego2RenderLeft(state) {
-  document.getElementById('nego2Loading').style.display = 'none';
-  document.getElementById('nego2LeftContent').style.display = 'block';
-
-  // HPS Box
-  const hpsRow = document.getElementById('nego2HpsRow');
-  const hpsTs  = document.getElementById('nego2HpsTs');
-  if (state && state.hpsExcl !== null && state.hpsExcl !== undefined) {
-    hpsRow.innerHTML = `
-      <div class="nego2-hps-item"><div class="v">${formatRp(state.hpsExcl)}</div><div class="l">Excl. PPN</div></div>
-      <div class="nego2-hps-item"><div class="v">${formatRp(_ppn(state.hpsExcl))}</div><div class="l">PPN 11%</div></div>
-      <div class="nego2-hps-item"><div class="v">${formatRp(state.hpsIncl)}</div><div class="l">Incl. PPN</div></div>`;
-    const hpsItem = (state.histori||[]).find(h => h.role === 'HPS');
-    hpsTs.textContent = hpsItem ? '⏱ ' + hpsItem.timestamp : '';
-  } else {
-    hpsRow.innerHTML = `<div style="color:#9FA8DA;font-size:0.80rem;grid-column:1/-1;text-align:center;padding:6px 0;">Pokja belum menginput HPS</div>`;
-    hpsTs.textContent = '';
-  }
-
-  // Riwayat histori (tanpa entry HPS karena sudah di box atas)
-  const histList  = document.getElementById('nego2HistList');
-  const histItems = (state && state.histori || []).filter(h => h.role !== 'HPS');
-  if (!histItems.length) {
-    histList.innerHTML = `<div class="nego2-empty-hist"><i class="fa-solid fa-clock-rotate-left" style="font-size:28px;display:block;margin-bottom:8px;opacity:0.3;"></i>Belum ada riwayat negosiasi</div>`;
-    return;
-  }
-  const colorMap = {
-    Penyedia   : { cls:'role-penyedia',    icon:'fa-building',      color:'#1B5E20' },
-    Pokja      : { cls:'role-pokja',       icon:'fa-users',         color:'#B71C1C' },
-    Persetujuan: { cls:'role-persetujuan', icon:'fa-circle-check',  color:'#004D40' }
-  };
-  histList.innerHTML = histItems.map((h, i) => {
-    const isLast = i === histItems.length - 1;
-    const c = colorMap[h.role] || { cls:'', icon:'fa-circle', color:'#555' };
-    return `<div class="nego2-hist-item ${c.cls}${isLast ? ' is-last' : ''}">
-      ${isLast ? '<span class="nego2-badge-last">Terbaru</span>' : ''}
-      <div class="hist-label" style="color:${c.color}"><i class="fa-solid ${c.icon}"></i> ${h.label}</div>
-      <div class="hist-prices">
-        <div class="hist-price-box"><div class="pv" style="color:${c.color}">${formatRp(h.hargaExcl)}</div><div class="pl">Excl. PPN</div></div>
-        <div class="hist-price-box"><div class="pv">${formatRp(_ppn(h.hargaExcl))}</div><div class="pl">PPN 11%</div></div>
-        <div class="hist-price-box"><div class="pv" style="color:${c.color}">${formatRp(h.hargaIncl)}</div><div class="pl">Incl. PPN</div></div>
-      </div>
-      ${h.catatan ? `<div class="hist-catatan"><i class="fa-solid fa-comment-dots"></i> "${h.catatan}"</div>` : ''}
-      <div class="hist-ts">⏱ ${h.timestamp||''}</div>
-    </div>`;
-  }).join('');
-}
-
-// ── Render panel KANAN (form + tombol) ──
-function nego2RenderRight(state) {
-  const isPenyedia = currentRole === 'penyedia';
-  const isPokja    = currentRole === 'pokja';
-  const gb  = document.getElementById('nego2GiliranBox');
-  const gt  = document.getElementById('nego2GiliranText');
-  const fi  = document.getElementById('nego2FormInput');
-  const bk  = document.getElementById('nego2BtnKirim');
-  const bs  = document.getElementById('nego2BtnSetujui');
-  const pv  = document.getElementById('nego2PrevCompare');
-  const db  = document.getElementById('nego2DisepakatiBox');
-  const dr  = document.getElementById('nego2DisepakatiRow');
-  const msg = document.getElementById('nego2Msg');
-
-  // Reset
-  msg.style.display = 'none';
-  db.style.display  = 'none';
-  pv.style.display  = 'none';
-  bk.style.display  = 'none';
-  bs.style.display  = 'none';
-  fi.style.display  = 'none';
-  document.getElementById('nego2HargaExcl').value = '';
-  document.getElementById('nego2HargaPpn').value  = '';
-  document.getElementById('nego2HargaIncl').value = '';
-  document.getElementById('nego2Catatan').value   = '';
-
-  // ── SELESAI ──
-  if (state && (state.giliran === 'Selesai' || state.status === 'Harga Disetujui Oleh Penyedia')) {
-    gb.className = 'nego2-giliran-box giliran-done';
-    gt.innerHTML = '<i class="fa-solid fa-circle-check"></i> Negosiasi selesai — Harga Disetujui';
-    db.style.display = 'block';
-    dr.innerHTML = `
-      <div class="nego2-hps-item" style="background:rgba(255,255,255,0.8)"><div class="v" style="color:#004D40;">${formatRp(state.hargaDisepakatiExcl)}</div><div class="l">Disepakati Excl.</div></div>
-      <div class="nego2-hps-item" style="background:rgba(255,255,255,0.8)"><div class="v" style="color:#004D40;">${formatRp(state.hargaDisepakatiIncl)}</div><div class="l">Disepakati Incl.</div></div>`;
-    _nego2Action = null;
-    return;
-  }
-
-  // ── HPS BELUM ADA ──
-  if (!state || state.hpsExcl === null || state.hpsExcl === undefined) {
-    if (isPokja) {
-      gb.className = 'nego2-giliran-box giliran-ok';
-      gt.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Giliran Anda — Input HPS Pokja';
-      fi.style.display = 'block';
-      bk.style.display = 'inline-flex';
-      document.getElementById('nego2BtnKirimLabel').textContent = 'Simpan HPS';
-      _nego2Action = 'submitHPSByPokja';
-    } else {
-      gb.className = 'nego2-giliran-box giliran-wait';
-      gt.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Menunggu Pokja menginput HPS…';
-      _nego2Action = null;
-    }
-    return;
-  }
-
-  // ── GILIRAN NORMAL ──
-  const giliran     = state.giliran;
-  const giliranku   = (isPokja && giliran === 'Pokja') || (isPenyedia && giliran === 'Penyedia');
-
-  // Harga lawan terakhir (untuk perbandingan)
-  const roleLawan  = isPokja ? 'Penyedia' : 'Pokja';
-  const histLawan  = (state.histori||[]).filter(h => h.role === roleLawan);
-  const hargaLawan = histLawan.length ? histLawan[histLawan.length - 1] : null;
-  if (hargaLawan) {
-    pv.style.display = 'block';
-    pv.innerHTML = `<strong>Penawaran ${roleLawan} terakhir (${hargaLawan.label}):</strong> ${formatRp(hargaLawan.hargaExcl)} Excl. &nbsp;|&nbsp; ${formatRp(hargaLawan.hargaIncl)} Incl.`;
-  }
-
-  if (giliranku) {
-    gb.className = 'nego2-giliran-box giliran-ok';
-    gt.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Giliran Anda — Masukkan penawaran harga`;
-    fi.style.display = 'block';
-    bk.style.display = 'inline-flex';
-    document.getElementById('nego2BtnKirimLabel').textContent = 'Kirim Negosiasi';
-    _nego2Action = isPokja ? 'submitNegoPokja' : 'submitNegoPenyedia';
-    // Penyedia bisa setujui hanya saat ada penawaran Pokja
-    if (isPenyedia && histLawan.length > 0) {
-      bs.style.display = 'inline-flex';
-    }
-  } else {
-    gb.className = 'nego2-giliran-box giliran-wait';
-    gt.innerHTML = `<i class="fa-solid fa-hourglass-half"></i> Menunggu giliran ${giliran}…`;
-    _nego2Action = null;
-  }
-}
-
-// ── Buka modal + fetch state dari backend ──
-async function bukaModalNegosiasi(idx) {
-  const submissions = getSubmissions();
-  const d = submissions[idx];
-  if (!d) return;
-  _nego2Key   = idx;
-  _nego2Data  = d;
-  _nego2State = null;
-
-  // Reset UI
-  document.getElementById('nego2NamaPerusahaan').textContent = d.namaPerusahaan || '';
-  document.getElementById('nego2Loading').style.display = 'flex';
-  document.getElementById('nego2LeftContent').style.display = 'none';
-  document.getElementById('nego2Msg').style.display = 'none';
-  document.getElementById('nego2BtnKirim').style.display = 'none';
-  document.getElementById('nego2BtnSetujui').style.display = 'none';
-  document.getElementById('nego2FormInput').style.display = 'none';
-  document.getElementById('nego2GiliranText').textContent = 'Memuat data…';
-  document.getElementById('nego2GiliranBox').className = 'nego2-giliran-box giliran-wait';
-  document.getElementById('modalNegosiasi2').classList.add('show');
-
-  // Fetch dari backend
-  try {
-    const qs  = new URLSearchParams({ action:'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
-    const res = await fetch(APPS_SCRIPT_URL + '?' + qs.toString());
-    const json = await res.json();
-    _nego2State = (json.status === 'ok' && json.negosiasi) ? json.negosiasi : null;
-  } catch(e) {
-    _nego2State = null;
-  }
-
-  nego2RenderLeft(_nego2State);
-  nego2RenderRight(_nego2State);
-}
-
-// ── Tutup modal ──
-function tutupModalNegosiasi() {
-  document.getElementById('modalNegosiasi2').classList.remove('show');
-  document.getElementById('modalNegosiasi').style.display = 'none'; // compat lama
-  _nego2Key = null; _nego2Data = null; _nego2State = null; _nego2Action = null;
-  _negoKey = null; _negoRows = []; // compat lama
-}
-
-// ── Util: tampilkan pesan di panel kanan ──
-function nego2ShowMsg(ok, html) {
-  const el = document.getElementById('nego2Msg');
-  el.style.cssText = ok
-    ? 'display:block;background:#EAF3DE;color:#1B5E20;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;font-size:0.83rem;margin-bottom:10px;'
-    : 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:8px;padding:10px 14px;font-size:0.83rem;margin-bottom:10px;';
-  el.innerHTML = html;
-}
-
-// ── Re-fetch state dan refresh render ──
-async function nego2Refresh() {
-  if (!_nego2Data) return;
-  try {
-    const qs  = new URLSearchParams({ action:'getNegosiasi', npwp: _nego2Data.npwp||'', namaPerusahaan: _nego2Data.namaPerusahaan||'' });
-    const res = await fetch(APPS_SCRIPT_URL + '?' + qs.toString());
-    const json = await res.json();
-    _nego2State = (json.status === 'ok' && json.negosiasi) ? json.negosiasi : _nego2State;
-  } catch(e) {}
-  nego2RenderLeft(_nego2State);
-  nego2RenderRight(_nego2State);
-  renderNegosiasiPage();
-}
-
-// ── Kirim negosiasi (HPS / Pokja / Penyedia) ──
-async function nego2KirimNegosiasi() {
-  if (!_nego2Action || !_nego2Data) return;
-  const hargaExcl = parseFloat(document.getElementById('nego2HargaExcl').value);
-  if (!hargaExcl || hargaExcl <= 0) {
-    nego2ShowMsg(false, '<i class="fa-solid fa-triangle-exclamation"></i> Harga (Excl. PPN) wajib diisi dan harus > 0.');
-    return;
-  }
-  const catatan = document.getElementById('nego2Catatan').value.trim();
-  const btn = document.getElementById('nego2BtnKirim');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
-
-  try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({
-        action         : _nego2Action,
-        npwp           : _nego2Data.npwp || '',
-        namaPerusahaan : _nego2Data.namaPerusahaan || '',
-        hargaExcl      : hargaExcl,
-        catatan        : catatan
-      })
-    });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      nego2ShowMsg(true, `<i class="fa-solid fa-circle-check"></i> <strong>Berhasil!</strong> ${json.message || ''}`);
-      setTimeout(() => nego2Refresh(), 800);
-    } else {
-      nego2ShowMsg(false, `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message || 'Terjadi kesalahan.'}`);
-    }
-  } catch(e) {
-    nego2ShowMsg(false, '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server. Coba lagi.');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span id="nego2BtnKirimLabel">Kirim Negosiasi</span>';
-}
-
-// ── Setujui negosiasi (hanya Penyedia) ──
-async function nego2SetujuiNegosiasi() {
-  if (!_nego2Data) return;
-  const ok = confirm('Yakin ingin MENYETUJUI negosiasi ini?\n\nHarga penawaran Pokja terakhir akan menjadi harga yang disepakati.\nAksi ini tidak dapat dibatalkan.');
-  if (!ok) return;
-  const catatan = document.getElementById('nego2Catatan').value.trim() || 'Harga disetujui oleh Penyedia.';
-  const btn = document.getElementById('nego2BtnSetujui');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses…';
-
-  try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({
-        action         : 'setujuiNegosiasi',
-        npwp           : _nego2Data.npwp || '',
-        namaPerusahaan : _nego2Data.namaPerusahaan || '',
-        catatan        : catatan
-      })
-    });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      nego2ShowMsg(true, `<i class="fa-solid fa-circle-check"></i> <strong>Negosiasi selesai!</strong> ${json.message || ''}`);
-      setTimeout(() => nego2Refresh(), 800);
-    } else {
-      nego2ShowMsg(false, `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message || 'Terjadi kesalahan.'}`);
-    }
-  } catch(e) {
-    nego2ShowMsg(false, '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Setujui Negosiasi';
-}
-
-// Stub fungsi lama agar tidak error jika dipanggil dari kode lain
-function negoEmptyRow() { return { uraian:'', satuan:'', vol:'', harga:'', pajak:'', keterangan:'', _total:0 }; }
-function negoTambahBaris() {}
-function negoHapusBaris(i) {}
-function negoUpdateField(i,f,v) {}
-function updateNegoGrandTotal() {}
-function renderNegoTable() {}
-async function simpanNegosiasi() {}
-
-document.getElementById('modalNegosiasi2').addEventListener('click', function(e) {
-  if (e.target === this) tutupModalNegosiasi();
-});
-document.getElementById('modalNegosiasi').addEventListener('click', function(e) {
-  if (e.target === this) tutupModalNegosiasi();
-});
-
-// =================================================================
-// FUNGSI HELPER NEGO PENYEDIA
-// =================================================================
-function hitungTotalTawaranPenyedia(origIdx, jumlahBaris) {
-  let total = 0;
-  for (let ri = 0; ri < jumlahBaris; ri++) {
-    const el = document.getElementById(`tawarBaris_${origIdx}_${ri}`);
-    if (el) total += parseFloat(el.value) || 0;
-  }
-  const elTotal = document.getElementById(`totalTawaranPenyedia_${origIdx}`);
-  if (elTotal) elTotal.textContent = formatRp(total);
-}
-
-function toggleHistoriNego(origIdx) {
-  const panel = document.getElementById(`histNegoPanel_${origIdx}`);
-  const btn   = document.getElementById(`histNegoBtn_${origIdx}`);
-  if (!panel) return;
-  const isHidden = panel.style.display === 'none';
-  panel.style.display = isHidden ? 'block' : 'none';
-  if (btn) {
-    const count = btn.textContent.match(/\((\d+)\)/)?.[1] || '';
-    btn.innerHTML = isHidden
-      ? `<i class="fa-solid fa-chevron-up"></i> Sembunyikan Riwayat`
-      : `<i class="fa-solid fa-clock-rotate-left"></i> Riwayat Nego Sebelumnya (${count})`;
-  }
-}
-
-async function kirimHargaNegoPenyedia(origIdx) {
-  const data = getSubmissions();
-  const d = data[origIdx];
-  if (!d) return;
-
-  const negoHistory = Array.isArray(d.negoHistory) ? d.negoHistory : [];
-  const nego = negoHistory.length ? negoHistory[negoHistory.length - 1].data : d.negosiasi;
-  if (!nego || !Array.isArray(nego.baris)) {
-    showToast('Belum Ada Data', 'Pokja belum mengisi rincian negosiasi.', 'error'); return;
-  }
-
-  // Kumpulkan harga per baris dari input
-  const hargaPerBaris = nego.baris.map((r, ri) => {
-    const el = document.getElementById(`tawarBaris_${origIdx}_${ri}`);
-    return el ? (parseFloat(el.value) || 0) : 0;
-  });
-  const totalTawaran = hargaPerBaris.reduce((s, v) => s + v, 0);
-  const catatan = (document.getElementById(`tawarCatatan_${origIdx}`)?.value || '').trim();
-  const tglNow = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-
-  // Update data lokal — simpan tawaran ke negosiasi terbaru
-  if (!Array.isArray(nego.tawaranPenyedia)) nego.tawaranPenyedia = [];
-  nego.tawaranPenyedia.push({ hargaPerBaris, totalTawaran, catatan, tgl: tglNow, pengirim: currentPenyedia?.nama || d.namaPerusahaan });
-  nego.hargaTerakhirPenyedia = totalTawaran;
-  nego.tglTawaranTerakhir = tglNow;
-
-  // Kirim ke backend
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action: 'kirimHargaNego',
-        namaPerusahaan: d.namaPerusahaan, npwp: d.npwp,
-        hargaTawaran: totalTawaran, hargaPerBaris,
-        catatan, namaPenyedia: currentPenyedia?.nama || d.namaPerusahaan, tgl: tglNow
-      })
-    });
-  } catch(e) {}
-
-  showToast('Tawaran Terkirim', `Harga nego Anda sebesar ${formatRp(totalTawaran)} berhasil dikirim ke Pokja.`, 'success', 4000);
-  renderNegosiasiPage();
-}
-
 init();
 </script>
 
@@ -6509,7 +5870,7 @@ async function nhpsSimpanHPS() {
 
   try {
     const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({
         action        : 'submitHPSItems',
         npwp          : _nhps.subData.npwp || '',
@@ -6556,7 +5917,7 @@ async function nhpsSimpanNegoPenyedia() {
 
   try {
     const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({
         action        : 'submitNegoItemsPenyedia',
         npwp          : _nhps.subData.npwp || '',
@@ -6600,7 +5961,7 @@ async function nhpsSimpanNegoPokja() {
 
   try {
     const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({
         action        : 'submitNegoItemsPokja',
         npwp          : _nhps.subData.npwp || '',
@@ -6630,7 +5991,7 @@ async function nhpsSetujui() {
   const catatan = (document.getElementById('nhpsNotePeny')?.value||'Harga disetujui oleh Penyedia.').trim();
   try {
     const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({
         action        : 'setujuiNegoHPS',
         npwp          : _nhps.subData.npwp || '',
@@ -6660,7 +6021,7 @@ async function nhpsSetujuiOlehPokja() {
   const catatan = (document.getElementById('nhpsNotePokja')?.value || 'Harga disetujui dan dikunci oleh Pokja.').trim();
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({
         action: 'setujuiNegoHPS',
         npwp: _nhps.subData.npwp || '',
@@ -6769,17 +6130,15 @@ nhpsLoadFromServer = async function() {
   nhpsRenderFooter();
 };
 
-// ── Override bukaModalNegosiasi untuk menambah tombol HPS ─────────────
-const _origBukaModalNegosiasi = bukaModalNegosiasi;
-bukaModalNegosiasi = function(idx) {
-  _origBukaModalNegosiasi(idx);
-};
 
-// Patch renderNegosiasiPage agar menyertakan tombol "Negosiasi HPS (Tabel)"
-const _origRenderNegosiasiPage = renderNegosiasiPage;
-renderNegosiasiPage = function() {
-  _origRenderNegosiasiPage();
-  // Tambahkan tombol negosiasi HPS di setiap kartu penyedia
+// =================================================================
+// =================================================================
+// renderNegosiasiPage — Kartu penyedia di halaman Negosiasi
+// =================================================================
+function renderNegosiasiPage() {
+  const wrap = document.getElementById('negosiasiPageContent');
+  if (!wrap) return;
+
   const all = getSubmissions();
   const isPokja    = currentRole === 'pokja';
   const isPenyedia = currentRole === 'penyedia';
@@ -6799,30 +6158,21 @@ renderNegosiasiPage = function() {
   });
   const pesertaLulus = Object.values(byPerusahaan);
 
-  pesertaLulus.forEach((s) => {
-    const origIdx = all.indexOf(s);
-    // Cari action divs di halaman negosiasi
-    const wrap = document.getElementById('negosiasiPageContent');
-    if (!wrap) return;
-    // Cari kartu yang sesuai (berdasarkan urutan)
-    const cards = wrap.querySelectorAll('[data-nego-idx]');
-    // Karena tidak ada data-nego-idx, tambahkan tombol via innerHTML injection
-    // sudah dihandle via cards rendering ulang di bawah
-  });
-
-  // Re-render cards dengan tombol HPS tambahan
-  const wrap = document.getElementById('negosiasiPageContent');
-  if (!wrap || !pesertaLulus.length) return;
-
-  const existingInfoBar = wrap.querySelector('div:first-child');
-  let infoBarHtml = '';
-  if (existingInfoBar) {
-    // Ambil infoBar yang sudah ada
-    const allCards = wrap.querySelectorAll(':scope > div');
-    if (allCards.length) infoBarHtml = allCards[0].outerHTML;
+  if (!pesertaLulus.length) {
+    wrap.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
+      <i class="fa-solid fa-handshake" style="font-size:48px;display:block;margin-bottom:16px;opacity:0.3;"></i>
+      <p style="font-size:0.92rem;font-weight:600;">${isPenyedia ? 'Anda belum memiliki dokumen berstatus Lulus / Memenuhi Syarat.' : 'Belum ada penyedia yang Lulus / Memenuhi Syarat.'}</p>
+      <p style="font-size:0.82rem;margin-top:6px;">Tahap negosiasi akan tersedia setelah proses review selesai.</p>
+    </div>`;
+    return;
   }
 
-  const newCards = pesertaLulus.map((s, i) => {
+  const infoBar = `<div style="background:#E8EAF6;border:1px solid #C5CAE9;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.83rem;color:#1A237E;">
+    <i class="fa-solid fa-circle-info"></i> <strong>${pesertaLulus.length} penyedia</strong> masuk tahap negosiasi.
+    Klik <strong>Negosiasi HPS (Tabel)</strong> untuk membuka panel negosiasi.</div>`;
+
+  // Re-render cards
+  const cards = pesertaLulus.map((s, i) => {
     const origIdx = all.indexOf(s);
     const negoHistory = Array.isArray(s.negoHistory) ? s.negoHistory : [];
     const undangan    = s.undanganPembuktian;
@@ -6844,10 +6194,6 @@ renderNegosiasiPage = function() {
           style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0d1b6e,#1A237E);color:white;border:none;border-radius:7px;padding:9px 18px;font-size:0.83rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,35,126,0.22);">
           <i class="fa-solid fa-table"></i> Negosiasi HPS (Tabel)
         </button>
-        <button onclick="bukaModalNegosiasi(${origIdx})"
-          style="display:inline-flex;align-items:center;gap:6px;background:#455A64;color:white;border:none;border-radius:7px;padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
-          <i class="fa-solid fa-handshake"></i> Nego Total
-        </button>
         <button onclick="bukaModalUndangan(${origIdx})"
           style="display:inline-flex;align-items:center;gap:6px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
           <i class="fa-solid fa-envelope-open-text"></i> ${undangan ? 'Edit' : 'Kirim'} Undangan
@@ -6859,10 +6205,6 @@ renderNegosiasiPage = function() {
         <button onclick="bukaModalNegoHPS(${origIdx})"
           style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0d1b6e,#1A237E);color:white;border:none;border-radius:7px;padding:9px 18px;font-size:0.83rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,35,126,0.22);">
           <i class="fa-solid fa-table"></i> Negosiasi HPS (Tabel)
-        </button>
-        <button onclick="bukaModalNegosiasi(${origIdx})"
-          style="display:inline-flex;align-items:center;gap:6px;background:#455A64;color:white;border:none;border-radius:7px;padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
-          <i class="fa-solid fa-handshake"></i> Nego Total
         </button>
       </div>` : '';
 
@@ -6887,8 +6229,8 @@ renderNegosiasiPage = function() {
     </div>`;
   }).join('');
 
-  wrap.innerHTML = infoBarHtml + newCards;
-};
+  wrap.innerHTML = infoBar + cards;
+}
 
 </script>
 
