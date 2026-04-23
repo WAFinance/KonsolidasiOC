@@ -5248,6 +5248,10 @@ function bukaModalNegoHPS(idx) {
 function tutupModalNegoHPS() {
   document.getElementById('modalNegoHPS').classList.remove('show');
   _nhps = { subIdx:null, subData:null, hpsItems:[], negoState:null, activeTab:'parse' };
+  // Re-render kartu list supaya status & harga DEAL langsung tampil tanpa reload
+  if (document.getElementById('page-negosiasi') && document.getElementById('page-negosiasi').classList.contains('active')) {
+    renderNegosiasiPage();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -6222,6 +6226,14 @@ const _origNhpsLoadFromServer = nhpsLoadFromServer;
 nhpsLoadFromServer = async function() {
   await _origNhpsLoadFromServer();
   nhpsRenderFooter();
+  // ── Sync data negosiasi terbaru kembali ke _submissions ──
+  // Supaya renderNegosiasiPage() selalu pakai data terkini (termasuk hargaDisepakati setelah DEAL)
+  if (_nhps.subIdx >= 0 && _nhps.negoState) {
+    const subs = getSubmissions();
+    if (subs[_nhps.subIdx]) {
+      subs[_nhps.subIdx].negosiasi = _nhps.negoState;
+    }
+  }
 };
 
 
@@ -6309,37 +6321,31 @@ function renderNegosiasiPage() {
     // ── Kotak Hasil Negosiasi — tampil hanya jika DEAL sudah terjadi ──
     let hasilNegoBox = '';
     if (isSelesai && negosiasi) {
-      const dealExcl = negosiasi.hargaDisepakatiExcl || negosiasi.hargaExcl || 0;
-      const dealIncl = negosiasi.hargaDisepakatiIncl || negosiasi.hargaIncl || nhIncl(dealExcl);
-      // Coba ambil dari entri Persetujuan di histori jika field atas kosong
-      if (!dealExcl && Array.isArray(negosiasi.histori)) {
-        const entryDeal = negosiasi.histori.filter(h => h.role === 'Persetujuan' || h.role === 'Penyedia');
-        if (entryDeal.length) {
-          const last = entryDeal[entryDeal.length - 1];
-          const ex = last.totalExcl || last.hargaExcl || last.hargaExcl || 0;
-          const ic = last.totalIncl || last.hargaIncl || nhIncl(ex);
-          hasilNegoBox = `
-            <div style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #66BB6A;border-left:4px solid #1B5E20;border-radius:8px;padding:11px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-              <div style="display:flex;align-items:center;gap:10px;">
-                <span style="font-size:1.4rem;">🤝</span>
-                <div>
-                  <div style="font-size:0.75rem;font-weight:700;color:#1B5E20;letter-spacing:0.3px;">HASIL NEGOSIASI — HARGA DEAL</div>
-                  <div style="font-size:0.72rem;color:#388E3C;margin-top:1px;">Negosiasi selesai dan harga telah disepakati</div>
-                </div>
-              </div>
-              <div style="display:flex;gap:14px;flex-wrap:wrap;">
-                <div style="text-align:right;">
-                  <div style="font-size:0.68rem;color:#555;font-weight:600;">Excl. PPN</div>
-                  <div style="font-size:0.88rem;font-weight:800;color:#1B5E20;">${nhFmtRp(ex)}</div>
-                </div>
-                <div style="text-align:right;">
-                  <div style="font-size:0.68rem;color:#555;font-weight:600;">Incl. PPN</div>
-                  <div style="font-size:0.92rem;font-weight:800;color:#1B5E20;border-left:2px solid #A5D6A7;padding-left:10px;">${nhFmtRp(ic)}</div>
-                </div>
-              </div>
-            </div>`;
-        }
-      } else if (dealExcl || dealIncl) {
+      // Prioritas 1: field hargaDisepakati langsung di state (diisi saat setujuiNegoHPS)
+      let dealExcl = parseFloat(negosiasi.hargaDisepakatiExcl) || 0;
+      let dealIncl = parseFloat(negosiasi.hargaDisepakatiIncl) || 0;
+
+      // Prioritas 2: ambil dari entri histori 'Persetujuan' (model tabel-items)
+      if (!dealExcl && Array.isArray(negosiasi.histori) && negosiasi.histori.length) {
+        // Cari entri Persetujuan, fallback ke entri Penyedia terakhir
+        const persetujuan = negosiasi.histori.filter(h => h.role === 'Persetujuan');
+        const penyediaH   = negosiasi.histori.filter(h => h.role === 'Penyedia');
+        const acuan = persetujuan.length ? persetujuan[persetujuan.length-1]
+                    : penyediaH.length   ? penyediaH[penyediaH.length-1]
+                    : negosiasi.histori[negosiasi.histori.length-1];
+        dealExcl = parseFloat(acuan.totalExcl || acuan.hargaExcl) || 0;
+        dealIncl = parseFloat(acuan.totalIncl || acuan.hargaIncl) || nhIncl(dealExcl);
+      }
+
+      // Prioritas 3: hitung dari hpsItems terakhir penyedia (negosiasi model tabel baru)
+      if (!dealExcl && Array.isArray(negosiasi.hpsItems) && negosiasi.hpsItems.length) {
+        const negoItemsPeny = negosiasi.hpsItems;
+        dealExcl = negoItemsPeny.reduce((acc, it) => acc + Math.round((parseFloat(it.vol)||1) * (parseFloat(it.negoPenyedia || it.hargaSat)||0)), 0);
+        dealIncl = nhIncl(dealExcl);
+      }
+
+      if (dealExcl || dealIncl) {
+        if (!dealIncl) dealIncl = nhIncl(dealExcl);
         hasilNegoBox = `
           <div style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #66BB6A;border-left:4px solid #1B5E20;border-radius:8px;padding:11px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
             <div style="display:flex;align-items:center;gap:10px;">
