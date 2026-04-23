@@ -1789,6 +1789,10 @@ async function loadStatusPenyedia() {
       _submissions     = [...otherSubs, ...normalizeSubmissions(data.submissions)];
       hideSync();
       renderSidebar(); // update sidebar agar Negosiasi muncul jika status sudah Lulus
+      // Muat data penetapan agar menu Pengumuman Pemenang muncul jika ada harga final
+      if (typeof fetchPenetapanData === 'function') {
+        fetchPenetapanData().then(() => { if (typeof renderSidebar === 'function') renderSidebar(); });
+      }
     } else { hideSync(); }
   } catch(e) {
     hideSync();
@@ -2168,7 +2172,18 @@ function setRole(role) {
   if (role === 'admin') loadAdminForms();
   if (role === 'pokja') showPage('pokja');
   if (role === 'admin') showPage('admin');
-  if (role === 'penyedia') { updateUploadFormLock(); loadStatusPenyedia(); showPage('status'); }
+  if (role === 'penyedia') {
+    updateUploadFormLock();
+    loadStatusPenyedia();
+    showPage('status');
+    // Muat data penetapan & nego agar menu Pengumuman Pemenang langsung muncul jika sudah ada
+    setTimeout(() => {
+      Promise.all([
+        typeof loadAllNegoStates === 'function' ? loadAllNegoStates() : Promise.resolve(),
+        typeof fetchPenetapanData === 'function' ? fetchPenetapanData() : Promise.resolve()
+      ]).then(() => { renderSidebar(); });
+    }, 500);
+  }
 }
 
 function doLogoutSilent() {
@@ -2459,9 +2474,23 @@ function renderSidebar() {
       (s.namaPerusahaan === currentPenyedia.nama || s.email === currentPenyedia.email || s.npwp === currentPenyedia.npwp) &&
       (s.reviewStatus === 'Lulus / Memenuhi Syarat' || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0))
     );
+    // Cek apakah penyedia punya Pengumuman Pemenang (harga final sudah diinput Pokja)
+    const adaPengumuman = currentPenyedia && allSubs.some(s => {
+      const milik = s.namaPerusahaan === currentPenyedia.nama ||
+                    s.email === currentPenyedia.email ||
+                    (s.npwp && s.npwp === currentPenyedia.npwp);
+      return milik && (
+        s.penetapanStatus === 'Menunggu Persetujuan Penyedia' ||
+        s.penetapanStatus === 'Pemenang' ||
+        s.penetapanStatus === 'Lulus' ||
+        (s.negoFinalHargaIncl && s.negoFinalHargaIncl > 0) ||
+        (s.negoFinalHargaExcl && s.negoFinalHargaExcl > 0)
+      );
+    });
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-upload" data-page="upload"><span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="nav-label">Upload Dokumen</span></a></li>`;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="status"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="nav-label">Status Pengajuan</span></a></li>`;
     if (lulusAny) html += negoBtn;
+    if (adaPengumuman) html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#B8860B,#DAA520);color:#fff;border-left:3px solid #8B6914;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-bell"></i></span><span class="nav-label">Pengumuman Pemenang</span></a></li>`;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Pengaturan Akun</span></a></li>`;
   } else if (currentRole === 'pokja') {
     // Sidebar lengkap untuk Pokja
@@ -4149,6 +4178,13 @@ async function init() {
     if (currentRole === 'penyedia') {
       loadStatusPenyedia();
       showPage('status');
+      // Muat data penetapan & nego agar menu Pengumuman Pemenang langsung muncul
+      setTimeout(() => {
+        Promise.all([
+          typeof loadAllNegoStates === 'function' ? loadAllNegoStates() : Promise.resolve(),
+          typeof fetchPenetapanData === 'function' ? fetchPenetapanData() : Promise.resolve()
+        ]).then(() => { renderSidebar(); });
+      }, 600);
     }
   }
   // Muat jumlah peserta publik tanpa perlu login
@@ -5351,6 +5387,8 @@ async function fetchPenetapanData() {
         }
       });
       renderPenetapanPage();
+      // Update sidebar agar menu Pengumuman Pemenang muncul jika data sudah tersedia
+      if (currentRole === 'penyedia') renderSidebar();
     }
   } catch(e) {}
 }
