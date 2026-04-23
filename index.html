@@ -5806,6 +5806,12 @@ let _nhps = {
 function nhFmtRp(n) { return 'Rp\u00a0' + Math.round(n||0).toLocaleString('id-ID'); }
 function nhPpn(excl)  { return Math.round((parseFloat(excl)||0) * 0.11); }
 function nhIncl(excl) { return Math.round((parseFloat(excl)||0) * 1.11); }
+function nhInclFromItems(items) {
+  return items.reduce((s, it) => {
+    const excl = Math.round((it.vol||1)*(it.hargaSat||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0);
+}
 function nhPct(a, b)  {
   if (!b || !a) return null;
   return ((a - b) / b * 100).toFixed(1);
@@ -5852,7 +5858,7 @@ function bukaModalNegoHPS(idx) {
   if (!d) return;
   _nhps.subIdx   = idx;
   _nhps.subData  = d;
-  _nhps.hpsItems = [];
+  _nhps.hpsItems = [{ uraian:'', vol:1, sat:'Unit', hargaSat:0 }];
   _nhps.negoState = null;
 
   document.getElementById('nhpsNamaPerusahaan').textContent = d.namaPerusahaan || '';
@@ -5887,11 +5893,21 @@ async function nhpsLoadFromServer() {
       _nhps.negoState = json.data || null;
       if (json.data && Array.isArray(json.data.hpsItems) && json.data.hpsItems.length) {
         _nhps.hpsItems = json.data.hpsItems;
-        nhpsSwitchTab('tabel');
+        // Jika HPS sudah ada & terkunci, langsung tampilkan tab Negosiasi
+        if (json.data.hpsLocked) {
+          nhpsSwitchTab('tabel');
+        } else {
+          nhpsRenderInputTable();
+        }
+      } else {
+        nhpsRenderInputTable();
       }
+    } else {
+      nhpsRenderInputTable();
     }
     nhpsSetMsg(null);
   } catch(e) {
+    nhpsRenderInputTable();
     nhpsSetMsg(null);
   }
   nhpsRenderAll();
@@ -5902,7 +5918,8 @@ function nhpsSwitchTab(tabId) {
   _nhps.activeTab = tabId;
   document.querySelectorAll('.nhps-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
   document.querySelectorAll('.nhps-panel').forEach(p => p.style.display = p.dataset.panel === tabId ? 'block' : 'none');
-  if (tabId === 'tabel') nhpsRenderTabel();
+  if (tabId === 'parse')   nhpsRenderInputTable();
+  if (tabId === 'tabel')   nhpsRenderTabel();
   if (tabId === 'histori') nhpsRenderHistori();
 }
 
@@ -5958,135 +5975,177 @@ function nhpsRenderGiliran() {
   }
 }
 
-// ── Parse HPS dari raw text ───────────────────────────────────────────
-function nhpsParseHPS() {
-  const raw = (document.getElementById('nhpsRawInput').value || '').trim();
-  if (!raw) { nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Tempelkan data HPS terlebih dahulu.'); return; }
-
-  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const items = [];
-  const numRe = /^[\d\s.,]+$/;
-
-  // Coba deteksi baris data: setidaknya ada angka di kolom tertentu
-  // Format yang didukung: Uraian | Vol | Sat | Harga Sat | Total | PPN | Total Incl
-  // atau: Uraian\tVol\tSat\tHarga
-  const sepRe = /\t|  {2,}|\|/;
-
-  lines.forEach(line => {
-    // Skip header-like lines
-    if (/^(no\.?|#|uraian|item|deskripsi|keterangan|total|sub\s?total|jumlah)/i.test(line)) return;
-    const cols = line.split(sepRe).map(c => c.trim()).filter(c => c !== '');
-    if (cols.length < 2) {
-      // Mungkin data tunggal — jadikan uraian saja
-      if (cols[0] && !/^\d+$/.test(cols[0])) items.push({ uraian: cols[0], vol: 1, sat: 'Lumpsum', hargaSat: 0 });
-      return;
-    }
-
-    // Cari kolom angka (harga)
-    let uraian = '', vol = 1, sat = '', hargaSat = 0;
-    // Cek apakah kolom pertama adalah nomor urut
-    const startCol = /^\d+$/.test(cols[0]) ? 1 : 0;
-    uraian = cols[startCol] || '';
-    if (!uraian) return;
-
-    // Coba ekstrak angka-angka dari kolom berikutnya
-    const numCols = cols.slice(startCol + 1).map(c => {
-      const clean = c.replace(/[Rp\s.]/g, '').replace(',', '.');
-      return isNaN(parseFloat(clean)) ? null : parseFloat(clean);
-    });
-
-    // Pola: vol, satuan, hargaSat
-    if (cols.length >= startCol + 4) {
-      const maybeVol = parseFloat((cols[startCol+1]||'').replace(',','.'));
-      if (!isNaN(maybeVol)) {
-        vol = maybeVol;
-        sat = cols[startCol+2] || 'Unit';
-        const hRaw = (cols[startCol+3]||'').replace(/[Rp\s.]/g,'').replace(',','.');
-        hargaSat = parseFloat(hRaw) || 0;
-      } else {
-        sat = cols[startCol+1] || 'Unit';
-        const hRaw = (cols[startCol+2]||'').replace(/[Rp\s.]/g,'').replace(',','.');
-        hargaSat = parseFloat(hRaw) || 0;
-      }
-    } else if (numCols.length > 0) {
-      const last = numCols.filter(n => n !== null).pop();
-      hargaSat = last || 0;
-      sat = 'Lumpsum';
-    }
-
-    items.push({ uraian, vol: vol || 1, sat: sat || 'Unit', hargaSat: Math.round(hargaSat) });
-  });
-
-  if (!items.length) {
-    nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Tidak ada baris data yang berhasil diparsing. Coba format lain atau gunakan template.');
-    return;
-  }
-
-  _nhps.hpsItems = items;
-  nhpsRenderPreview(items);
-  nhpsSetMsg('ok', `<i class="fa-solid fa-circle-check"></i> <strong>${items.length} item</strong> berhasil diparsing. Periksa tabel preview di kanan, lalu klik <strong>Gunakan Tabel Ini</strong>.`);
-}
-
-// ── Render preview tabel hasil parse (panel parse, kanan) ─────────────
-function nhpsRenderPreview(items) {
-  const wrap = document.getElementById('nhpsPreviewWrap');
-  if (!wrap) return;
-  if (!items.length) { wrap.innerHTML = '<div class="nhps-tbl-empty"><i class="fa-solid fa-table"></i>Belum ada data</div>'; return; }
-
-  let rows = items.map((it, i) => {
-    const total = Math.round((it.vol||1) * (it.hargaSat||0));
-    return `<tr>
-      <td>${i+1}</td>
-      <td class="td-uraian">${it.uraian||'-'}</td>
-      <td class="td-num">${(it.vol||1).toLocaleString('id-ID')}</td>
-      <td>${it.sat||'-'}</td>
-      <td class="td-num td-hps">${nhFmtRp(it.hargaSat)}</td>
-      <td class="td-num td-hps">${nhFmtRp(total)}</td>
-    </tr>`;
-  }).join('');
-
-  const grandTotal = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
-  rows += `<tr class="row-total">
-    <td colspan="5" style="text-align:right;">TOTAL (Excl. PPN)</td>
-    <td class="td-num td-hps">${nhFmtRp(grandTotal)}</td>
-  </tr>
-  <tr class="row-total">
-    <td colspan="5" style="text-align:right;">PPN 11%</td>
-    <td class="td-num">${nhFmtRp(nhPpn(grandTotal))}</td>
-  </tr>
-  <tr class="row-total">
-    <td colspan="5" style="text-align:right;color:#1A237E;">TOTAL (Incl. PPN)</td>
-    <td class="td-num" style="color:#1A237E;font-weight:800;">${nhFmtRp(nhIncl(grandTotal))}</td>
-  </tr>`;
-
-  wrap.innerHTML = `<div class="nhps-tbl-wrap">
-    <table class="nhps-tbl">
-      <thead><tr>
-        <th style="width:36px;">#</th>
-        <th>Uraian / Komponen</th>
-        <th class="col-hps">Volume</th>
-        <th class="col-hps">Satuan</th>
-        <th class="col-hps">Harga Satuan</th>
-        <th class="col-hps">Total (Excl. PPN)</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>`;
-}
-
-// ── Konfirmasi gunakan hasil parse sebagai tabel utama ────────────────
-function nhpsGunakanTabel() {
-  if (!_nhps.hpsItems.length) { nhpsSetMsg('warn', 'Belum ada data yang diparsing.'); return; }
-  nhpsSwitchTab('tabel');
-}
-
-// ── Load template ─────────────────────────────────────────────────────
+// ── Load template ke tabel input langsung ────────────────────────────
 function nhpsLoadTemplate(idx) {
   const tmpl = NHPS_TEMPLATES[idx];
   if (!tmpl) return;
+  if (_nhps.hpsItems.length > 0 && !confirm(`Ganti tabel dengan template "${tmpl.name}"?\nData yang sudah diinput akan hilang.`)) return;
   _nhps.hpsItems = tmpl.items.map(it => ({ ...it }));
-  nhpsRenderPreview(_nhps.hpsItems);
-  nhpsSetMsg('ok', `<i class="fa-solid fa-circle-check"></i> Template <strong>${tmpl.name}</strong> dimuat. Sesuaikan harga jika perlu, lalu klik <strong>Gunakan Tabel Ini</strong>.`);
+  nhpsRenderInputTable();
+  nhpsSetMsg('ok', `<i class="fa-solid fa-circle-check"></i> Template <strong>${tmpl.name}</strong> dimuat. Sesuaikan nilai jika perlu, lalu klik <strong>Buat HPS</strong>.`);
+}
+
+// ── Kosongkan tabel input ─────────────────────────────────────────────
+function nhpsKosongkanTabel() {
+  if (!confirm('Kosongkan seluruh tabel?')) return;
+  _nhps.hpsItems = [{ uraian:'', vol:1, sat:'Unit', hargaSat:0 }];
+  nhpsRenderInputTable();
+  nhpsSetMsg(null);
+}
+
+// ── Tambah baris di tabel input (panel parse) ─────────────────────────
+function nhpsTambahBarisInput() {
+  // Flush nilai dari DOM terlebih dahulu
+  _nhpsFlushInputDOM();
+  _nhps.hpsItems.push({ uraian:'', vol:1, sat:'Unit', hargaSat:0, usePpn:true });
+  nhpsRenderInputTable();
+  // Fokus ke field uraian baris baru
+  const tbody = document.getElementById('nhpsInputTbody');
+  if (tbody) {
+    const rows = tbody.querySelectorAll('tr');
+    const lastRow = rows[rows.length - 1];
+    if (lastRow) {
+      const inp = lastRow.querySelector('input[data-field="uraian"]');
+      if (inp) inp.focus();
+    }
+  }
+}
+
+// ── Hapus baris di tabel input (panel parse) ──────────────────────────
+function nhpsHapusBarisInput(i) {
+  _nhpsFlushInputDOM();
+  if (_nhps.hpsItems.length <= 1) {
+    _nhps.hpsItems = [{ uraian:'', vol:1, sat:'Unit', hargaSat:0 }];
+    nhpsRenderInputTable();
+    return;
+  }
+  _nhps.hpsItems.splice(i, 1);
+  nhpsRenderInputTable();
+}
+
+// ── Flush nilai input DOM → _nhps.hpsItems ────────────────────────────
+function _nhpsFlushInputDOM() {
+  const tbody = document.getElementById('nhpsInputTbody');
+  if (!tbody) return;
+  tbody.querySelectorAll('tr[data-row]').forEach(tr => {
+    const i = parseInt(tr.dataset.row);
+    if (!_nhps.hpsItems[i]) return;
+    const uraian = tr.querySelector('[data-field="uraian"]')?.value ?? _nhps.hpsItems[i].uraian;
+    const vol    = parseFloat(tr.querySelector('[data-field="vol"]')?.value)    || 1;
+    const sat    = tr.querySelector('[data-field="sat"]')?.value ?? _nhps.hpsItems[i].sat;
+    const hs     = parseFloat(tr.querySelector('[data-field="hs"]')?.value)     || 0;
+    const ppnCb  = tr.querySelector('[data-field="ppn"]');
+    const usePpn = ppnCb ? ppnCb.checked : (_nhps.hpsItems[i].usePpn !== false);
+    _nhps.hpsItems[i] = { uraian, vol, sat, hargaSat: hs, usePpn };
+  });
+}
+
+// ── Render tabel input HPS (panel parse) ─────────────────────────────
+function nhpsRenderInputTable() {
+  const tbody = document.getElementById('nhpsInputTbody');
+  const tfoot = document.getElementById('nhpsInputTfoot');
+  if (!tbody || !tfoot) return;
+
+  const locked = _nhps.negoState && _nhps.negoState.hpsLocked;
+  const isPokja = currentRole === 'pokja';
+  const editable = isPokja && !locked;
+
+  const inp = (field, val, type='text', extra='') => {
+    if (!editable) return `<span style="padding:2px 4px;">${val||'–'}</span>`;
+    const numStyle = type === 'number' ? 'text-align:right;' : '';
+    return `<input type="${type}" data-field="${field}" value="${val??''}"
+      style="width:100%;border:1px solid #C5CAE9;border-radius:5px;padding:5px 7px;font-size:0.82rem;font-family:inherit;background:#fff;${numStyle}"
+      oninput="nhpsOnInputChange(this)" ${extra}/>`;
+  };
+
+  tbody.innerHTML = _nhps.hpsItems.map((it, i) => {
+    const vol      = it.vol  || 1;
+    const hs       = it.hargaSat || 0;
+    const usePpn   = it.usePpn !== false;
+    const exclRow  = Math.round(vol * hs);
+    const ppnRow   = usePpn ? Math.round(exclRow * 0.11) : 0;
+    const totalRow = exclRow + ppnRow;
+
+    const ppnCell = editable
+      ? `<label style="display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:0.78rem;color:#5C6BC0;font-weight:600;">
+           <input type="checkbox" data-field="ppn" ${usePpn ? 'checked' : ''}
+             style="width:14px;height:14px;cursor:pointer;accent-color:#5C6BC0;"
+             onchange="nhpsOnInputChange(this)" />
+           11%
+         </label>`
+      : `<span style="font-size:0.80rem;font-weight:700;color:${usePpn?'#5C6BC0':'#aaa'};">${usePpn?'11%':'–'}</span>`;
+
+    return `<tr data-row="${i}" style="background:${i%2===0?'#F8F9FF':'#fff'};">
+      <td style="text-align:center;color:#888;font-size:0.80rem;width:36px;">${i+1}</td>
+      <td style="padding:4px 6px;">${inp('uraian', (it.uraian||'').replace(/"/g,'&quot;'))}</td>
+      <td style="padding:4px 6px;width:80px;">${inp('vol', vol, 'number', 'min="0" step="any"')}</td>
+      <td style="padding:4px 6px;width:110px;">${inp('sat', it.sat||'Unit')}</td>
+      <td style="padding:4px 6px;width:145px;">${inp('hs', hs, 'number', 'min="0" step="1"')}</td>
+      <td style="text-align:center;width:60px;background:#E8EAF6;padding:4px 6px;">${ppnCell}</td>
+      <td style="text-align:right;font-weight:700;color:#1A237E;font-size:0.83rem;padding:4px 8px;background:#EEF;width:150px;" id="nhpsIT_total_${i}">${nhFmtRp(totalRow)}</td>
+      <td style="text-align:center;width:40px;background:#ECEFF1;">
+        ${editable ? `<button onclick="nhpsHapusBarisInput(${i})"
+          style="background:#ef5350;color:#fff;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:11px;"
+          title="Hapus baris"><i class="fa-solid fa-times"></i></button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  nhpsRenderInputTfoot();
+}
+
+// ── Render tfoot summary tabel input ─────────────────────────────────
+function nhpsRenderInputTfoot() {
+  const tfoot = document.getElementById('nhpsInputTfoot');
+  if (!tfoot) return;
+  const totExcl  = _nhps.hpsItems.reduce((s,it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
+  const totPPN   = _nhps.hpsItems.reduce((s,it) => {
+    const excl = Math.round((it.vol||1)*(it.hargaSat||0));
+    return s + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0);
+  const totIncl  = totExcl + totPPN;
+  tfoot.innerHTML = `
+    <tr style="background:#E8EAF6;font-size:0.80rem;">
+      <td colspan="6" style="text-align:right;padding:5px 8px;font-weight:600;color:#333;">Sub Total (Excl. PPN)</td>
+      <td style="text-align:right;padding:5px 8px;font-weight:700;color:#1A237E;">${nhFmtRp(totExcl)}</td>
+      <td></td>
+    </tr>
+    <tr style="background:#E8EAF6;font-size:0.80rem;">
+      <td colspan="6" style="text-align:right;padding:5px 8px;font-weight:600;color:#5C6BC0;">PPN 11%</td>
+      <td style="text-align:right;padding:5px 8px;font-weight:700;color:#5C6BC0;">${nhFmtRp(totPPN)}</td>
+      <td></td>
+    </tr>
+    <tr style="background:#1A237E;">
+      <td colspan="6" style="text-align:right;padding:7px 8px;font-weight:700;color:#fff;font-size:0.85rem;">TOTAL HARGA (Incl. PPN)</td>
+      <td style="text-align:right;padding:7px 8px;font-weight:800;color:#FFD54F;font-size:0.90rem;">${nhFmtRp(totIncl)}</td>
+      <td style="background:#1A237E;"></td>
+    </tr>`;
+}
+
+// ── Handler oninput — update total baris & tfoot live ─────────────────
+function nhpsOnInputChange(el) {
+  const tr = el.closest('tr[data-row]');
+  if (!tr) return;
+  const i = parseInt(tr.dataset.row);
+  // Baca nilai langsung dari DOM row (tanpa flush semua)
+  const vol = parseFloat(tr.querySelector('[data-field="vol"]')?.value)  || 1;
+  const hs  = parseFloat(tr.querySelector('[data-field="hs"]')?.value)   || 0;
+  const sat = tr.querySelector('[data-field="sat"]')?.value || 'Unit';
+  const uraian = tr.querySelector('[data-field="uraian"]')?.value || '';
+  const ppnCb  = tr.querySelector('[data-field="ppn"]');
+  const usePpn = ppnCb ? ppnCb.checked : (_nhps.hpsItems[i]?.usePpn !== false);
+  // Update state
+  if (_nhps.hpsItems[i]) {
+    _nhps.hpsItems[i] = { uraian, vol, sat, hargaSat: hs, usePpn };
+  }
+  // Update total kolom baris ini
+  const exclRow  = Math.round(vol * hs);
+  const ppnRow   = usePpn ? Math.round(exclRow * 0.11) : 0;
+  const totalRow = exclRow + ppnRow;
+  const totalEl = document.getElementById('nhpsIT_total_' + i);
+  if (totalEl) totalEl.textContent = nhFmtRp(totalRow);
+  // Update tfoot
+  nhpsRenderInputTfoot();
 }
 
 // ── Render tabel utama Negosiasi HPS ─────────────────────────────────
@@ -6427,21 +6486,26 @@ function nhpsCollectInputs(kolom) {
 
 // ── Simpan HPS oleh Pokja ─────────────────────────────────────────────
 async function nhpsSimpanHPS() {
+  // Flush nilai dari tabel input DOM
+  _nhpsFlushInputDOM();
+
   if (!_nhps.subData || !_nhps.hpsItems.length) {
     nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Tidak ada tabel HPS untuk disimpan.'); return;
   }
+  // Validasi: pastikan minimal ada 1 uraian & harga
+  const valid = _nhps.hpsItems.some(it => it.uraian && it.hargaSat > 0);
+  if (!valid) {
+    nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Isi minimal satu baris dengan Uraian dan Harga Satuan > 0.');
+    return;
+  }
+
   const btn = document.getElementById('nhpsBtnSimpanHPS');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="nhps-spin"></span> Menyimpan…'; }
 
-  // Kumpulkan nilai hargaSat dari input jika ada
-  const items = _nhps.hpsItems.map((it, i) => {
-    const inp = document.getElementById('nhpsHargaSat_' + i);
-    const hs  = inp ? (parseFloat(inp.value)||0) : (it.hargaSat||0);
-    return { ...it, hargaSat: hs };
-  });
+  const items = _nhps.hpsItems.filter(it => it.uraian); // buang baris kosong
   _nhps.hpsItems = items;
-
   const totalExcl = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
+  const totalIncl = nhInclFromItems(items);
 
   try {
     const res  = await fetch(APPS_SCRIPT_URL, {
@@ -6452,12 +6516,12 @@ async function nhpsSimpanHPS() {
         namaPerusahaan: _nhps.subData.namaPerusahaan || '',
         hpsItems      : items,
         totalExcl,
-        totalIncl     : nhIncl(totalExcl)
+        totalIncl
       })
     });
     const json = await res.json();
     if (json.status === 'ok') {
-      nhpsSetMsg('ok', `<i class="fa-solid fa-circle-check"></i> <strong>HPS berhasil disimpan!</strong> Penyedia kini dapat mengisi kolom negosiasi.`);
+      nhpsSetMsg('ok', `<i class="fa-solid fa-circle-check"></i> <strong>HPS berhasil disimpan & dikunci!</strong> Penyedia kini dapat mengisi kolom negosiasi.`);
       await nhpsLoadFromServer();
       nhpsSwitchTab('tabel');
     } else {
@@ -6466,7 +6530,7 @@ async function nhpsSimpanHPS() {
   } catch(e) {
     nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
   }
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan HPS'; }
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-landmark"></i> Buat HPS & Mulai Negosiasi'; }
 }
 
 // ── Simpan Nego Penyedia ──────────────────────────────────────────────
@@ -6484,6 +6548,10 @@ async function nhpsSimpanNegoPenyedia() {
 
   const items = _nhps.hpsItems.map((it, i) => ({ ...it, hargaNego: vals[i] }));
   const totalExcl = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaNego||0)), 0);
+  const totalIncl = items.reduce((s, it) => {
+    const excl = Math.round((it.vol||1)*(it.hargaNego||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0);
   const catatan   = (document.getElementById('nhpsNotePeny')?.value||'').trim();
 
   try {
@@ -6493,7 +6561,7 @@ async function nhpsSimpanNegoPenyedia() {
         action        : 'submitNegoItemsPenyedia',
         npwp          : _nhps.subData.npwp || '',
         namaPerusahaan: _nhps.subData.namaPerusahaan || '',
-        items, totalExcl, totalIncl: nhIncl(totalExcl), catatan
+        items, totalExcl, totalIncl, catatan
       })
     });
     const json = await res.json();
@@ -6524,6 +6592,10 @@ async function nhpsSimpanNegoPokja() {
 
   const items = _nhps.hpsItems.map((it, i) => ({ ...it, hargaNego: vals[i] }));
   const totalExcl = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaNego||0)), 0);
+  const totalIncl = items.reduce((s, it) => {
+    const excl = Math.round((it.vol||1)*(it.hargaNego||0));
+    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
+  }, 0);
   const catatan   = (document.getElementById('nhpsNotePokja')?.value||'').trim();
 
   try {
@@ -6533,7 +6605,7 @@ async function nhpsSimpanNegoPokja() {
         action        : 'submitNegoItemsPokja',
         npwp          : _nhps.subData.npwp || '',
         namaPerusahaan: _nhps.subData.namaPerusahaan || '',
-        items, totalExcl, totalIncl: nhIncl(totalExcl), catatan
+        items, totalExcl, totalIncl, catatan
       })
     });
     const json = await res.json();
@@ -6576,59 +6648,110 @@ async function nhpsSetujui() {
   } catch(e) {
     nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
   }
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Setujui Semua Harga'; }
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Setujui & DEAL'; }
 }
 
-// ── Render footer buttons berdasarkan role dan state ─────────────────
+// ── Setujui negosiasi oleh Pokja (force DEAL) ─────────────────────────
+async function nhpsSetujuiOlehPokja() {
+  if (!_nhps.subData) return;
+  if (!confirm('Setujui dan tutup negosiasi ini sebagai DEAL?\n\nHarga final diambil dari penawaran terakhir Penyedia.\nAksi ini tidak dapat dibatalkan.')) return;
+  const btn = document.getElementById('nhpsBtnSetujuiPokja');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="nhps-spin"></span> Memproses…'; }
+  const catatan = (document.getElementById('nhpsNotePokja')?.value || 'Harga disetujui dan dikunci oleh Pokja.').trim();
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'setujuiNegoHPS',
+        npwp: _nhps.subData.npwp || '',
+        namaPerusahaan: _nhps.subData.namaPerusahaan || '',
+        catatan
+      })
+    });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      nhpsSetMsg('ok', '<i class="fa-solid fa-handshake"></i> <strong>DEAL!</strong> Negosiasi selesai. Data terkunci.');
+      await nhpsLoadFromServer();
+      nhpsSwitchTab('histori');
+    } else {
+      nhpsSetMsg('err', `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message||'Gagal.'}`);
+    }
+  } catch(e) {
+    nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
+  }
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-handshake"></i> Setujui & DEAL'; }
+}
+
+// ── Render footer buttons berdasarkan role, tab, dan state ───────────
 function nhpsRenderFooter() {
   const s          = _nhps.negoState;
   const isPokja    = currentRole === 'pokja';
   const isPenyedia = currentRole === 'penyedia';
   const isSelesai  = s && (s.giliran === 'Selesai' || s.status === 'Harga Disetujui Oleh Penyedia');
   const giliran    = s ? (s.giliran||'Pokja') : 'Pokja';
-  const hpsExist   = _nhps.hpsItems.length > 0;
+  const hpsExist   = _nhps.hpsItems.some(it => it.uraian || it.hargaSat > 0);
   const hpsLocked  = s && s.hpsLocked;
+  const activeTab  = _nhps.activeTab;
 
   const btnClose = `<button class="nhps-btn nhps-btn-gray" onclick="tutupModalNegoHPS()"><i class="fa-solid fa-xmark"></i> Tutup</button>`;
+  const noteField = (id, placeholder, color) =>
+    `<input type="text" id="${id}" class="nhps-input" placeholder="${placeholder}" style="min-width:180px;text-align:left;border-color:${color};max-width:280px;" />`;
 
   let btns = '';
-  const noteField = (id, placeholder, color) =>
-    `<input type="text" id="${id}" class="nhps-input" placeholder="${placeholder}" style="min-width:200px;text-align:left;border-color:${color};max-width:300px;" />`;
 
   if (isSelesai) {
-    btns = `<span class="nhps-giliran g-done" style="margin:0;padding:6px 14px;"><i class="fa-solid fa-circle-check"></i> Negosiasi Selesai</span>`;
+    btns = `<span class="nhps-giliran g-done" style="margin:0;padding:6px 14px;">
+      <i class="fa-solid fa-circle-check"></i> Negosiasi Selesai — Harga DEAL ✓
+    </span>`;
+
   } else if (isPokja) {
-    if (!hpsExist || !hpsLocked) {
-      btns = `<button id="nhpsBtnSimpanHPS" class="nhps-btn nhps-btn-primary" onclick="nhpsSimpanHPS()" ${!hpsExist?'disabled':''}>
-        <i class="fa-solid fa-floppy-disk"></i> Simpan HPS${hpsLocked?'':' & Kunci'}
-      </button>`;
+    if (activeTab === 'parse') {
+      if (!hpsLocked) {
+        btns = `<button id="nhpsBtnSimpanHPS" class="nhps-btn nhps-btn-primary" onclick="nhpsSimpanHPS()">
+          <i class="fa-solid fa-landmark"></i> Buat HPS &amp; Mulai Negosiasi
+        </button>`;
+      } else {
+        btns = `<span style="font-size:0.80rem;color:#5C6BC0;padding:4px 8px;"><i class="fa-solid fa-lock"></i> HPS sudah dikunci.</span>
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsSwitchTab('tabel')">
+          <i class="fa-solid fa-arrow-right"></i> Ke Tabel Negosiasi
+        </button>`;
+      }
+    } else if (activeTab === 'tabel') {
+      if (hpsLocked && giliran === 'Pokja') {
+        btns += noteField('nhpsNotePokja', 'Catatan counter-offer (opsional)…', '#B71C1C');
+        btns += `<button id="nhpsBtnNegoPokja" class="nhps-btn nhps-btn-warn" onclick="nhpsSimpanNegoPokja()">
+          <i class="fa-solid fa-gavel"></i> Kirim Counter-Offer
+        </button>`;
+      }
+      if (hpsLocked && s && Array.isArray(s.negoPenyedia) && s.negoPenyedia.some(v => v != null)) {
+        btns += `<button id="nhpsBtnSetujuiPokja" class="nhps-btn" style="background:#004D40;color:#fff;" onclick="nhpsSetujuiOlehPokja()">
+          <i class="fa-solid fa-handshake"></i> Setujui &amp; DEAL
+        </button>`;
+      }
     }
-    if (hpsExist && hpsLocked && giliran === 'Pokja') {
-      btns += noteField('nhpsNotePokja', 'Catatan Pokja (opsional)…', '#B71C1C');
-      btns += `<button id="nhpsBtnNegoPokja" class="nhps-btn nhps-btn-warn" onclick="nhpsSimpanNegoPokja()">
-        <i class="fa-solid fa-gavel"></i> Kirim Counter-Offer Pokja
-      </button>`;
-    }
-    if (hpsExist && !hpsLocked) {
-      btns = `<button id="nhpsBtnSimpanHPS" class="nhps-btn nhps-btn-primary" onclick="nhpsSimpanHPS()">
-        <i class="fa-solid fa-floppy-disk"></i> Simpan HPS & Mulai Negosiasi
-      </button>`;
-    }
+
   } else if (isPenyedia) {
     if (hpsExist && giliran === 'Penyedia') {
       btns += noteField('nhpsNotePeny', 'Catatan penawaran (opsional)…', '#1B5E20');
       btns += `<button id="nhpsBtnNegoPeny" class="nhps-btn nhps-btn-success" onclick="nhpsSimpanNegoPenyedia()">
-        <i class="fa-solid fa-paper-plane"></i> Kirim Penawaran Saya
+        <i class="fa-solid fa-paper-plane"></i> Ajukan Negosiasi
       </button>`;
       if (s && Array.isArray(s.negoPokja) && s.negoPokja.some(v => v != null)) {
-        btns += `<button id="nhpsBtnSetujui" class="nhps-btn" style="background:#004D40;color:#fff;" onclick="nhpsSetujui()">
-          <i class="fa-solid fa-circle-check"></i> Setujui Semua Harga
+        btns += `<button id="nhpsBtnSetujui" class="nhps-btn" style="background:#1B5E20;color:#fff;" onclick="nhpsSetujui()">
+          <i class="fa-solid fa-circle-check"></i> Setujui &amp; DEAL
         </button>`;
       }
+    } else if (!hpsExist || giliran === 'Pokja') {
+      btns = `<span class="nhps-giliran g-wait" style="margin:0;padding:6px 14px;font-size:0.78rem;">
+        <i class="fa-solid fa-hourglass-half"></i> ${!hpsExist ? 'Menunggu Pokja menginput tabel HPS…' : 'Menunggu Counter-Offer dari Pokja…'}
+      </span>`;
     }
   }
 
-  const footerLeft = s ? `<span class="nhps-footer-left"><i class="fa-solid fa-rotate"></i> <a href="#" style="color:#5C6BC0;font-weight:600;text-decoration:none;" onclick="nhpsLoadFromServer();return false;">Refresh</a></span>` : '';
+  const footerLeft = s
+    ? `<span class="nhps-footer-left"><i class="fa-solid fa-rotate"></i>
+       <a href="#" style="color:#5C6BC0;font-weight:600;text-decoration:none;" onclick="nhpsLoadFromServer();return false;">Refresh</a></span>`
+    : '';
 
   const footer = document.getElementById('nhpsFooter');
   if (footer) footer.innerHTML = footerLeft + btnClose + btns;
@@ -6788,7 +6911,7 @@ renderNegosiasiPage = function() {
     <!-- Tabs -->
     <div class="nhps-tabs" id="nhpsTabs">
       <button class="nhps-tab active" data-tab="parse" onclick="nhpsSwitchTab('parse')">
-        <i class="fa-solid fa-paste"></i> Input / Parse HPS
+        <i class="fa-solid fa-table"></i> Input HPS
       </button>
       <button class="nhps-tab" data-tab="tabel" onclick="nhpsSwitchTab('tabel')">
         <i class="fa-solid fa-table-cells-large"></i> Tabel Negosiasi
@@ -6806,79 +6929,52 @@ renderNegosiasiPage = function() {
     <!-- Message bar -->
     <div id="nhpsMsg" class="nhps-info" style="display:none;margin:10px 22px 0;"></div>
 
-    <!-- Body: Tab Parse -->
+    <!-- Body: Tab Input HPS (tabel langsung) -->
     <div class="nhps-body nhps-panel" data-panel="parse">
 
       <!-- Template selector -->
-      <div style="margin-bottom:16px;">
-        <div class="nhps-parse-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Pilih Template Cepat</div>
-        <div class="nhps-tmpl-grid">
-          <div class="nhps-tmpl-card" onclick="nhpsLoadTemplate(0)">
-            <div class="tc-name"><i class="fa-solid fa-broom"></i> Tenaga Kebersihan</div>
-            <div class="tc-desc">5 komponen: Gaji, Tunjangan, BPJS, Overhead</div>
-          </div>
-          <div class="nhps-tmpl-card" onclick="nhpsLoadTemplate(1)">
-            <div class="tc-name"><i class="fa-solid fa-shield-halved"></i> Tenaga Keamanan</div>
-            <div class="tc-desc">5 komponen: Gaji, Tunjangan Jabatan, BPJS, Overhead</div>
-          </div>
-          <div class="nhps-tmpl-card" onclick="nhpsLoadTemplate(2)">
-            <div class="tc-name"><i class="fa-solid fa-car"></i> Tenaga Pengemudi</div>
-            <div class="tc-desc">5 komponen: Gaji, Uang Makan, BPJS, Overhead</div>
-          </div>
-          <div class="nhps-tmpl-card" onclick="document.getElementById('nhpsRawInput').focus();" style="border-style:dashed;">
-            <div class="tc-name"><i class="fa-solid fa-keyboard"></i> Input Manual / Paste</div>
-            <div class="tc-desc">Tempel data dari Excel/spreadsheet di bawah lalu klik Parse</div>
-          </div>
-        </div>
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:0.80rem;font-weight:700;color:#5C6BC0;"><i class="fa-solid fa-wand-magic-sparkles"></i> Template Cepat:</span>
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsLoadTemplate(0)"><i class="fa-solid fa-broom"></i> Kebersihan</button>
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsLoadTemplate(1)"><i class="fa-solid fa-shield-halved"></i> Keamanan</button>
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsLoadTemplate(2)"><i class="fa-solid fa-car"></i> Pengemudi</button>
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsKosongkanTabel()" style="margin-left:auto;"><i class="fa-solid fa-trash"></i> Kosongkan</button>
       </div>
 
-      <div class="nhps-parse-panel">
-        <!-- Kiri: textarea input -->
-        <div class="nhps-parse-left">
-          <div class="nhps-parse-label">
-            <i class="fa-solid fa-paste"></i> Tempel Data HPS (Raw Text / dari Excel)
-          </div>
-          <div class="nhps-info" style="margin-bottom:8px;">
-            <strong>Cara paste:</strong> Salin tabel dari Excel/Spreadsheet → tempel di sini. Format kolom yang didukung:<br>
-            <code style="font-size:0.75rem;">Uraian | Volume | Satuan | Harga Satuan</code><br>
-            atau hanya: <code style="font-size:0.75rem;">Uraian | Harga Satuan</code>
-          </div>
-          <textarea id="nhpsRawInput" class="nhps-textarea" placeholder="Contoh:
-Gaji Pokok	1	Orang/Bulan	2300000
-Tunjangan Tetap	1	Orang/Bulan	500000
-BPJS Kesehatan	1	Orang/Bulan	112000
-...
-
-Atau paste langsung dari Excel (Ctrl+V)"></textarea>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-            <button class="nhps-btn nhps-btn-primary" onclick="nhpsParseHPS()">
-              <i class="fa-solid fa-wand-sparkles"></i> Parse & Preview
-            </button>
-            <button class="nhps-btn nhps-btn-gray" onclick="document.getElementById('nhpsRawInput').value='';document.getElementById('nhpsPreviewWrap').innerHTML='';nhpsSetMsg(null);">
-              <i class="fa-solid fa-eraser"></i> Bersihkan
-            </button>
-          </div>
-        </div>
-
-        <!-- Kanan: tabel preview hasil parse -->
-        <div class="nhps-parse-right">
-          <div class="nhps-parse-label">
-            <i class="fa-solid fa-eye"></i> Preview Hasil Parsing
-          </div>
-          <div id="nhpsPreviewWrap">
-            <div class="nhps-tbl-empty">
-              <i class="fa-solid fa-table"></i>
-              <div>Hasil parsing akan muncul di sini</div>
-              <div style="font-size:0.75rem;margin-top:4px;">Tempel data di kiri lalu klik <strong>Parse & Preview</strong></div>
-            </div>
-          </div>
-          <div style="margin-top:10px;display:flex;gap:8px;">
-            <button class="nhps-btn nhps-btn-success" onclick="nhpsGunakanTabel()" style="flex:1;justify-content:center;">
-              <i class="fa-solid fa-check-double"></i> Gunakan Tabel Ini → Lanjut ke Negosiasi
-            </button>
-          </div>
-        </div>
+      <!-- Tabel Input HPS langsung -->
+      <div class="nhps-tbl-wrap" style="margin-bottom:12px;">
+        <table class="nhps-tbl" id="nhpsInputTable">
+          <thead>
+            <tr>
+              <th style="width:36px;text-align:center;">NO</th>
+              <th style="min-width:200px;">URAIAN</th>
+              <th style="width:80px;text-align:center;">VOLUME</th>
+              <th style="width:110px;">SATUAN</th>
+              <th style="width:140px;text-align:right;">HARGA SATUAN</th>
+              <th style="width:60px;text-align:center;">PPN</th>
+              <th style="width:150px;text-align:right;">TOTAL HARGA</th>
+              <th style="width:40px;text-align:center;background:#37474F;">
+                <i class="fa-solid fa-trash-can" style="font-size:11px;opacity:0.7;"></i>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="nhpsInputTbody">
+            <!-- baris dirender oleh JS -->
+          </tbody>
+          <tfoot id="nhpsInputTfoot">
+            <!-- total dirender oleh JS -->
+          </tfoot>
+        </table>
       </div>
+
+      <!-- Toolbar bawah tabel -->
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsTambahBarisInput()">
+          <i class="fa-solid fa-plus"></i> Tambah Baris
+        </button>
+        <span style="font-size:0.75rem;color:#9FA8DA;"><i class="fa-solid fa-circle-info"></i> Centang PPN untuk item yang kena PPN 11%. Item seperti Upah bisa dikosongkan.</span>
+      </div>
+
     </div><!-- /panel parse -->
 
     <!-- Body: Tab Tabel -->
