@@ -5444,6 +5444,14 @@ function renderPenetapanPage() {
     } else if (status === STATUS_LULUS_FINAL) {
       statusBadge = `<span style="background:#C8E6C9;color:#1B5E20;border:1px solid #81C784;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Lulus</span>`;
       borderColor = '#1B5E20';
+    // [DITAMBAHKAN] Status baru: Pemenang
+    } else if (status === 'Pemenang' || status === STATUS_PEMENANG) {
+      statusBadge = `<span data-status-badge="Pemenang" style="background:linear-gradient(135deg,#B8860B,#DAA520);color:#fff;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:700;"><i class="fa-solid fa-trophy"></i> 🏆 Pemenang</span>`;
+      borderColor = '#B8860B';
+    // [DITAMBAHKAN] Status baru: Menunggu Penandatanganan Kontrak
+    } else if (status === STATUS_MENUNGGU_KONTRAK || status === 'Berkontrak') {
+      statusBadge = `<span style="background:#0C447C;color:#fff;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-file-signature"></i> Berkontrak</span>`;
+      borderColor = '#0C447C';
     } else if (status === STATUS_GAGAL_FINAL) {
       statusBadge = `<span style="background:#FFCDD2;color:#C0392B;border:1px solid #EF9A9A;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-xmark"></i> Gagal</span>`;
       borderColor = '#C0392B';
@@ -7921,6 +7929,644 @@ function renderRiwayatNegoModal(s, nama) {
   if (typeof _applyPeneapanPatches === 'function') {
     _applyPeneapanPatches();
   }
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PATCH KOMPREHENSIF v2 — Sesuai requirement baru:
+     1. Hapus HPS input dari Penyedia
+     2. Sidebar "Pengumuman Pemenang" untuk Penyedia
+     3. Negosiasi Final hanya jika semua nego selesai
+     4. Status baru: Negosiasi Selesai, Menunggu Negosiasi Final, dst.
+     5. saveHargaFinal dengan validasi ke backend
+══════════════════════════════════════════════════════════════ -->
+<script>
+// ================================================================
+// STATUS BARU — konstanta tambahan
+// ================================================================
+// [DITAMBAHKAN] Status alur baru sesuai requirement
+const STATUS_NEGOSIASI_SELESAI         = 'Negosiasi Selesai';
+const STATUS_MENUNGGU_NEGO_FINAL       = 'Menunggu Negosiasi Final';
+const STATUS_MENUNGGU_PERSETUJUAN_V2   = 'Menunggu Persetujuan Penyedia';
+const STATUS_PEMENANG                  = 'Pemenang';
+const STATUS_MENUNGGU_KONTRAK          = 'Menunggu Penandatanganan Kontrak';
+
+// ================================================================
+// PATCH 1: Hapus input HPS dari Penyedia di tabel negosiasi
+// Penyedia HANYA boleh mengisi kolom negosiasi, bukan HPS
+// ================================================================
+(function() {
+  // [DIUBAH] Override nhpsRenderInputTable agar Penyedia tidak bisa akses tab parse
+  const _origNhpsRenderGiliran = window.nhpsRenderGiliran;
+  if (typeof _origNhpsRenderGiliran === 'function') {
+    window.nhpsRenderGiliran = function() {
+      _origNhpsRenderGiliran.apply(this, arguments);
+      // [DITAMBAHKAN] Sembunyikan tab Input/Parse HPS untuk Penyedia
+      if (currentRole === 'penyedia') {
+        const tabParse = document.querySelector('.nhps-tab[data-tab="parse"]');
+        if (tabParse) tabParse.style.display = 'none';
+        // Jika tab parse aktif, pindahkan ke tabel
+        if (_nhps && _nhps.activeTab === 'parse') nhpsSwitchTab('tabel');
+      }
+    };
+  }
+
+  // [DITAMBAHKAN] Intercept bukaModalNegoHPS agar penyedia langsung ke tab tabel
+  const _origBukaModal = window.bukaModalNegoHPS;
+  if (typeof _origBukaModal === 'function') {
+    window.bukaModalNegoHPS = function(idx) {
+      _origBukaModal.apply(this, arguments);
+      if (currentRole === 'penyedia') {
+        // Sembunyikan tab parse
+        setTimeout(() => {
+          const tabParse = document.querySelector('.nhps-tab[data-tab="parse"]');
+          if (tabParse) tabParse.style.display = 'none';
+          // Aktifkan tab tabel jika tidak sedang di tabel
+          if (_nhps && _nhps.activeTab === 'parse') nhpsSwitchTab('tabel');
+        }, 100);
+      }
+    };
+  }
+})();
+
+// ================================================================
+// PATCH 2: Validasi Negosiasi Final — cek semua nego selesai
+// Sebelum bukaModalNegoFinal, cek ke server apakah semua nego selesai
+// ================================================================
+(function() {
+  const _origBukaModalNegoFinal = window.bukaModalNegoFinal;
+  if (typeof _origBukaModalNegoFinal === 'function') {
+    window.bukaModalNegoFinal = async function(idx) {
+      // [DITAMBAHKAN] Validasi: semua negosiasi harus selesai
+      const btn = event && event.target;
+      if (btn && btn.tagName === 'BUTTON') {
+        btn.disabled = true;
+        const origHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa…';
+
+        try {
+          const res  = await fetch(APPS_SCRIPT_URL + '?action=getStatusNegosiasi&t=' + Date.now());
+          const json = await res.json();
+          btn.disabled = false;
+          btn.innerHTML = origHTML;
+
+          if (json.status === 'ok' && json.totalPenyedia > 0 && !json.semuaSelesai) {
+            const belum = Array.isArray(json.belumSelesai) ? json.belumSelesai : [];
+            showToast(
+              '⛔ Negosiasi Belum Selesai',
+              `Masih ada ${belum.length} penyedia yang belum menyelesaikan negosiasi: ${belum.slice(0,3).join(', ')}${belum.length > 3 ? ', …' : ''}. Selesaikan semua negosiasi terlebih dahulu.`,
+              'error', 6000
+            );
+            return; // Batalkan pembukaan modal
+          }
+        } catch(e) {
+          btn.disabled = false;
+          btn.innerHTML = origHTML;
+          // Jika gagal cek server, lanjutkan saja (biarkan backend yang validasi)
+        }
+      }
+
+      _origBukaModalNegoFinal.apply(this, arguments);
+    };
+  }
+})();
+
+// ================================================================
+// PATCH 3: simpanNegoFinal — gunakan action saveHargaFinal (baru)
+// yang memiliki validasi ketat di backend
+// ================================================================
+(function() {
+  const _origSimpanNegoFinal = window.simpanNegoFinal;
+  if (typeof _origSimpanNegoFinal === 'function') {
+    window.simpanNegoFinal = async function() {
+      const idx = _negoFinalIdx;
+      if (idx === null) return;
+      const all = getSubmissions();
+      const d   = all[idx];
+      if (!d) return;
+
+      const items = _negoFinalCollectItems();
+      const totalExcl = items.reduce((s, it) => s + Math.round(it.vol * (it.hargaFinal || 0)), 0);
+      const ppnAmt    = items.reduce((s, it) => {
+        if (!it.usePpn) return s;
+        return s + Math.round(Math.round(it.vol * (it.hargaFinal || 0)) * 0.11);
+      }, 0);
+      const totalIncl = totalExcl + ppnAmt;
+
+      if (totalExcl <= 0) {
+        const msg = document.getElementById('negoFinalMsg');
+        if (msg) {
+          msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+          msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Isi minimal satu Harga Satuan Final sebelum menyimpan.';
+        }
+        return;
+      }
+
+      const catatan = document.getElementById('negoFinalCatatan').value.trim();
+      const tgl     = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+      const btn = document.getElementById('btnSimpanNegoFinal');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…'; }
+
+      // Update data submission lokal
+      d.negoFinalHargaExcl = totalExcl;
+      d.negoFinalHargaIncl = totalIncl;
+      d.negoFinalCatatan   = catatan;
+      d.negoFinalTgl       = tgl;
+      d.negoFinalItems     = items;
+      d.negoFinalStatus    = STATUS_MENUNGGU_PERSETUJUAN_V2;
+      d.penetapanStatus    = STATUS_MENUNGGU_PERSETUJUAN_V2;
+
+      try {
+        // [DIUBAH] Menggunakan action saveHargaFinal yang memiliki validasi backend
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            action         : 'saveHargaFinal',  // [DIUBAH] action baru dengan validasi
+            namaPerusahaan : d.namaPerusahaan,
+            npwp           : d.npwp,
+            hargaExcl      : totalExcl,
+            hargaIncl      : totalIncl,
+            items          : items,
+            catatan,
+            tgl,
+            status         : STATUS_MENUNGGU_PERSETUJUAN_V2,
+            pokja          : currentPokjaUser || 'Pokja'
+          })
+        });
+
+        let json = {};
+        try { json = await res.json(); } catch(e) {}
+
+        if (json.status === 'error') {
+          const msg = document.getElementById('negoFinalMsg');
+          if (msg) {
+            msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+            msg.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${json.message || 'Gagal menyimpan harga final.'}`;
+          }
+          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
+          return;
+        }
+      } catch(e) {
+        // mode no-cors: lanjutkan saja
+      }
+
+      // Invalidate cache
+      if (typeof cacheDel === 'function') {
+        cacheDel(CACHE_KEY_SUBMISSIONS);
+        cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
+      }
+
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
+
+      const msg = document.getElementById('negoFinalMsg');
+      if (msg) {
+        msg.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+        msg.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Harga final berhasil dikirim!</strong> Total: Rp ${totalIncl.toLocaleString('id-ID')} (Incl. PPN) — Menunggu persetujuan penyedia.`;
+      }
+
+      setTimeout(() => {
+        tutupModalNegoFinal();
+        showToast('Negosiasi Final Terkirim', `Harga final untuk ${d.namaPerusahaan||'-'} menunggu persetujuan penyedia.`, 'success', 4000);
+        if (typeof cacheDel === 'function') {
+          cacheDel(CACHE_KEY_SUBMISSIONS);
+          cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
+        }
+        renderPenetapanPage();
+        fetchPenetapanData();
+        renderSidebar(); // [DITAMBAHKAN] Update sidebar agar penyedia melihat menu Pengumuman
+      }, 900);
+    };
+  }
+})();
+
+// ================================================================
+// PATCH 4: penyediaSepakat / penyediaTidakSepakat
+// [DIUBAH] Menggunakan action setPersetujuanPenyedia (baru) + status Pemenang
+// ================================================================
+(function() {
+  // [DIUBAH] Override penyediaSepakat
+  window.penyediaSepakat = async function(idx) {
+    if (!confirm('Anda setuju dengan harga final yang ditetapkan?\n\nStatus Anda akan menjadi PEMENANG.')) return;
+    const all = getSubmissions();
+    const d   = all[idx];
+    if (!d) return;
+
+    const tgl = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    d.penetapanStatus  = STATUS_PEMENANG;          // [DIUBAH] Status menjadi Pemenang
+    d.persetujuanTgl   = tgl;
+    d.persetujuanOleh  = currentPenyedia ? currentPenyedia.nama : '-';
+    d.keputusanPenyedia = 'Sepakat';
+
+    try {
+      // [DIUBAH] Menggunakan action baru setPersetujuanPenyedia
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action        : 'setPersetujuanPenyedia',  // [DIUBAH]
+          namaPerusahaan: d.namaPerusahaan,
+          npwp          : d.npwp,
+          keputusan     : 'sepakat',  // [DIUBAH] lowercase sesuai API baru
+          tgl
+        })
+      });
+    } catch(e) {}
+
+    if (typeof cacheDel === 'function') {
+      cacheDel(CACHE_KEY_SUBMISSIONS);
+      cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
+    }
+    showToast('🏆 Selamat!', `Anda telah menyepakati harga final dan ditetapkan sebagai Pemenang.`, 'success', 5000);
+    renderStatusPenyedia();
+    renderNegosiasiPage();
+    renderPenetapanPage();
+    renderSidebar(); // [DITAMBAHKAN] Update sidebar
+  };
+
+  // [DIUBAH] Override penyediaTidakSepakat
+  window.penyediaTidakSepakat = async function(idx) {
+    if (!confirm('Anda tidak setuju dengan harga final?\n\nStatus Anda akan berubah menjadi Gagal.')) return;
+    const all = getSubmissions();
+    const d   = all[idx];
+    if (!d) return;
+
+    const tgl = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    d.penetapanStatus   = 'Gagal';
+    d.persetujuanTgl    = tgl;
+    d.persetujuanOleh   = currentPenyedia ? currentPenyedia.nama : '-';
+    d.keputusanPenyedia = 'Tidak Sepakat';
+
+    try {
+      // [DIUBAH] Menggunakan action baru setPersetujuanPenyedia
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action        : 'setPersetujuanPenyedia',  // [DIUBAH]
+          namaPerusahaan: d.namaPerusahaan,
+          npwp          : d.npwp,
+          keputusan     : 'tidak',  // [DIUBAH] lowercase sesuai API baru
+          tgl
+        })
+      });
+    } catch(e) {}
+
+    if (typeof cacheDel === 'function') {
+      cacheDel(CACHE_KEY_SUBMISSIONS);
+      cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
+    }
+    showToast('Keputusan Dicatat', `Anda tidak menyepakati harga final. Status: Gagal.`, 'error', 4000);
+    renderStatusPenyedia();
+    renderNegosiasiPage();
+    renderPenetapanPage();
+    renderSidebar(); // [DITAMBAHKAN]
+  };
+})();
+
+// ================================================================
+// PATCH 5: Sidebar Pengumuman Pemenang untuk Penyedia
+// [DITAMBAHKAN] Menu "Pengumuman Pemenang" di sidebar Penyedia
+// muncul jika Pokja sudah input harga final
+// ================================================================
+(function() {
+  // Helper: cek apakah penyedia saat ini punya harga final tersedia
+  function _penyediaAdaPengumuman() {
+    if (!currentPenyedia) return false;
+    const all = getSubmissions();
+    return all.some(s => {
+      const milik = s.namaPerusahaan === currentPenyedia.nama ||
+                    s.email === currentPenyedia.email ||
+                    (s.npwp && s.npwp === currentPenyedia.npwp);
+      // Tampilkan jika ada penetapanStatus yang relevan
+      return milik && (
+        s.penetapanStatus === STATUS_MENUNGGU_PERSETUJUAN_V2 ||
+        s.penetapanStatus === STATUS_MENUNGGU_PERSETUJUAN ||
+        s.penetapanStatus === STATUS_PEMENANG ||
+        s.penetapanStatus === 'Pemenang' ||
+        s.penetapanStatus === 'Lulus' ||
+        (s.negoFinalHargaIncl && s.negoFinalHargaIncl > 0)
+      );
+    });
+  }
+
+  // [DITAMBAHKAN] Patch renderSidebar untuk tambahkan menu Pengumuman Pemenang
+  // (berbeda dari patch sebelumnya di _applyPeneapanPatches yang menggunakan
+  //  nama menu "Penetapan Pemenang" — ini adalah versi baru dengan nama lebih tepat)
+  const _origRS2 = window.renderSidebar;
+  if (typeof _origRS2 === 'function') {
+    window.renderSidebar = function() {
+      _origRS2.apply(this, arguments);
+      if (currentRole !== 'penyedia' || !currentPenyedia) return;
+
+      const nav = document.getElementById('sidebarNav');
+      if (!nav) return;
+      // Cegah duplikasi — cek apakah sudah ada menu penetapan dari patch sebelumnya
+      if (nav.querySelector('[data-page="penetapan"]')) {
+        // Sudah ada dari patch sebelumnya, ubah label jika perlu
+        const existingLink = nav.querySelector('[data-page="penetapan"]');
+        if (existingLink && !existingLink.dataset.labelUpdated) {
+          const labelEl = existingLink.querySelector('.nav-label');
+          if (labelEl) {
+            labelEl.textContent = 'Pengumuman Pemenang';
+            existingLink.dataset.labelUpdated = '1';
+          }
+        }
+        return;
+      }
+
+      // Tambahkan menu baru jika belum ada dan kondisi terpenuhi
+      if (!_penyediaAdaPengumuman()) return;
+
+      const li = document.createElement('li');
+      li.style.cssText = 'padding:2px 10px 2px;';
+      // [DITAMBAHKAN] Item sidebar Pengumuman Pemenang dengan label & ikon baru
+      li.innerHTML = `<a href="#" class="nav-link" data-page="penetapan"
+        style="background:linear-gradient(135deg,#B8860B,#DAA520);color:#fff;border-left:3px solid #8B6914;
+               margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;">
+        <span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-bell"></i></span>
+        <span class="nav-label">Pengumuman Pemenang</span>
+      </a>`;
+      li.querySelector('a').addEventListener('click', function(e) {
+        e.preventDefault();
+        showPage('penetapan');
+        if (window.innerWidth <= 768) {
+          document.getElementById('sidebar')?.classList.remove('mobile-open');
+          document.getElementById('mobileOverlay')?.classList.remove('active');
+        }
+      });
+
+      // Sisipkan setelah menu Status Pengajuan
+      const statusLink = nav.querySelector('[data-page="status"]');
+      if (statusLink && statusLink.closest('li')) {
+        statusLink.closest('li').after(li);
+      } else {
+        const negoLink = nav.querySelector('[data-page="negosiasi"]');
+        if (negoLink && negoLink.closest('li')) {
+          negoLink.closest('li').before(li);
+        } else {
+          nav.insertBefore(li, nav.firstChild);
+        }
+      }
+    };
+    window.renderSidebar._patched2 = true;
+  }
+})();
+
+// ================================================================
+// PATCH 6: renderPenetapanPage — perbaikan status badge untuk
+// status baru (Pemenang, Menunggu Penandatanganan Kontrak, dll.)
+// ================================================================
+(function() {
+  const _origRenderPenetapan = window.renderPenetapanPage;
+  if (typeof _origRenderPenetapan === 'function') {
+    window.renderPenetapanPage = function() {
+      _origRenderPenetapan.apply(this, arguments);
+
+      // [DITAMBAHKAN] Patch status badge untuk status baru
+      const wrap = document.getElementById('penetapanPageContent');
+      if (!wrap) return;
+
+      // Update badge "Lulus" menjadi "Pemenang" jika keputusan Sepakat
+      wrap.querySelectorAll('[data-status-badge]').forEach(el => {
+        const status = el.dataset.statusBadge;
+        if (status === 'Pemenang' || status === 'pemenang') {
+          el.style.background = '#B8860B';
+          el.style.color = '#fff';
+          el.innerHTML = '<i class="fa-solid fa-trophy"></i> Pemenang';
+        }
+      });
+    };
+  }
+})();
+
+// ================================================================
+// PATCH 7: renderNegosiasiPage — tambahkan badge status "Negosiasi
+// Selesai" dan "Menunggu Negosiasi Final"
+// ================================================================
+(function() {
+  const _origRenderNego2 = window.renderNegosiasiPage;
+  if (typeof _origRenderNego2 === 'function') {
+    window.renderNegosiasiPage = function() {
+      _origRenderNego2.apply(this, arguments);
+      if (currentRole !== 'pokja') return;
+      const wrap = document.getElementById('negosiasiPageContent');
+      if (!wrap) return;
+      // Cegah duplikasi info box
+      if (wrap.querySelector('.nego-selesai-info')) return;
+
+      const all = getSubmissions();
+      const selesaiCount = all.filter(s => {
+        const n = s.negosiasi;
+        return n && (n.giliran === 'Selesai' ||
+          (typeof n.status === 'string' && n.status.toLowerCase().includes('disetujui')));
+      }).length;
+      const totalLulus = all.filter(s => s.reviewStatus === 'Lulus / Memenuhi Syarat').length;
+
+      if (selesaiCount > 0 && selesaiCount >= totalLulus && totalLulus > 0) {
+        // [DITAMBAHKAN] Semua negosiasi selesai → tampilkan info menunggu negosiasi final
+        const existingTip = wrap.querySelector('.penetapan-tip');
+        if (!existingTip) {
+          const tip = document.createElement('div');
+          tip.className = 'nego-selesai-info';
+          tip.style.cssText = 'background:#E0F2F1;border:1px solid #80CBC4;border-left:4px solid #004D40;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:0.83rem;color:#004D40;';
+          tip.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Semua negosiasi selesai!</strong>
+            ${selesaiCount} dari ${totalLulus} penyedia sudah DEAL.
+            Lanjutkan ke <strong>Penetapan Pemenang → Negosiasi Final</strong> untuk menetapkan harga final.
+            <button onclick="showPage('penetapan')" style="margin-left:12px;background:#004D40;color:white;border:none;border-radius:6px;padding:4px 14px;font-size:0.80rem;font-weight:700;cursor:pointer;">
+              <i class="fa-solid fa-arrow-right"></i> Ke Penetapan Pemenang
+            </button>`;
+          wrap.insertBefore(tip, wrap.firstChild);
+        }
+      }
+    };
+  }
+})();
+
+// ================================================================
+// PATCH 8: fetchPenetapanData — sinkronisasi status baru
+// [DITAMBAHKAN] Sinkronisasi status Pemenang dari server
+// ================================================================
+(function() {
+  const _origFetchPenetapan = window.fetchPenetapanData;
+  if (typeof _origFetchPenetapan === 'function') {
+    window.fetchPenetapanData = async function() {
+      await _origFetchPenetapan.apply(this, arguments);
+      // [DITAMBAHKAN] Setelah fetch, update sidebar penyedia jika ada perubahan status
+      if (currentRole === 'penyedia') {
+        renderSidebar();
+      }
+    };
+  }
+})();
+
+// ================================================================
+// PATCH 9: renderStatusPenyedia — tambahkan info Menunggu Negosiasi Final
+// dan Pengumuman Pemenang
+// ================================================================
+(function() {
+  const _origRenderStatus2 = window.renderStatusPenyedia;
+  if (typeof _origRenderStatus2 === 'function') {
+    window.renderStatusPenyedia = function() {
+      _origRenderStatus2.apply(this, arguments);
+      if (!currentPenyedia) return;
+
+      const all = getSubmissions();
+      const wrap = document.getElementById('statusCardWrap');
+      if (!wrap) return;
+
+      // Cegah duplikasi banner
+      if (wrap.querySelector('.pengumuman-banner-v2')) return;
+
+      const penyediaData = all.filter(s => {
+        return s.namaPerusahaan === currentPenyedia.nama ||
+               s.email === currentPenyedia.email;
+      });
+
+      // Cek status Pemenang
+      const isPemenang = penyediaData.some(s =>
+        s.penetapanStatus === STATUS_PEMENANG ||
+        s.penetapanStatus === 'Pemenang' ||
+        s.keputusanPenyedia === 'Sepakat'
+      );
+
+      // Cek menunggu persetujuan
+      const isMenunggu = penyediaData.some(s =>
+        s.penetapanStatus === STATUS_MENUNGGU_PERSETUJUAN_V2 ||
+        s.penetapanStatus === STATUS_MENUNGGU_PERSETUJUAN
+      );
+
+      if (isPemenang) {
+        // [DITAMBAHKAN] Banner selamat pemenang
+        const banner = document.createElement('div');
+        banner.className = 'pengumuman-banner-v2';
+        banner.style.cssText = 'background:linear-gradient(135deg,#B8860B,#DAA520);color:#fff;border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(184,134,11,0.3);';
+        banner.innerHTML = `
+          <span style="font-size:2rem;">🏆</span>
+          <div>
+            <div style="font-weight:800;font-size:1rem;">Selamat! Anda Ditetapkan sebagai Pemenang</div>
+            <div style="font-size:0.83rem;opacity:0.9;margin-top:4px;">Tim Pokja akan menghubungi Anda untuk proses penandatanganan kontrak.</div>
+            <button onclick="showPage('penetapan')" style="margin-top:8px;background:rgba(255,255,255,0.25);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:5px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;">
+              <i class="fa-solid fa-trophy"></i> Lihat Detail
+            </button>
+          </div>`;
+        if (wrap.firstChild) wrap.insertBefore(banner, wrap.firstChild);
+        else wrap.appendChild(banner);
+      } else if (isMenunggu) {
+        // [DITAMBAHKAN] Banner menunggu persetujuan (lebih jelas)
+        if (!wrap.querySelector('.penetapan-banner')) {
+          const banner = document.createElement('div');
+          banner.className = 'pengumuman-banner-v2';
+          banner.style.cssText = 'background:#FFF9C4;border:1px solid #F9A825;border-left:4px solid #856404;border-radius:8px;padding:14px 18px;margin-bottom:16px;';
+          banner.innerHTML = `<strong><i class="fa-solid fa-bell" style="color:#856404;"></i> Harga Final Telah Ditetapkan</strong><br>
+            <span style="font-size:0.85rem;color:#6b5003;">Pokja telah menetapkan harga final untuk proses pengadaan ini.
+            Silakan kunjungi <strong>Pengumuman Pemenang</strong> untuk menyatakan persetujuan atau penolakan.</span>
+            <br><button onclick="showPage('penetapan')" style="margin-top:8px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;">
+              <i class="fa-solid fa-arrow-right"></i> Lihat Pengumuman Pemenang
+            </button>`;
+          if (wrap.firstChild) wrap.insertBefore(banner, wrap.firstChild);
+          else wrap.appendChild(banner);
+        }
+      }
+    };
+    window.renderStatusPenyedia._patched2 = true;
+  }
+})();
+
+// ================================================================
+// PATCH 10: loadStatusPenyedia — tambahkan fetch harga final
+// [DITAMBAHKAN] Saat penyedia load status, juga cek harga final
+// ================================================================
+(function() {
+  const _origLoadStatus = window.loadStatusPenyedia;
+  if (typeof _origLoadStatus === 'function') {
+    window.loadStatusPenyedia = async function() {
+      await _origLoadStatus.apply(this, arguments);
+      // [DITAMBAHKAN] Cek harga final dari endpoint baru
+      if (currentPenyedia && currentPenyedia.email) {
+        try {
+          const all = getSubmissions();
+          const mySub = all.find(s =>
+            s.email === currentPenyedia.email ||
+            s.namaPerusahaan === currentPenyedia.nama
+          );
+          if (mySub) {
+            const qs  = new URLSearchParams({
+              action: 'getHargaFinal',
+              npwp: mySub.npwp || '',
+              namaPerusahaan: mySub.namaPerusahaan || ''
+            });
+            const res  = await fetch(APPS_SCRIPT_URL + '?' + qs + '&t=' + Date.now());
+            const json = await res.json();
+            if (json.status === 'ok' && json.tersedia && json.data) {
+              // Sync ke semua submissions milik penyedia ini
+              const idx = all.findIndex(s =>
+                s.email === currentPenyedia.email ||
+                s.namaPerusahaan === currentPenyedia.nama
+              );
+              if (idx >= 0) {
+                _submissions[idx].penetapanStatus  = json.data.statusPenetapan;
+                _submissions[idx].negoFinalHargaExcl = json.data.hargaFinalExcl;
+                _submissions[idx].negoFinalHargaIncl = json.data.hargaFinalIncl;
+                _submissions[idx].negoFinalCatatan   = json.data.catatan;
+                _submissions[idx].keputusanPenyedia  = json.data.keputusanPenyedia;
+                if (Array.isArray(json.data.items) && json.data.items.length) {
+                  _submissions[idx].negoFinalItems = json.data.items;
+                }
+              }
+              renderSidebar(); // Update sidebar dengan status terbaru
+            }
+          }
+        } catch(e) {}
+      }
+    };
+  }
+})();
+
+// ================================================================
+// PATCH 11: renderPenetapanPage untuk Penyedia
+// [DITAMBAHKAN] Menampilkan tabel harga final readonly + tombol Sepakat/Tidak
+// sesuai requirement sidebar "Pengumuman Pemenang"
+// ================================================================
+(function() {
+  const _origRenderPent = window.renderPenetapanPage;
+  if (typeof _origRenderPent === 'function') {
+    window.renderPenetapanPage = function() {
+      _origRenderPent.apply(this, arguments);
+
+      // [DITAMBAHKAN] Untuk penyedia, pastikan tabel harga final readonly
+      if (currentRole !== 'penyedia') return;
+      const wrap = document.getElementById('penetapanPageContent');
+      if (!wrap) return;
+
+      // Tambahkan judul halaman untuk Penyedia
+      if (!wrap.querySelector('.peny-pengumuman-header')) {
+        const header = document.createElement('div');
+        header.className = 'peny-pengumuman-header';
+        header.style.cssText = 'background:linear-gradient(135deg,#B8860B,#DAA520);color:#fff;border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px;';
+        header.innerHTML = `
+          <i class="fa-solid fa-bell" style="font-size:1.8rem;opacity:0.9;"></i>
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;">Pengumuman Pemenang</div>
+            <div style="font-size:0.80rem;opacity:0.9;margin-top:2px;">Lihat harga final yang ditetapkan Pokja dan nyatakan keputusan Anda.</div>
+          </div>`;
+        wrap.insertBefore(header, wrap.firstChild);
+      }
+    };
+  }
+})();
+
+// ================================================================
+// AUTO-INIT: Jalankan saat halaman siap
+// ================================================================
+document.addEventListener('DOMContentLoaded', function() {
+  // [DITAMBAHKAN] Pastikan patch dijalankan ulang setelah init
+  setTimeout(function() {
+    if (currentRole === 'penyedia') {
+      renderSidebar();
+    }
+  }, 500);
+});
 </script>
 
 </body>
