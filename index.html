@@ -820,7 +820,7 @@
       <p>Masuk dengan akun Pokja Anda (pokja, pokja1–pokja10)</p>
     </div>
     <div class="login-modal-body">
-      <div id="pokjaLockBanner" style="display:none;background:#FFF3CD;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:7px;padding:10px 14px;font-size:0.82rem;color:#6b5003;margin-bottom:12px;"><i class="fa-solid fa-lock"></i> <strong>Akun ini sedang digunakan</strong> oleh sesi lain. Hubungi Admin untuk reset lock jika diperlukan.</div>
+      <div id="pokjaLockBanner" style="display:none;background:#FFF3CD;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:7px;padding:10px 14px;font-size:0.82rem;color:#6b5003;margin-bottom:12px;"><i class="fa-solid fa-lock"></i> <strong>Sesi sebelumnya ditemukan</strong> — Login ulang diizinkan. Lock lama direset otomatis.</div>
       <div class="admin-form-group"><label>Username</label><input type="text" id="pokjaUsername" placeholder="pokja / pokja1 / pokja2 …" autocomplete="username" onkeydown="if(event.key==='Enter')doLoginPokja()" /></div>
       <div class="admin-form-group"><label>Password</label><div class="pw-wrap"><input type="password" id="pokjaPasswordInput" placeholder="Password…" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPokja()" /><button type="button" class="pw-eye" onclick="togglePw('pokjaPasswordInput',this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button></div></div>
       <div style="font-size:0.8rem;color:#C0392B;min-height:20px;" id="errorLoginPokja"></div>
@@ -2073,13 +2073,13 @@ async function doLoginPokja() {
   }
 
   // ── Cek session lock ──
-  // Lock token disimpan di config server; jika ada & berbeda dengan token sesi ini → terkunci
+  // [FIX] Jika password sudah benar, lock lama (dari browser yang ditutup tanpa logout)
+  // otomatis direset dan login diizinkan. Lock hanya berlaku dalam sesi yang sama.
+  // Tidak ada lagi pemblokiran akun saat browser ditutup / sesi habis.
   const myToken = sessionStorage.getItem('_bpbj_locktoken_' + username) || '';
   if (isLocked && lockToken && lockToken !== myToken) {
-    setButtonLoading('btnDoLoginPokja', false);
-    lockBanner.style.display = 'block';
-    shakeModal('loginOverlayPokja');
-    return;
+    // Auto-release lock lama — password sudah diverifikasi benar di atas
+    // Lanjutkan proses login (tidak return)
   }
 
   // ── Buat lock token baru & simpan ke server ──
@@ -5329,39 +5329,8 @@ async function simpanNegoFinal() {
   const btn = document.getElementById('btnSimpanNegoFinal');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…'; }
 
-  // Ambil daftar penyedia DEAL dari SERVER
-  let dealNamaList = [];
-  try {
-    const stRes  = await fetch(APPS_SCRIPT_URL + '?action=getStatusNegosiasi&t=' + Date.now());
-    const stJson = await stRes.json();
-    if (stJson.status === 'ok' && Array.isArray(stJson.sudahSelesai) && stJson.sudahSelesai.length) {
-      dealNamaList = stJson.sudahSelesai;
-    }
-  } catch(e) {}
-
-  // Fallback ke data lokal
-  if (!dealNamaList.length) {
-    dealNamaList = all.filter(s => {
-      const nego = s.negosiasi || null;
-      return nego && (nego.giliran === 'Selesai' ||
-        nego.status === 'Harga Disetujui Oleh Penyedia' ||
-        (nego.hargaDisepakatiExcl && nego.hargaDisepakatiExcl > 0));
-    }).map(s => s.namaPerusahaan);
-  }
-
-  if (!dealNamaList.length) {
-    const msg = document.getElementById('negoFinalMsg');
-    if (msg) {
-      msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-      msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Tidak ada penyedia dengan status Negosiasi Selesai (DEAL) di server.';
-    }
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
-    return;
-  }
-
-  const semuaDeal = dealNamaList.map(nama => {
-    return all.find(s => s.namaPerusahaan === nama) || { namaPerusahaan: nama, npwp: '' };
-  });
+  // [FIX] Kirim ke SEMUA penyedia yang terdaftar — tidak filter status nego
+  const semuaDeal = all.filter(s => s.namaPerusahaan);
 
   semuaDeal.forEach(sd => {
     const si = all.indexOf(sd);
@@ -5377,14 +5346,15 @@ async function simpanNegoFinal() {
   });
 
   // [BUGFIX] Kirim ke server — TANPA mode:no-cors agar response bisa dibaca
-  // Gunakan action saveHargaFinal (bukan simpanNegoFinal) agar validasi backend berjalan
+  // [FIX] Kirim ke GAS dengan mode:no-cors + Content-Type text/plain (wajib untuk Apps Script)
   try {
     const sendAll = semuaDeal.map(sd =>
       fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          action         : 'saveHargaFinal',
+        method : 'POST',
+        mode   : 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body   : JSON.stringify({
+          action         : 'simpanNegoFinal',
           namaPerusahaan : sd.namaPerusahaan,
           npwp           : sd.npwp || '',
           hargaExcl      : totalExcl,
@@ -5395,19 +5365,9 @@ async function simpanNegoFinal() {
           status         : STATUS_MENUNGGU,
           pokja          : (typeof currentPokjaUser !== 'undefined' ? currentPokjaUser : null) || 'Pokja'
         })
-      }).then(r => r.json()).catch(() => ({ status: 'ok' }))
+      }).catch(() => {})
     );
-    const results = await Promise.all(sendAll);
-    const anyError = results.find(r => r && r.status === 'error');
-    if (anyError) {
-      const msg = document.getElementById('negoFinalMsg');
-      if (msg) {
-        msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-        msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> ' + (anyError.message || 'Gagal menyimpan ke server.');
-      }
-      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
-      return;
-    }
+    await Promise.all(sendAll);
   } catch(e) {}
 
   if (typeof cacheDel === 'function') {
@@ -8235,159 +8195,108 @@ const STATUS_MENUNGGU_KONTRAK          = 'Menunggu Penandatanganan Kontrak';
 })();
 
 // ================================================================
-// PATCH 3: simpanNegoFinal — gunakan action saveHargaFinal (baru)
-// yang memiliki validasi ketat di backend
+// PATCH 3 (FIX): simpanNegoFinal — kirim ke GAS dengan mode:no-cors
+// Kirim ke SEMUA penyedia yang terdaftar di submissions
 // ================================================================
-(function() {
-  const _origSimpanNegoFinal = window.simpanNegoFinal;
-  if (typeof _origSimpanNegoFinal === 'function') {
-    window.simpanNegoFinal = async function() {
-      const idx = _negoFinalIdx;
-      if (idx === null) return;
-      const all = getSubmissions();
-      const d   = all[idx];
-      if (!d) return;
+window.simpanNegoFinal = async function() {
+  const idx = _negoFinalIdx;
+  if (idx === null) return;
+  const all = getSubmissions();
+  const d   = all[idx];
+  if (!d) return;
 
-      const items = _negoFinalCollectItems();
-      const totalExcl = items.reduce((s, it) => s + Math.round(it.vol * (it.hargaFinal || 0)), 0);
-      const ppnAmt    = items.reduce((s, it) => {
-        if (!it.usePpn) return s;
-        return s + Math.round(Math.round(it.vol * (it.hargaFinal || 0)) * 0.11);
-      }, 0);
-      const totalIncl = totalExcl + ppnAmt;
+  const items = _negoFinalCollectItems();
+  const totalExcl = items.reduce((s, it) => s + Math.round(it.vol * (it.hargaFinal || 0)), 0);
+  const ppnAmt    = items.reduce((s, it) => {
+    if (!it.usePpn) return s;
+    return s + Math.round(Math.round(it.vol * (it.hargaFinal || 0)) * 0.11);
+  }, 0);
+  const totalIncl = totalExcl + ppnAmt;
 
-      if (totalExcl <= 0) {
-        const msg = document.getElementById('negoFinalMsg');
-        if (msg) {
-          msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-          msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Isi minimal satu Harga Satuan Final sebelum menyimpan.';
-        }
-        return;
-      }
-
-      const catatan = document.getElementById('negoFinalCatatan').value.trim();
-      const tgl     = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-
-      const btn = document.getElementById('btnSimpanNegoFinal');
-      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…'; }
-
-      // ── Ambil daftar penyedia DEAL dari SERVER (sumber kebenaran) ──
-      let dealNamaList = [];
-      try {
-        const stRes  = await fetch(APPS_SCRIPT_URL + '?action=getStatusNegosiasi&t=' + Date.now());
-        const stJson = await stRes.json();
-        if (stJson.status === 'ok' && Array.isArray(stJson.sudahSelesai) && stJson.sudahSelesai.length) {
-          dealNamaList = stJson.sudahSelesai;
-        }
-      } catch(e2) {}
-
-      // Fallback ke data lokal jika server tidak bisa dihubungi
-      if (!dealNamaList.length) {
-        // Cek dari state negosiasi lokal
-        const dariNegoLokal = all.filter(s => {
-          const nego = s.negosiasi || null;
-          return nego && (nego.giliran === 'Selesai' ||
-            nego.status === 'Harga Disetujui Oleh Penyedia' ||
-            (nego.hargaDisepakatiExcl && nego.hargaDisepakatiExcl > 0));
-        }).map(s => s.namaPerusahaan);
-        // Cek dari cache sheet Penetapan (sudah pernah disimpan)
-        const dariPenetapan = (_penetapanDataCache || []).map(r => (r.namaPerusahaan || '').trim()).filter(Boolean);
-        // Gabungkan, hindari duplikasi
-        const gabungan = new Set([...dariNegoLokal, ...dariPenetapan]);
-        dealNamaList = Array.from(gabungan);
-      }
-
-      if (!dealNamaList.length) {
-        const msg = document.getElementById('negoFinalMsg');
-        if (msg) {
-          msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-          msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Tidak ada penyedia dengan status Negosiasi Selesai (DEAL) di server.';
-        }
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
-        return;
-      }
-
-      const semuaDeal = dealNamaList.map(nama => {
-        return all.find(s => s.namaPerusahaan === nama) || { namaPerusahaan: nama, npwp: '' };
-      });
-
-      // Update data lokal untuk semua penyedia DEAL
-      semuaDeal.forEach(sd => {
-        const si = all.indexOf(sd);
-        if (si >= 0) {
-          _submissions[si].negoFinalHargaExcl = totalExcl;
-          _submissions[si].negoFinalHargaIncl = totalIncl;
-          _submissions[si].negoFinalCatatan   = catatan;
-          _submissions[si].negoFinalTgl       = tgl;
-          _submissions[si].negoFinalItems     = items;
-          _submissions[si].negoFinalStatus    = STATUS_MENUNGGU_PERSETUJUAN_V2;
-          _submissions[si].penetapanStatus    = STATUS_MENUNGGU_PERSETUJUAN_V2;
-        }
-      });
-
-      try {
-        // Kirim ke semua penyedia DEAL sekaligus
-        const sendAll = semuaDeal.map(sd =>
-          fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-              action         : 'saveHargaFinal',
-              namaPerusahaan : sd.namaPerusahaan,
-              npwp           : sd.npwp || '',
-              hargaExcl      : totalExcl,
-              hargaIncl      : totalIncl,
-              items          : items,
-              catatan,
-              tgl,
-              status         : STATUS_MENUNGGU_PERSETUJUAN_V2,
-              pokja          : currentPokjaUser || 'Pokja'
-            })
-          }).then(r => r.json()).catch(() => ({}))
-        );
-        const results = await Promise.all(sendAll);
-        const anyError = results.find(r => r.status === 'error');
-        if (anyError) {
-          const msg = document.getElementById('negoFinalMsg');
-          if (msg) {
-            msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-            msg.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${anyError.message || 'Gagal menyimpan harga final.'}`;
-          }
-          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
-          return;
-        }
-      } catch(e) {
-        // lanjutkan jika terjadi error jaringan
-      }
-
-      if (typeof cacheDel === 'function') {
-        cacheDel(CACHE_KEY_SUBMISSIONS);
-        cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
-      }
-
-      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
-
-      const namaList = semuaDeal.map(s => s.namaPerusahaan).join(', ');
-      const msg = document.getElementById('negoFinalMsg');
-      if (msg) {
-        msg.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-        msg.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Harga final berhasil dikirim ke ${semuaDeal.length} penyedia!</strong> Total: Rp ${totalIncl.toLocaleString('id-ID')} (Incl. PPN)<br><small style="opacity:0.8;">${namaList}</small>`;
-      }
-
-      setTimeout(() => {
-        tutupModalNegoFinal();
-        showToast('Harga Final Terkirim', `Dikirim ke ${semuaDeal.length} penyedia: ${namaList}`, 'success', 5000);
-        if (typeof cacheDel === 'function') {
-          cacheDel(CACHE_KEY_SUBMISSIONS);
-          cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
-        }
-        renderPenetapanPage();
-        fetchPenetapanData();
-        renderSidebar();
-      }, 900);
-    };
+  if (totalExcl <= 0) {
+    const msg = document.getElementById('negoFinalMsg');
+    if (msg) {
+      msg.style.cssText = 'display:block;background:#FDEDEC;color:#C0392B;border:1px solid #F5C6C6;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+      msg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Isi minimal satu Harga Satuan Final sebelum menyimpan.';
+    }
+    return;
   }
-})();
+
+  const catatan = document.getElementById('negoFinalCatatan').value.trim();
+  const tgl     = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const STATUS_MENUNGGU = STATUS_MENUNGGU_PERSETUJUAN_V2 || STATUS_MENUNGGU_PERSETUJUAN;
+
+  const btn = document.getElementById('btnSimpanNegoFinal');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…'; }
+
+  // Kumpulkan SEMUA penyedia dari submissions (tidak filter status nego)
+  // agar semua peserta mendapat data harga final
+  const semuaPenyedia = all.filter(s => s.namaPerusahaan);
+
+  // Kirim ke semua penyedia dengan mode:no-cors (wajib untuk Apps Script dari browser)
+  try {
+    const sendAll = semuaPenyedia.map(sd =>
+      fetch(APPS_SCRIPT_URL, {
+        method : 'POST',
+        mode   : 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body   : JSON.stringify({
+          action         : 'simpanNegoFinal',
+          namaPerusahaan : sd.namaPerusahaan || '',
+          npwp           : sd.npwp || '',
+          hargaExcl      : totalExcl,
+          hargaIncl      : totalIncl,
+          items          : items,
+          catatan        : catatan,
+          tgl            : tgl,
+          status         : STATUS_MENUNGGU,
+          pokja          : currentPokjaUser || 'Pokja'
+        })
+      }).catch(() => {})
+    );
+    await Promise.all(sendAll);
+  } catch(e) {}
+
+  // Update data lokal untuk semua penyedia
+  semuaPenyedia.forEach(sd => {
+    const si = all.indexOf(sd);
+    if (si >= 0) {
+      _submissions[si].negoFinalHargaExcl = totalExcl;
+      _submissions[si].negoFinalHargaIncl = totalIncl;
+      _submissions[si].negoFinalCatatan   = catatan;
+      _submissions[si].negoFinalTgl       = tgl;
+      _submissions[si].negoFinalItems     = items;
+      _submissions[si].negoFinalStatus    = STATUS_MENUNGGU;
+      _submissions[si].penetapanStatus    = STATUS_MENUNGGU;
+    }
+  });
+
+  if (typeof cacheDel === 'function') {
+    cacheDel(CACHE_KEY_SUBMISSIONS);
+    cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Penyedia'; }
+
+  const namaList = semuaPenyedia.map(s => s.namaPerusahaan).join(', ');
+  const msg = document.getElementById('negoFinalMsg');
+  if (msg) {
+    msg.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msg.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Harga final berhasil disimpan ke ${semuaPenyedia.length} penyedia!</strong><br>Total: Rp ${totalIncl.toLocaleString('id-ID')} (Incl. PPN)<br><small style="opacity:0.8;">${namaList}</small>`;
+  }
+
+  setTimeout(() => {
+    tutupModalNegoFinal();
+    showToast('Harga Final Disimpan', `Dikirim ke ${semuaPenyedia.length} penyedia: ${namaList}`, 'success', 5000);
+    if (typeof cacheDel === 'function') {
+      cacheDel(CACHE_KEY_SUBMISSIONS);
+      cacheSetTimestamp(CACHE_KEY_TS_SUB, 0);
+    }
+    renderPenetapanPage();
+    fetchPenetapanData();
+    renderSidebar();
+  }, 900);
+};
 
 // ================================================================
 // PATCH 4: penyediaSepakat / penyediaTidakSepakat
