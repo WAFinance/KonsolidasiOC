@@ -1032,7 +1032,7 @@
             </div>
             <div style="overflow-x:auto;">
               <table class="pokja-table" id="pokjaTable">
-                <thead><tr><th>#</th><th>Tgl Upload</th><th>Perusahaan</th><th>NPWP</th><th>Jenis Dokumen</th><th>Kontak</th><th>Dok. Terbaru</th><th>Dok. Sebelumnya</th><th>Status</th><th>Catatan</th><th>Klarifikasi</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>#</th><th>Tgl Upload</th><th>Perusahaan</th><th>NPWP</th><th>Jenis Dokumen</th><th>Kontak</th><th>Dok. Terbaru</th><th>Dok. Sebelumnya</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr></thead>
                 <tbody id="pokjaTableBody"><tr><td colspan="12" style="text-align:center;color:var(--gray-400);padding:28px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data…</td></tr></tbody>
               </table>
             </div>
@@ -3749,59 +3749,7 @@ function renderPokjaTable() {
         </div>
       </div>`;
 
-    // ── Kolom Klarifikasi ──
-    const _kDP = (k) => {
-      if (k.dariPokja === true || k.dariPokja === 'true' || k.dariPokja === 1) return true;
-      const p = (k.pengirim||'').toLowerCase();
-      return p === 'pokja' || p.startsWith('pokja') || POKJA_USERNAMES.some(u=>p===u.toLowerCase());
-    };
-    const klarifikasiColHtml = klarLog.length
-      ? `<div style="min-width:160px;max-width:220px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
-            <span style="font-size:0.75rem;font-weight:700;color:#856404;white-space:nowrap;"><i class="fa-solid fa-comments"></i> ${klarLog.length} klarifikasi</span>
-            <button id="klarToggleBtn-${origIdx}" onclick="toggleKlarDetail(${origIdx})" style="display:inline-flex;align-items:center;gap:4px;background:#FFF8E1;border:1px solid #FFD54F;color:#856404;border-radius:5px;padding:2px 8px;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.15s;" title="Tampilkan/sembunyikan detail">
-              <i id="klarToggleIcon-${origIdx}" class="fa-solid fa-chevron-down"></i> Lihat
-            </button>
-          </div>
-          <div id="klarDetail-${origIdx}" style="display:none;">
-            ${klarLog.map((k,ki)=>{
-              const dp = _kDP(k);
-              return `
-            <div style="background:${dp?'#E3F2FD':'#FFFDE7'};border:1px solid ${dp?'#90CAF9':'#FFD54F'};border-left:3px solid ${dp?'#185FA5':'#856404'};border-radius:6px;padding:6px 9px;margin-bottom:4px;font-size:0.75rem;">
-              <div style="color:var(--gray-400);font-size:0.68rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:${dp?'#185FA5':'#856404'}">${dp?'Pokja':(k.pengirim||'Penyedia')}</strong></div>
-              <div style="color:var(--gray-800);margin-bottom:2px;">${k.pesan||''}</div>
-              ${dp
-                ? (k.balasanPenyedia
-                    ? `<div style="background:white;border-left:2px solid #3B6D11;border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:#3B6D11;"></i> <strong style="color:#2D7D17;">Tanggapan Penyedia:</strong><br>${k.balasanPenyedia}${k.balasanPenyediaTgl?`<br><span style="color:var(--gray-400);font-size:0.67rem;">${k.balasanPenyediaTgl}</span>`:''}</div>${k.balasan?`<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-shield-halved" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan Pokja:</strong><br>${k.balasan}</div>`:''}`
-                    : `<span style="font-size:0.68rem;color:#856404;font-style:italic;"><i class="fa-solid fa-hourglass-half"></i> Menunggu tanggapan Penyedia</span>`)
-                : (k.balasan
-                    ? `<div style="background:#E8F2FF;border-left:2px solid var(--blue-600);border-radius:4px;padding:4px 7px;margin-top:4px;font-size:0.72rem;"><i class="fa-solid fa-reply" style="color:var(--blue-600);"></i> <strong style="color:var(--blue-800);">Tanggapan${k.balasanOleh?' ('+k.balasanOleh+')':' Pokja'}:</strong><br>${k.balasan}</div>`
-                    : `<span style="font-size:0.68rem;color:var(--gray-400);font-style:italic;">Belum ditanggapi</span>`)}
-            </div>`;}).join('')}
-          </div>
-          <div style="display:flex;gap:4px;margin-top:4px;flex-direction:column;">
-            ${klarLog.some(k=>_kDP(k) && k.balasanPenyedia && !k.balasan) ? `<button onclick="bukaTanggapanKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#856404;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#6b5003'" onmouseleave="this.style.background='#856404'">
-              <i class="fa-solid fa-reply"></i> Tanggapan Klarifikasi
-            </button>` : ''}
-            <button onclick="bukaModalKlarifikasiPokja(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#185FA5;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'">
-              <i class="fa-solid fa-message"></i> Kirim Klarifikasi
-            </button>
-            <button onclick="bukaModalUndanganPembuktianKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#1B5E20;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#145214'" onmouseleave="this.style.background='#1B5E20'">
-              <i class="fa-solid fa-file-signature"></i> Undangan Pembuktian
-            </button>
-          </div>
-        </div>`
-      : `<div style="min-width:140px;">
-          <span style="color:var(--gray-400);font-size:0.75rem;font-style:italic;display:block;margin-bottom:6px;">Belum ada klarifikasi</span>
-          <div style="display:flex;gap:4px;flex-direction:column;">
-            <button onclick="bukaModalKlarifikasiPokja(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#185FA5;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#0C447C'" onmouseleave="this.style.background='#185FA5'">
-              <i class="fa-solid fa-message"></i> Kirim Klarifikasi
-            </button>
-            <button onclick="bukaModalUndanganPembuktianKlarifikasi(${origIdx})" style="display:inline-flex;align-items:center;gap:5px;background:#1B5E20;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background 0.15s;" onmouseenter="this.style.background='#145214'" onmouseleave="this.style.background='#1B5E20'">
-              <i class="fa-solid fa-file-signature"></i> Undangan Pembuktian
-            </button>
-          </div>
-        </div>`;
+
 
     return `<tr>
       <td>${rowNum}</td>
@@ -3814,7 +3762,6 @@ function renderPokjaTable() {
       <td>${prevCol}</td>
       <td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
       <td>${catatanHtml}</td>
-      <td>${klarifikasiColHtml}</td>
       <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Evaluasi</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
     </tr>`;
   }).join('');
