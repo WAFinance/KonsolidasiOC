@@ -1005,12 +1005,12 @@
 
     <!-- POKJA REVIEW -->
     <section class="page" id="page-pokja">
-      <h2 class="page-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Review Pokja</h2>
-      <p class="page-subtitle">Review dokumen yang diunggah oleh penyedia. Data diambil dari Google Spreadsheet.</p>
+      <h2 class="page-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Evaluasi Pokja</h2>
+      <p class="page-subtitle">Evaluasi dokumen yang diunggah oleh penyedia. Data diambil dari Google Spreadsheet.</p>
       <div id="pokjaDashboard">
         <div class="admin-panel" style="border-color:var(--blue-600);">
           <div class="admin-panel-header" style="background:linear-gradient(135deg,#0C447C 0%,#185FA5 100%);">
-            <i class="fa-solid fa-shield-halved"></i> Dashboard Review Pokja
+            <i class="fa-solid fa-shield-halved"></i> Dashboard Evaluasi Pokja
             <button onclick="loadSubmissionsFromSheet()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:6px;padding:5px 12px;font-size:0.78rem;cursor:pointer;"><i class="fa-solid fa-rotate"></i> Refresh Data</button>
           </div>
           <div class="admin-panel-body" style="padding:16px 22px;">
@@ -1027,7 +1027,7 @@
           <div class="admin-panel-body">
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
               <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;"><input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, jenis dokumen…" oninput="renderPokjaTable()" /></div>
-              <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Review">⏳ Menunggu Review</option><option value="Lulus / Memenuhi Syarat">✅ Lulus</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi</option></select></div>
+              <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Review">⏳ Menunggu Evaluasi</option><option value="Lulus / Memenuhi Syarat">✅ Lulus</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi</option></select></div>
               <div class="admin-form-group" style="flex:1;min-width:160px;margin-bottom:0;"><select id="pokjaSort" onchange="renderPokjaTable()" style="font-size:0.83rem;"><option value="asc">⬆ Pengajuan Terlama</option><option value="desc">⬇ Pengajuan Terbaru</option></select></div>
             </div>
             <div style="overflow-x:auto;">
@@ -1231,13 +1231,13 @@
       <p style="font-size:0.88rem;font-weight:600;color:var(--blue-800);" id="reviewLoadingMsg">Menyimpan review…</p>
     </div>
     <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-circle-check"></i> &nbsp;Review Dokumen &nbsp;<span id="reviewModalPokjaTag" style="font-size:0.78rem;opacity:0.85;font-weight:400;background:rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;"></span></span>
+      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-circle-check"></i> &nbsp;Evaluasi Dokumen &nbsp;<span id="reviewModalPokjaTag" style="font-size:0.78rem;opacity:0.85;font-weight:400;background:rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;"></span></span>
       <button onclick="closeReviewModal()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
     </div>
     <div style="padding:22px 24px;">
       <div id="reviewModalInfo" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:0.85rem;color:var(--blue-800);"></div>
       <div id="reviewDocButtons" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;"></div>
-      <div class="admin-form-group"><label>Status Review <span style="color:#C0392B;">*</span></label><select id="reviewStatus" onchange="updateNotifPreview()"><option value="Menunggu Review">⏳ Menunggu Review</option><option value="Lulus / Memenuhi Syarat">✅ Lulus / Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi / Klarifikasi</option></select></div>
+      <div class="admin-form-group"><label>Status Evaluasi <span style="color:#C0392B;">*</span></label><select id="reviewStatus" onchange="updateNotifPreview()"><option value="Menunggu Review">⏳ Menunggu Evaluasi</option><option value="Lulus / Memenuhi Syarat">✅ Lulus / Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi / Klarifikasi</option></select></div>
       <div class="admin-form-group"><label><i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja</label><textarea id="reviewCatatan" rows="4" oninput="updateNotifPreview()" style="border-left:3px solid var(--blue-600);background:#F8FBFF;"></textarea></div>
       <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -1257,7 +1257,7 @@
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
         <button onclick="closeReviewModal()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
-        <button id="btnSimpanReview" class="btn-admin-save" onclick="simpanReview()"><i class="fa-solid fa-floppy-disk"></i> Simpan Review</button>
+        <button id="btnSimpanReview" class="btn-admin-save" onclick="simpanReview()"><i class="fa-solid fa-floppy-disk"></i> Simpan Evaluasi</button>
         <button id="btnKirimWa" class="btn-admin-save" style="background:#25D366;border-color:#25D366;" onclick="kirimNotifWa()"><i class="fa-brands fa-whatsapp"></i> Kirim WhatsApp</button>
         <button id="btnKirimEmail" class="btn-admin-save" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimNotifEmail()"><i class="fa-solid fa-envelope"></i> Kirim Email</button>
       </div>
@@ -1364,7 +1364,7 @@
       <button class="panduan-tab active" onclick="switchPanduanTab('daftar',this)"><i class="fa-solid fa-user-plus"></i> Daftar Baru</button>
       <button class="panduan-tab" onclick="switchPanduanTab('login',this)"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
       <button class="panduan-tab" onclick="switchPanduanTab('upload',this)"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Penawaran</button>
-      <button class="panduan-tab" onclick="switchPanduanTab('status',this)"><i class="fa-solid fa-clipboard-list"></i> Review Status</button>
+      <button class="panduan-tab" onclick="switchPanduanTab('status',this)"><i class="fa-solid fa-clipboard-list"></i> Evaluasi Status</button>
       <button class="panduan-tab" onclick="switchPanduanTab('klarifikasi',this)"><i class="fa-solid fa-comments"></i> Klarifikasi</button>
     </div>
     <div class="panduan-body">
@@ -1422,7 +1422,7 @@
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Pahami arti status yang ditampilkan</h4>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-hourglass-half"></i> Menunggu Review</span><span style="color:var(--gray-600);">Dokumen diterima, sedang antre untuk dievaluasi Pokja.</span></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-hourglass-half"></i> Menunggu Evaluasi</span><span style="color:var(--gray-600);">Dokumen diterima, sedang antre untuk dievaluasi Pokja.</span></div>
             <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Lulus / Memenuhi Syarat</span><span style="color:var(--gray-600);">Dokumen dinyatakan memenuhi persyaratan administrasi.</span></div>
             <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge" style="background:#FDEDEC;color:#922B21;"><i class="fa-solid fa-circle-xmark"></i> Tidak Memenuhi</span><span style="color:var(--gray-600);">Dokumen belum memenuhi syarat. Periksa catatan dari Pokja.</span></div>
             <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Perlu Revisi / Klarifikasi</span><span style="color:var(--gray-600);">Ada pertanyaan atau perbaikan yang diminta Pokja.</span></div>
@@ -1665,7 +1665,7 @@ const DEFAULT_DOCS = [
 const DEFAULT_ZOOM = { tanggal:'', pukul:'09.00 WIB s/d selesai', meetingid:'', passcode:'', link:'' };
 const DEFAULT_RUNNING = 'Selamat datang di Portal Konsolidasi Jasa Tenaga Alih Daya Pemerintah Kota Surakarta Tahun 2026 | Informasi lebih lanjut: SPSE Kota Surakarta';
 const DEFAULT_NOTIF_WA = `Yth. {namaPerusahaan},\n\nDengan hormat,\nKami informasikan bahwa dokumen penawaran Anda untuk paket:\n*{paketNama}*\ntelah dievaluasi oleh Pokja Pemilihan.\n\n*Status: {status}*\n\n{catatan}\n\nTerima kasih atas partisipasi Anda.\n\nHormat kami,\nPokja Pemilihan BPBJ Kota Surakarta`;
-const DEFAULT_NOTIF_EMAIL_SUBJECT = '[Konsolidasi 2026] Hasil Review – {namaPerusahaan}';
+const DEFAULT_NOTIF_EMAIL_SUBJECT = '[Konsolidasi 2026] Hasil Evaluasi – {namaPerusahaan}';
 const DEFAULT_NOTIF_EMAIL_BODY = `Yth. {namaPerusahaan},\n\nKami informasikan hasil evaluasi dokumen penawaran Anda:\n\nPaket: {paketNama}\nStatus: {status}\n\n{catatan}\n\nHormat kami,\nPokja Pemilihan BPBJ Kota Surakarta`;
 
 // ===== PERBAIKAN 1: Alamat/Domisili Usaha sebagai field dedicated fixed =====
@@ -2267,7 +2267,7 @@ function renderStatusPenyedia() {
     return;
   }
   const statusMap = {
-    'Menunggu Review':          { cls:'sb-pending', icon:'fa-hourglass-half', label:'Menunggu Review' },
+    'Menunggu Review':          { cls:'sb-pending', icon:'fa-hourglass-half', label:'Menunggu Evaluasi' },
     'Lulus / Memenuhi Syarat':  { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus / Memenuhi Syarat' },
     'Tidak Memenuhi Syarat':    { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
     'Perlu Revisi / Klarifikasi':{ cls:'sb-revisi', icon:'fa-rotate',        label:'Perlu Revisi / Klarifikasi' },
@@ -2505,7 +2505,7 @@ function renderSidebar() {
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Pengaturan Akun</span></a></li>`;
   } else if (currentRole === 'pokja') {
     // Sidebar lengkap untuk Pokja
-    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#0C447C,#185FA5);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Review Dokumen</span></a></li>`;
+    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#0C447C,#185FA5);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Evaluasi Dokumen</span></a></li>`;
     html += negoBtn;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;border-left:3px solid #0a3d0a;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-trophy"></i></span><span class="nav-label">Penetapan Pemenang</span></a></li>`;
   } else if (currentRole === null) {
@@ -3666,7 +3666,7 @@ function renderPokjaTable() {
 
   if(!groups.length){tbody.innerHTML=`<tr><td colspan="12" style="text-align:center;color:var(--gray-400);padding:28px;">Tidak ada data.</td></tr>`;renderPokjaStats();return;}
 
-  const statusLabel={'Menunggu Review':'<span class="status-badge status-pending">⏳ Menunggu</span>','Lulus / Memenuhi Syarat':'<span class="status-badge status-lulus">✅ Lulus</span>','Tidak Memenuhi Syarat':'<span class="status-badge status-tidak_lulus">❌ Tidak Memenuhi</span>','Perlu Revisi / Klarifikasi':'<span class="status-badge status-revisi">🔄 Revisi</span>'};
+  const statusLabel={'Menunggu Review':'<span class="status-badge status-pending">⏳ Menunggu Evaluasi</span>','Lulus / Memenuhi Syarat':'<span class="status-badge status-lulus">✅ Lulus</span>','Tidak Memenuhi Syarat':'<span class="status-badge status-tidak_lulus">❌ Tidak Memenuhi</span>','Perlu Revisi / Klarifikasi':'<span class="status-badge status-revisi">🔄 Revisi</span>'};
 
   let rowNum=0;
   tbody.innerHTML=groups.map(grp=>{
@@ -3815,7 +3815,7 @@ function renderPokjaTable() {
       <td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
       <td>${catatanHtml}</td>
       <td>${klarifikasiColHtml}</td>
-      <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Review</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
+      <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Evaluasi</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
     </tr>`;
   }).join('');
   renderPokjaStats();
@@ -3888,7 +3888,7 @@ function kirimWaLangsung(idx) {
   const safeIdx = (currentReviewKey && idx === currentReviewIdx) ? findIdxByKey(currentReviewKey) : idx;
   const d=data[safeIdx >= 0 ? safeIdx : idx]; if(!d) return;
   const telp=String(d.telp||'').trim(); if(!telp){alert('Nomor telepon tidak tersedia.');return;}
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
   const status=d.reviewStatus||'Menunggu Review';
   const namaPerusahaan=d.namaPerusahaan||'-'; const catatan=d.catatanPokja||'';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
@@ -3911,7 +3911,7 @@ function kirimEmailLangsung(idx) {
   const safeIdx = (currentReviewKey && idx === currentReviewIdx) ? findIdxByKey(currentReviewKey) : idx;
   const d=data[safeIdx >= 0 ? safeIdx : idx]; if(!d) return;
   const emailPenyedia=d.email||''; if(!emailPenyedia){alert('Email tidak tersedia.');return;}
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
   const status=d.reviewStatus||'Menunggu Review';
   const namaPerusahaan=d.namaPerusahaan||'-'; const catatan=d.catatanPokja||'';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
@@ -4014,7 +4014,7 @@ async function simpanReview() {
 
   // Tutup modal dan tampilkan toast
   closeReviewModal();
-  showToast('Review Berhasil Disimpan', `Status <strong>${status}</strong> oleh <strong>${(currentPokjaUser||'pokja').toUpperCase()}</strong> untuk ${d.namaPerusahaan||'-'}.`, 'success', 4000);
+  showToast('Evaluasi Berhasil Disimpan', `Status <strong>${status}</strong> oleh <strong>${(currentPokjaUser||'pokja').toUpperCase()}</strong> untuk ${d.namaPerusahaan||'-'}.`, 'success', 4000);
 }
 
 // ===== Kirim Notifikasi WhatsApp =====
@@ -4030,7 +4030,7 @@ async function kirimNotifWa() {
   const telp = String(d.telp||'').trim();
   if (!telp) { alert('Nomor telepon penyedia tidak tersedia.'); return; }
 
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
   const namaPerusahaan=d.namaPerusahaan||'-';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
   const tmpl=gcGet('notifTemplate',{});
@@ -4080,7 +4080,7 @@ async function kirimNotifEmail() {
   const emailPenyedia=d.email||'';
   if (!emailPenyedia) { alert('Alamat email penyedia tidak tersedia.'); return; }
 
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Review','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
   const namaPerusahaan=d.namaPerusahaan||'-';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
   const tmpl=gcGet('notifTemplate',{});
