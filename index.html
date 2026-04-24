@@ -3541,36 +3541,29 @@ async function submitRevisiCepat() {
     progressBar.style.width = '65%';
     progressText.textContent = 'Mengunggah ke Google Drive…';
 
-    // Kirim sebagai action uploadRevisi — menulis ke kolom Link Revisi (O, P, dst.)
-    // bukan membuat baris baru di spreadsheet
+    // Kirim ke Apps Script — handleNewSubmission akan otomatis deteksi
+    // jika NPWP/email sudah ada → tulis ke kolom O/P (Link Revisi), bukan baris baru
     const d = _revisiDocData;
     const revisiPayload = {
-      action:         'uploadRevisi',
       namaPerusahaan: d.namaPerusahaan || currentPenyedia.nama,
       npwp:           d.npwp || '',
-      jenisDok:       d.jenisDok || '',
+      namaDirektur:   d.namaDirektur || '',
+      alamat:         d.alamat || '',
+      telp:           d.telp || '',
       email:          d.email || currentPenyedia.email,
+      jenisDok:       d.jenisDok || '',
       keterangan:     keterangan || ('Revisi dokumen – ' + new Date().toLocaleDateString('id-ID')),
       fileName:       file.name,
       fileType:       file.type,
       fileData:       base64,
     };
 
-    const revRes = await fetch(APPS_SCRIPT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(revisiPayload)
     });
-    let revJson = null;
-    try { revJson = await revRes.json(); } catch(je) { /* no-cors fallback */ }
-    if (revJson && revJson.status === 'error') {
-      throw new Error(revJson.message || 'Gagal menyimpan revisi ke spreadsheet.');
-    }
-    // Simpan link revisi ke data lokal agar tampil tanpa reload
-    if (revJson && revJson.fileLink) {
-      if (!Array.isArray(d.revisiLinks)) d.revisiLinks = [];
-      d.revisiLinks.push(revJson.fileLink);
-    }
 
     progressBar.style.width = '100%';
     progressBar.style.background = 'linear-gradient(90deg,#3B6D11,#56ab2f)';
