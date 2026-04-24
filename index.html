@@ -11,6 +11,14 @@
     .pw-eye { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--gray-400); font-size:14px; padding:4px; transition:color var(--transition); }
     .pw-eye:hover { color:var(--blue-600); }
 
+    /* ===== ADMIN TOGGLE SWITCH ===== */
+    .admin-toggle-switch { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+    .admin-toggle-switch input { opacity:0; width:0; height:0; }
+    .admin-toggle-slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#ccc; border-radius:26px; transition:0.3s; }
+    .admin-toggle-slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+    .admin-toggle-switch input:checked + .admin-toggle-slider { background:#185FA5; }
+    .admin-toggle-switch input:checked + .admin-toggle-slider:before { transform:translateX(20px); }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --blue-50:#E6F1FB; --blue-100:#B5D4F4; --blue-600:#185FA5;
@@ -1090,6 +1098,49 @@
             <div class="admin-section" id="atab-sidebar">
               <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Pilih menu yang tampil di mode <strong>Publik</strong>.</p>
               <div id="sidebarVisibilityEditor"></div>
+
+              <!-- ===== TOGGLE LOGIN SIDEBAR ===== -->
+              <hr style="margin:18px 0;border-color:var(--gray-200);">
+              <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:4px;"><i class="fa-solid fa-right-to-bracket"></i> Tampilan Tombol Login di Sidebar</p>
+              <p style="font-size:0.80rem;color:var(--gray-600);margin-bottom:14px;">Aktifkan atau nonaktifkan tombol login yang muncul di sidebar untuk pengunjung yang belum login.</p>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
+                <!-- Toggle Login Penyedia -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#185FA5,#0C447C);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <i class="fa-solid fa-building" style="color:#fff;font-size:16px;"></i>
+                    </div>
+                    <div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue-900);">Login Penyedia</div>
+                      <div style="font-size:0.75rem;color:var(--gray-400);">Tombol login untuk akun penyedia di sidebar</div>
+                    </div>
+                  </div>
+                  <label class="admin-toggle-switch">
+                    <input type="checkbox" id="toggleLoginPenyedia" onchange="previewLoginToggle()" checked>
+                    <span class="admin-toggle-slider"></span>
+                  </label>
+                </div>
+                <!-- Toggle Login Pokja -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#4A5568,#2D3748);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <i class="fa-solid fa-magnifying-glass-chart" style="color:#fff;font-size:16px;"></i>
+                    </div>
+                    <div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue-900);">Login Pokja</div>
+                      <div style="font-size:0.75rem;color:var(--gray-400);">Tombol login untuk akun Pokja di sidebar</div>
+                    </div>
+                  </div>
+                  <label class="admin-toggle-switch">
+                    <input type="checkbox" id="toggleLoginPokja" onchange="previewLoginToggle()" checked>
+                    <span class="admin-toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <div id="loginTogglePreview" style="background:#E8F4FD;border:1px solid #B8D8F0;border-left:4px solid #185FA5;border-radius:8px;padding:10px 14px;font-size:0.80rem;color:#0C447C;margin-bottom:16px;display:none;">
+                <i class="fa-solid fa-eye"></i> <strong>Preview:</strong> <span id="loginTogglePreviewText"></span>
+              </div>
+
               <hr style="margin:18px 0;border-color:var(--gray-200);">
               <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:12px;"><i class="fa-solid fa-plus"></i> Tambah Menu Custom</p>
               <div class="tei-row">
@@ -1356,16 +1407,16 @@
     <div class="panduan-header">
       <div>
         <h2><i class="fa-solid fa-book-open"></i> Panduan Penggunaan Portal</h2>
-        <p>Panduan lengkap untuk akun Penyedia — dari pendaftaran hingga klarifikasi</p>
+        <p id="panduanHeaderDesc">Panduan penggunaan portal pengadaan</p>
       </div>
       <button class="panduan-close" onclick="tutupPanduan()">&#x2715;</button>
     </div>
     <div class="panduan-tabs" id="panduanTabs">
       <button class="panduan-tab active" onclick="switchPanduanTab('daftar',this)"><i class="fa-solid fa-user-plus"></i> Daftar Baru</button>
       <button class="panduan-tab" onclick="switchPanduanTab('login',this)"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
-      <button class="panduan-tab" onclick="switchPanduanTab('upload',this)"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Penawaran</button>
-      <button class="panduan-tab" onclick="switchPanduanTab('status',this)"><i class="fa-solid fa-clipboard-list"></i> Evaluasi Status</button>
-      <button class="panduan-tab" onclick="switchPanduanTab('klarifikasi',this)"><i class="fa-solid fa-comments"></i> Klarifikasi</button>
+      <button class="panduan-tab" onclick="switchPanduanTab('upload',this)"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</button>
+      <button class="panduan-tab panduan-tab-penyedia-only" onclick="switchPanduanTab('status',this)"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</button>
+      <button class="panduan-tab panduan-tab-penyedia-only" onclick="switchPanduanTab('negosiasi',this)"><i class="fa-solid fa-handshake"></i> Negosiasi</button>
     </div>
     <div class="panduan-body">
       <!-- TAB: DAFTAR BARU -->
@@ -1431,21 +1482,19 @@
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Klik <strong>Refresh</strong> untuk memperbarui data</h4><p>Status diperbarui otomatis setiap <strong>20 detik</strong>. Anda juga dapat klik tombol <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Refresh</span> kapan saja untuk memuat data terbaru secara manual.</p><div class="step-tip"><i class="fa-solid fa-bell"></i> Notifikasi perubahan status juga dikirim melalui WhatsApp atau email oleh Pokja jika kontak Anda terdaftar.</div></div></div>
       </div>
-      <!-- TAB: KLARIFIKASI -->
-      <div class="panduan-section" id="panduan-klarifikasi">
+      <!-- TAB: NEGOSIASI (penyedia login only) -->
+      <div class="panduan-section" id="panduan-negosiasi">
         <div class="panduan-intro-box">
-          <h3><i class="fa-solid fa-reply"></i> Membalas Klarifikasi Pokja</h3>
-          <p>Pokja dapat mengajukan klarifikasi (pertanyaan) kepada Anda melalui portal. Anda <strong>hanya bisa membalas</strong> klarifikasi yang sudah dikirimkan oleh Pokja — Anda tidak dapat mengajukan klarifikasi sendiri.</p>
+          <h3><i class="fa-solid fa-circle-info"></i> Proses Negosiasi Harga</h3>
+          <p>Setelah dokumen Anda dinyatakan <strong>Lulus</strong>, Pokja akan mengundang Anda ke tahap negosiasi harga. Menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</span> akan muncul otomatis di sidebar.</p>
         </div>
-        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</span></h4><p>Cek kartu dokumen Anda. Jika Pokja telah mengirim klarifikasi yang belum dijawab, tombol <strong>Balas Klarifikasi Pokja</strong> berwarna biru akan muncul.</p></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</span> di sidebar</h4><p>Menu ini muncul otomatis setelah status evaluasi Anda dinyatakan Lulus. Di sini Anda dapat melihat tabel rincian penawaran yang dikirimkan Pokja.</p></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Klik <strong>Balas Klarifikasi Pokja</strong></h4><p>Modal akan terbuka dan menampilkan semua klarifikasi yang telah dikirim Pokja — beserta status apakah sudah atau belum dijawab.</p></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Tinjau rincian harga dari Pokja</h4><p>Periksa item pekerjaan, harga satuan, dan total yang ditawarkan Pokja. Bandingkan dengan penawaran awal Anda untuk memutuskan respons.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Perhatikan kolom selisih terhadap HPS — nilai ini menjadi dasar pertimbangan kesepakatan.</div></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Pilih klarifikasi yang ingin ditanggapi</h4><p>Klik salah satu klarifikasi dari daftar. Item yang dipilih akan disorot, lalu kolom tanggapan akan muncul di bawahnya.</p><div class="step-tip"><i class="fa-solid fa-pen"></i> Contoh jawaban: <em>"Sertifikat yang kami lampirkan masih berlaku s.d. Desember 2026, sebagaimana tertera pada halaman terakhir dokumen."</em></div></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Berikan penawaran balik atau setujui</h4><p>Anda dapat mengajukan counter-offer dengan mengisi nilai penawaran baru, atau langsung menyetujui harga yang ditawarkan Pokja. Setiap putaran tersimpan sebagai riwayat negosiasi.</p></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Tulis tanggapan dan klik <strong>Kirim Tanggapan</strong></h4><p>Jawaban Anda akan langsung tersimpan dan dapat dilihat oleh Pokja. Anda bisa membalas lebih dari satu klarifikasi secara bergantian.</p></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">5</div><div class="panduan-step-content"><h4>Upload ulang jika diminta perbaikan dokumen</h4><p>Jika Pokja meminta revisi, lakukan upload ulang melalui menu <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</span>. Dokumen baru menggantikan yang lama secara otomatis.</p></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Nyatakan Sepakat atau Tolak di Pengumuman Pemenang</h4><p>Setelah Pokja menetapkan harga final, menu <span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-bell"></i> Pengumuman Pemenang</span> muncul di sidebar. Buka halaman tersebut dan klik <strong>Sepakat</strong> atau <strong>Tolak</strong> sesuai keputusan Anda.</p><div class="step-tip"><i class="fa-solid fa-triangle-exclamation"></i> Keputusan Sepakat/Tolak bersifat final dan akan langsung tercatat di sistem Pokja.</div></div></div>
       </div>
     </div>
     <div class="panduan-footer">
@@ -1456,6 +1505,90 @@
 </div>
 
 <footer><strong>Portal Konsolidasi Jasa Tenaga Alih Daya</strong> &mdash; Bagian Pengadaan Barang dan Jasa, Pemerintah Kota Surakarta &copy; 2026</footer>
+
+<!-- ══ PANDUAN PENGGUNAAN POKJA ══ -->
+<div id="panduanPokjaOverlay" class="panduan-overlay">
+  <div class="panduan-modal">
+    <div class="panduan-header" style="background:linear-gradient(135deg,#2D3748,#4A5568);">
+      <div>
+        <h2><i class="fa-solid fa-book-open"></i> Panduan Penggunaan Pokja</h2>
+        <p>Panduan lengkap untuk akun Pokja — dari login hingga penetapan pemenang</p>
+      </div>
+      <button class="panduan-close" onclick="tutupPanduanPokja()">&#x2715;</button>
+    </div>
+    <div class="panduan-tabs" id="panduanPokjaTabs">
+      <button class="panduan-tab active" onclick="switchPanduanPokjaTab('evaluasi',this)"><i class="fa-solid fa-clipboard-check"></i> Evaluasi Dokumen</button>
+      <button class="panduan-tab" onclick="switchPanduanPokjaTab('negosiasi',this)"><i class="fa-solid fa-handshake"></i> Negosiasi</button>
+      <button class="panduan-tab" onclick="switchPanduanPokjaTab('notifikasi',this)"><i class="fa-solid fa-bell"></i> Notifikasi WA & Email</button>
+      <button class="panduan-tab" onclick="switchPanduanPokjaTab('penetapan',this)"><i class="fa-solid fa-gavel"></i> Penetapan Pemenang</button>
+    </div>
+    <div class="panduan-body">
+
+      <!-- TAB: EVALUASI DOKUMEN -->
+      <div class="panduan-section active" id="panduan-pokja-evaluasi">
+        <div class="panduan-intro-box" style="border-left-color:#4A5568;background:linear-gradient(135deg,rgba(74,85,104,0.07),rgba(45,55,72,0.07));border-color:rgba(74,85,104,0.2);">
+          <h3 style="color:#2D3748;"><i class="fa-solid fa-circle-info"></i> Evaluasi Dokumen Penyedia</h3>
+          <p>Pokja melakukan verifikasi dan penilaian terhadap seluruh dokumen penawaran yang diunggah oleh penyedia. Pastikan Anda sudah login sebagai Pokja.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>1</span></div><div class="panduan-step-content"><h4>Buka menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-clipboard-check"></i> Evaluasi Dokumen</span></h4><p>Menu ini menampilkan daftar seluruh dokumen yang telah dikirimkan penyedia, beserta informasi perusahaan dan jenis dokumen.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>2</span></div><div class="panduan-step-content"><h4>Tinjau dokumen penyedia</h4><p>Klik baris penyedia untuk membuka detail. Anda dapat mengunduh dokumen, memeriksa kelengkapan data perusahaan (NPWP, alamat, direktur), dan melihat file lampiran.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Tetapkan status evaluasi</h4><p>Pilih status: <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Lulus</span>, <span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-hourglass-half"></i> Proses</span>, atau <span class="panduan-badge" style="background:#FDEDEC;color:#922B21;"><i class="fa-solid fa-circle-xmark"></i> Tidak Lulus</span>. Tambahkan catatan evaluasi jika diperlukan.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Status evaluasi langsung terlihat oleh penyedia di halaman Status Pengajuan mereka.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>4</span></div><div class="panduan-step-content"><h4>Simpan hasil evaluasi</h4><p>Klik <strong>Simpan</strong> untuk mengonfirmasi keputusan evaluasi. Data tersimpan ke Google Sheets dan penyedia dapat melihat hasilnya secara real-time.</p></div></div>
+      </div>
+
+      <!-- TAB: NEGOSIASI -->
+      <div class="panduan-section" id="panduan-pokja-negosiasi">
+        <div class="panduan-intro-box" style="border-left-color:#4A5568;background:linear-gradient(135deg,rgba(74,85,104,0.07),rgba(45,55,72,0.07));border-color:rgba(74,85,104,0.2);">
+          <h3 style="color:#2D3748;"><i class="fa-solid fa-circle-info"></i> Proses Negosiasi Harga</h3>
+          <p>Pokja melakukan negosiasi harga penawaran dengan penyedia yang lulus evaluasi untuk mendapatkan harga terbaik sesuai HPS.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>1</span></div><div class="panduan-step-content"><h4>Buka menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</span></h4><p>Daftar penyedia yang siap dinegosiasi ditampilkan. Hanya penyedia dengan status evaluasi <strong>Lulus</strong> yang dapat masuk tahap ini.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>2</span></div><div class="panduan-step-content"><h4>Input penawaran dan counter HPS</h4><p>Masukkan detail item pekerjaan, harga satuan, dan total. Gunakan fitur perbandingan dengan HPS untuk memastikan nilai negosiasi wajar.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Dokumentasikan setiap putaran negosiasi — sistem menyimpan riwayat penawaran secara otomatis.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Tetapkan Harga Final</h4><p>Setelah kesepakatan tercapai, klik <strong>Tetapkan Harga Final</strong>. Penyedia akan mendapat notifikasi dan diminta menyatakan persetujuan atau penolakan.</p></div></div>
+      </div>
+
+      <!-- TAB: NOTIFIKASI WA & EMAIL -->
+      <div class="panduan-section" id="panduan-pokja-notifikasi">
+        <div class="panduan-intro-box" style="border-left-color:#4A5568;background:linear-gradient(135deg,rgba(74,85,104,0.07),rgba(45,55,72,0.07));border-color:rgba(74,85,104,0.2);">
+          <h3 style="color:#2D3748;"><i class="fa-solid fa-circle-info"></i> Kirim Notifikasi WhatsApp &amp; Email</h3>
+          <p>Pokja dapat mengirimkan notifikasi resmi kepada penyedia melalui WhatsApp dan/atau Email langsung dari portal, misalnya untuk pemberitahuan hasil evaluasi, undangan pembuktian kualifikasi, atau informasi negosiasi.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>1</span></div><div class="panduan-step-content"><h4>Buka halaman <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-clipboard-check"></i> Evaluasi Dokumen</span></h4><p>Temukan penyedia yang ingin dikirim notifikasi, lalu klik baris atau tombol aksi pada penyedia tersebut untuk membuka panel detail.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>2</span></div><div class="panduan-step-content"><h4>Klik tombol <span class="panduan-badge" style="background:rgba(37,211,102,0.12);color:#128C7E;"><i class="fa-brands fa-whatsapp"></i> Kirim WA</span> atau <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-envelope"></i> Kirim Email</span></h4><p>Tombol notifikasi tersedia di panel detail penyedia. Sistem akan menyiapkan pesan otomatis berdasarkan status evaluasi terkini.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Pastikan nomor WhatsApp dan alamat email penyedia sudah terisi dengan benar di data pendaftaran mereka.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Edit pesan jika diperlukan, lalu kirim</h4><p>Preview pesan akan ditampilkan sebelum dikirim. Anda dapat menyesuaikan isi pesan, lalu klik <strong>Kirim</strong> untuk mengirimkan notifikasi ke penyedia.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>4</span></div><div class="panduan-step-content"><h4>Kirim Undangan Pembuktian Kualifikasi</h4><p>Untuk undangan pembuktian kualifikasi, gunakan tombol <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-envelope-open-text"></i> Undangan Pembuktian</span>. Isi tanggal, lokasi, dan pesan undangan, lalu klik <strong>Kirim Undangan</strong>.</p><div class="step-tip"><i class="fa-solid fa-calendar-check"></i> Undangan terkirim ke WhatsApp dan email penyedia secara bersamaan jika kedua kontak tersedia.</div></div></div>
+      </div>
+
+      <!-- TAB: PENETAPAN -->
+      <div class="panduan-section" id="panduan-pokja-penetapan">
+        <div class="panduan-intro-box" style="border-left-color:#4A5568;background:linear-gradient(135deg,rgba(74,85,104,0.07),rgba(45,55,72,0.07));border-color:rgba(74,85,104,0.2);">
+          <h3 style="color:#2D3748;"><i class="fa-solid fa-circle-info"></i> Penetapan Pemenang</h3>
+          <p>Tahap akhir proses pengadaan. Pokja menetapkan pemenang berdasarkan hasil evaluasi dan negosiasi yang telah selesai.</p>
+        </div>
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>1</span></div><div class="panduan-step-content"><h4>Buka menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-gavel"></i> Penetapan</span></h4><p>Halaman penetapan menampilkan daftar penyedia yang telah melewati seluruh tahapan evaluasi dan negosiasi.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>2</span></div><div class="panduan-step-content"><h4>Verifikasi persetujuan penyedia</h4><p>Pastikan penyedia sudah menyatakan <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Sepakat</span> terhadap harga final. Status persetujuan ditampilkan secara real-time.</p></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Tetapkan Pemenang</h4><p>Klik tombol <strong>Tetapkan sebagai Pemenang</strong> untuk penyedia yang memenuhi syarat. Sistem akan mengunci data dan mengirimkan notifikasi resmi kepada penyedia terpilih.</p><div class="step-tip"><i class="fa-solid fa-triangle-exclamation"></i> Penetapan pemenang bersifat final. Pastikan seluruh dokumen dan proses telah sesuai ketentuan sebelum mengonfirmasi.</div></div></div>
+        <hr class="panduan-step-divider">
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>4</span></div><div class="panduan-step-content"><h4>Unduh Berita Acara</h4><p>Setelah penetapan selesai, unduh dokumen Berita Acara Penetapan Pemenang sebagai arsip resmi proses pengadaan.</p></div></div>
+      </div>
+
+    </div>
+    <div class="panduan-footer">
+      <div class="panduan-footer-note"><i class="fa-solid fa-circle-info"></i> Untuk bantuan teknis, hubungi BPBJ Kota Surakarta.</div>
+      <button class="btn-panduan-close" onclick="tutupPanduanPokja()" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><i class="fa-solid fa-circle-xmark"></i> Tutup Panduan</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══ MOBILE BOTTOM NAVIGATION BAR ══ -->
 <nav class="mobile-bottom-nav" id="mobileBottomNav">
@@ -2509,7 +2642,10 @@ function renderSidebar() {
     html += negoBtn;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;border-left:3px solid #0a3d0a;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-trophy"></i></span><span class="nav-label">Penetapan Pemenang</span></a></li>`;
   } else if (currentRole === null) {
-    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-building"></i></span><span class="nav-label">Login Penyedia</span></a></li><li style="padding:2px 10px 4px;"><a href="#" class="nav-link nav-login-pokja" onclick="event.preventDefault();document.getElementById('pokjaUsername').value='';document.getElementById('pokjaPasswordInput').value='';document.getElementById('errorLoginPokja').textContent='';document.getElementById('loginOverlayPokja').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Login Pokja</span></a></li>`;
+    const showPenyedia = gcGet('showLoginPenyedia', true);
+    const showPokja    = gcGet('showLoginPokja', true);
+    if (showPenyedia) html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-building"></i></span><span class="nav-label">Login Penyedia</span></a></li>`;
+    if (showPokja)    html += `<li style="padding:2px 10px 4px;"><a href="#" class="nav-link nav-login-pokja" onclick="event.preventDefault();document.getElementById('pokjaUsername').value='';document.getElementById('pokjaPasswordInput').value='';document.getElementById('errorLoginPokja').textContent='';document.getElementById('loginOverlayPokja').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Login Pokja</span></a></li>`;
   }
 
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
@@ -2526,7 +2662,11 @@ function renderSidebar() {
   });
   if (currentRole === 'pokja')   { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout (${getPokjaDisplayName()})</span></a></li>`; }
   if (currentRole === 'penyedia') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout</span></a></li>`; }
-  html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px 8px;"><a href="#" class="nav-link nav-panduan" onclick="event.preventDefault();bukaMenuPanduan();"><span class="nav-icon"><i class="fa-solid fa-book-open"></i></span><span class="nav-label">Panduan Penggunaan</span></a></li>`;
+  if (currentRole === 'pokja') {
+    html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px 8px;"><a href="#" class="nav-link nav-panduan" onclick="event.preventDefault();bukaMenuPanduanPokja();" style="background:linear-gradient(135deg,#2D3748,#4A5568) !important;"><span class="nav-icon"><i class="fa-solid fa-book-open"></i></span><span class="nav-label">Panduan Penggunaan</span></a></li>`;
+  } else {
+    html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px 8px;"><a href="#" class="nav-link nav-panduan" onclick="event.preventDefault();bukaMenuPanduan();"><span class="nav-icon"><i class="fa-solid fa-book-open"></i></span><span class="nav-label">Panduan Penggunaan</span></a></li>`;
+  }
   nav.innerHTML = html;
   document.querySelectorAll('.nav-link[data-page]').forEach(link => {
     link.addEventListener('click', function(e) {
@@ -3213,9 +3353,52 @@ function renderSidebarVisibilityEditor() {
   });
   if (custom.length) { html += `<div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin:14px 0 8px;">Menu Custom</div>`; custom.forEach((m, i) => { html += `<div class="sidebar-toggle-row"><label><i class="fa-solid ${m.icon||'fa-circle'}" style="color:var(--blue-600);"></i> ${m.label}</label><button class="btn-danger-sm" onclick="removeCustomMenu(${i})"><i class="fa-solid fa-trash"></i></button></div>`; }); }
   document.getElementById('sidebarVisibilityEditor').innerHTML = html;
+  // Sync toggle status login dari config
+  const showPenyedia = gcGet('showLoginPenyedia', true);
+  const showPokja    = gcGet('showLoginPokja', true);
+  const elP = document.getElementById('toggleLoginPenyedia');
+  const elK = document.getElementById('toggleLoginPokja');
+  if (elP) elP.checked = showPenyedia !== false;
+  if (elK) elK.checked = showPokja !== false;
+  previewLoginToggle();
+}
+
+function previewLoginToggle() {
+  const elP = document.getElementById('toggleLoginPenyedia');
+  const elK = document.getElementById('toggleLoginPokja');
+  const previewBox  = document.getElementById('loginTogglePreview');
+  const previewText = document.getElementById('loginTogglePreviewText');
+  if (!elP || !elK || !previewBox || !previewText) return;
+  const pOn = elP.checked;
+  const kOn = elK.checked;
+  if (!pOn || !kOn) {
+    previewBox.style.display = 'block';
+    const sembunyikan = [];
+    if (!pOn) sembunyikan.push('<strong>Login Penyedia</strong>');
+    if (!kOn) sembunyikan.push('<strong>Login Pokja</strong>');
+    previewText.innerHTML = 'Tombol ' + sembunyikan.join(' dan ') + ' akan disembunyikan dari sidebar pengunjung publik. Klik <em>Simpan & Sync</em> untuk menerapkan.';
+  } else {
+    previewBox.style.display = 'none';
+  }
 }
 function toggleSidebarItem(id, checked) { const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}))); const item = items.find(it=>it.id===id); if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; } }
-async function saveSidebarConfig() { const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}))); await pushConfig('sidebarItems', items); await pushConfig('customMenus', gcGet('customMenus', [])); renderSidebar(); flashMsg('msgSidebar'); }
+async function saveSidebarConfig() {
+  const items = getSidebarItems();
+  // Hapus custom menus dari base items untuk penyimpanan terpisah
+  const baseItems = items.filter(i => DEFAULT_SIDEBAR_ITEMS.some(d => d.id === i.id));
+  const customMenus = items.filter(i => !DEFAULT_SIDEBAR_ITEMS.some(d => d.id === i.id));
+  await pushConfig('sidebarItems', baseItems);
+  await pushConfig('customMenus', customMenus);
+  // Simpan juga status toggle login
+  const showPenyedia = document.getElementById('toggleLoginPenyedia')?.checked !== false;
+  const showPokja    = document.getElementById('toggleLoginPokja')?.checked !== false;
+  await pushConfig('showLoginPenyedia', showPenyedia);
+  await pushConfig('showLoginPokja', showPokja);
+  _globalConfig['showLoginPenyedia'] = showPenyedia;
+  _globalConfig['showLoginPokja']    = showPokja;
+  renderSidebar();
+  flashMsg('msgSidebar');
+}
 async function addCustomMenu() { const name=document.getElementById('custom-menu-name').value.trim(); const iconTxt=document.getElementById('custom-menu-icon').value.trim()||'fa-file'; const content=document.getElementById('custom-menu-content').value.trim(); if (!name) { alert('Nama menu tidak boleh kosong.'); return; } const id='custom_'+Date.now(); const menus=gcGet('customMenus',[]); menus.push({id,label:name,icon:iconTxt,content,publik:true,iconType:'fa'}); await pushConfig('customMenus',menus); document.getElementById('custom-menu-name').value=''; document.getElementById('custom-menu-icon').value=''; document.getElementById('custom-menu-content').value=''; renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor(); flashMsg('msgSidebar'); }
 async function removeCustomMenu(idx) { if (!confirm('Hapus menu ini?')) return; const menus=gcGet('customMenus',[]); menus.splice(idx,1); await pushConfig('customMenus',menus); renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor(); }
 
@@ -4686,23 +4869,63 @@ document.getElementById('modalTanggapan').addEventListener('click', function(e) 
 // PANDUAN PENGGUNAAN
 // =================================================================
 function bukaMenuPanduan() {
-  document.getElementById('panduanOverlay').classList.add('show');
+  const overlay = document.getElementById('panduanOverlay');
+  // Sesuaikan tab dan header berdasarkan role
+  const isPenyedia = currentRole === 'penyedia';
+  const desc = document.getElementById('panduanHeaderDesc');
+  document.querySelectorAll('.panduan-tab-penyedia-only').forEach(btn => {
+    btn.style.display = isPenyedia ? '' : 'none';
+  });
+  if (isPenyedia) {
+    if (desc) desc.textContent = 'Panduan lengkap untuk Penyedia — dari pendaftaran hingga negosiasi';
+  } else {
+    if (desc) desc.textContent = 'Panduan untuk mendaftar, login, dan upload dokumen penawaran';
+    // Reset ke tab pertama jika sedang di tab yang disembunyikan
+    const activeTab = document.querySelector('#panduanTabs .panduan-tab.active');
+    if (activeTab && activeTab.classList.contains('panduan-tab-penyedia-only')) {
+      document.querySelectorAll('.panduan-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('#panduanTabs .panduan-tab').forEach(t => t.classList.remove('active'));
+      const firstTab = document.querySelector('#panduanTabs .panduan-tab');
+      if (firstTab) { firstTab.classList.add('active'); firstTab.click(); }
+      const firstSec = document.getElementById('panduan-daftar');
+      if (firstSec) firstSec.classList.add('active');
+    }
+  }
+  overlay.classList.add('show');
 }
 function tutupPanduan() {
   document.getElementById('panduanOverlay').classList.remove('show');
 }
 function switchPanduanTab(tabId, btn) {
-  document.querySelectorAll('.panduan-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.panduan-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#panduanOverlay .panduan-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#panduanTabs .panduan-tab').forEach(t => t.classList.remove('active'));
   const sec = document.getElementById('panduan-' + tabId);
   if (sec) sec.classList.add('active');
   if (btn) btn.classList.add('active');
 }
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') tutupPanduan();
+  if (e.key === 'Escape') { tutupPanduan(); tutupPanduanPokja(); }
 });
 document.getElementById('panduanOverlay').addEventListener('click', function(e) {
   if (e.target === this) tutupPanduan();
+});
+
+// ── Panduan Pokja ──
+function bukaMenuPanduanPokja() {
+  document.getElementById('panduanPokjaOverlay').classList.add('show');
+}
+function tutupPanduanPokja() {
+  document.getElementById('panduanPokjaOverlay').classList.remove('show');
+}
+function switchPanduanPokjaTab(tabId, btn) {
+  document.querySelectorAll('#panduanPokjaOverlay .panduan-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#panduanPokjaTabs .panduan-tab').forEach(t => t.classList.remove('active'));
+  const sec = document.getElementById('panduan-pokja-' + tabId);
+  if (sec) sec.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+document.getElementById('panduanPokjaOverlay').addEventListener('click', function(e) {
+  if (e.target === this) tutupPanduanPokja();
 });
 
 // =================================================================
