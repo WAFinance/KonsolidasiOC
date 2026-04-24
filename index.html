@@ -1028,7 +1028,7 @@
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
               <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;"><input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, jenis dokumen…" oninput="renderPokjaTable()" /></div>
               <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Review">⏳ Menunggu Evaluasi</option><option value="Lulus / Memenuhi Syarat">✅ Lulus</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi</option></select></div>
-              <div class="admin-form-group" style="flex:1;min-width:160px;margin-bottom:0;"><select id="pokjaSort" onchange="renderPokjaTable()" style="font-size:0.83rem;"><option value="asc">⬆ Pengajuan Terlama</option><option value="desc">⬇ Pengajuan Terbaru</option></select></div>
+              <div class="admin-form-group" style="flex:1;min-width:160px;margin-bottom:0;"><select id="pokjaSort" onchange="renderPokjaTable()" style="font-size:0.83rem;"><option value="asc">⬆ Pengajuan Terlama</option><option value="desc" selected>⬇ Pengajuan Terbaru</option></select></div>
             </div>
             <div style="overflow-x:auto;">
               <table class="pokja-table" id="pokjaTable">
@@ -3541,27 +3541,36 @@ async function submitRevisiCepat() {
     progressBar.style.width = '65%';
     progressText.textContent = 'Mengunggah ke Google Drive…';
 
-    // Pakai semua data dari dokumen lama, ganti file & keterangan saja
+    // Kirim sebagai action uploadRevisi — menulis ke kolom Link Revisi (O, P, dst.)
+    // bukan membuat baris baru di spreadsheet
     const d = _revisiDocData;
-    const fullPayload = {
+    const revisiPayload = {
+      action:         'uploadRevisi',
       namaPerusahaan: d.namaPerusahaan || currentPenyedia.nama,
       npwp:           d.npwp || '',
-      namaDirektur:   d.namaDirektur || '',
-      alamat:         d.alamat || '',
-      telp:           d.telp || '',
-      email:          d.email || currentPenyedia.email,
       jenisDok:       d.jenisDok || '',
+      email:          d.email || currentPenyedia.email,
       keterangan:     keterangan || ('Revisi dokumen – ' + new Date().toLocaleDateString('id-ID')),
       fileName:       file.name,
       fileType:       file.type,
       fileData:       base64,
     };
 
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
+    const revRes = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(fullPayload)
+      body: JSON.stringify(revisiPayload)
     });
+    let revJson = null;
+    try { revJson = await revRes.json(); } catch(je) { /* no-cors fallback */ }
+    if (revJson && revJson.status === 'error') {
+      throw new Error(revJson.message || 'Gagal menyimpan revisi ke spreadsheet.');
+    }
+    // Simpan link revisi ke data lokal agar tampil tanpa reload
+    if (revJson && revJson.fileLink) {
+      if (!Array.isArray(d.revisiLinks)) d.revisiLinks = [];
+      d.revisiLinks.push(revJson.fileLink);
+    }
 
     progressBar.style.width = '100%';
     progressBar.style.background = 'linear-gradient(90deg,#3B6D11,#56ab2f)';
@@ -3637,7 +3646,7 @@ function renderPokjaTable() {
   const data=getSubmissions();
   const q=(document.getElementById('pokjaSearch')?.value||'').toLowerCase();
   const fStat=document.getElementById('pokjaFilterStatus')?.value;
-  const sortDir=(document.getElementById('pokjaSort')?.value)||'asc';
+  const sortDir=(document.getElementById('pokjaSort')?.value)||'desc';
   const tbody=document.getElementById('pokjaTableBody');
 
   // ── Kelompokkan semua data per penyedia (email) + jenisDok ──
@@ -5992,111 +6001,7 @@ function _applyPeneapanPatches() {
 init();
 </script>
 
-<!-- ══ MODAL KLARIFIKASI POKJA (kirim pertanyaan/klarifikasi ke penyedia) ══ -->
-<div id="modalKlarifikasiPokja" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:310;align-items:center;justify-content:center;">
-  <div style="background:var(--white);border-radius:12px;width:min(520px,95vw);max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;">
-    <div style="background:linear-gradient(135deg,#185FA5,#0C447C);color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-message"></i> &nbsp;Kirim Klarifikasi ke Penyedia</span>
-      <button onclick="tutupModalKlarifikasiPokja()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
-    </div>
-    <div style="padding:20px 24px;">
-      <div id="klarPokjaInfoBox" style="background:#E8EAF6;border:1px solid #C5CAE9;border-left:4px solid #185FA5;border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#1A237E;margin-bottom:16px;"></div>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:0.85rem;font-weight:600;color:var(--blue-900);display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-to-square" style="color:#185FA5;"></i> Pesan Klarifikasi <span style="color:#C0392B;">*</span></label>
-        <textarea id="klarPokjaPesan" rows="5" placeholder="Tulis pertanyaan atau permintaan klarifikasi kepada penyedia…" style="width:100%;padding:10px 13px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;font-family:inherit;color:var(--gray-800);background:var(--gray-50);resize:vertical;outline:none;border-left:3px solid #185FA5;box-sizing:border-box;"></textarea>
-      </div>
-      <div id="klarPokjaMsg" style="display:none;margin-bottom:12px;"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="tutupModalKlarifikasiPokja()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;font-weight:600;">Batal</button>
-        <button id="btnKirimKlarifikasiPokja" onclick="kirimKlarifikasiPokja()" style="display:inline-flex;align-items:center;gap:8px;background:#185FA5;color:white;border:none;border-radius:7px;padding:10px 22px;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// =================================================================
-// KLARIFIKASI DARI POKJA (Pokja mengirim klarifikasi ke penyedia)
-// =================================================================
-let _klarPokjaKey = null;
-
-function bukaModalKlarifikasiPokja(idx) {
-  const data = getSubmissions();
-  const d    = data[idx];
-  if (!d) return;
-  _klarPokjaKey = makeSubKey(d);
-  const infoBox = document.getElementById('klarPokjaInfoBox');
-  infoBox.innerHTML = `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; <span style="font-size:0.78rem;">NPWP: ${d.npwp||'-'}</span><br>
-    <span style="font-size:0.78rem;">Jenis Dokumen: <strong>${d.jenisDok||'-'}</strong></span><br>
-    ${d.email ? `<span style="font-size:0.78rem;"><i class="fa-solid fa-envelope" style="color:#185FA5;"></i> ${d.email}</span>` : ''}`;
-  document.getElementById('klarPokjaPesan').value = '';
-  document.getElementById('klarPokjaMsg').style.display = 'none';
-  document.getElementById('modalKlarifikasiPokja').style.display = 'flex';
-}
-
-function tutupModalKlarifikasiPokja() {
-  document.getElementById('modalKlarifikasiPokja').style.display = 'none';
-  _klarPokjaKey = null;
-}
-
-async function kirimKlarifikasiPokja() {
-  if (!_klarPokjaKey) return;
-  const resolvedIdx = findIdxByKey(_klarPokjaKey);
-  if (resolvedIdx < 0) return;
-  const pesan = document.getElementById('klarPokjaPesan').value.trim();
-  const msgEl = document.getElementById('klarPokjaMsg');
-  if (!pesan) {
-    msgEl.style.cssText = 'display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-    msgEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Pesan klarifikasi tidak boleh kosong.';
-    return;
-  }
-  const btn = document.getElementById('btnKirimKlarifikasiPokja');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim…';
-
-  const data = getSubmissions();
-  const d    = data[resolvedIdx];
-  if (!d) { btn.disabled=false; return; }
-
-  const tglNow   = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const pengirim = currentPokjaUser ? currentPokjaUser.toUpperCase() : 'Pokja';
-
-  // Simpan sebagai klarifikasi dengan pengirim = pokja
-  if (!Array.isArray(d.klarifikasiLog)) d.klarifikasiLog = [];
-  d.klarifikasiLog.push({ tgl: tglNow, pesan: pesan, pengirim: pengirim, dariPokja: true });
-
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action:         'kirimKlarifikasi',
-        namaPerusahaan: d.namaPerusahaan,
-        npwp:           d.npwp,
-        pesan:          pesan,
-        tgl:            tglNow,
-        pengirim:       pengirim,
-        dariPokja:      true,
-      })
-    });
-  } catch(e) {}
-
-  msgEl.style.cssText = 'display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
-  msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>Klarifikasi berhasil dikirim kepada penyedia!</strong>';
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Klarifikasi';
-
-  setTimeout(() => {
-    tutupModalKlarifikasiPokja();
-    showToast('Klarifikasi Dikirim ke Penyedia', `Pesan klarifikasi untuk ${d.namaPerusahaan||'-'} berhasil disimpan.`, 'success', 4000);
-    renderPokjaTable();
-  }, 600);
-}
-
-document.getElementById('modalKlarifikasiPokja').addEventListener('click', function(e) {
-  if (e.target === this) tutupModalKlarifikasiPokja();
-});
-</script>
+<!-- Modal Kirim Klarifikasi Pokja dihapus -->
 
 <!-- ══ MODAL UNDANGAN PEMBUKTIAN (dari kolom Klarifikasi) ══ -->
 <div id="modalUndanganKlarifikasi" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:320;align-items:center;justify-content:center;">
