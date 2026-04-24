@@ -19,6 +19,20 @@
     .admin-toggle-switch input:checked + .admin-toggle-slider { background:#185FA5; }
     .admin-toggle-switch input:checked + .admin-toggle-slider:before { transform:translateX(20px); }
 
+    /* ===== SIDEBAR LOGIN LOCKED STATE ===== */
+    nav.sidebar-nav li a.nav-login-locked { opacity:0.62; cursor:not-allowed; filter:grayscale(0.35); position:relative; }
+    nav.sidebar-nav li a.nav-login-locked .nav-lock-badge { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.25); border-radius:5px; padding:2px 7px; font-size:0.68rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:4px; white-space:nowrap; }
+    /* Popup kunci jadwal */
+    #loginLockPopup { display:none; position:fixed; z-index:9999; background:var(--blue-900); color:#fff; border-radius:12px; padding:16px 20px; max-width:300px; box-shadow:0 8px 32px rgba(0,0,0,0.35); font-size:0.85rem; line-height:1.6; animation:lockPopIn 0.2s cubic-bezier(.175,.885,.32,1.275); }
+    #loginLockPopup.show { display:block; }
+    #loginLockPopup .lp-icon { font-size:1.5rem; margin-bottom:8px; display:block; text-align:center; }
+    #loginLockPopup .lp-title { font-weight:800; font-size:0.95rem; text-align:center; margin-bottom:6px; }
+    #loginLockPopup .lp-msg { opacity:0.9; text-align:center; font-size:0.82rem; }
+    #loginLockPopup .lp-date { background:rgba(255,255,255,0.15); border-radius:7px; padding:7px 12px; margin-top:10px; text-align:center; font-weight:700; font-size:0.88rem; }
+    #loginLockPopup .lp-close { display:block; margin-top:12px; text-align:center; background:rgba(255,255,255,0.18); border:none; color:#fff; border-radius:7px; padding:5px 20px; cursor:pointer; font-size:0.80rem; width:100%; }
+    #loginLockPopup .lp-close:hover { background:rgba(255,255,255,0.28); }
+    @keyframes lockPopIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --blue-50:#E6F1FB; --blue-100:#B5D4F4; --blue-600:#185FA5;
@@ -784,6 +798,15 @@
 </div>
 <div id="toastContainer"></div>
 
+<!-- ===== POPUP KUNCI LOGIN JADWAL ===== -->
+<div id="loginLockPopup">
+  <span class="lp-icon">🔒</span>
+  <div class="lp-title" id="loginLockPopupTitle">Pendaftaran Belum Dibuka</div>
+  <div class="lp-msg" id="loginLockPopupMsg">Menunggu Jadwal Pemasukan Dokumen Penawaran</div>
+  <div class="lp-date" id="loginLockPopupDate"></div>
+  <button class="lp-close" onclick="tutupLockPopup()"><i class="fa-solid fa-xmark"></i> Tutup</button>
+</div>
+
 <div id="loginOverlayPenyedia" class="login-overlay">
   <div class="login-modal" style="position:relative;">
     <div class="login-modal-header modal-header-penyedia">
@@ -1101,9 +1124,9 @@
 
               <!-- ===== TOGGLE LOGIN SIDEBAR ===== -->
               <hr style="margin:18px 0;border-color:var(--gray-200);">
-              <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:4px;"><i class="fa-solid fa-right-to-bracket"></i> Tampilan Tombol Login di Sidebar</p>
-              <p style="font-size:0.80rem;color:var(--gray-600);margin-bottom:14px;">Aktifkan atau nonaktifkan tombol login yang muncul di sidebar untuk pengunjung yang belum login.</p>
-              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
+              <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:4px;"><i class="fa-solid fa-lock"></i> Kunci Tombol Login di Sidebar</p>
+              <p style="font-size:0.80rem;color:var(--gray-600);margin-bottom:14px;">Saat dikunci, tombol login tetap tampil tapi tidak bisa diklik — muncul pesan jadwal saat ditekan.</p>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
                 <!-- Toggle Login Penyedia -->
                 <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;">
                   <div style="display:flex;align-items:center;gap:12px;">
@@ -1112,7 +1135,7 @@
                     </div>
                     <div>
                       <div style="font-size:0.88rem;font-weight:700;color:var(--blue-900);">Login Penyedia</div>
-                      <div style="font-size:0.75rem;color:var(--gray-400);">Tombol login untuk akun penyedia di sidebar</div>
+                      <div style="font-size:0.75rem;color:var(--gray-400);">Toggle OFF = dikunci (tampil abu-abu, tidak bisa login)</div>
                     </div>
                   </div>
                   <label class="admin-toggle-switch">
@@ -1128,7 +1151,7 @@
                     </div>
                     <div>
                       <div style="font-size:0.88rem;font-weight:700;color:var(--blue-900);">Login Pokja</div>
-                      <div style="font-size:0.75rem;color:var(--gray-400);">Tombol login untuk akun Pokja di sidebar</div>
+                      <div style="font-size:0.75rem;color:var(--gray-400);">Toggle OFF = dikunci (tampil abu-abu, tidak bisa login)</div>
                     </div>
                   </div>
                   <label class="admin-toggle-switch">
@@ -1137,8 +1160,28 @@
                   </label>
                 </div>
               </div>
-              <div id="loginTogglePreview" style="background:#E8F4FD;border:1px solid #B8D8F0;border-left:4px solid #185FA5;border-radius:8px;padding:10px 14px;font-size:0.80rem;color:#0C447C;margin-bottom:16px;display:none;">
-                <i class="fa-solid fa-eye"></i> <strong>Preview:</strong> <span id="loginTogglePreviewText"></span>
+
+              <!-- Konfigurasi pesan kunci -->
+              <div id="lockMsgConfig" style="display:none;background:#F0F6FF;border:1px solid var(--blue-100);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+                <p style="font-size:0.82rem;font-weight:700;color:var(--blue-900);margin-bottom:10px;"><i class="fa-solid fa-message" style="color:var(--blue-600);"></i> Pesan yang muncul saat tombol diklik</p>
+                <div class="admin-form-group" style="margin-bottom:10px;">
+                  <label style="font-size:0.80rem;">Judul Pesan</label>
+                  <input type="text" id="lockMsgTitle" placeholder="cth: Pendaftaran Belum Dibuka" style="font-size:0.85rem;" />
+                </div>
+                <div class="admin-form-group" style="margin-bottom:10px;">
+                  <label style="font-size:0.80rem;">Pesan Utama</label>
+                  <input type="text" id="lockMsgBody" placeholder="cth: Menunggu Jadwal Pemasukan Dokumen Penawaran" style="font-size:0.85rem;" />
+                </div>
+                <div class="admin-form-group" style="margin-bottom:4px;">
+                  <label style="font-size:0.80rem;">Sumber Tanggal (ambil dari Jadwal)</label>
+                  <select id="lockMsgJadwalSource" style="font-size:0.83rem;">
+                    <option value="">— Pilih Tahapan Jadwal —</option>
+                  </select>
+                  <div style="font-size:0.73rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Tanggal mulai tahapan terpilih akan ditampilkan di popup kunci.</div>
+                </div>
+              </div>
+              <div id="loginTogglePreview" style="background:#FFF3CD;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:10px 14px;font-size:0.80rem;color:#6b5003;margin-bottom:16px;display:none;">
+                <i class="fa-solid fa-lock"></i> <strong>Status Kunci:</strong> <span id="loginTogglePreviewText"></span>
               </div>
 
               <hr style="margin:18px 0;border-color:var(--gray-200);">
@@ -2644,8 +2687,20 @@ function renderSidebar() {
   } else if (currentRole === null) {
     const showPenyedia = gcGet('showLoginPenyedia', true);
     const showPokja    = gcGet('showLoginPokja', true);
-    if (showPenyedia) html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-building"></i></span><span class="nav-label">Login Penyedia</span></a></li>`;
-    if (showPokja)    html += `<li style="padding:2px 10px 4px;"><a href="#" class="nav-link nav-login-pokja" onclick="event.preventDefault();document.getElementById('pokjaUsername').value='';document.getElementById('pokjaPasswordInput').value='';document.getElementById('errorLoginPokja').textContent='';document.getElementById('loginOverlayPokja').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Login Pokja</span></a></li>`;
+    // Selalu tampilkan tombol — jika locked, tampil abu-abu dengan ikon gembok
+    const penyediaLocked = (showPenyedia === false);
+    const pokjaLocked    = (showPokja === false);
+    const lockBadge = `<span class="nav-lock-badge"><i class="fa-solid fa-lock"></i> Terkunci</span>`;
+    if (penyediaLocked) {
+      html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-login-penyedia nav-login-locked" onclick="event.preventDefault();tampilLockPopup(event,'penyedia');"><span class="nav-icon"><i class="fa-solid fa-building"></i></span><span class="nav-label">Login Penyedia</span>${lockBadge}</a></li>`;
+    } else {
+      html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-login-penyedia" onclick="event.preventDefault();document.getElementById('loginPenyediaEmail').value='';document.getElementById('loginPenyediaPassword').value='';document.getElementById('errorLoginPenyedia').textContent='';switchPenyediaTab('masuk');document.getElementById('loginOverlayPenyedia').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-building"></i></span><span class="nav-label">Login Penyedia</span></a></li>`;
+    }
+    if (pokjaLocked) {
+      html += `<li style="padding:2px 10px 4px;"><a href="#" class="nav-link nav-login-pokja nav-login-locked" onclick="event.preventDefault();tampilLockPopup(event,'pokja');"><span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Login Pokja</span>${lockBadge}</a></li>`;
+    } else {
+      html += `<li style="padding:2px 10px 4px;"><a href="#" class="nav-link nav-login-pokja" onclick="event.preventDefault();document.getElementById('pokjaUsername').value='';document.getElementById('pokjaPasswordInput').value='';document.getElementById('errorLoginPokja').textContent='';document.getElementById('loginOverlayPokja').classList.add('show');"><span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Login Pokja</span></a></li>`;
+    }
   }
 
   html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
@@ -3360,45 +3415,136 @@ function renderSidebarVisibilityEditor() {
   const elK = document.getElementById('toggleLoginPokja');
   if (elP) elP.checked = showPenyedia !== false;
   if (elK) elK.checked = showPokja !== false;
+  // Sync pesan kunci dari config
+  const lockCfg = gcGet('loginLockConfig', {});
+  const titleEl = document.getElementById('lockMsgTitle');
+  const bodyEl  = document.getElementById('lockMsgBody');
+  if (titleEl) titleEl.value = lockCfg.title || 'Pendaftaran Belum Dibuka';
+  if (bodyEl)  bodyEl.value  = lockCfg.msg   || 'Menunggu Jadwal Pemasukan Dokumen Penawaran';
+  // Isi dropdown jadwal
+  _syncJadwalSourceDropdown(lockCfg.jadwalIdx);
   previewLoginToggle();
+}
+
+function _syncJadwalSourceDropdown(selectedIdx) {
+  const sel = document.getElementById('lockMsgJadwalSource');
+  if (!sel) return;
+  const jadwal = gcGet('jadwal', DEFAULT_JADWAL);
+  sel.innerHTML = '<option value="">— Pilih Tahapan Jadwal —</option>';
+  jadwal.forEach((j, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    const tgl = j.mulai ? new Date(j.mulai + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '(tanggal belum diset)';
+    opt.textContent = j.label + ' — ' + tgl;
+    if (selectedIdx !== undefined && selectedIdx !== '' && Number(selectedIdx) === i) opt.selected = true;
+    sel.appendChild(opt);
+  });
 }
 
 function previewLoginToggle() {
   const elP = document.getElementById('toggleLoginPenyedia');
   const elK = document.getElementById('toggleLoginPokja');
-  const previewBox  = document.getElementById('loginTogglePreview');
-  const previewText = document.getElementById('loginTogglePreviewText');
+  const previewBox   = document.getElementById('loginTogglePreview');
+  const previewText  = document.getElementById('loginTogglePreviewText');
+  const lockCfgBox   = document.getElementById('lockMsgConfig');
   if (!elP || !elK || !previewBox || !previewText) return;
   const pOn = elP.checked;
   const kOn = elK.checked;
   if (!pOn || !kOn) {
     previewBox.style.display = 'block';
-    const sembunyikan = [];
-    if (!pOn) sembunyikan.push('<strong>Login Penyedia</strong>');
-    if (!kOn) sembunyikan.push('<strong>Login Pokja</strong>');
-    previewText.innerHTML = 'Tombol ' + sembunyikan.join(' dan ') + ' akan disembunyikan dari sidebar pengunjung publik. Klik <em>Simpan & Sync</em> untuk menerapkan.';
+    if (lockCfgBox) lockCfgBox.style.display = 'block';
+    const dikunci = [];
+    if (!pOn) dikunci.push('<strong>Login Penyedia</strong>');
+    if (!kOn) dikunci.push('<strong>Login Pokja</strong>');
+    previewText.innerHTML = dikunci.join(' dan ') + ' dikunci — tampil abu-abu di sidebar, klik = muncul pesan jadwal. Klik <em>Simpan & Sync</em> untuk menerapkan.';
+    // Refresh dropdown jadwal setiap kali toggle berubah
+    const lockCfg = gcGet('loginLockConfig', {});
+    _syncJadwalSourceDropdown(lockCfg.jadwalIdx);
   } else {
     previewBox.style.display = 'none';
+    if (lockCfgBox) lockCfgBox.style.display = 'none';
   }
 }
+
 function toggleSidebarItem(id, checked) { const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}))); const item = items.find(it=>it.id===id); if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; } }
+
 async function saveSidebarConfig() {
   const items = getSidebarItems();
-  // Hapus custom menus dari base items untuk penyimpanan terpisah
-  const baseItems = items.filter(i => DEFAULT_SIDEBAR_ITEMS.some(d => d.id === i.id));
+  const baseItems   = items.filter(i => DEFAULT_SIDEBAR_ITEMS.some(d => d.id === i.id));
   const customMenus = items.filter(i => !DEFAULT_SIDEBAR_ITEMS.some(d => d.id === i.id));
   await pushConfig('sidebarItems', baseItems);
   await pushConfig('customMenus', customMenus);
-  // Simpan juga status toggle login
+  // Simpan status toggle login
   const showPenyedia = document.getElementById('toggleLoginPenyedia')?.checked !== false;
   const showPokja    = document.getElementById('toggleLoginPokja')?.checked !== false;
   await pushConfig('showLoginPenyedia', showPenyedia);
   await pushConfig('showLoginPokja', showPokja);
   _globalConfig['showLoginPenyedia'] = showPenyedia;
   _globalConfig['showLoginPokja']    = showPokja;
+  // Simpan konfigurasi pesan kunci
+  const lockTitle    = document.getElementById('lockMsgTitle')?.value.trim()  || 'Pendaftaran Belum Dibuka';
+  const lockMsg      = document.getElementById('lockMsgBody')?.value.trim()   || 'Menunggu Jadwal Pemasukan Dokumen Penawaran';
+  const lockJadwalIdx= document.getElementById('lockMsgJadwalSource')?.value;
+  const lockCfg = { title: lockTitle, msg: lockMsg, jadwalIdx: lockJadwalIdx !== '' ? Number(lockJadwalIdx) : '' };
+  await pushConfig('loginLockConfig', lockCfg);
+  _globalConfig['loginLockConfig'] = lockCfg;
   renderSidebar();
   flashMsg('msgSidebar');
 }
+
+// ─── Tampilkan popup kunci login ───
+let _lockPopupTimer = null;
+function tampilLockPopup(event, jenis) {
+  const popup = document.getElementById('loginLockPopup');
+  if (!popup) return;
+  const lockCfg = gcGet('loginLockConfig', {});
+  const jadwal  = gcGet('jadwal', DEFAULT_JADWAL);
+  // Judul & pesan dari config
+  const title = lockCfg.title || 'Pendaftaran Belum Dibuka';
+  const msg   = lockCfg.msg   || 'Menunggu Jadwal Pemasukan Dokumen Penawaran';
+  // Tanggal dari tahapan jadwal yang dipilih
+  let tglStr = '';
+  const idx = lockCfg.jadwalIdx !== undefined && lockCfg.jadwalIdx !== '' ? Number(lockCfg.jadwalIdx) : -1;
+  if (idx >= 0 && jadwal[idx]) {
+    const j = jadwal[idx];
+    const tglMulai = j.mulai ? new Date(j.mulai + 'T00:00:00').toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) : '';
+    tglStr = j.label + (tglMulai ? ' — ' + tglMulai : '');
+  }
+  document.getElementById('loginLockPopupTitle').textContent = title;
+  document.getElementById('loginLockPopupMsg').textContent   = msg;
+  const dateEl = document.getElementById('loginLockPopupDate');
+  if (tglStr) { dateEl.innerHTML = '<i class="fa-solid fa-calendar-days"></i> ' + tglStr; dateEl.style.display = 'block'; }
+  else { dateEl.style.display = 'none'; }
+  // Posisi popup dekat kursor
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let x = event.clientX + 14, y = event.clientY - 20;
+  popup.style.left = '-9999px'; popup.style.top = '-9999px';
+  popup.classList.add('show');
+  const pw = popup.offsetWidth || 300, ph = popup.offsetHeight || 160;
+  if (x + pw > vw - 12) x = vw - pw - 14;
+  if (y + ph > vh - 12) y = vh - ph - 14;
+  if (x < 8) x = 8;
+  if (y < 8) y = 8;
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+  // Auto tutup setelah 6 detik
+  clearTimeout(_lockPopupTimer);
+  _lockPopupTimer = setTimeout(tutupLockPopup, 6000);
+}
+
+function tutupLockPopup() {
+  clearTimeout(_lockPopupTimer);
+  const popup = document.getElementById('loginLockPopup');
+  if (popup) popup.classList.remove('show');
+}
+
+// Tutup popup saat klik di luar
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('loginLockPopup');
+  if (popup && popup.classList.contains('show') && !popup.contains(e.target) && !e.target.closest('.nav-login-locked')) {
+    tutupLockPopup();
+  }
+});
 async function addCustomMenu() { const name=document.getElementById('custom-menu-name').value.trim(); const iconTxt=document.getElementById('custom-menu-icon').value.trim()||'fa-file'; const content=document.getElementById('custom-menu-content').value.trim(); if (!name) { alert('Nama menu tidak boleh kosong.'); return; } const id='custom_'+Date.now(); const menus=gcGet('customMenus',[]); menus.push({id,label:name,icon:iconTxt,content,publik:true,iconType:'fa'}); await pushConfig('customMenus',menus); document.getElementById('custom-menu-name').value=''; document.getElementById('custom-menu-icon').value=''; document.getElementById('custom-menu-content').value=''; renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor(); flashMsg('msgSidebar'); }
 async function removeCustomMenu(idx) { if (!confirm('Hapus menu ini?')) return; const menus=gcGet('customMenus',[]); menus.splice(idx,1); await pushConfig('customMenus',menus); renderCustomPages(); renderSidebar(); renderSidebarVisibilityEditor(); }
 
