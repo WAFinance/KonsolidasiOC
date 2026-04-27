@@ -9576,5 +9576,48 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+
+<script>
+// ===== FIX FINAL UPLOAD =====
+let namaFileAdm='', linkAdm='';
+let namaFileKual='', linkKual='';
+let namaFileTek='', linkTek='';
+let namaFileHarga='', linkHarga='';
+
+// contoh hook (sesuaikan dengan fungsi upload kamu)
+async function setUploadResult(type, fileName, url){
+  if(type==='adm'){ namaFileAdm=fileName; linkAdm=url; }
+  if(type==='kual'){ namaFileKual=fileName; linkKual=url; }
+  if(type==='tek'){ namaFileTek=fileName; linkTek=url; }
+  if(type==='harga'){ namaFileHarga=fileName; linkHarga=url; }
+  console.log('UPLOAD:', type, url);
+}
+
+// override submit (pastikan dipanggil dari tombol kamu)
+async function submitDataFixed(){
+  const payload = {
+    namaPerusahaan: document.getElementById('nama')?.value || '',
+    npwp: document.getElementById('npwp')?.value || '',
+    namaDirektur: document.getElementById('direktur')?.value || '',
+    alamat: document.getElementById('alamat')?.value || '',
+    telp: document.getElementById('telp')?.value || '',
+    email: document.getElementById('email')?.value || '',
+    jenisDok: document.getElementById('jenis')?.value || '',
+
+    namaFileAdm, linkAdm,
+    namaFileKual, linkKual,
+    namaFileTek, linkTek,
+    namaFileHarga, linkHarga
+  };
+
+  console.log('PAYLOAD FINAL:', payload);
+
+  await fetch(URL_WEBAPP, {
+    method:'POST',
+    body: JSON.stringify(payload)
+  });
+}
+</script>
+
 </body>
 </html>
