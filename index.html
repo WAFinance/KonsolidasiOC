@@ -476,6 +476,9 @@
     .upload-progress-wrap { background:var(--gray-200); border-radius:6px; height:10px; overflow:hidden; margin-top:10px; }
     .upload-progress-bar { height:100%; background:linear-gradient(90deg,var(--green-700),#56ab2f); width:0%; transition:width 0.4s ease; border-radius:6px; }
     .upload-progress-label { font-size:0.78rem; color:var(--green-700); margin-top:5px; font-weight:600; }
+    .upload-dok-tab { transition:all 0.2s; }
+    .upload-dok-tab-active { border-bottom-color:var(--green-600) !important; background:var(--green-50) !important; color:var(--green-700) !important; font-weight:700 !important; }
+    .upload-dok-panel { padding:0; }
 
     #reviewModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:200; align-items:center; justify-content:center; }
     #reviewModal.show { display:flex; }
@@ -722,6 +725,9 @@
   .toast-close:hover { color: #fff; }
   @keyframes toastIn  { from { opacity:0; transform: translateY(24px) scale(0.95); } to { opacity:1; transform: translateY(0) scale(1); } }
   @keyframes toastOut { from { opacity:1; transform: translateY(0) scale(1);    } to { opacity:0; transform: translateY(10px) scale(0.95); } }
+  @keyframes pulseCheck { 0%{transform:scale(0.5);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+  .upload-summary-item { transition: all 0.3s ease; }
+  .upload-summary-item.ready { border-color:#2D7D17!important; border-style:solid!important; background:#EAF3DE; color:#1a4a0d!important; font-weight:600; }
   @media (max-width: 600px) {
     #toastContainer { bottom: 16px; right: 8px; left: 8px; align-items: stretch; }
     .toast { min-width: unset; max-width: unset; }
@@ -762,7 +768,7 @@
         </label>
         <input type="file" id="revisiFileDok" accept=".pdf,.zip,.rar"
           style="width:100%;padding:8px 10px;border:1.5px dashed var(--blue-600);border-radius:8px;font-size:0.88rem;background:#F8FBFF;cursor:pointer;" />
-        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Format: PDF, ZIP, atau RAR — maks. 100 MB</div>
+        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Format: PDF, ZIP, atau RAR — maks. 30 MB</div>
       </div>
       <div style="margin-bottom:16px;">
         <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;">
@@ -985,24 +991,152 @@
     <!-- UPLOAD -->
     <section class="page" id="page-upload">
       <h2 class="page-title" style="color:var(--green-700);"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--green-700);"></i> Upload Dokumen</h2>
-      <p class="page-subtitle">Unggah dokumen penawaran Anda melalui formulir di bawah ini. File tersimpan di Google Drive BPBJ.</p>
+      <p class="page-subtitle">Isi data perusahaan sekali, pilih file untuk setiap kategori, lalu kirim sekaligus di bagian bawah.</p>
       <div class="upload-instruction">
         <h3><i class="fa-solid fa-circle-info"></i> &nbsp;Petunjuk Pengisian</h3>
         <ol>
+          <li>Isi data perusahaan (NPWP, Nama, Email, dll.) <strong>sekali saja</strong> di bagian atas.</li>
+          <li>Pilih file untuk masing-masing kategori dokumen di bawahnya.</li>
+          <li>Setelah semua file dipilih, klik tombol <strong>Kirim Semua Dokumen</strong> di paling bawah.</li>
+          <li>Format file: <strong>PDF, ZIP, atau RAR</strong> (maks. 30 MB per file).</li>
           <li>Pastikan dokumen telah ditandatangani dan distempel perusahaan.</li>
-          <li>Format file: <strong>PDF, ZIP, atau RAR</strong> (maks. 100 MB).</li>
-          <li>Isi semua kolom bertanda <strong>(*)</strong> dengan lengkap dan benar.</li>
-          <li>Periksa kembali nama perusahaan dan NPWP sebelum mengirim.</li>
-          <li>Setelah berhasil upload, Anda dapat upload ulang untuk mengganti atau melengkapi dokumen.</li>
         </ol>
       </div>
-      <div class="form-card">
-        <div id="uploadDynamicFields" autocomplete="off"></div>
-        <button class="btn-submit" id="btnSubmitUpload" onclick="submitUpload()"><i class="fa-solid fa-paper-plane"></i> Kirim Dokumen</button>
-        <span style="font-size:0.8rem;color:var(--gray-400);margin-left:12px;display:none;" id="uploadSpinner"><i class="fa-solid fa-spinner fa-spin"></i> Mengirim…</span>
-        <div class="form-success" id="uploadSuccess"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen berhasil dikirim!</strong> File tersimpan di Google Drive BPBJ. Terima kasih.<span id="uploadSuccessStatusHint" style="display:none;font-size:0.85rem;margin-top:6px;display:block;"></span></div>
-        <div class="form-error" id="uploadError"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg"></span></div>
+
+      <!-- FORM IDENTITAS (diisi sekali) -->
+      <div class="form-card" id="uploadIdentitasCard" style="margin-bottom:20px;border-left:4px solid var(--green-600);">
+        <div style="font-weight:700;font-size:0.95rem;color:var(--green-700);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+          <i class="fa-solid fa-building"></i> Data Perusahaan <span style="font-size:0.78rem;font-weight:400;color:var(--gray-400);">(cukup diisi sekali untuk semua kategori upload)</span>
+        </div>
+        <div id="uploadIdentitasFields"></div>
       </div>
+
+      <!-- SECTION: Dokumen Administrasi -->
+      <div style="margin-bottom:20px;">
+        <div style="background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid var(--green-600);border-radius:8px 8px 0 0;padding:10px 16px;font-size:0.85rem;color:#1a4a0d;display:flex;align-items:center;justify-content:space-between;">
+          <span style="display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-file-alt" style="color:var(--green-600);font-size:1rem;"></i><strong>1. Dokumen Administrasi</strong></span>
+          <span id="uploadStatusBadge_adm" style="display:none;background:#2D7D17;color:#fff;border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:700;"><i class="fa-solid fa-circle-check"></i> File dipilih</span>
+        </div>
+        <div class="form-card" style="border-radius:0 0 10px 10px;border-top:none;">
+          <input type="hidden" id="fKategoriDok_adm" value="Dokumen Administrasi" />
+          <div id="uploadFileFields_adm"></div>
+          <!-- Animasi sudah terupload -->
+          <div id="uploadedAnim_adm" style="display:none;background:linear-gradient(135deg,#EAF3DE,#D4EDDA);border:1.5px solid #2D7D17;border-radius:10px;padding:14px 18px;margin-top:10px;display:none;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;background:#2D7D17;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
+            <div><div style="font-weight:700;color:#1a4a0d;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:#2D7D17;"></i> Dok. Administrasi — File siap dikirim</div><div id="uploadedAnimName_adm" style="font-size:0.78rem;color:#3B6D11;margin-top:2px;"></div></div>
+          </div>
+          <div class="form-success" id="uploadSuccess_adm" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Administrasi berhasil dikirim!</strong><span id="uploadSuccessStatusHint_adm" style="font-size:0.85rem;margin-top:6px;display:block;"></span></div>
+          <div class="form-error" id="uploadError_adm" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_adm"></span></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Dokumen Kualifikasi -->
+      <div style="margin-bottom:20px;">
+        <div style="background:#E8F4FD;border:1px solid #B8D9F0;border-left:4px solid var(--blue-600);border-radius:8px 8px 0 0;padding:10px 16px;font-size:0.85rem;color:#0C447C;display:flex;align-items:center;justify-content:space-between;">
+          <span style="display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-medal" style="color:var(--blue-600);font-size:1rem;"></i><strong>2. Dokumen Kualifikasi</strong></span>
+          <span id="uploadStatusBadge_kual" style="display:none;background:var(--blue-700);color:#fff;border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:700;"><i class="fa-solid fa-circle-check"></i> File dipilih</span>
+        </div>
+        <div class="form-card" style="border-radius:0 0 10px 10px;border-top:none;">
+          <input type="hidden" id="fKategoriDok_kual" value="Dokumen Kualifikasi" />
+          <div id="uploadFileFields_kual"></div>
+          <div id="uploadedAnim_kual" style="display:none;background:linear-gradient(135deg,#E8F4FD,#DBEAFE);border:1.5px solid var(--blue-700);border-radius:10px;padding:14px 18px;margin-top:10px;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;background:var(--blue-700);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
+            <div><div style="font-weight:700;color:#0C447C;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:var(--blue-700);"></i> Dok. Kualifikasi — File siap dikirim</div><div id="uploadedAnimName_kual" style="font-size:0.78rem;color:var(--blue-700);margin-top:2px;"></div></div>
+          </div>
+          <div class="form-success" id="uploadSuccess_kual" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Kualifikasi berhasil dikirim!</strong></div>
+          <div class="form-error" id="uploadError_kual" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_kual"></span></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Dokumen Teknis -->
+      <div style="margin-bottom:20px;">
+        <div style="background:#FFF8E1;border:1px solid #FFE082;border-left:4px solid #856404;border-radius:8px 8px 0 0;padding:10px 16px;font-size:0.85rem;color:#4a3500;display:flex;align-items:center;justify-content:space-between;">
+          <span style="display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-screwdriver-wrench" style="color:#856404;font-size:1rem;"></i><strong>3. Dokumen Teknis</strong></span>
+          <span id="uploadStatusBadge_tek" style="display:none;background:#856404;color:#fff;border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:700;"><i class="fa-solid fa-circle-check"></i> File dipilih</span>
+        </div>
+        <div class="form-card" style="border-radius:0 0 10px 10px;border-top:none;">
+          <input type="hidden" id="fKategoriDok_tek" value="Dokumen Teknis" />
+          <div id="uploadFileFields_tek"></div>
+          <div id="uploadedAnim_tek" style="display:none;background:linear-gradient(135deg,#FFF8E1,#FFF3CD);border:1.5px solid #856404;border-radius:10px;padding:14px 18px;margin-top:10px;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;background:#856404;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
+            <div><div style="font-weight:700;color:#4a3500;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:#856404;"></i> Dok. Teknis — File siap dikirim</div><div id="uploadedAnimName_tek" style="font-size:0.78rem;color:#856404;margin-top:2px;"></div></div>
+          </div>
+          <div class="form-success" id="uploadSuccess_tek" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Teknis berhasil dikirim!</strong></div>
+          <div class="form-error" id="uploadError_tek" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_tek"></span></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Dokumen Harga -->
+      <div style="margin-bottom:20px;">
+        <div style="background:#FDE8F0;border:1px solid #F0B8CF;border-left:4px solid #C0392B;border-radius:8px 8px 0 0;padding:10px 16px;font-size:0.85rem;color:#7B0D1E;display:flex;align-items:center;justify-content:space-between;">
+          <span style="display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-tag" style="color:#C0392B;font-size:1rem;"></i><strong>4. Dokumen Harga</strong></span>
+          <span id="uploadStatusBadge_harga" style="display:none;background:#C0392B;color:#fff;border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:700;"><i class="fa-solid fa-circle-check"></i> File dipilih</span>
+        </div>
+        <div class="form-card" style="border-radius:0 0 10px 10px;border-top:none;">
+          <input type="hidden" id="fKategoriDok_harga" value="Dokumen Harga" />
+          <div id="uploadFileFields_harga"></div>
+          <div id="uploadedAnim_harga" style="display:none;background:linear-gradient(135deg,#FDE8F0,#FDDDE6);border:1.5px solid #C0392B;border-radius:10px;padding:14px 18px;margin-top:10px;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;background:#C0392B;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
+            <div><div style="font-weight:700;color:#7B0D1E;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:#C0392B;"></i> Dok. Harga — File siap dikirim</div><div id="uploadedAnimName_harga" style="font-size:0.78rem;color:#C0392B;margin-top:2px;"></div></div>
+          </div>
+          <div class="form-success" id="uploadSuccess_harga" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Harga berhasil dikirim!</strong></div>
+          <div class="form-error" id="uploadError_harga" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_harga"></span></div>
+        </div>
+      </div>
+
+      <!-- KETERANGAN TAMBAHAN (diisi sekali, di bawah semua kategori) -->
+      <div class="form-card" style="margin-bottom:20px;border-left:4px solid var(--gray-400);">
+        <div id="uploadKeteranganFields"></div>
+      </div>
+
+      <!-- ===== RINGKASAN STATUS UPLOAD ===== -->
+      <div id="uploadSummaryCard" style="display:none;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;box-shadow:var(--shadow);">
+        <div style="font-weight:700;font-size:0.95rem;color:var(--blue-900);margin-bottom:12px;display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-list-check" style="color:var(--blue-600);"></i> Ringkasan Dokumen Dipilih</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="uploadSummaryGrid">
+          <div id="summaryItem_adm" class="upload-summary-item" style="border:1px dashed var(--gray-200);border-radius:8px;padding:10px 12px;font-size:0.82rem;color:var(--gray-400);"><i class="fa-solid fa-file-alt"></i> Administrasi: <em>belum dipilih</em></div>
+          <div id="summaryItem_kual" class="upload-summary-item" style="border:1px dashed var(--gray-200);border-radius:8px;padding:10px 12px;font-size:0.82rem;color:var(--gray-400);"><i class="fa-solid fa-medal"></i> Kualifikasi: <em>belum dipilih</em></div>
+          <div id="summaryItem_tek" class="upload-summary-item" style="border:1px dashed var(--gray-200);border-radius:8px;padding:10px 12px;font-size:0.82rem;color:var(--gray-400);"><i class="fa-solid fa-screwdriver-wrench"></i> Teknis: <em>belum dipilih</em></div>
+          <div id="summaryItem_harga" class="upload-summary-item" style="border:1px dashed var(--gray-200);border-radius:8px;padding:10px 12px;font-size:0.82rem;color:var(--gray-400);"><i class="fa-solid fa-tag"></i> Harga: <em>belum dipilih</em></div>
+        </div>
+      </div>
+
+      <!-- ===== PROGRESS KIRIM SEMUA ===== -->
+      <div id="allUploadProgressWrap" style="display:none;margin-bottom:20px;">
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);">
+          <div style="font-weight:700;font-size:0.90rem;color:var(--blue-900);margin-bottom:12px;"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--blue-600);"></i> Mengirim Dokumen…</div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="allProgressItems">
+            <div id="progressItem_adm" style="display:flex;align-items:center;gap:10px;font-size:0.83rem;"><span id="progressIcon_adm" style="width:22px;text-align:center;color:var(--gray-400);"><i class="fa-solid fa-circle-dot"></i></span><span style="flex:1;">Dok. Administrasi</span><span id="progressStatus_adm" style="font-size:0.78rem;color:var(--gray-400);">Menunggu…</span></div>
+            <div id="progressItem_kual" style="display:flex;align-items:center;gap:10px;font-size:0.83rem;"><span id="progressIcon_kual" style="width:22px;text-align:center;color:var(--gray-400);"><i class="fa-solid fa-circle-dot"></i></span><span style="flex:1;">Dok. Kualifikasi</span><span id="progressStatus_kual" style="font-size:0.78rem;color:var(--gray-400);">Menunggu…</span></div>
+            <div id="progressItem_tek" style="display:flex;align-items:center;gap:10px;font-size:0.83rem;"><span id="progressIcon_tek" style="width:22px;text-align:center;color:var(--gray-400);"><i class="fa-solid fa-circle-dot"></i></span><span style="flex:1;">Dok. Teknis</span><span id="progressStatus_tek" style="font-size:0.78rem;color:var(--gray-400);">Menunggu…</span></div>
+            <div id="progressItem_harga" style="display:flex;align-items:center;gap:10px;font-size:0.83rem;"><span id="progressIcon_harga" style="width:22px;text-align:center;color:var(--gray-400);"><i class="fa-solid fa-circle-dot"></i></span><span style="flex:1;">Dok. Harga</span><span id="progressStatus_harga" style="font-size:0.78rem;color:var(--gray-400);">Menunggu…</span></div>
+          </div>
+          <div style="background:var(--gray-200);border-radius:6px;height:8px;overflow:hidden;margin-top:14px;"><div id="allProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--green-700),#56ab2f);border-radius:6px;transition:width 0.5s ease;"></div></div>
+        </div>
+      </div>
+
+      <!-- ===== TOMBOL KIRIM TUNGGAL DI BAWAH ===== -->
+      <div style="margin-bottom:20px;">
+        <button id="btnKirimSemuaDokumen" onclick="submitSemuaDokumen()"
+          style="width:100%;padding:16px;background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 16px rgba(4,44,83,0.3);transition:all 0.2s;letter-spacing:0.3px;">
+          <i class="fa-solid fa-paper-plane" style="font-size:1.1rem;"></i> Kirim Semua Dokumen
+        </button>
+        <div style="text-align:center;margin-top:8px;font-size:0.78rem;color:var(--gray-400);"><i class="fa-solid fa-circle-info"></i> Minimal 1 kategori dokumen harus dipilih sebelum mengirim</div>
+      </div>
+
+      <!-- Pesan sukses/error global -->
+      <div class="form-success" id="allUploadSuccess" style="display:none;padding:16px 20px;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Semua dokumen berhasil dikirim!</strong><span id="allUploadSuccessHint" style="font-size:0.85rem;margin-top:6px;display:block;"></span></div>
+      <div class="form-error" id="allUploadError" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="allUploadErrorMsg"></span></div>
+
+      <!-- Hidden legacy fields for compatibility -->
+      <div id="uploadDynamicFields" autocomplete="off" style="display:none;"></div>
+      <div id="uploadDynamicFields_adm" autocomplete="off" style="display:none;"></div>
+      <div id="uploadDynamicFields_kual" autocomplete="off" style="display:none;"></div>
+      <div id="uploadDynamicFields_tek" autocomplete="off" style="display:none;"></div>
+      <div id="uploadDynamicFields_harga" autocomplete="off" style="display:none;"></div>
+      <div class="form-success" id="uploadSuccess" style="display:none;"></div>
+      <div class="form-error" id="uploadError" style="display:none;"><span id="uploadErrorMsg"></span></div>
+      <span id="uploadSuccessStatusHint" style="display:none;"></span>
+
     </section>
 
     <!-- STATUS PENGAJUAN -->
@@ -1058,7 +1192,7 @@
           <div class="admin-panel-body">
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
               <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;"><input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, jenis dokumen…" oninput="renderPokjaTable()" /></div>
-              <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Review">⏳ Menunggu Evaluasi</option><option value="Lulus / Memenuhi Syarat">✅ Lulus</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi</option></select></div>
+              <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Evaluasi">⏳ Menunggu Evaluasi</option><option value="Memenuhi Syarat">✅ Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Revisi / Belum Lengkap">🔄 Revisi / Belum Lengkap</option><option value="Klarifikasi / Pembuktian Kualifikasi">🔍 Klarifikasi / Pembuktian</option></select></div>
               <div class="admin-form-group" style="flex:1;min-width:160px;margin-bottom:0;"><select id="pokjaSort" onchange="renderPokjaTable()" style="font-size:0.83rem;"><option value="asc">⬆ Pengajuan Terlama</option><option value="desc" selected>⬇ Pengajuan Terbaru</option></select></div>
             </div>
             <div style="overflow-x:auto;">
@@ -1075,7 +1209,7 @@
     <!-- NEGOSIASI -->
     <section class="page" id="page-negosiasi">
       <h2 class="page-title"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</h2>
-      <p class="page-subtitle" id="negoSidebarSubtitle">Daftar penyedia yang telah Lulus / Memenuhi Syarat dan masuk ke tahap negosiasi.</p>
+      <p class="page-subtitle" id="negoSidebarSubtitle">Daftar penyedia yang telah Memenuhi Syarat dan masuk ke tahap negosiasi.</p>
       <div id="negosiasiPageContent"></div>
     </section>
 
@@ -1331,7 +1465,7 @@
     <div style="padding:22px 24px;">
       <div id="reviewModalInfo" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:0.85rem;color:var(--blue-800);"></div>
       <div id="reviewDocButtons" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;"></div>
-      <div class="admin-form-group"><label>Status Evaluasi <span style="color:#C0392B;">*</span></label><select id="reviewStatus" onchange="updateNotifPreview()"><option value="Menunggu Review">⏳ Menunggu Evaluasi</option><option value="Lulus / Memenuhi Syarat">✅ Lulus / Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Perlu Revisi / Klarifikasi">🔄 Perlu Revisi / Klarifikasi</option></select></div>
+      <div class="admin-form-group"><label>Status Evaluasi <span style="color:#C0392B;">*</span></label><select id="reviewStatus" onchange="updateNotifPreview()"><option value="Menunggu Evaluasi">⏳ Menunggu Evaluasi</option><option value="Memenuhi Syarat">✅ Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Revisi / Belum Lengkap">🔄 Revisi / Belum Lengkap</option><option value="Klarifikasi / Pembuktian Kualifikasi">🔍 Klarifikasi / Pembuktian Kualifikasi</option></select></div>
       <div class="admin-form-group"><label><i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja</label><textarea id="reviewCatatan" rows="4" oninput="updateNotifPreview()" style="border-left:3px solid var(--blue-600);background:#F8FBFF;"></textarea></div>
       <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -1496,7 +1630,7 @@
           <h3><i class="fa-solid fa-circle-info"></i> Upload Dokumen Penawaran</h3>
           <p>Dokumen penawaran dikirimkan melalui form digital dan tersimpan di Google Drive BPBJ. Anda harus <strong>login sebagai penyedia</strong> terlebih dahulu.</p>
         </div>
-        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Siapkan dokumen sebelum upload</h4><p>Pastikan dokumen sudah ditandatangani dan distempel. Format: <strong>PDF, ZIP, atau RAR</strong>. Ukuran maksimal <strong>100 MB</strong>.</p></div></div>
+        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Siapkan dokumen sebelum upload</h4><p>Pastikan dokumen sudah ditandatangani dan distempel. Format: <strong>PDF, ZIP, atau RAR</strong>. Ukuran maksimal <strong>30 MB</strong>.</p></div></div>
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</span> di sidebar</h4><p>Halaman berisi form yang harus diisi lengkap sebelum mengirimkan dokumen.</p></div></div>
         <hr class="panduan-step-divider">
@@ -1857,7 +1991,7 @@ const DEFAULT_FORM_FIELDS = [
     { group:'2. Tenaga Keamanan',   items:['Tenaga Keamanan – Ketua Regu','Tenaga Keamanan – Anggota'] },
     { group:'3. Tenaga Pengemudi',  items:['Tenaga Pengemudi – Kendaraan Berat <3500 kg','Tenaga Pengemudi – Kendaraan Berat ≥3500 kg'] },
   ]},
-  { id:'fFileDok', label:'Upload Dokumen', type:'file', hint:'PDF, ZIP, atau RAR – maks. 100 MB', required:true, fixed:true },
+  { id:'fFileDok', label:'Upload Dokumen', type:'file', hint:'PDF, ZIP, atau RAR – maks. 30 MB', required:true, fixed:true },
   { id:'fKeterangan', label:'Keterangan Tambahan', type:'textarea', placeholder:'Isi jika ada catatan khusus (opsional)…', required:false, fixed:true },
 ];
 
@@ -2443,10 +2577,14 @@ function renderStatusPenyedia() {
     return;
   }
   const statusMap = {
-    'Menunggu Review':          { cls:'sb-pending', icon:'fa-hourglass-half', label:'Menunggu Evaluasi' },
-    'Lulus / Memenuhi Syarat':  { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus / Memenuhi Syarat' },
-    'Tidak Memenuhi Syarat':    { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
-    'Perlu Revisi / Klarifikasi':{ cls:'sb-revisi', icon:'fa-rotate',        label:'Perlu Revisi / Klarifikasi' },
+    'Menunggu Review':                     { cls:'sb-pending',     icon:'fa-hourglass-half', label:'Menunggu Evaluasi' },
+    'Menunggu Evaluasi':                   { cls:'sb-pending',     icon:'fa-hourglass-half', label:'Menunggu Evaluasi' },
+    'Memenuhi Syarat':                     { cls:'sb-lulus',       icon:'fa-circle-check',   label:'Memenuhi Syarat' },
+    'Lulus / Memenuhi Syarat':             { cls:'sb-lulus',       icon:'fa-circle-check',   label:'Memenuhi Syarat' },
+    'Tidak Memenuhi Syarat':               { cls:'sb-tolak',       icon:'fa-circle-xmark',   label:'Tidak Memenuhi Syarat' },
+    'Perlu Revisi / Klarifikasi':          { cls:'sb-revisi',      icon:'fa-rotate',         label:'Revisi / Belum Lengkap' },
+    'Revisi / Belum Lengkap':              { cls:'sb-revisi',      icon:'fa-rotate',         label:'Revisi / Belum Lengkap' },
+    'Klarifikasi / Pembuktian Kualifikasi':{ cls:'sb-klarifikasi', icon:'fa-magnifying-glass',label:'Klarifikasi / Pembuktian Kualifikasi' },
   };
 
   // Kelompokkan dokumen per jenisDok, urutkan tiap grup dari lama ke baru
@@ -2507,21 +2645,39 @@ function renderStatusPenyedia() {
     const revTgl  = latest.reviewTanggal ? new Date(latest.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
     const grpId   = 'grp_' + btoa(encodeURIComponent(jenisDok)).replace(/[^a-z0-9]/gi,'').slice(0,12);
 
-    // revisiLinks[0]=Revisi 1, [1]=Revisi 2, dst (lama→baru)
-    const revLinks = Array.isArray(latest.revisiLinks) ? latest.revisiLinks.filter(l => l && l.startsWith('http')) : [];
+    // revisiLinks[0]=Revisi 1, [1]=Revisi 2, dst (lama→baru) — kini berupa objek {namaFile, link}
+    const revLinksRaw = Array.isArray(latest.revisiLinks) ? latest.revisiLinks : [];
+    const revLinks = revLinksRaw.filter(l => {
+      if (!l) return false;
+      if (typeof l === 'string') return l.startsWith('http');
+      return l.link && l.link.startsWith('http');
+    });
+    const getRevUrl  = (l) => (typeof l === 'string') ? l : (l.link || '');
+    const getRevNama = (l) => (typeof l === 'string') ? '' : (l.namaFile || '');
     // Dok. TERBARU = revisi terakhir jika ada, jika tidak = upload awal
-    const latestUrl  = revLinks.length ? revLinks[revLinks.length - 1] : (latest.fileLink || '');
+    const latestRevObj = revLinks.length ? revLinks[revLinks.length - 1] : null;
+    const latestUrl  = latestRevObj ? getRevUrl(latestRevObj) : (latest.fileLink || '');
     const hasLatest  = latestUrl && latestUrl.startsWith('http');
-    // Total versi = 1 (upload awal) + jumlah revisi
-    const totalVersi = 1 + revLinks.length;
+    // Links & namaFile per kategori dokumen
+    const linkAdm      = (latest.linkAdm      || '').trim();
+    const namaFileAdm  = (latest.namaFileAdm  || '').trim();
+    const linkKual     = (latest.linkKual     || '').trim();
+    const namaFileKual = (latest.namaFileKual || '').trim();
+    const linkTek      = (latest.linkTek      || '').trim();
+    const namaFileTek  = (latest.namaFileTek  || '').trim();
+    const linkHarga    = (latest.linkHarga    || '').trim();
+    const namaFileHarga= (latest.namaFileHarga|| '').trim();
+    const tambahanLinks = Array.isArray(latest.tambahanLinks) ? latest.tambahanLinks.filter(l => l && l.startsWith('http')) : [];
+    // Total versi = 1 (upload awal) + jumlah revisi + tambahan
+    const totalVersi = 1 + revLinks.length + tambahanLinks.length;
 
     // Dok. SEBELUMNYA: hanya tampil jika ada revisi.
     // Isi: upload awal + revisi ke-1 s/d ke-(n-1). Jika tidak ada revisi → tidak ditampilkan.
     const prevDoksPenyedia = [];
     if (revLinks.length > 0) {
-      if (latest.fileLink && latest.fileLink.startsWith('http')) prevDoksPenyedia.push({ label: 'Upload Awal', url: latest.fileLink });
-      revLinks.slice(0, revLinks.length - 1).forEach((url, vi) => {
-        prevDoksPenyedia.push({ label: 'Revisi ' + (vi + 1), url });
+      if (latest.fileLink && latest.fileLink.startsWith('http')) prevDoksPenyedia.push({ label: 'Upload Awal', url: latest.fileLink, namaFile: latest.fileName || '' });
+      revLinks.slice(0, revLinks.length - 1).forEach((rv, vi) => {
+        prevDoksPenyedia.push({ label: 'Revisi ' + (vi + 1), url: getRevUrl(rv), namaFile: getRevNama(rv) });
       });
     }
 
@@ -2534,10 +2690,10 @@ function renderStatusPenyedia() {
           <span id="histLabel-${grpId}">Lihat Dokumen Sebelumnya (${prevDoksPenyedia.length})</span>
         </button>
         <div id="histPanel-${grpId}" style="display:none;">
-          ${prevDoksPenyedia.map(({label, url}) => `
+          ${prevDoksPenyedia.map(({label, url, namaFile}) => `
             <div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:8px;padding:12px 14px;margin-bottom:8px;opacity:0.85;">
-              <div style="font-size:0.80rem;font-weight:700;color:var(--gray-600);margin-bottom:8px;">
-                <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i> ${label}
+              <div style="font-size:0.80rem;font-weight:700;color:var(--gray-600);margin-bottom:4px;">
+                <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i> ${label}${namaFile ? ` &nbsp;·&nbsp; <span style="font-weight:400;color:var(--blue-700);">${namaFile}</span>` : ''}
               </div>
               <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;margin-right:10px;"><i class="fa-solid fa-eye"></i> Lihat</a>
               <a href="${url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--green-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i> Download</a>
@@ -2560,11 +2716,30 @@ function renderStatusPenyedia() {
           ${revTgl ? `<span><i class="fa-solid fa-pen-to-square" style="color:var(--blue-600);"></i> Direview: ${revTgl}</span>` : ''}
           ${hasLatest ? `<a href="${latestUrl}" target="_blank" rel="noopener" style="color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat Dokumen Terbaru</a>` : ''}
         </div>
+        ${(()=>{
+          const catRows = [
+            { link: linkAdm,   namaFile: namaFileAdm,   label:'Administrasi', color:'#1B5E20', icon:'fa-file-alt' },
+            { link: linkKual,  namaFile: namaFileKual,  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal'    },
+            { link: linkTek,   namaFile: namaFileTek,   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
+            { link: linkHarga, namaFile: namaFileHarga, label:'Harga',        color:'#880E4F', icon:'fa-tag'      },
+          ].filter(c => c.link && c.link.startsWith('http'));
+          const tamBtns = tambahanLinks.map((url,ti) =>
+            `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#4A148C;color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid fa-plus-circle"></i> Tambahan ${ti+1}</a>`
+          ).join('');
+          const revBtns = revLinks.filter(rv=>getRevUrl(rv).startsWith('http')).map((rv,ri) =>
+            `<a href="${getRevUrl(rv)}" target="_blank" rel="noopener" title="${getRevNama(rv)||''}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#C62828;color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid fa-rotate"></i> Revisi ${ri+1}${getRevNama(rv) ? ' — '+getRevNama(rv) : ''}</a>`
+          ).join('');
+          if (!catRows.length && !tamBtns && !revBtns) return '';
+          const catBtns = catRows.map(c =>
+            `<a href="${c.link}" target="_blank" rel="noopener" title="${c.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:${c.color};color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid ${c.icon}"></i> ${c.label}${c.namaFile ? ' — '+c.namaFile : ''}</a>`
+          ).join('');
+          return `<div style="margin-top:10px;"><div style="font-size:0.75rem;font-weight:700;color:var(--gray-600);margin-bottom:5px;"><i class="fa-solid fa-folder-open" style="color:var(--blue-600);"></i> Link Dokumen:</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${catBtns}${tamBtns}${revBtns}</div></div>`;
+        })()}
         ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
         ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog)}</div>` : ''}
         ${historyHtml}
         ${(() => {
-          const btnRevisi = (status === 'Perlu Revisi / Klarifikasi') ? `<button onclick="bukaModalRevisiByIdx(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='var(--blue-900)'" onmouseleave="this.style.background='var(--blue-700)'"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</button>` : '';
+          const btnRevisi = (status === 'Revisi / Belum Lengkap' || status === 'Perlu Revisi / Klarifikasi' || status === 'Klarifikasi / Pembuktian Kualifikasi') ? `<button onclick="bukaModalRevisiByIdx(${allIdx})" style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-700);color:white;border:none;border-radius:7px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='var(--blue-900)'" onmouseleave="this.style.background='var(--blue-700)'"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</button>` : '';
           const isDariPokjaFn = (k) => {
             if (k.dariPokja === true || k.dariPokja === 'true' || k.dariPokja === 1) return true;
             const p = (k.pengirim || '').toLowerCase();
@@ -2603,6 +2778,7 @@ function updateUploadFormLock() {
   setTimeout(() => {
     const isPenyedia = currentRole === 'penyedia' && currentPenyedia;
     if (isPenyedia) {
+      // Kunci field identitas tunggal
       const namaEl = document.getElementById('fNamaPerusahaan');
       if (namaEl) { namaEl.value=currentPenyedia.nama; namaEl.readOnly=true; namaEl.classList.add('field-locked'); namaEl.setAttribute('autocomplete','off'); }
       const emailEl = document.getElementById('fEmail');
@@ -2648,7 +2824,7 @@ function renderSidebar() {
     const lulusAny = allSubs.some(s =>
       currentPenyedia &&
       (s.namaPerusahaan === currentPenyedia.nama || s.email === currentPenyedia.email || s.npwp === currentPenyedia.npwp) &&
-      (s.reviewStatus === 'Lulus / Memenuhi Syarat' || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0))
+      ((s.reviewStatus === 'Memenuhi Syarat' || s.reviewStatus === 'Lulus / Memenuhi Syarat') || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0))
     );
     // Cek apakah penyedia punya menu Pengumuman Pemenang:
     // Muncul segera setelah negosiasi DEAL (giliran=Selesai / harga disepakati),
@@ -2745,7 +2921,13 @@ function showPage(pageId) {
   if (target) target.classList.add('active');
   const activeLink = document.querySelector('[data-page="'+pageId+'"]');
   if (activeLink) activeLink.classList.add('active');
-  if (pageId === 'upload') updateUploadFormLock();
+  if (pageId === 'upload') {
+    updateUploadFormLock();
+    // Init upload tabs on first show
+    if (typeof switchUploadTab === 'function') {
+      setTimeout(() => switchUploadTab(_currentUploadTab || 'adm'), 50);
+    }
+  }
   if (pageId === 'status' && currentRole === 'penyedia' && currentPenyedia) {
     loadStatusPenyedia();
   }
@@ -3314,63 +3496,8 @@ function isUploadFormDirty() {
 }
 
 function renderUploadForm(force) {
-  // Jangan reset form jika sedang diisi user (kecuali dipaksa force=true)
-  if (!force && isUploadFormDirty()) return;
-  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
-  let html = '';
-  fields.forEach(f => {
-    const fakeName = 'field_' + (Math.random().toString(36).slice(2,7));
-    if (f.type === 'file') {
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="file" id="${f.id}" name="${fakeName}" accept=".pdf,.zip,.rar" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" /><div class="file-hint">${f.hint||'PDF, ZIP, atau RAR – maks. 100 MB.'}</div><div id="fUploadProgress" style="display:none;margin-top:10px;"><div class="upload-progress-wrap"><div class="upload-progress-bar" id="fProgressBar"></div></div><span class="upload-progress-label" id="fProgressText"></span></div></div>`;
-    } else if (f.type === 'textarea') {
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><textarea id="${f.id}" name="${fakeName}" autocomplete="off" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
-    } else if (f.type === 'select') {
-      let opts = `<option value="">-- Pilih --</option>`;
-      if (f.options && f.options.length) { f.options.forEach(grp => { if (grp.group) { opts += `<optgroup label="${grp.group}">`; grp.items.forEach(it => { opts += `<option value="${it}">${it}</option>`; }); opts += `</optgroup>`; } }); }
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><select id="${f.id}" name="${fakeName}" autocomplete="off">${opts}</select></div>`;
-    } else {
-      const isEmail = f.type === 'email';
-      const isTel   = f.type === 'tel';
-      const isNpwp  = f.id === 'fNpwp';
-      const acValue = isEmail ? 'new-password' : 'off';
-
-      // Hint teks di bawah field
-      let hintHtml = '';
-      if (isTel) {
-        hintHtml = `<div class="file-hint" id="hint-${f.id}" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>). Jangan gunakan awalan 0 atau +62.</div>`;
-      } else if (isNpwp) {
-        hintHtml = `<div class="file-hint" id="hint-${f.id}" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> NPWP harus <strong>15 atau 16 digit angka</strong> (tanpa titik/strip).</div>`;
-      }
-
-      // oninput handler: sanitasi + validasi visual real-time
-      let onInputAttr = '';
-      if (isTel) {
-        onInputAttr = ` oninput="
-          this.value=this.value.replace(/[^0-9]/g,'');
-          if(this.value.startsWith('0')){this.value='62'+this.value.slice(1);}
-          if(this.value.startsWith('+')){this.value=this.value.replace(/\\D/g,'');}
-          var ok=/^62\\d{7,14}$/.test(this.value);
-          this.style.borderColor=this.value?( ok?'#3B6D11':'#C0392B'):'';
-          this.style.boxShadow=this.value?(ok?'0 0 0 3px rgba(59,109,17,0.12)':'0 0 0 3px rgba(192,57,43,0.12)'):'';
-          var h=document.getElementById('hint-${f.id}');
-          if(h){h.style.color=ok?'#3B6D11':'#C0392B';h.innerHTML=ok?'<i class=\\'fa-solid fa-circle-check\\'></i> Nomor valid.':'<i class=\\'fa-solid fa-triangle-exclamation\\'></i> Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>). Jangan gunakan awalan 0 atau +62.';}
-        "`;
-      } else if (isNpwp) {
-        onInputAttr = ` oninput="
-          this.value=this.value.replace(/[^0-9]/g,'');
-          var len=this.value.length;
-          var ok=len===15||len===16;
-          this.style.borderColor=len>0?(ok?'#3B6D11':'#C0392B'):'';
-          this.style.boxShadow=len>0?(ok?'0 0 0 3px rgba(59,109,17,0.12)':'0 0 0 3px rgba(192,57,43,0.12)'):'';
-          var h=document.getElementById('hint-${f.id}');
-          if(h){h.style.color=ok?'#3B6D11':'#C0392B';h.innerHTML=ok?'<i class=\\'fa-solid fa-circle-check\\'></i> NPWP valid ('+len+' digit).':'<i class=\\'fa-solid fa-triangle-exclamation\\'></i> NPWP harus <strong>15 atau 16 digit</strong> — sekarang <strong>'+len+' digit</strong>.';}
-        "`;
-      }
-
-      html += `<div class="form-row"><label>${f.label}${f.required?'<span class="req"> *</span>':''}</label><input type="${f.type||'text'}" id="${f.id}" name="${fakeName}" autocomplete="${acValue}" placeholder="${f.placeholder||''}"${onInputAttr} />${hintHtml}</div>`;
-    }
-  });
-  document.getElementById('uploadDynamicFields').innerHTML = html;
+  // Render form identitas + semua kategori file upload
+  renderAllUploadForms(force);
   updateUploadFormLock();
 }
 
@@ -3752,7 +3879,7 @@ async function submitUpload() {
     showFormMsg('error','Nomor telepon harus diawali <strong>62</strong> (contoh: 628123456789). Tidak boleh diawali 0 atau +.');
     return;
   }
-  if(file.size>100*1024*1024){showFormMsg('error','Ukuran file melebihi 100 MB.'); return;}
+  if(file.size>30*1024*1024){showFormMsg('error','Ukuran file melebihi 30 MB.'); return;}
   const btn=document.getElementById('btnSubmitUpload');
   btn.disabled=true;
   btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg> Mengirim…`;
@@ -3794,8 +3921,435 @@ function showFormMsg(type,msg) {
 }
 
 // =================================================================
-// MODAL REVISI CEPAT
+// UPLOAD PER KATEGORI — Form tunggal (scroll ke bawah, identitas sekali)
 // =================================================================
+let _currentUploadTab = 'adm';
+const UPLOAD_KATEGORI = {
+  adm:   'Dokumen Administrasi',
+  kual:  'Dokumen Kualifikasi',
+  tek:   'Dokumen Teknis',
+  harga: 'Dokumen Harga'
+};
+
+// Daftar field identitas (diisi sekali) — termasuk jenis dokumen
+const IDENTITAS_IDS = ['fNamaPerusahaan','fNpwp','fAlamat','fNamaDirektur','fTelp','fEmail','fJenisDok'];
+// Field keterangan (shared, dirender sekali di bawah)
+const KETERANGAN_IDS = ['fKeterangan'];
+// Daftar field per upload (hanya file picker)
+const FILE_FIELD_IDS = ['fFileDok'];
+
+// switchUploadTab tetap ada agar tidak error jika dipanggil dari kode lain, tapi tidak dipakai untuk navigasi tab
+function switchUploadTab(tab) { _currentUploadTab = tab; }
+
+// Render form identitas + jenis dokumen (sekali saja, di atas semua kategori)
+function renderUploadIdentitas(force) {
+  const container = document.getElementById('uploadIdentitasFields');
+  if (!container) return;
+  if (!force && container.dataset.rendered === '1') return;
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  let html = '';
+  fields.forEach(f => {
+    if (!IDENTITAS_IDS.includes(f.id)) return;
+    const fid = f.id;
+    const reqHtml = f.required ? '<span class="req"> *</span>' : '';
+    if (f.type === 'select') {
+      let opts = '<option value="">-- Pilih --</option>';
+      if (f.options && f.options.length) { f.options.forEach(grp => { if (grp.group) { opts += `<optgroup label="${grp.group}">`; grp.items.forEach(it => { opts += `<option value="${it}">${it}</option>`; }); opts += '</optgroup>'; } }); }
+      html += `<div class="form-row"><label>${f.label}${reqHtml}</label><select id="${fid}" autocomplete="off">${opts}</select></div>`;
+    } else if (f.type === 'textarea') {
+      html += `<div class="form-row"><label>${f.label}${reqHtml}</label><textarea id="${fid}" autocomplete="off" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
+    } else {
+      const isEmail = f.type === 'email';
+      const isTel   = f.type === 'tel';
+      const isNpwp  = f.id === 'fNpwp';
+      const acValue = isEmail ? 'new-password' : 'off';
+      let hintHtml = '';
+      if (isTel) hintHtml = `<div class="file-hint" id="hint-${fid}" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> Wajib diawali <strong>62</strong> (contoh: <strong>6281234567890</strong>).</div>`;
+      else if (isNpwp) hintHtml = `<div class="file-hint" id="hint-${fid}" style="color:#856404;"><i class="fa-solid fa-triangle-exclamation" style="color:#d4a017;"></i> NPWP harus <strong>15 atau 16 digit angka</strong>.</div>`;
+      html += `<div class="form-row"><label>${f.label}${reqHtml}</label><input type="${f.type||'text'}" id="${fid}" autocomplete="${acValue}" placeholder="${f.placeholder||''}" />${hintHtml}</div>`;
+    }
+  });
+  container.innerHTML = html;
+  container.dataset.rendered = '1';
+}
+
+// Render keterangan tambahan (sekali saja, di bawah semua kategori)
+function renderUploadKeterangan(force) {
+  const container = document.getElementById('uploadKeteranganFields');
+  if (!container) return;
+  if (!force && container.dataset.rendered === '1') return;
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  let html = '';
+  fields.forEach(f => {
+    if (!KETERANGAN_IDS.includes(f.id)) return;
+    const reqHtml = f.required ? '<span class="req"> *</span>' : '';
+    html += `<div class="form-row"><label>${f.label}${reqHtml}</label><textarea id="${f.id}" autocomplete="off" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
+  });
+  container.innerHTML = html;
+  container.dataset.rendered = '1';
+}
+
+// Render hanya field file+keterangan untuk satu kategori
+function renderUploadFormKategori(tab) {
+  const containerId = 'uploadFileFields_' + tab;
+  const el = document.getElementById(containerId);
+  if (!el || el.dataset.rendered === '1') return;
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  let html = '';
+  fields.forEach(f => {
+    if (!FILE_FIELD_IDS.includes(f.id)) return; // hanya file fields
+    const fid = f.id + '_' + tab;
+    const reqHtml = f.required ? '<span class="req"> *</span>' : '';
+    if (f.type === 'file') {
+      html += `<div class="form-row"><label>${f.label}${reqHtml}</label><input type="file" id="${fid}" accept=".pdf,.zip,.rar" onchange="onUploadFileChange('${tab}')" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.88rem;background:var(--gray-50);cursor:pointer;" /><div class="file-hint">${f.hint||'PDF, ZIP, atau RAR – maks. 30 MB.'}</div></div>`;
+    } else if (f.type === 'textarea') {
+      html += `<div class="form-row"><label>${f.label}${reqHtml}</label><textarea id="${fid}" autocomplete="off" placeholder="${f.placeholder||''}">${f.defaultValue||''}</textarea></div>`;
+    } else if (f.type === 'select') {
+      let opts = '<option value="">-- Pilih --</option>';
+      if (f.options && f.options.length) {
+        f.options.forEach(grp => {
+          if (grp.group) {
+            opts += `<optgroup label="${grp.group}">`;
+            grp.items.forEach(it => { opts += `<option value="${it}">${it}</option>`; });
+            opts += '</optgroup>';
+          }
+        });
+      }
+      html += `<div class="form-row"><label>${f.label}${reqHtml}</label><select id="${fid}" autocomplete="off">${opts}</select></div>`;
+    } else {
+      html += `<div class="form-row"><label>${f.label}${reqHtml}</label><input type="${f.type||'text'}" id="${fid}" autocomplete="off" placeholder="${f.placeholder||''}" /></div>`;
+    }
+  });
+  el.innerHTML = html;
+  el.dataset.rendered = '1';
+}
+
+// Render semua sekaligus (dipanggil saat halaman upload dibuka)
+function renderAllUploadForms(force) {
+  renderUploadIdentitas(force);
+  ['adm','kual','tek','harga'].forEach(tab => {
+    if (force) {
+      const el = document.getElementById('uploadFileFields_' + tab);
+      if (el) el.dataset.rendered = '';
+    }
+    renderUploadFormKategori(tab);
+  });
+  renderUploadKeterangan(force);
+}
+
+function showFormMsgKategori(tab, type, msg) {
+  const s = document.getElementById('uploadSuccess_' + tab);
+  const e = document.getElementById('uploadError_' + tab);
+  const em = document.getElementById('uploadErrorMsg_' + tab);
+  if (s) s.style.display = 'none';
+  if (e) e.style.display = 'none';
+  if (type === 'success' && s) { s.style.display = 'block'; }
+  else if (e) { if(em) em.innerHTML = msg||''; e.style.display = 'block'; }
+}
+
+async function submitUploadKategori(tab) {
+  const kategori = UPLOAD_KATEGORI[tab] || tab;
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  let valid = true; const payload = {};
+  for (const f of fields) {
+    if (f.type === 'file') continue;
+    // Identitas & jenisDok dari field tunggal, keterangan dari shared, file per-tab
+    const elId = (IDENTITAS_IDS.includes(f.id) || KETERANGAN_IDS.includes(f.id)) ? f.id : (f.id + '_' + tab);
+    const el = document.getElementById(elId);
+    if (!el) continue;
+    const val = el.value.trim();
+    if (f.required && !val) { valid = false; break; }
+    payload[f.id] = val;
+  }
+  const fileInput = document.getElementById('fFileDok_' + tab);
+  const file = fileInput ? fileInput.files[0] : null;
+  if (!valid) { showFormMsgKategori(tab, 'error', 'Harap lengkapi semua kolom bertanda (*).'); return; }
+  if (!file)  { showFormMsgKategori(tab, 'error', 'Harap pilih file dokumen.'); return; }
+
+  const npwpVal = (payload['fNpwp']||'').replace(/\D/g,'');
+  if (npwpVal.length < 15 || npwpVal.length > 16) {
+    showFormMsgKategori(tab, 'error', 'NPWP tidak valid. Harus <strong>15 atau 16 digit angka</strong> (tanpa titik/strip). Sekarang ' + npwpVal.length + ' digit.');
+    return;
+  }
+  const telpVal = (payload['fTelp']||'').replace(/\s/g,'');
+  if (!/^62\d{7,14}$/.test(telpVal)) {
+    showFormMsgKategori(tab, 'error', 'Nomor telepon harus diawali <strong>62</strong> (contoh: 628123456789).');
+    return;
+  }
+  if (file.size > 30*1024*1024) { showFormMsgKategori(tab, 'error', 'Ukuran file melebihi 30 MB.'); return; }
+
+  const btn = document.getElementById('btnSubmitUpload_' + tab);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg> Mengirim…'; }
+
+  const progressWrap = document.getElementById('fUploadProgress_' + tab);
+  const progressBar  = document.getElementById('fProgressBar_' + tab);
+  const progressText = document.getElementById('fProgressText_' + tab);
+  if (progressWrap) progressWrap.style.display = 'block';
+  if (progressBar) progressBar.style.width = '5%';
+  if (progressText) progressText.textContent = 'Membaca file…';
+
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = () => reject(new Error('Gagal membaca file'));
+      reader.readAsDataURL(file);
+    });
+    if (progressBar) progressBar.style.width = '40%';
+    if (progressText) progressText.textContent = 'Mengunggah ke Google Drive…';
+
+    // uploadType: selalu 'kategori' — backend selalu tulis ke kolom kategori utama (Nama File + Link)
+    // uploadType 'revisi' hanya dikirim dari modal Revisi Cepat (submitRevisiCepat)
+    const uploadType = 'kategori';
+
+    const fullPayload = {
+      ...payload,
+      fileName: file.name, fileType: file.type, fileData: base64,
+      namaPerusahaan: payload.fNamaPerusahaan, npwp: payload.fNpwp,
+      alamat: payload.fAlamat, namaDirektur: payload.fNamaDirektur,
+      telp: payload.fTelp, email: payload.fEmail,
+      jenisDok: kategori + ' – ' + (payload.fJenisDok||''),
+      keterangan: payload.fKeterangan || '',
+      kategoriDok: kategori,
+      uploadType: uploadType
+    };
+
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(fullPayload)
+    });
+
+    if (progressBar) { progressBar.style.width = '100%'; progressBar.style.background = 'linear-gradient(90deg,#3B6D11,#56ab2f)'; }
+    if (progressText) progressText.textContent = '✓ Berhasil dikirim!';
+    showFormMsgKategori(tab, 'success');
+    const hint = document.getElementById('uploadSuccessStatusHint_' + tab);
+    if (currentRole === 'penyedia' && hint) {
+      hint.style.display = 'block';
+      hint.innerHTML = `<a href="#" onclick="showPage('status');return false;" style="color:var(--green-700);font-weight:700;"><i class="fa-solid fa-clipboard-list"></i> Pantau status pengajuan Anda di halaman Status Pengajuan</a>`;
+    }
+    showToast('Dokumen Berhasil Disimpan', kategori + ' tersimpan di Google Drive BPBJ.', 'success', 4000);
+    // Reset hanya file fields, BUKAN identitas/jenisDok/keterangan
+    fields.forEach(f => {
+      if (IDENTITAS_IDS.includes(f.id)) return;
+      if (KETERANGAN_IDS.includes(f.id)) return;
+      const elId = f.id + '_' + tab;
+      const el = document.getElementById(elId);
+      if (el && f.type !== 'file' && !el.readOnly) el.value = '';
+    });
+    if (fileInput) fileInput.value = '';
+    setTimeout(() => { if(progressWrap) progressWrap.style.display = 'none'; if(progressBar) { progressBar.style.width='0%'; progressBar.style.background=''; } }, 3000);
+    if (currentRole === 'penyedia') setTimeout(loadStatusPenyedia, 3000);
+  } catch(err) {
+    showFormMsgKategori(tab, 'error', 'Gagal mengirim: ' + err.message);
+    if (progressWrap) progressWrap.style.display = 'none';
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ' + kategori; }
+  }
+}
+
+// =================================================================
+// KIRIM SEMUA DOKUMEN SEKALIGUS
+// =================================================================
+const UPLOAD_TAB_LABELS = {
+  adm: 'Dok. Administrasi',
+  kual: 'Dok. Kualifikasi',
+  tek: 'Dok. Teknis',
+  harga: 'Dok. Harga'
+};
+
+// Dipanggil saat file dipilih per-kategori — tampilkan animasi "siap kirim"
+function onUploadFileChange(tab) {
+  const fileInput = document.getElementById('fFileDok_' + tab);
+  const file = fileInput ? fileInput.files[0] : null;
+  const badge  = document.getElementById('uploadStatusBadge_' + tab);
+  const anim   = document.getElementById('uploadedAnim_' + tab);
+  const animName = document.getElementById('uploadedAnimName_' + tab);
+  const summaryItem = document.getElementById('summaryItem_' + tab);
+  const summaryCard = document.getElementById('uploadSummaryCard');
+  const TABS = ['adm','kual','tek','harga'];
+
+  if (file) {
+    // Badge di header seksi
+    if (badge) { badge.style.display = 'inline-flex'; }
+    // Animasi "siap kirim" di dalam card
+    if (anim) { anim.style.display = 'flex'; }
+    if (animName) { animName.textContent = file.name + ' (' + (file.size/1024/1024).toFixed(2) + ' MB)'; }
+    // Update summary card
+    if (summaryItem) {
+      summaryItem.classList.add('ready');
+      const icons = {adm:'fa-file-alt',kual:'fa-medal',tek:'fa-screwdriver-wrench',harga:'fa-tag'};
+      const labels = {adm:'Administrasi',kual:'Kualifikasi',tek:'Teknis',harga:'Harga'};
+      summaryItem.innerHTML = `<i class="fa-solid ${icons[tab]||'fa-file'}" style="color:#2D7D17;"></i> ${labels[tab]}: <strong>${file.name}</strong>`;
+    }
+  } else {
+    if (badge) { badge.style.display = 'none'; }
+    if (anim)  { anim.style.display  = 'none'; }
+    if (summaryItem) {
+      summaryItem.classList.remove('ready');
+      const icons = {adm:'fa-file-alt',kual:'fa-medal',tek:'fa-screwdriver-wrench',harga:'fa-tag'};
+      const labels = {adm:'Administrasi',kual:'Kualifikasi',tek:'Teknis',harga:'Harga'};
+      summaryItem.innerHTML = `<i class="fa-solid ${icons[tab]||'fa-file'}"></i> ${labels[tab]}: <em>belum dipilih</em>`;
+    }
+  }
+  // Tampilkan summary card jika ada minimal 1 file dipilih
+  const anyFile = TABS.some(t => {
+    const inp = document.getElementById('fFileDok_' + t);
+    return inp && inp.files && inp.files[0];
+  });
+  if (summaryCard) summaryCard.style.display = anyFile ? 'block' : 'none';
+}
+
+async function submitSemuaDokumen() {
+  const TABS = ['adm','kual','tek','harga'];
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+
+  // Cek minimal 1 file dipilih
+  const selectedTabs = TABS.filter(tab => {
+    const inp = document.getElementById('fFileDok_' + tab);
+    return inp && inp.files && inp.files[0];
+  });
+  if (selectedTabs.length === 0) {
+    const errEl = document.getElementById('allUploadError');
+    const errMsg = document.getElementById('allUploadErrorMsg');
+    if (errEl) errEl.style.display = 'block';
+    if (errMsg) errMsg.textContent = 'Pilih minimal 1 file dokumen sebelum mengirim.';
+    return;
+  }
+
+  // Validasi form identitas
+  let valid = true; const payload = {};
+  for (const f of fields) {
+    if (f.type === 'file') continue;
+    if (!IDENTITAS_IDS.includes(f.id) && !KETERANGAN_IDS.includes(f.id)) continue;
+    const el = document.getElementById(f.id);
+    if (!el) continue;
+    const val = el.value.trim();
+    if (f.required && !val) { valid = false; break; }
+    payload[f.id] = val;
+  }
+  if (!valid) {
+    const errEl = document.getElementById('allUploadError');
+    const errMsg = document.getElementById('allUploadErrorMsg');
+    if (errEl) errEl.style.display = 'block';
+    if (errMsg) errMsg.textContent = 'Harap lengkapi semua data perusahaan yang bertanda (*).';
+    return;
+  }
+
+  const npwpVal = (payload['fNpwp']||'').replace(/\D/g,'');
+  if (npwpVal.length < 15 || npwpVal.length > 16) {
+    const errEl = document.getElementById('allUploadError');
+    const errMsg = document.getElementById('allUploadErrorMsg');
+    if (errEl) errEl.style.display = 'block';
+    if (errMsg) errMsg.innerHTML = 'NPWP tidak valid. Harus <strong>15 atau 16 digit angka</strong>.';
+    return;
+  }
+
+  // uploadType: selalu 'kategori' — backend selalu tulis ke kolom kategori utama (Nama File + Link)
+  // uploadType 'revisi' hanya dikirim dari modal Revisi Cepat (submitRevisiCepat)
+  const uploadType = 'kategori';
+
+  // Sembunyikan pesan lama, tampilkan progress
+  const errEl = document.getElementById('allUploadError');
+  const sucEl = document.getElementById('allUploadSuccess');
+  if (errEl) errEl.style.display = 'none';
+  if (sucEl) sucEl.style.display = 'none';
+  const progressWrap = document.getElementById('allUploadProgressWrap');
+  if (progressWrap) progressWrap.style.display = 'block';
+  const btn = document.getElementById('btnKirimSemuaDokumen');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin2 0.7s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg> Mengirim…'; }
+
+  const progressBar = document.getElementById('allProgressBar');
+  let successCount = 0;
+  let errorMsgs = [];
+
+  for (let i = 0; i < selectedTabs.length; i++) {
+    const tab = selectedTabs[i];
+    const kategori = UPLOAD_KATEGORI[tab] || tab;
+    const fileInput = document.getElementById('fFileDok_' + tab);
+    const file = fileInput.files[0];
+
+    // Update progress row
+    const iconEl = document.getElementById('progressIcon_' + tab);
+    const statusEl = document.getElementById('progressStatus_' + tab);
+    if (iconEl) iconEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color:var(--blue-600);"></i>';
+    if (statusEl) { statusEl.textContent = 'Mengunggah…'; statusEl.style.color = 'var(--blue-600)'; }
+    if (progressBar) progressBar.style.width = Math.round((i / selectedTabs.length) * 90) + '%';
+
+    try {
+      if (file.size > 30*1024*1024) throw new Error('Ukuran file melebihi 30 MB');
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
+        reader.readAsDataURL(file);
+      });
+
+      // Ambil jenisDok dari field per-tab jika ada, fallback ke shared
+      let jenisDokVal = '';
+      const jenisDokEl = document.getElementById('fJenisDok_' + tab) || document.getElementById('fJenisDok');
+      if (jenisDokEl) jenisDokVal = jenisDokEl.value.trim();
+
+      const fullPayload = {
+        ...payload,
+        fileName: file.name, fileType: file.type, fileData: base64,
+        namaPerusahaan: payload.fNamaPerusahaan, npwp: payload.fNpwp,
+        alamat: payload.fAlamat, namaDirektur: payload.fNamaDirektur,
+        telp: payload.fTelp, email: payload.fEmail,
+        jenisDok: kategori + (jenisDokVal ? ' – ' + jenisDokVal : ''),
+        keterangan: payload.fKeterangan || '',
+        kategoriDok: kategori,
+        uploadType: uploadType
+      };
+
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(fullPayload)
+      });
+
+      successCount++;
+      if (iconEl) iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#2D7D17;"></i>';
+      if (statusEl) { statusEl.textContent = 'Berhasil ✓'; statusEl.style.color = '#2D7D17'; statusEl.style.fontWeight = '700'; }
+      // Tampilkan sukses per-kategori
+      const sucKat = document.getElementById('uploadSuccess_' + tab);
+      if (sucKat) sucKat.style.display = 'block';
+    } catch(err) {
+      errorMsgs.push(UPLOAD_TAB_LABELS[tab] + ': ' + err.message);
+      if (iconEl) iconEl.innerHTML = '<i class="fa-solid fa-circle-xmark" style="color:#C0392B;"></i>';
+      if (statusEl) { statusEl.textContent = 'Gagal!'; statusEl.style.color = '#C0392B'; }
+      const errKat = document.getElementById('uploadError_' + tab);
+      const errMsgKat = document.getElementById('uploadErrorMsg_' + tab);
+      if (errKat) errKat.style.display = 'block';
+      if (errMsgKat) errMsgKat.textContent = err.message;
+    }
+  }
+
+  if (progressBar) progressBar.style.width = '100%';
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="font-size:1.1rem;"></i> Kirim Semua Dokumen'; }
+
+  if (successCount > 0) {
+    if (sucEl) sucEl.style.display = 'block';
+    const hintEl = document.getElementById('allUploadSuccessHint');
+    if (hintEl && currentRole === 'penyedia') {
+      hintEl.innerHTML = `${successCount} dokumen berhasil dikirim. <a href="#" onclick="showPage('status');return false;" style="color:var(--green-700);font-weight:700;"><i class="fa-solid fa-clipboard-list"></i> Pantau status pengajuan Anda</a>`;
+    }
+    showToast('Dokumen Berhasil Dikirim', successCount + ' dokumen tersimpan di Google Drive BPBJ.', 'success', 5000);
+    // Reset file inputs
+    selectedTabs.forEach(tab => {
+      const inp = document.getElementById('fFileDok_' + tab);
+      if (inp) inp.value = '';
+      onUploadFileChange(tab);
+    });
+    if (currentRole === 'penyedia') setTimeout(loadStatusPenyedia, 3000);
+  }
+  if (errorMsgs.length > 0) {
+    if (errEl) errEl.style.display = 'block';
+    const errMsgEl = document.getElementById('allUploadErrorMsg');
+    if (errMsgEl) errMsgEl.textContent = errorMsgs.join('; ');
+  }
+  setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 4000);
+}
 let _revisiDocData = null; // simpan data dokumen yang akan direvisi
 
 function bukaModalRevisiByIdx(idx) {
@@ -3844,7 +4398,7 @@ async function submitRevisiCepat() {
   errEl.style.display = 'none';
 
   if (!file) { errEl.textContent = '❌ Harap pilih file dokumen revisi.'; errEl.style.display = 'block'; return; }
-  if (file.size > 100*1024*1024) { errEl.textContent = '❌ Ukuran file melebihi 100 MB.'; errEl.style.display = 'block'; return; }
+  if (file.size > 30*1024*1024) { errEl.textContent = '❌ Ukuran file melebihi 30 MB.'; errEl.style.display = 'block'; return; }
 
   const btn = document.getElementById('btnKirimRevisi');
   btn.disabled = true;
@@ -3870,9 +4424,15 @@ async function submitRevisiCepat() {
     progressBar.style.width = '65%';
     progressText.textContent = 'Mengunggah ke Google Drive…';
 
-    // Kirim ke Apps Script — handleNewSubmission akan otomatis deteksi
-    // jika NPWP/email sudah ada → tulis ke kolom O/P (Link Revisi), bukan baris baru
+    // Kirim ke Apps Script — uploadType='revisi' agar backend tulis ke kolom Revisi per-kategori
     const d = _revisiDocData;
+    // Tentukan kategoriDok dari jenisDok atau field kategori yang tersimpan di docData
+    const revisiKategori = d.kategoriDok || (
+      (d.jenisDok||'').includes('Administrasi') ? 'Dokumen Administrasi' :
+      (d.jenisDok||'').includes('Kualifikasi')  ? 'Dokumen Kualifikasi'  :
+      (d.jenisDok||'').includes('Teknis')        ? 'Dokumen Teknis'       :
+      (d.jenisDok||'').includes('Harga')         ? 'Dokumen Harga'        : ''
+    );
     const revisiPayload = {
       namaPerusahaan: d.namaPerusahaan || currentPenyedia.nama,
       npwp:           d.npwp || '',
@@ -3885,6 +4445,8 @@ async function submitRevisiCepat() {
       fileName:       file.name,
       fileType:       file.type,
       fileData:       base64,
+      uploadType:     'revisi',
+      kategoriDok:    revisiKategori,
     };
 
     await fetch(APPS_SCRIPT_URL, {
@@ -3958,9 +4520,9 @@ function renderPokjaStats() {
     grp.sort((a,b)=>(a.tanggal||'')<(b.tanggal||'')?-1:1)[grp.length-1]
   );
   document.getElementById('pokjaTotalDok').textContent=latestList.length;
-  document.getElementById('pokjaLulus').textContent=latestList.filter(d=>d.reviewStatus==='Lulus / Memenuhi Syarat').length;
+  document.getElementById('pokjaLulus').textContent=latestList.filter(d=>d.reviewStatus==='Memenuhi Syarat'||d.reviewStatus==='Lulus / Memenuhi Syarat').length;
   document.getElementById('pokjaTolak').textContent=latestList.filter(d=>d.reviewStatus==='Tidak Memenuhi Syarat').length;
-  document.getElementById('pokjaPending').textContent=latestList.filter(d=>!d.reviewStatus||d.reviewStatus==='Menunggu Review').length;
+  document.getElementById('pokjaPending').textContent=latestList.filter(d=>!d.reviewStatus||d.reviewStatus==='Menunggu Review'||d.reviewStatus==='Menunggu Evaluasi').length;
   document.getElementById('statPeserta').textContent=latestList.length||'–';
 }
 
@@ -3986,7 +4548,7 @@ function renderPokjaTable() {
   groups = groups.filter(grp => {
     const d = grp[grp.length-1].d;
     const matchQ=!q||(d.namaPerusahaan||'').toLowerCase().includes(q)||String(d.npwp||'').includes(q)||(d.jenisDok||'').toLowerCase().includes(q);
-    const matchS=!fStat||(d.reviewStatus||'Menunggu Review')===fStat;
+    const matchS=!fStat||(d.reviewStatus||'Menunggu Evaluasi')===fStat;
     return matchQ&&matchS;
   });
   groups.sort((ga,gb)=>{
@@ -3997,7 +4559,16 @@ function renderPokjaTable() {
 
   if(!groups.length){tbody.innerHTML=`<tr><td colspan="12" style="text-align:center;color:var(--gray-400);padding:28px;">Tidak ada data.</td></tr>`;renderPokjaStats();return;}
 
-  const statusLabel={'Menunggu Review':'<span class="status-badge status-pending">⏳ Menunggu Evaluasi</span>','Lulus / Memenuhi Syarat':'<span class="status-badge status-lulus">✅ Lulus</span>','Tidak Memenuhi Syarat':'<span class="status-badge status-tidak_lulus">❌ Tidak Memenuhi</span>','Perlu Revisi / Klarifikasi':'<span class="status-badge status-revisi">🔄 Revisi</span>'};
+  const statusLabel={
+    'Menunggu Evaluasi':'<span class="status-badge status-pending">⏳ Menunggu Evaluasi</span>',
+    'Menunggu Review':'<span class="status-badge status-pending">⏳ Menunggu Evaluasi</span>',
+    'Memenuhi Syarat':'<span class="status-badge status-lulus">✅ Memenuhi Syarat</span>',
+    'Lulus / Memenuhi Syarat':'<span class="status-badge status-lulus">✅ Memenuhi Syarat</span>',
+    'Tidak Memenuhi Syarat':'<span class="status-badge status-tidak_lulus">❌ Tidak Memenuhi Syarat</span>',
+    'Revisi / Belum Lengkap':'<span class="status-badge status-revisi">🔄 Revisi / Belum Lengkap</span>',
+    'Perlu Revisi / Klarifikasi':'<span class="status-badge status-revisi">🔄 Revisi / Belum Lengkap</span>',
+    'Klarifikasi / Pembuktian Kualifikasi':'<span class="status-badge status-klarifikasi" style="background:#EDE7F6;color:#4A148C;border:1px solid #CE93D8;">🔍 Klarifikasi / Pembuktian</span>'
+  };
 
   let rowNum=0;
   tbody.innerHTML=groups.map(grp=>{
@@ -4009,18 +4580,25 @@ function renderPokjaTable() {
 
     const tgl=d.tanggal?new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
     const fileLink=d.fileLink||'';
-    // revisiLinks[0]=Revisi 1, [1]=Revisi 2, dst (lama→baru)
-    const revLinks = Array.isArray(d.revisiLinks) ? d.revisiLinks.filter(l => l && l.startsWith('http')) : [];
+    // revisiLinks — kini berupa objek {namaFile, link} atau string lama
+    const revLinksRaw2 = Array.isArray(d.revisiLinks) ? d.revisiLinks : [];
+    const revLinks = revLinksRaw2.filter(l => {
+      if (!l) return false;
+      if (typeof l === 'string') return l.startsWith('http');
+      return l.link && l.link.startsWith('http');
+    });
+    const getRevUrl2  = (l) => (typeof l === 'string') ? l : (l.link || '');
+    const getRevNama2 = (l) => (typeof l === 'string') ? '' : (l.namaFile || '');
 
     // Dok. TERBARU = revisi terakhir jika ada, jika tidak = upload awal (fileLink)
-    const latestUrl = revLinks.length ? revLinks[revLinks.length - 1] : fileLink;
+    const latestUrl = revLinks.length ? getRevUrl2(revLinks[revLinks.length - 1]) : fileLink;
     // Dok. SEBELUMNYA: hanya tampil jika ada revisi.
     // Isi: upload awal + revisi ke-1 s/d ke-(n-1). Jika tidak ada revisi → kosong.
     const prevDocs = [];
     if (revLinks.length > 0) {
-      if (fileLink && fileLink.startsWith('http')) prevDocs.push({ label: 'Upload Awal', url: fileLink });
-      revLinks.slice(0, revLinks.length - 1).forEach((url, vi) => {
-        prevDocs.push({ label: 'Revisi ' + (vi + 1), url });
+      if (fileLink && fileLink.startsWith('http')) prevDocs.push({ label: 'Upload Awal', url: fileLink, namaFile: d.fileName||'' });
+      revLinks.slice(0, revLinks.length - 1).forEach((rv, vi) => {
+        prevDocs.push({ label: 'Revisi ' + (vi + 1), url: getRevUrl2(rv), namaFile: getRevNama2(rv) });
       });
     }
 
@@ -4045,9 +4623,9 @@ function renderPokjaTable() {
             <span>${prevDocs.length} dok. sebelumnya</span>
           </button>
           <div id="${panelId}" style="display:none;margin-top:6px;min-width:180px;">
-            ${prevDocs.map(({label, url}) => `
+            ${prevDocs.map(({label, url, namaFile}) => `
               <div style="background:#F8F9FA;border:1px solid var(--gray-200);border-left:3px solid var(--blue-200);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.75rem;">
-                <div style="color:var(--gray-500);margin-bottom:5px;font-weight:600;"><i class="fa-solid fa-clock-rotate-left"></i> ${label}</div>
+                <div style="color:var(--gray-500);margin-bottom:3px;font-weight:600;"><i class="fa-solid fa-clock-rotate-left"></i> ${label}${namaFile ? ` — <span style="font-weight:400;color:var(--blue-700);">${namaFile}</span>` : ''}</div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
                   <a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
                   <a href="${url}" download target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i></a>
@@ -4091,7 +4669,7 @@ function renderPokjaTable() {
       <td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td>
       <td>${fileCell}</td>
       <td>${prevCol}</td>
-      <td>${statusLabel[d.reviewStatus||'Menunggu Review']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
+      <td>${statusLabel[d.reviewStatus||'Menunggu Evaluasi']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
       <td>${catatanHtml}</td>
       <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Evaluasi</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
     </tr>`;
@@ -4149,7 +4727,7 @@ async function saveCatatanInline(idx) {
   const btn=document.querySelector(`#catatan-edit-${idx} button`);
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';}
   try {
-    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,reviewStatus:d.reviewStatus||'Menunggu Review',catatanPokja:newCatatan,reviewTanggal:new Date().toISOString(),reviewedBy:currentPokjaUser||'pokja'})});
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,reviewStatus:d.reviewStatus||'Menunggu Evaluasi',catatanPokja:newCatatan,reviewTanggal:new Date().toISOString(),reviewedBy:currentPokjaUser||'pokja'})});
   } catch(e){}
   d.catatanPokja=newCatatan;
   // Update tampilan tanpa full re-render
@@ -4166,8 +4744,8 @@ function kirimWaLangsung(idx) {
   const safeIdx = (currentReviewKey && idx === currentReviewIdx) ? findIdxByKey(currentReviewKey) : idx;
   const d=data[safeIdx >= 0 ? safeIdx : idx]; if(!d) return;
   const telp=String(d.telp||'').trim(); if(!telp){alert('Nomor telepon tidak tersedia.');return;}
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
-  const status=d.reviewStatus||'Menunggu Review';
+  const statusTxt={'Menunggu Evaluasi':'⏳ Menunggu Evaluasi','Memenuhi Syarat':'✅ Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Revisi / Belum Lengkap':'🔄 Revisi / Belum Lengkap','Klarifikasi / Pembuktian Kualifikasi':'🔍 Klarifikasi / Pembuktian Kualifikasi'};
+  const status=d.reviewStatus||'Menunggu Evaluasi';
   const namaPerusahaan=d.namaPerusahaan||'-'; const catatan=d.catatanPokja||'';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
   const tmpl=gcGet('notifTemplate',{});
@@ -4189,8 +4767,8 @@ function kirimEmailLangsung(idx) {
   const safeIdx = (currentReviewKey && idx === currentReviewIdx) ? findIdxByKey(currentReviewKey) : idx;
   const d=data[safeIdx >= 0 ? safeIdx : idx]; if(!d) return;
   const emailPenyedia=d.email||''; if(!emailPenyedia){alert('Email tidak tersedia.');return;}
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
-  const status=d.reviewStatus||'Menunggu Review';
+  const statusTxt={'Menunggu Evaluasi':'⏳ Menunggu Evaluasi','Memenuhi Syarat':'✅ Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Revisi / Belum Lengkap':'🔄 Revisi / Belum Lengkap','Klarifikasi / Pembuktian Kualifikasi':'🔍 Klarifikasi / Pembuktian Kualifikasi'};
+  const status=d.reviewStatus||'Menunggu Evaluasi';
   const namaPerusahaan=d.namaPerusahaan||'-'; const catatan=d.catatanPokja||'';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
   const tmpl=gcGet('notifTemplate',{});
@@ -4218,9 +4796,48 @@ function openReviewModal(idx) {
   const klarSection = klarLog.length ? `<div style="margin-top:10px;border-top:1px solid var(--blue-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:#856404;margin-bottom:6px;"><i class="fa-solid fa-comments"></i> Klarifikasi dari Penyedia (${klarLog.length})</div>${klarLog.map(k=>`<div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:#856404;">${k.pengirim||'Penyedia'}</strong></div><div style="color:var(--gray-800);">${k.pesan||''}</div></div>`).join('')}</div>` : '';
   document.getElementById('reviewModalInfo').innerHTML=`<strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br><span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br><span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} / ${d.email||'-'}</span>${d.fileName?`<br><span style="color:var(--blue-700);font-size:0.82rem;"><i class="fa-solid fa-file-arrow-up"></i> ${d.fileName}</span>`:''}${klarSection}`;
   const btnWrap=document.getElementById('reviewDocButtons');
-  if(d.fileLink&&d.fileLink.startsWith('http')){btnWrap.innerHTML=`<a href="${d.fileLink}" target="_blank" class="btn-view-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a><a href="${d.fileLink}" download target="_blank" class="btn-dl-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-download"></i> Download</a>`;}
-  else{btnWrap.innerHTML='';}
-  document.getElementById('reviewStatus').value=d.reviewStatus||'Menunggu Review';
+  // Tampilkan tombol per kategori dokumen
+  var docBtns = '';
+  var docCategories = [
+    { key:'linkAdm',   namaKey:'namaFileAdm',   label:'Administrasi', color:'#1B5E20', icon:'fa-file-alt' },
+    { key:'linkKual',  namaKey:'namaFileKual',  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal'    },
+    { key:'linkTek',   namaKey:'namaFileTek',   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
+    { key:'linkHarga', namaKey:'namaFileHarga', label:'Harga',        color:'#880E4F', icon:'fa-tag'      }
+  ];
+  docCategories.forEach(function(cat) {
+    var url = d[cat.key]||'';
+    var nm  = d[cat.namaKey]||'';
+    if (url && url.startsWith('http')) {
+      docBtns += `<a href="${url}" target="_blank" rel="noopener" title="${nm}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:${cat.color};color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;">` +
+        `<i class="fa-solid ${cat.icon}"></i> ${cat.label}${nm ? ' — '+nm : ''}</a>`;
+    }
+  });
+  // Link dokumen tambahan
+  if (Array.isArray(d.tambahanLinks)) {
+    d.tambahanLinks.forEach(function(url, ti) {
+      if (url && url.startsWith('http')) {
+        docBtns += `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:#4A148C;color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;">` +
+          `<i class="fa-solid fa-plus-circle"></i> Tambahan ${ti+1}</a>`;
+      }
+    });
+  }
+  // Link revisi — kini objek {namaFile, link} atau string
+  var revLinks2 = Array.isArray(d.revisiLinks) ? d.revisiLinks : [];
+  revLinks2.forEach(function(rv, ri) {
+    var url = (typeof rv === 'string') ? rv : (rv.link||'');
+    var nm  = (typeof rv === 'string') ? '' : (rv.namaFile||'');
+    if (url && url.startsWith('http')) {
+      docBtns += `<a href="${url}" target="_blank" rel="noopener" title="${nm}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:#C62828;color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;">` +
+        `<i class="fa-solid fa-rotate"></i> Revisi ${ri+1}${nm ? ' — '+nm : ''}</a>`;
+    }
+  });
+  // Fallback ke fileLink lama
+  if (!docBtns && d.fileLink && d.fileLink.startsWith('http')) {
+    docBtns = `<a href="${d.fileLink}" target="_blank" class="btn-view-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` +
+      `<a href="${d.fileLink}" download target="_blank" class="btn-dl-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-download"></i> Download</a>`;
+  }
+  btnWrap.innerHTML = docBtns ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">' + docBtns + '</div>' : '';
+  document.getElementById('reviewStatus').value=d.reviewStatus||'Menunggu Evaluasi';
   document.getElementById('reviewCatatan').value=d.catatanPokja||'';
   document.getElementById('reviewModalMsg').style.display='none';
   document.getElementById('reviewLoadingOverlay').style.display='none';
@@ -4308,7 +4925,7 @@ async function kirimNotifWa() {
   const telp = String(d.telp||'').trim();
   if (!telp) { alert('Nomor telepon penyedia tidak tersedia.'); return; }
 
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const statusTxt={'Menunggu Evaluasi':'⏳ Menunggu Evaluasi','Memenuhi Syarat':'✅ Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Revisi / Belum Lengkap':'🔄 Revisi / Belum Lengkap','Klarifikasi / Pembuktian Kualifikasi':'🔍 Klarifikasi / Pembuktian Kualifikasi'};
   const namaPerusahaan=d.namaPerusahaan||'-';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
   const tmpl=gcGet('notifTemplate',{});
@@ -4358,7 +4975,7 @@ async function kirimNotifEmail() {
   const emailPenyedia=d.email||'';
   if (!emailPenyedia) { alert('Alamat email penyedia tidak tersedia.'); return; }
 
-  const statusTxt={'Menunggu Review':'⏳ Menunggu Evaluasi','Lulus / Memenuhi Syarat':'✅ Lulus / Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Perlu Revisi / Klarifikasi':'🔄 Perlu Revisi'};
+  const statusTxt={'Menunggu Evaluasi':'⏳ Menunggu Evaluasi','Memenuhi Syarat':'✅ Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Revisi / Belum Lengkap':'🔄 Revisi / Belum Lengkap','Klarifikasi / Pembuktian Kualifikasi':'🔍 Klarifikasi / Pembuktian Kualifikasi'};
   const namaPerusahaan=d.namaPerusahaan||'-';
   const paketNama=(gcGet('judulConfig',{})).headerTitle||'Konsolidasi Jasa Tenaga Alih Daya 2026';
   const tmpl=gcGet('notifTemplate',{});
@@ -5109,7 +5726,7 @@ function renderPesertaList(list) {
   listWrap.innerHTML = list.map((d, i) => {
     const tgl = d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : '-';
     const statusInfo = {
-      'Lulus / Memenuhi Syarat': { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus' },
+      'Memenuhi Syarat': { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus' },
       'Tidak Memenuhi Syarat':   { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
       'Perlu Revisi / Klarifikasi': { cls:'sb-revisi', icon:'fa-rotate',     label:'Perlu Revisi' },
     };
@@ -7696,7 +8313,7 @@ const _negoStateCache = {};
 // ── Fetch semua state negosiasi dari server dan simpan ke cache ──────────
 async function loadAllNegoStates() {
   const all = getSubmissions();
-  const lulusList = all.filter(s => s.reviewStatus === 'Lulus / Memenuhi Syarat');
+  const lulusList = all.filter(s => s.reviewStatus === 'Memenuhi Syarat');
   const byKey = {};
   lulusList.forEach(s => {
     const k = s.npwp || s.namaPerusahaan;
@@ -7748,11 +8365,11 @@ function renderNegosiasiPage() {
   const isPenyedia = currentRole === 'penyedia';
   if (!isPokja && !isPenyedia) return;
 
-  let lulusList = all.filter(s => s.reviewStatus === 'Lulus / Memenuhi Syarat');
+  let lulusList = all.filter(s => s.reviewStatus === 'Memenuhi Syarat');
   if (isPenyedia && currentPenyedia) {
     lulusList = all.filter(s => {
       const milik = s.namaPerusahaan === currentPenyedia.nama || s.email === currentPenyedia.email || s.npwp === currentPenyedia.npwp;
-      return milik && (s.reviewStatus === 'Lulus / Memenuhi Syarat' || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0));
+      return milik && ((s.reviewStatus === 'Memenuhi Syarat' || s.reviewStatus === 'Lulus / Memenuhi Syarat') || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0));
     });
   }
   const byPerusahaan = {};
@@ -8751,7 +9368,7 @@ window.simpanNegoFinal = async function() {
         return n && (n.giliran === 'Selesai' ||
           (typeof n.status === 'string' && n.status.toLowerCase().includes('disetujui')));
       }).length;
-      const totalLulus = all.filter(s => s.reviewStatus === 'Lulus / Memenuhi Syarat').length;
+      const totalLulus = all.filter(s => s.reviewStatus === 'Memenuhi Syarat').length;
 
       if (selesaiCount > 0 && selesaiCount >= totalLulus && totalLulus > 0) {
         // [DITAMBAHKAN] Semua negosiasi selesai → tampilkan info menunggu negosiasi final
