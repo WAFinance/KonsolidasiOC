@@ -762,14 +762,46 @@
     </div>
     <!-- Body form -->
     <div style="padding:18px 20px;">
-      <div style="margin-bottom:16px;">
-        <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;">
-          <i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> Pilih File Revisi <span style="color:#C0392B;">*</span>
-        </label>
-        <input type="file" id="revisiFileDok" accept=".pdf,.zip,.rar"
-          style="width:100%;padding:8px 10px;border:1.5px dashed var(--blue-600);border-radius:8px;font-size:0.88rem;background:#F8FBFF;cursor:pointer;" />
-        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Format: PDF, ZIP, atau RAR — maks. 30 MB</div>
+      <div style="font-size:0.80rem;color:var(--gray-600);background:#FFF9E6;border:1px solid #F9A825;border-radius:7px;padding:8px 12px;margin-bottom:14px;">
+        <i class="fa-solid fa-circle-info" style="color:#856404;"></i> Upload revisi per kategori dokumen. <strong>Tidak wajib semua</strong> — isi hanya yang perlu direvisi.
       </div>
+      <!-- Kategori Administrasi -->
+      <div style="margin-bottom:14px;padding:12px 14px;border:1.5px solid #C8E6C9;border-radius:9px;background:#F9FFF9;">
+        <label style="font-size:0.83rem;font-weight:700;color:#1B5E20;display:block;margin-bottom:6px;">
+          <i class="fa-solid fa-shield-halved"></i> Dok. Administrasi <span style="font-weight:400;color:var(--gray-400);">(opsional)</span>
+        </label>
+        <input type="file" id="revisiFileAdm" accept=".pdf,.zip,.rar"
+          style="width:100%;padding:7px 10px;border:1.5px dashed #66BB6A;border-radius:7px;font-size:0.83rem;background:#F1FFF1;cursor:pointer;" />
+        <div id="revisiPrevAdm" style="font-size:0.74rem;color:#1B5E20;margin-top:4px;display:none;"></div>
+      </div>
+      <!-- Kategori Kualifikasi -->
+      <div style="margin-bottom:14px;padding:12px 14px;border:1.5px solid #BBDEFB;border-radius:9px;background:#F8FBFF;">
+        <label style="font-size:0.83rem;font-weight:700;color:#0D47A1;display:block;margin-bottom:6px;">
+          <i class="fa-solid fa-certificate"></i> Dok. Kualifikasi <span style="font-weight:400;color:var(--gray-400);">(opsional)</span>
+        </label>
+        <input type="file" id="revisiFileKual" accept=".pdf,.zip,.rar"
+          style="width:100%;padding:7px 10px;border:1.5px dashed #42A5F5;border-radius:7px;font-size:0.83rem;background:#F0F7FF;cursor:pointer;" />
+        <div id="revisiPrevKual" style="font-size:0.74rem;color:#0D47A1;margin-top:4px;display:none;"></div>
+      </div>
+      <!-- Kategori Teknis -->
+      <div style="margin-bottom:14px;padding:12px 14px;border:1.5px solid #FFE0B2;border-radius:9px;background:#FFFAF5;">
+        <label style="font-size:0.83rem;font-weight:700;color:#E65100;display:block;margin-bottom:6px;">
+          <i class="fa-solid fa-screwdriver-wrench"></i> Dok. Teknis <span style="font-weight:400;color:var(--gray-400);">(opsional)</span>
+        </label>
+        <input type="file" id="revisiFileTek" accept=".pdf,.zip,.rar"
+          style="width:100%;padding:7px 10px;border:1.5px dashed #FFA726;border-radius:7px;font-size:0.83rem;background:#FFF8F0;cursor:pointer;" />
+        <div id="revisiPrevTek" style="font-size:0.74rem;color:#E65100;margin-top:4px;display:none;"></div>
+      </div>
+      <!-- Kategori Harga -->
+      <div style="margin-bottom:14px;padding:12px 14px;border:1.5px solid #F8BBD9;border-radius:9px;background:#FFF8FB;">
+        <label style="font-size:0.83rem;font-weight:700;color:#880E4F;display:block;margin-bottom:6px;">
+          <i class="fa-solid fa-tags"></i> Dok. Harga <span style="font-weight:400;color:var(--gray-400);">(opsional)</span>
+        </label>
+        <input type="file" id="revisiFileHarga" accept=".pdf,.zip,.rar"
+          style="width:100%;padding:7px 10px;border:1.5px dashed #EC407A;border-radius:7px;font-size:0.83rem;background:#FFF0F7;cursor:pointer;" />
+        <div id="revisiPrevHarga" style="font-size:0.74rem;color:#880E4F;margin-top:4px;display:none;"></div>
+      </div>
+      <div style="font-size:0.74rem;color:var(--gray-400);margin-bottom:14px;"><i class="fa-solid fa-circle-info"></i> Format: PDF, ZIP, atau RAR — maks. 30 MB per file</div>
       <div style="margin-bottom:16px;">
         <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;">
           <i class="fa-solid fa-comment" style="color:var(--blue-600);"></i> Keterangan Revisi <span style="font-weight:400;color:var(--gray-400);">(opsional)</span>
@@ -778,6 +810,8 @@
           style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;"
           placeholder="Contoh: Perbaikan lampiran halaman 3, penambahan stempel perusahaan…"></textarea>
       </div>
+      <!-- input lama disembunyikan agar tidak rusak referensi JS lain -->
+      <input type="file" id="revisiFileDok" accept=".pdf,.zip,.rar" style="display:none;" />
       <!-- Progress bar -->
       <div id="revisiProgressWrap" style="display:none;margin-bottom:14px;">
         <div style="background:var(--gray-100);border-radius:6px;height:8px;overflow:hidden;margin-bottom:5px;">
@@ -1197,7 +1231,7 @@
             </div>
             <div style="overflow-x:auto;">
               <table class="pokja-table" id="pokjaTable">
-                <thead><tr><th>#</th><th>Tgl Upload</th><th>Perusahaan</th><th>NPWP</th><th>Jenis Dokumen</th><th>Kontak</th><th>Dok. Terbaru</th><th>Dok. Sebelumnya</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>#</th><th>Tgl Upload</th><th>Perusahaan</th><th>NPWP</th><th>Jenis Dokumen</th><th>Kontak</th><th>Dok. per Kategori</th><th>Revisi</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr></thead>
                 <tbody id="pokjaTableBody"><tr><td colspan="12" style="text-align:center;color:var(--gray-400);padding:28px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data…</td></tr></tbody>
               </table>
             </div>
@@ -1951,7 +1985,7 @@
 
 
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmovWhDQTQgXQEHoPTlH6mShnPxXquVARQz1c42I72w8S6Rw3rVcDOF4hfyHgveUBL/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9KXLf1J8LIJ5fAYFITe3Lwb5Vd90KikTTn82_YIpSFYyReAZhHOffCkYT3wd8KLEr/exec';
 const DRIVE_FOLDER_ID  = '1VU5sAih4H9g7zW42vme5Egp46kys9j1VtruFUa1TbPtGBR6a0eS8hDIehu6_6B-1WJUXL8fn';
 
 const DEFAULT_JADWAL = [
@@ -2645,20 +2679,16 @@ function renderStatusPenyedia() {
     const revTgl  = latest.reviewTanggal ? new Date(latest.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
     const grpId   = 'grp_' + btoa(encodeURIComponent(jenisDok)).replace(/[^a-z0-9]/gi,'').slice(0,12);
 
-    // revisiLinks[0]=Revisi 1, [1]=Revisi 2, dst (lama→baru) — kini berupa objek {namaFile, link}
+    // Revisi per kategori — pakai field terpisah dari backend
     const revLinksRaw = Array.isArray(latest.revisiLinks) ? latest.revisiLinks : [];
-    const revLinks = revLinksRaw.filter(l => {
-      if (!l) return false;
-      if (typeof l === 'string') return l.startsWith('http');
-      return l.link && l.link.startsWith('http');
-    });
+    const revAdm   = Array.isArray(latest.revisiAdm)   ? latest.revisiAdm.filter(l=>l&&l.link&&l.link.startsWith('http'))   : [];
+    const revKual  = Array.isArray(latest.revisiKual)  ? latest.revisiKual.filter(l=>l&&l.link&&l.link.startsWith('http'))  : [];
+    const revTek   = Array.isArray(latest.revisiTek)   ? latest.revisiTek.filter(l=>l&&l.link&&l.link.startsWith('http'))   : [];
+    const revHarga = Array.isArray(latest.revisiHarga) ? latest.revisiHarga.filter(l=>l&&l.link&&l.link.startsWith('http')) : [];
+    const revLinks = revAdm.concat(revKual).concat(revTek).concat(revHarga);
     const getRevUrl  = (l) => (typeof l === 'string') ? l : (l.link || '');
     const getRevNama = (l) => (typeof l === 'string') ? '' : (l.namaFile || '');
-    // Dok. TERBARU = revisi terakhir jika ada, jika tidak = upload awal
-    const latestRevObj = revLinks.length ? revLinks[revLinks.length - 1] : null;
-    const latestUrl  = latestRevObj ? getRevUrl(latestRevObj) : (latest.fileLink || '');
-    const hasLatest  = latestUrl && latestUrl.startsWith('http');
-    // Links & namaFile per kategori dokumen
+    // Links & namaFile per kategori dokumen utama
     const linkAdm      = (latest.linkAdm      || '').trim();
     const namaFileAdm  = (latest.namaFileAdm  || '').trim();
     const linkKual     = (latest.linkKual     || '').trim();
@@ -2668,35 +2698,60 @@ function renderStatusPenyedia() {
     const linkHarga    = (latest.linkHarga    || '').trim();
     const namaFileHarga= (latest.namaFileHarga|| '').trim();
     const tambahanLinks = Array.isArray(latest.tambahanLinks) ? latest.tambahanLinks.filter(l => l && l.startsWith('http')) : [];
-    // Total versi = 1 (upload awal) + jumlah revisi + tambahan
-    const totalVersi = 1 + revLinks.length + tambahanLinks.length;
+    // Dok. TERBARU = revisi terakhir jika ada, jika tidak = salah satu link kategori utama yang ada
+    const latestRevObj = revLinks.length ? revLinks[revLinks.length - 1] : null;
+    const latestUrl  = latestRevObj ? getRevUrl(latestRevObj) : (linkAdm || linkKual || linkTek || linkHarga || '');
+    const hasLatest  = latestUrl && latestUrl.startsWith('http');
+    // Badge hanya hitung revisi (bukan kategori utama) — lebih bermakna
+    const jumlahKatUtama = [linkAdm, linkKual, linkTek, linkHarga].filter(l => l && l.startsWith('http')).length;
+    const totalVersi = revLinks.length; // hanya revisi yang dihitung untuk badge
 
-    // Dok. SEBELUMNYA: hanya tampil jika ada revisi.
-    // Isi: upload awal + revisi ke-1 s/d ke-(n-1). Jika tidak ada revisi → tidak ditampilkan.
-    const prevDoksPenyedia = [];
-    if (revLinks.length > 0) {
-      if (latest.fileLink && latest.fileLink.startsWith('http')) prevDoksPenyedia.push({ label: 'Upload Awal', url: latest.fileLink, namaFile: latest.fileName || '' });
-      revLinks.slice(0, revLinks.length - 1).forEach((rv, vi) => {
-        prevDoksPenyedia.push({ label: 'Revisi ' + (vi + 1), url: getRevUrl(rv), namaFile: getRevNama(rv) });
+    // Riwayat upload: kumpulkan revisi per kategori + tambahan
+    const _katRevDef = [
+      { list: revAdm,   label:'Administrasi', color:'#1B5E20', icon:'fa-shield-halved'      },
+      { list: revKual,  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-certificate'         },
+      { list: revTek,   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench'  },
+      { list: revHarga, label:'Harga',        color:'#880E4F', icon:'fa-tags'                },
+    ];
+    // Flatten semua revisi jadi array {tipe, label, idx, url, namaFile, color, icon}
+    const _riwayatItems = [];
+    _katRevDef.forEach(k => {
+      k.list.forEach((rv, ri) => {
+        _riwayatItems.push({ tipe:'revisi', label: k.label, idx: ri+1, url: rv.link, namaFile: rv.namaFile||'', color: k.color, icon: k.icon });
       });
-    }
+    });
+    tambahanLinks.forEach((url, ti) => {
+      _riwayatItems.push({ tipe:'tambahan', label:'Tambahan', idx: ti+1, url, namaFile:'', color:'#4A148C', icon:'fa-plus-circle' });
+    });
 
-    // Render riwayat dokumen sebelumnya
-    const historyHtml = prevDoksPenyedia.length ? `
+    // Hitung badge riwayat
+    const _totalRev = _katRevDef.reduce((s,k)=>s+k.list.length,0);
+    const _totalTam = tambahanLinks.length;
+    const _badgeParts = [_totalRev>0?`${_totalRev} revisi`:'', _totalTam>0?`${_totalTam} tambahan`:''].filter(Boolean);
+    const _badgeTxt = _badgeParts.join(', ');
+
+    // Render riwayat dokumen — per kategori dengan label yang jelas
+    const historyHtml = _riwayatItems.length ? `
       <div style="margin-top:14px;border-top:1px dashed var(--gray-200);padding-top:12px;">
         <button id="histBtn-${grpId}" onclick="toggleHistoriUpload('${grpId}')"
-          style="display:inline-flex;align-items:center;gap:6px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-700);border-radius:7px;padding:6px 14px;font-size:0.80rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:background 0.15s;">
+          style="display:inline-flex;align-items:center;gap:6px;background:#F3F0FF;border:1px solid #CE93D8;color:#4A148C;border-radius:7px;padding:6px 14px;font-size:0.80rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:background 0.15s;">
           <i id="histIcon-${grpId}" class="fa-solid fa-clock-rotate-left"></i>
-          <span id="histLabel-${grpId}">Lihat Dokumen Sebelumnya (${prevDoksPenyedia.length})</span>
+          <span id="histLabel-${grpId}">Riwayat Upload (${_badgeTxt})</span>
         </button>
         <div id="histPanel-${grpId}" style="display:none;">
-          ${prevDoksPenyedia.map(({label, url, namaFile}) => `
-            <div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:8px;padding:12px 14px;margin-bottom:8px;opacity:0.85;">
-              <div style="font-size:0.80rem;font-weight:700;color:var(--gray-600);margin-bottom:4px;">
-                <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i> ${label}${namaFile ? ` &nbsp;·&nbsp; <span style="font-weight:400;color:var(--blue-700);">${namaFile}</span>` : ''}
+          ${_riwayatItems.map(rv => `
+            <div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid ${rv.color};border-radius:8px;padding:10px 14px;margin-bottom:6px;">
+              <div style="font-size:0.80rem;font-weight:700;color:${rv.color};margin-bottom:5px;">
+                <i class="fa-solid ${rv.icon}"></i>
+                ${rv.tipe === 'tambahan'
+                  ? `Tambahan ${rv.idx}${rv.namaFile ? ` &nbsp;·&nbsp; <span style="font-weight:400;color:var(--gray-600);">${rv.namaFile}</span>` : ''}`
+                  : `${rv.label} Rev ${rv.idx}${rv.namaFile ? ` &nbsp;·&nbsp; <span style="font-weight:400;color:var(--gray-600);">${rv.namaFile}</span>` : ''}`
+                }
               </div>
-              <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;margin-right:10px;"><i class="fa-solid fa-eye"></i> Lihat</a>
-              <a href="${url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--green-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i> Download</a>
+              <div style="display:flex;gap:8px;">
+                <a href="${rv.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:5px;padding:3px 10px;font-size:0.77rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
+                <a href="${rv.url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:5px;padding:3px 10px;font-size:0.77rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i> Download</a>
+              </div>
             </div>`).join('')}
         </div>
       </div>` : '';
@@ -2704,9 +2759,9 @@ function renderStatusPenyedia() {
     return `<div class="status-doc-card">
       <div class="status-doc-header">
         <div>
-          <div class="status-doc-title">${jenisDok}${totalVersi > 1 ? ` <span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 8px;font-weight:600;margin-left:6px;vertical-align:middle;"><i class="fa-solid fa-layer-group"></i> ${totalVersi} versi</span>` : ''}</div>
+          <div class="status-doc-title">${jenisDok}${totalVersi > 0 ? ` <span style="font-size:0.72rem;background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;border-radius:10px;padding:2px 8px;font-weight:600;margin-left:6px;vertical-align:middle;"><i class="fa-solid fa-rotate"></i> ${totalVersi} revisi</span>` : ''}</div>
           <div class="status-doc-meta"><i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i>
-            Terbaru: ${tgl}${latest.fileName ? ` &nbsp;·&nbsp; <i class="fa-solid fa-file" style="color:var(--blue-600);font-size:11px;"></i> ${latest.fileName}` : ''}
+            Terbaru: ${tgl}
           </div>
         </div>
         <span class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}" style="font-size:14px;"></i> ${sm.label}</span>
@@ -2726,14 +2781,41 @@ function renderStatusPenyedia() {
           const tamBtns = tambahanLinks.map((url,ti) =>
             `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#4A148C;color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid fa-plus-circle"></i> Tambahan ${ti+1}</a>`
           ).join('');
-          const revBtns = revLinks.filter(rv=>getRevUrl(rv).startsWith('http')).map((rv,ri) =>
-            `<a href="${getRevUrl(rv)}" target="_blank" rel="noopener" title="${getRevNama(rv)||''}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#C62828;color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid fa-rotate"></i> Revisi ${ri+1}${getRevNama(rv) ? ' — '+getRevNama(rv) : ''}</a>`
-          ).join('');
-          if (!catRows.length && !tamBtns && !revBtns) return '';
+          if (!catRows.length && !tamBtns && !revLinks.length) return '';
+          // Baris kategori utama (upload awal)
           const catBtns = catRows.map(c =>
             `<a href="${c.link}" target="_blank" rel="noopener" title="${c.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:${c.color};color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid ${c.icon}"></i> ${c.label}${c.namaFile ? ' — '+c.namaFile : ''}</a>`
           ).join('');
-          return `<div style="margin-top:10px;"><div style="font-size:0.75rem;font-weight:700;color:var(--gray-600);margin-bottom:5px;"><i class="fa-solid fa-folder-open" style="color:var(--blue-600);"></i> Link Dokumen:</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${catBtns}${tamBtns}${revBtns}</div></div>`;
+          // Baris revisi per kategori — pakai field revAdm/revKual/revTek/revHarga
+          const katRevDef = [
+            { list: revAdm,   label:'Administrasi', color:'#1B5E20', icon:'fa-shield-halved'       },
+            { list: revKual,  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-certificate'          },
+            { list: revTek,   label:'Teknis',        color:'#E65100', icon:'fa-screwdriver-wrench'  },
+            { list: revHarga, label:'Harga',         color:'#880E4F', icon:'fa-tags'                },
+          ].filter(k => k.list.length > 0);
+          let revSeksiHtml = '';
+          if (katRevDef.length > 0) {
+            const revRows = katRevDef.map(k => {
+              const btns = k.list.map((rv, ri) =>
+                `<a href="${rv.link}" target="_blank" rel="noopener" title="${rv.namaFile||''}"
+                  style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:${k.color}18;color:${k.color};border:1px solid ${k.color}44;font-size:0.74rem;font-weight:700;text-decoration:none;">
+                  <i class="fa-solid fa-rotate"></i> Rev ${ri+1}${rv.namaFile?' — '+rv.namaFile:''}
+                </a>`
+              ).join('');
+              return `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:4px;">
+                <span style="font-size:0.73rem;font-weight:700;color:${k.color};min-width:90px;white-space:nowrap;"><i class="fa-solid ${k.icon}"></i> ${k.label}:</span>${btns}
+              </div>`;
+            }).join('');
+            revSeksiHtml = `<div style="margin-top:8px;padding:8px 10px;background:#FFF8F2;border:1px solid #FFCC80;border-left:3px solid #E65100;border-radius:7px;">
+              <div style="font-size:0.73rem;font-weight:700;color:#E65100;margin-bottom:4px;"><i class="fa-solid fa-rotate"></i> Revisi Dokumen:</div>
+              ${revRows}
+            </div>`;
+          }
+          return `<div style="margin-top:10px;">
+            <div style="font-size:0.75rem;font-weight:700;color:var(--gray-600);margin-bottom:5px;"><i class="fa-solid fa-folder-open" style="color:var(--blue-600);"></i> Dokumen Upload Awal:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;">${catBtns}${tamBtns}</div>
+            ${revSeksiHtml}
+          </div>`;
         })()}
         ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
         ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog)}</div>` : ''}
@@ -2762,13 +2844,12 @@ function toggleHistoriUpload(grpId) {
   const icon  = document.getElementById('histIcon-' + grpId);
   const label = document.getElementById('histLabel-' + grpId);
   if (!panel) return;
+  // Simpan label asli agar bisa dikembalikan saat tutup
+  if (label && !label.dataset.orig) label.dataset.orig = label.textContent;
   const isHidden = panel.style.display === 'none';
   panel.style.display = isHidden ? 'block' : 'none';
-  if (icon)  icon.className  = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
-  if (label) {
-    const count = panel.querySelectorAll('[id^=""]').length || panel.children.length;
-    label.textContent = isHidden ? 'Sembunyikan Riwayat Upload' : `Lihat Riwayat Upload Sebelumnya (${count} versi)`;
-  }
+  if (icon)  icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
+  if (label) label.textContent = isHidden ? 'Sembunyikan' : (label.dataset.orig || 'Riwayat Upload');
 }
 
 // =================================================================
@@ -4109,6 +4190,7 @@ async function submitUploadKategori(tab) {
       alamat: payload.fAlamat, namaDirektur: payload.fNamaDirektur,
       telp: payload.fTelp, email: payload.fEmail,
       jenisDok: kategori + ' – ' + (payload.fJenisDok||''),
+      fJenisDok: payload.fJenisDok || '',
       keterangan: payload.fKeterangan || '',
       kategoriDok: kategori,
       uploadType: uploadType
@@ -4297,6 +4379,7 @@ async function submitSemuaDokumen() {
         alamat: payload.fAlamat, namaDirektur: payload.fNamaDirektur,
         telp: payload.fTelp, email: payload.fEmail,
         jenisDok: kategori + (jenisDokVal ? ' – ' + jenisDokVal : ''),
+        fJenisDok: jenisDokVal || payload.fJenisDok || '',
         keterangan: payload.fKeterangan || '',
         kategoriDok: kategori,
         uploadType: uploadType
@@ -4361,8 +4444,13 @@ function bukaModalRevisiByIdx(idx) {
 
 function bukaModalRevisi(docData) {
   _revisiDocData = docData;
-  // Reset state
-  document.getElementById('revisiFileDok').value = '';
+  // Reset semua input kategori
+  ['revisiFileAdm','revisiFileKual','revisiFileTek','revisiFileHarga','revisiFileDok'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['revisiPrevAdm','revisiPrevKual','revisiPrevTek','revisiPrevHarga'].forEach(id => {
+    const el = document.getElementById(id); if (el) { el.style.display='none'; el.textContent=''; }
+  });
   document.getElementById('revisiKeterangan').value = '';
   document.getElementById('revisiMsgSukses').style.display = 'none';
   document.getElementById('revisiMsgError').style.display = 'none';
@@ -4372,13 +4460,20 @@ function bukaModalRevisi(docData) {
 
   // Tampilkan info dokumen sebelumnya
   const tglLama = docData.tanggal ? new Date(docData.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
-  const hasFileLama = docData.fileLink && docData.fileLink.startsWith('http');
+  const _revKatDef = [
+    { url: (docData.linkAdm||'').trim(),   nm: docData.namaFileAdm||'',   label:'Administrasi', color:'#1B5E20' },
+    { url: (docData.linkKual||'').trim(),  nm: docData.namaFileKual||'',  label:'Kualifikasi',  color:'#0D47A1' },
+    { url: (docData.linkTek||'').trim(),   nm: docData.namaFileTek||'',   label:'Teknis',       color:'#E65100' },
+    { url: (docData.linkHarga||'').trim(), nm: docData.namaFileHarga||'', label:'Harga',        color:'#880E4F' },
+  ].filter(c => c.url && c.url.startsWith('http'));
+  const _revKatHtml = _revKatDef.map(c =>
+    `<br><a href="${c.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;color:${c.color};font-weight:600;text-decoration:none;margin-top:3px;"><i class="fa-solid fa-eye"></i> Lihat Dok. ${c.label}${c.nm ? ' — '+c.nm : ''}</a>`
+  ).join('');
   document.getElementById('revisiInfoLamaContent').innerHTML =
     `<span style="color:var(--gray-600);"><i class="fa-solid fa-building" style="color:var(--blue-600);"></i> <strong>${docData.namaPerusahaan||'-'}</strong></span><br>` +
     `<span style="color:var(--gray-600);"><i class="fa-solid fa-tag" style="color:var(--blue-600);"></i> ${docData.jenisDok||'-'}</span><br>` +
     `<span style="color:var(--gray-400);font-size:0.78rem;"><i class="fa-solid fa-clock"></i> Upload terakhir: ${tglLama}</span>` +
-    (docData.fileName ? `<br><span style="color:var(--blue-800);font-size:0.78rem;"><i class="fa-solid fa-file"></i> ${docData.fileName}</span>` : '') +
-    (hasFileLama ? `<br><a href="${docData.fileLink}" target="_blank" rel="noopener" style="font-size:0.78rem;color:var(--blue-700);font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat dokumen lama</a>` : '');
+    _revKatHtml;
 
   document.getElementById('revisiModalSubtitle').textContent = `Revisi untuk: ${docData.jenisDok||'Dokumen Pengajuan'}`;
   document.getElementById('modalRevisiCepat').style.display = 'flex';
@@ -4391,14 +4486,35 @@ function tutupModalRevisi() {
 
 async function submitRevisiCepat() {
   if (!_revisiDocData || !currentPenyedia) return;
-  const fileInput = document.getElementById('revisiFileDok');
-  const file = fileInput.files[0];
   const keterangan = document.getElementById('revisiKeterangan').value.trim();
   const errEl = document.getElementById('revisiMsgError');
   errEl.style.display = 'none';
 
-  if (!file) { errEl.textContent = '❌ Harap pilih file dokumen revisi.'; errEl.style.display = 'block'; return; }
-  if (file.size > 30*1024*1024) { errEl.textContent = '❌ Ukuran file melebihi 30 MB.'; errEl.style.display = 'block'; return; }
+  // Kumpulkan file yang diisi per kategori
+  const kategoriDef = [
+    { id:'revisiFileAdm',   kat:'Dokumen Administrasi', label:'Administrasi' },
+    { id:'revisiFileKual',  kat:'Dokumen Kualifikasi',  label:'Kualifikasi'  },
+    { id:'revisiFileTek',   kat:'Dokumen Teknis',        label:'Teknis'       },
+    { id:'revisiFileHarga', kat:'Dokumen Harga',         label:'Harga'        },
+  ];
+  const filesToUpload = [];
+  for (const def of kategoriDef) {
+    const el = document.getElementById(def.id);
+    if (el && el.files[0]) filesToUpload.push({ file: el.files[0], ...def });
+  }
+
+  if (filesToUpload.length === 0) {
+    errEl.textContent = '❌ Harap pilih minimal satu file revisi.';
+    errEl.style.display = 'block';
+    return;
+  }
+  for (const item of filesToUpload) {
+    if (item.file.size > 30*1024*1024) {
+      errEl.textContent = `❌ File ${item.label} melebihi 30 MB.`;
+      errEl.style.display = 'block';
+      return;
+    }
+  }
 
   const btn = document.getElementById('btnKirimRevisi');
   btn.disabled = true;
@@ -4409,62 +4525,60 @@ async function submitRevisiCepat() {
   const progressText = document.getElementById('revisiProgressText');
   progressWrap.style.display = 'block';
   progressBar.style.width = '5%';
-  progressText.textContent = 'Membaca file…';
+
+  const d = _revisiDocData;
+  const totalFiles = filesToUpload.length;
 
   try {
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = () => reject(new Error('Gagal membaca file'));
-      reader.readAsDataURL(file);
-    });
-    progressBar.style.width = '40%';
-    progressText.textContent = 'Menyiapkan data…';
-    await new Promise(r => setTimeout(r, 300));
-    progressBar.style.width = '65%';
-    progressText.textContent = 'Mengunggah ke Google Drive…';
+    for (let i = 0; i < totalFiles; i++) {
+      const item = filesToUpload[i];
+      progressText.textContent = `Membaca file ${item.label}… (${i+1}/${totalFiles})`;
+      progressBar.style.width = Math.round(10 + (i / totalFiles) * 55) + '%';
 
-    // Kirim ke Apps Script — uploadType='revisi' agar backend tulis ke kolom Revisi per-kategori
-    const d = _revisiDocData;
-    // Tentukan kategoriDok dari jenisDok atau field kategori yang tersimpan di docData
-    const revisiKategori = d.kategoriDok || (
-      (d.jenisDok||'').includes('Administrasi') ? 'Dokumen Administrasi' :
-      (d.jenisDok||'').includes('Kualifikasi')  ? 'Dokumen Kualifikasi'  :
-      (d.jenisDok||'').includes('Teknis')        ? 'Dokumen Teknis'       :
-      (d.jenisDok||'').includes('Harga')         ? 'Dokumen Harga'        : ''
-    );
-    const revisiPayload = {
-      namaPerusahaan: d.namaPerusahaan || currentPenyedia.nama,
-      npwp:           d.npwp || '',
-      namaDirektur:   d.namaDirektur || '',
-      alamat:         d.alamat || '',
-      telp:           d.telp || '',
-      email:          d.email || currentPenyedia.email,
-      jenisDok:       d.jenisDok || '',
-      keterangan:     keterangan || ('Revisi dokumen – ' + new Date().toLocaleDateString('id-ID')),
-      fileName:       file.name,
-      fileType:       file.type,
-      fileData:       base64,
-      uploadType:     'revisi',
-      kategoriDok:    revisiKategori,
-    };
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = () => reject(new Error('Gagal membaca file ' + item.label));
+        reader.readAsDataURL(item.file);
+      });
 
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(revisiPayload)
-    });
+      progressText.textContent = `Mengunggah Dok. ${item.label}… (${i+1}/${totalFiles})`;
+      progressBar.style.width = Math.round(30 + (i / totalFiles) * 60) + '%';
+
+      const revisiPayload = {
+        namaPerusahaan: d.namaPerusahaan || currentPenyedia.nama,
+        npwp:           d.npwp || '',
+        namaDirektur:   d.namaDirektur || '',
+        alamat:         d.alamat || '',
+        telp:           d.telp || '',
+        email:          d.email || currentPenyedia.email,
+        jenisDok:       d.jenisDok || '',
+        keterangan:     keterangan || ('Revisi dokumen – ' + new Date().toLocaleDateString('id-ID')),
+        fileName:       item.file.name,
+        fileType:       item.file.type,
+        fileData:       base64,
+        uploadType:     'revisi',
+        kategoriDok:    item.kat,
+      };
+
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(revisiPayload)
+      });
+
+      await new Promise(r => setTimeout(r, 300));
+    }
 
     progressBar.style.width = '100%';
     progressBar.style.background = 'linear-gradient(90deg,#3B6D11,#56ab2f)';
-    progressText.textContent = '✓ Berhasil dikirim!';
+    progressText.textContent = `✓ ${totalFiles} file berhasil dikirim!`;
     document.getElementById('revisiMsgSukses').style.display = 'block';
 
-    // Tutup modal dan refresh status setelah 1 detik, lalu tampilkan toast
     setTimeout(() => {
       tutupModalRevisi();
-      showToast('Revisi Dokumen Berhasil Disimpan', 'Pokja akan mereview dokumen terbaru Anda.', 'success', 4000);
+      showToast('Revisi Dokumen Berhasil Disimpan', `${totalFiles} kategori dokumen berhasil dikirim.`, 'success', 4000);
       loadStatusPenyedia();
     }, 1000);
 
@@ -4579,69 +4693,102 @@ function renderPokjaTable() {
     const origIdx = latest.origIdx;
 
     const tgl=d.tanggal?new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
-    const fileLink=d.fileLink||'';
-    // revisiLinks — kini berupa objek {namaFile, link} atau string lama
-    const revLinksRaw2 = Array.isArray(d.revisiLinks) ? d.revisiLinks : [];
-    const revLinks = revLinksRaw2.filter(l => {
-      if (!l) return false;
-      if (typeof l === 'string') return l.startsWith('http');
-      return l.link && l.link.startsWith('http');
-    });
-    const getRevUrl2  = (l) => (typeof l === 'string') ? l : (l.link || '');
-    const getRevNama2 = (l) => (typeof l === 'string') ? '' : (l.namaFile || '');
 
-    // Dok. TERBARU = revisi terakhir jika ada, jika tidak = upload awal (fileLink)
-    const latestUrl = revLinks.length ? getRevUrl2(revLinks[revLinks.length - 1]) : fileLink;
-    // Dok. SEBELUMNYA: hanya tampil jika ada revisi.
-    // Isi: upload awal + revisi ke-1 s/d ke-(n-1). Jika tidak ada revisi → kosong.
-    const prevDocs = [];
-    if (revLinks.length > 0) {
-      if (fileLink && fileLink.startsWith('http')) prevDocs.push({ label: 'Upload Awal', url: fileLink, namaFile: d.fileName||'' });
-      revLinks.slice(0, revLinks.length - 1).forEach((rv, vi) => {
-        prevDocs.push({ label: 'Revisi ' + (vi + 1), url: getRevUrl2(rv), namaFile: getRevNama2(rv) });
-      });
+    // Link kategori utama
+    const _lAdm   = (d.linkAdm   || '').trim();
+    const _lKual  = (d.linkKual  || '').trim();
+    const _lTek   = (d.linkTek   || '').trim();
+    const _lHarga = (d.linkHarga || '').trim();
+
+    // Revisi per kategori (array {namaFile, link})
+    const _revAdm   = Array.isArray(d.revisiAdm)   ? d.revisiAdm.filter(r=>r&&r.link&&r.link.startsWith('http'))   : [];
+    const _revKual  = Array.isArray(d.revisiKual)  ? d.revisiKual.filter(r=>r&&r.link&&r.link.startsWith('http'))  : [];
+    const _revTek   = Array.isArray(d.revisiTek)   ? d.revisiTek.filter(r=>r&&r.link&&r.link.startsWith('http'))   : [];
+    const _revHarga = Array.isArray(d.revisiHarga) ? d.revisiHarga.filter(r=>r&&r.link&&r.link.startsWith('http')) : [];
+    const totalRevisi = _revAdm.length + _revKual.length + _revTek.length + _revHarga.length;
+
+    // Definisi kategori
+    const _katMeta = [
+      { link: _lAdm,   revs: _revAdm,   nm: d.namaFileAdm||'',   label:'Adm',   labelFull:'Administrasi', color:'#1B5E20', icon:'fa-file-alt' },
+      { link: _lKual,  revs: _revKual,  nm: d.namaFileKual||'',  label:'Kual',  labelFull:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal'    },
+      { link: _lTek,   revs: _revTek,   nm: d.namaFileTek||'',   label:'Tek',   labelFull:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
+      { link: _lHarga, revs: _revHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', icon:'fa-tag'      },
+    ];
+
+    // ── fileCell: kolom "Dok. per Kategori" — HANYA upload AWAL (linkAdm/Kual/Tek/Harga) ──
+    let fileCell = '<span style="color:var(--gray-400);">-</span>';
+    const _catAwal = _katMeta.filter(c => c.link && c.link.startsWith('http'));
+    if (_catAwal.length) {
+      fileCell = `<div style="display:flex;flex-direction:column;gap:3px;">${_catAwal.map(c =>
+        `<a href="${c.link}" target="_blank" rel="noopener" title="${c.nm}"
+          style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;background:${c.color};color:#fff;font-size:0.73rem;font-weight:700;text-decoration:none;">
+          <i class="fa-solid ${c.icon}"></i> ${c.label}${c.nm?' — '+c.nm.substring(0,20)+(c.nm.length>20?'…':''):''}
+        </a>`
+      ).join('')}</div>`;
     }
 
-    let fileCell='<span style="color:var(--gray-400);">-</span>';
-    if(latestUrl&&latestUrl.startsWith('http')){
-      fileCell=`<div style="display:flex;flex-direction:column;gap:3px;">
-        <a href="${latestUrl}" target="_blank" class="btn-view-doc"><i class="fa-solid fa-eye"></i> Lihat</a>
-        <a href="${latestUrl}" download target="_blank" class="btn-dl-doc"><i class="fa-solid fa-download"></i> Download</a>
-      </div>`;
-    } else if(d.fileName){fileCell=`<span style="font-size:0.78rem;color:var(--blue-800);"><i class="fa-solid fa-file-arrow-up" style="color:var(--blue-600);"></i> ${d.fileName}</span>`;}
+    // ── revisiCol: kolom "Revisi" — revisi per kategori + tambahan, dengan tombol Riwayat ──
+    const _tambahanLinks = Array.isArray(d.tambahanLinks) ? d.tambahanLinks.filter(l=>l&&l.startsWith('http')) : [];
+    const totalRevisi2 = totalRevisi + _tambahanLinks.length;
+    let revisiCol = '';
+    if (totalRevisi2 > 0) {
+      const revPanelId = 'revPanel-' + origIdx;
+      const revBtnId   = 'revBtn-' + origIdx;
 
-    // ── Kolom "Dok. Sebelumnya" ──
-    let prevCol = '';
-    if(prevDocs.length){
-      const btnId   = 'phBtn-' + origIdx;
-      const panelId = 'phPanel-' + origIdx;
-      prevCol = `
+      // Baris revisi per kategori
+      const revRows = _katMeta.flatMap(c => c.revs.map((rv, ri) => ({
+        tipe: 'revisi', label: c.labelFull, idx: ri+1,
+        url: rv.link, nm: rv.namaFile||'', color: c.color, icon: c.icon
+      })));
+      // Baris tambahan
+      const tamRows = _tambahanLinks.map((url, ti) => ({
+        tipe: 'tambahan', label: 'Tambahan', idx: ti+1,
+        url: url, nm: '', color: '#4A148C', icon: 'fa-plus-circle'
+      }));
+      const allRows = revRows.concat(tamRows);
+
+      const badgeTxt = [
+        totalRevisi > 0 ? `${totalRevisi} revisi` : '',
+        _tambahanLinks.length > 0 ? `${_tambahanLinks.length} tambahan` : ''
+      ].filter(Boolean).join(', ');
+
+      revisiCol = `
         <div>
-          <button id="${btnId}" onclick="togglePokjaHistori(${origIdx})"
-            style="display:inline-flex;align-items:center;gap:5px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-600);border-radius:5px;padding:3px 9px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:background 0.15s;white-space:nowrap;">
-            <i id="phIcon-${origIdx}" class="fa-solid fa-clock-rotate-left"></i>
-            <span>${prevDocs.length} dok. sebelumnya</span>
+          <button id="${revBtnId}" onclick="toggleRevisiPanel(${origIdx})"
+            style="display:inline-flex;align-items:center;gap:5px;background:#F3F0FF;border:1px solid #CE93D8;color:#4A148C;border-radius:5px;padding:4px 10px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+            <i id="revIcon-${origIdx}" class="fa-solid fa-clock-rotate-left"></i>
+            <span id="revLabel-${origIdx}">Riwayat (${badgeTxt})</span>
           </button>
-          <div id="${panelId}" style="display:none;margin-top:6px;min-width:180px;">
-            ${prevDocs.map(({label, url, namaFile}) => `
-              <div style="background:#F8F9FA;border:1px solid var(--gray-200);border-left:3px solid var(--blue-200);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.75rem;">
-                <div style="color:var(--gray-500);margin-bottom:3px;font-weight:600;"><i class="fa-solid fa-clock-rotate-left"></i> ${label}${namaFile ? ` — <span style="font-weight:400;color:var(--blue-700);">${namaFile}</span>` : ''}</div>
-                <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
-                  <a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
-                  <a href="${url}" download target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i></a>
+          <div id="${revPanelId}" style="display:none;margin-top:6px;min-width:210px;">
+            ${allRows.map(rv => `
+              <div style="background:#FAFAFA;border:1px solid #E0E0E0;border-left:3px solid ${rv.color};border-radius:6px;padding:6px 10px;margin-bottom:4px;font-size:0.75rem;">
+                <div style="color:${rv.color};margin-bottom:3px;font-weight:700;">
+                  <i class="fa-solid ${rv.icon}"></i>
+                  ${rv.tipe==='tambahan'
+                    ? `Tambahan ${rv.idx}${rv.nm?' <span style="font-weight:400;color:var(--gray-600);">— '+rv.nm+'</span>':''}`
+                    : `${rv.label} Rev ${rv.idx}${rv.nm?' <span style="font-weight:400;color:var(--gray-600);">— '+rv.nm+'</span>':''}`
+                  }
+                </div>
+                <div style="display:flex;gap:4px;">
+                  <a href="${rv.url}" target="_blank" rel="noopener"
+                    style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;">
+                    <i class="fa-solid fa-eye"></i> Lihat
+                  </a>
+                  <a href="${rv.url}" download target="_blank" rel="noopener"
+                    style="display:inline-flex;align-items:center;gap:3px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;">
+                    <i class="fa-solid fa-download"></i>
+                  </a>
                 </div>
               </div>`).join('')}
           </div>
         </div>`;
     } else {
-      prevCol = `<span style="color:var(--gray-400);font-size:0.78rem;">–</span>`;
+      revisiCol = `<span style="color:var(--gray-400);font-size:0.78rem;">–</span>`;
     }
 
-    // Label jumlah versi = 1 (upload awal) + jumlah revisi
-    const totalVersi = 1 + revLinks.length;
-
-    const versiLabel = totalVersi > 1
-      ? `<span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 7px;font-weight:600;margin-left:5px;vertical-align:middle;"><i class="fa-solid fa-layer-group"></i> ${totalVersi}</span>`
+    // Badge versi di kolom jenisDok — hanya hitung revisi (bukan kategori awal)
+    const versiLabel = totalRevisi2 > 0
+      ? `<span style="font-size:0.72rem;background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;border-radius:10px;padding:2px 7px;font-weight:600;margin-left:5px;vertical-align:middle;"><i class="fa-solid fa-rotate"></i> ${totalRevisi2}</span>`
       : '';
 
     const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
@@ -4668,7 +4815,7 @@ function renderPokjaTable() {
       <td style="max-width:180px;">${d.jenisDok||'-'}${versiLabel}</td>
       <td><span style="font-size:0.75rem;"><i class="fa-solid fa-phone" style="color:var(--blue-600);"></i> ${d.telp||'-'}<br><i class="fa-solid fa-envelope" style="color:var(--blue-600);"></i> ${d.email||'-'}</span></td>
       <td>${fileCell}</td>
-      <td>${prevCol}</td>
+      <td>${revisiCol}</td>
       <td>${statusLabel[d.reviewStatus||'Menunggu Evaluasi']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
       <td>${catatanHtml}</td>
       <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Evaluasi</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
@@ -4688,25 +4835,18 @@ function toggleKlarDetail(origIdx) {
   if (btn)  btn.innerHTML  = isHidden ? '<i class="fa-solid fa-chevron-up"></i> Sembunyikan' : '<i class="fa-solid fa-chevron-down"></i> Lihat';
 }
 
-function togglePokjaHistori(origIdx) {
-  const panel = document.getElementById('phPanel-' + origIdx);
-  const icon  = document.getElementById('phIcon-' + origIdx);
-  const btn   = document.getElementById('phBtn-' + origIdx);
+function toggleRevisiPanel(origIdx) {
+  const panel    = document.getElementById('revPanel-' + origIdx);
+  const icon     = document.getElementById('revIcon-' + origIdx);
+  const labelEl  = document.getElementById('revLabel-' + origIdx);
+  const origLabel = labelEl ? labelEl.dataset.orig || labelEl.textContent : '';
   if (!panel) return;
+  // Simpan label asli sekali
+  if (labelEl && !labelEl.dataset.orig) labelEl.dataset.orig = labelEl.textContent;
   const isHidden = panel.style.display === 'none';
   panel.style.display = isHidden ? 'block' : 'none';
   if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
-  if (btn) {
-    const countEl = btn.querySelector('span');
-    if (countEl) {
-      if (isHidden) {
-        countEl.textContent = 'Sembunyikan';
-      } else {
-        const count = panel.children.length;
-        countEl.textContent = count + ' dok. sebelumnya';
-      }
-    }
-  }
+  if (labelEl) labelEl.textContent = isHidden ? 'Sembunyikan' : labelEl.dataset.orig;
 }
 
 function startEditCatatan(idx) {
@@ -4794,23 +4934,30 @@ function openReviewModal(idx) {
   currentReviewKey=makeSubKey(d); // [FIX] simpan key stabil
   const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
   const klarSection = klarLog.length ? `<div style="margin-top:10px;border-top:1px solid var(--blue-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:#856404;margin-bottom:6px;"><i class="fa-solid fa-comments"></i> Klarifikasi dari Penyedia (${klarLog.length})</div>${klarLog.map(k=>`<div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:#856404;">${k.pengirim||'Penyedia'}</strong></div><div style="color:var(--gray-800);">${k.pesan||''}</div></div>`).join('')}</div>` : '';
-  document.getElementById('reviewModalInfo').innerHTML=`<strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br><span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br><span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} / ${d.email||'-'}</span>${d.fileName?`<br><span style="color:var(--blue-700);font-size:0.82rem;"><i class="fa-solid fa-file-arrow-up"></i> ${d.fileName}</span>`:''}${klarSection}`;
+  document.getElementById('reviewModalInfo').innerHTML=`<strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br><span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br><span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} / ${d.email||'-'}</span>${klarSection}`;
   const btnWrap=document.getElementById('reviewDocButtons');
-  // Tampilkan tombol per kategori dokumen
+  // Tampilkan tombol per kategori dokumen + revisi per kategori
   var docBtns = '';
   var docCategories = [
-    { key:'linkAdm',   namaKey:'namaFileAdm',   label:'Administrasi', color:'#1B5E20', icon:'fa-file-alt' },
-    { key:'linkKual',  namaKey:'namaFileKual',  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal'    },
-    { key:'linkTek',   namaKey:'namaFileTek',   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
-    { key:'linkHarga', namaKey:'namaFileHarga', label:'Harga',        color:'#880E4F', icon:'fa-tag'      }
+    { key:'linkAdm',   namaKey:'namaFileAdm',   revKey:'revisiAdm',   label:'Administrasi', color:'#1B5E20', icon:'fa-file-alt' },
+    { key:'linkKual',  namaKey:'namaFileKual',  revKey:'revisiKual',  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal'    },
+    { key:'linkTek',   namaKey:'namaFileTek',   revKey:'revisiTek',   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
+    { key:'linkHarga', namaKey:'namaFileHarga', revKey:'revisiHarga', label:'Harga',        color:'#880E4F', icon:'fa-tag'      }
   ];
   docCategories.forEach(function(cat) {
-    var url = d[cat.key]||'';
-    var nm  = d[cat.namaKey]||'';
+    var url  = d[cat.key]||'';
+    var nm   = d[cat.namaKey]||'';
+    var revs = Array.isArray(d[cat.revKey]) ? d[cat.revKey].filter(function(r){return r&&r.link&&r.link.startsWith('http');}) : [];
+    // Tombol upload utama
     if (url && url.startsWith('http')) {
       docBtns += `<a href="${url}" target="_blank" rel="noopener" title="${nm}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:${cat.color};color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;">` +
         `<i class="fa-solid ${cat.icon}"></i> ${cat.label}${nm ? ' — '+nm : ''}</a>`;
     }
+    // Tombol revisi per slot
+    revs.forEach(function(rv, ri) {
+      docBtns += `<a href="${rv.link}" target="_blank" rel="noopener" title="${rv.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:${cat.color};color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;opacity:0.85;border:2px dashed rgba(255,255,255,0.6);">` +
+        `<i class="fa-solid fa-rotate"></i> ${cat.label} Rev ${ri+1}${rv.namaFile ? ' — '+rv.namaFile : ''}</a>`;
+    });
   });
   // Link dokumen tambahan
   if (Array.isArray(d.tambahanLinks)) {
@@ -4820,21 +4967,6 @@ function openReviewModal(idx) {
           `<i class="fa-solid fa-plus-circle"></i> Tambahan ${ti+1}</a>`;
       }
     });
-  }
-  // Link revisi — kini objek {namaFile, link} atau string
-  var revLinks2 = Array.isArray(d.revisiLinks) ? d.revisiLinks : [];
-  revLinks2.forEach(function(rv, ri) {
-    var url = (typeof rv === 'string') ? rv : (rv.link||'');
-    var nm  = (typeof rv === 'string') ? '' : (rv.namaFile||'');
-    if (url && url.startsWith('http')) {
-      docBtns += `<a href="${url}" target="_blank" rel="noopener" title="${nm}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:#C62828;color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;">` +
-        `<i class="fa-solid fa-rotate"></i> Revisi ${ri+1}${nm ? ' — '+nm : ''}</a>`;
-    }
-  });
-  // Fallback ke fileLink lama
-  if (!docBtns && d.fileLink && d.fileLink.startsWith('http')) {
-    docBtns = `<a href="${d.fileLink}" target="_blank" class="btn-view-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-eye"></i> Lihat Dokumen</a>` +
-      `<a href="${d.fileLink}" download target="_blank" class="btn-dl-doc" style="font-size:0.82rem;padding:7px 14px;"><i class="fa-solid fa-download"></i> Download</a>`;
   }
   btnWrap.innerHTML = docBtns ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">' + docBtns + '</div>' : '';
   document.getElementById('reviewStatus').value=d.reviewStatus||'Menunggu Evaluasi';
@@ -9574,49 +9706,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 500);
 });
-</script>
-
-
-<script>
-// ===== FIX FINAL UPLOAD =====
-let namaFileAdm='', linkAdm='';
-let namaFileKual='', linkKual='';
-let namaFileTek='', linkTek='';
-let namaFileHarga='', linkHarga='';
-
-// contoh hook (sesuaikan dengan fungsi upload kamu)
-async function setUploadResult(type, fileName, url){
-  if(type==='adm'){ namaFileAdm=fileName; linkAdm=url; }
-  if(type==='kual'){ namaFileKual=fileName; linkKual=url; }
-  if(type==='tek'){ namaFileTek=fileName; linkTek=url; }
-  if(type==='harga'){ namaFileHarga=fileName; linkHarga=url; }
-  console.log('UPLOAD:', type, url);
-}
-
-// override submit (pastikan dipanggil dari tombol kamu)
-async function submitDataFixed(){
-  const payload = {
-    namaPerusahaan: document.getElementById('nama')?.value || '',
-    npwp: document.getElementById('npwp')?.value || '',
-    namaDirektur: document.getElementById('direktur')?.value || '',
-    alamat: document.getElementById('alamat')?.value || '',
-    telp: document.getElementById('telp')?.value || '',
-    email: document.getElementById('email')?.value || '',
-    jenisDok: document.getElementById('jenis')?.value || '',
-
-    namaFileAdm, linkAdm,
-    namaFileKual, linkKual,
-    namaFileTek, linkTek,
-    namaFileHarga, linkHarga
-  };
-
-  console.log('PAYLOAD FINAL:', payload);
-
-  await fetch(URL_WEBAPP, {
-    method:'POST',
-    body: JSON.stringify(payload)
-  });
-}
 </script>
 
 </body>
