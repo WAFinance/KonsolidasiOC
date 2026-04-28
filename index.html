@@ -742,6 +742,16 @@
     background:var(--blue-50); color:var(--blue-700);
     border-bottom:3px solid var(--blue-600);
   }
+  /* Badge angka di tab pengumuman */
+  .ptab-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:18px; height:18px;
+    background:#C0392B; color:#fff;
+    font-size:0.62rem; font-weight:800;
+    border-radius:9px; padding:0 5px;
+    margin-left:6px; vertical-align:middle;
+    flex-shrink:0;
+  }
   .pengumuman-panel { animation:fadeIn 0.18s ease; }
   .pengumuman-empty-state {
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -5534,13 +5544,17 @@ function renderPengumumanPublicUI() {
   const wrap = document.getElementById('pengumuman-panels-wrap');
   if (!nav || !wrap) return;
 
-  // Build tab buttons
-  nav.innerHTML = tabs.map((tab, i) =>
-    `<button class="pengumuman-tab${i===0?' pengumuman-tab-active':''}" id="ptab-${tab.id}"
+  // Build tab buttons — badge muncul jika tab punya konten
+  nav.innerHTML = tabs.map((tab, i) => {
+    const key     = 'pengumuman_' + tab.id.replace(/-/g,'_');
+    const konten  = gcGet(key, '');
+    const adaIsi  = konten && konten.trim().length > 0;
+    const badge   = adaIsi ? `<span class="ptab-badge">!</span>` : '';
+    return `<button class="pengumuman-tab${i===0?' pengumuman-tab-active':''}" id="ptab-${tab.id}"
        onclick="switchPengumumanTab('${tab.id}',this)">
-      <i class="fa-solid ${tab.icon}" style="color:${tab.color};"></i> ${tab.label}
-    </button>`
-  ).join('');
+      <i class="fa-solid ${tab.icon}" style="color:${tab.color};"></i> ${tab.label}${badge}
+    </button>`;
+  }).join('');
 
   // Build panels
   wrap.innerHTML = tabs.map((tab, i) =>
@@ -5578,6 +5592,12 @@ function switchPengumumanTab(tabId, btn) {
     if (panel)  panel.style.display = (t.id === tabId) ? 'block' : 'none';
     if (tabBtn) tabBtn.classList.toggle('pengumuman-tab-active', t.id === tabId);
   });
+  // Sembunyikan badge "!" pada tab yang sedang aktif (sudah dilihat)
+  const activeBtn = document.getElementById('ptab-' + tabId);
+  if (activeBtn) {
+    const b = activeBtn.querySelector('.ptab-badge');
+    if (b) b.style.opacity = '0.35';
+  }
 }
 
 // ── Render admin tab list ─────────────────────────────────
