@@ -10495,28 +10495,60 @@ function getNotifConfig() {
 
 // Hitung jumlah tab pengumuman yang ada isinya
 function hitungJumlahPengumuman() {
-  const tabs = gcGet('pengumumanTabs', []);
-  const cfg = getNotifConfig();
+  const cfg = getNotifConfigLive();
   // Jika admin set manual, pakai nilai itu
   if (cfg.jumlahPengumuman && parseInt(cfg.jumlahPengumuman) > 0) {
     return parseInt(cfg.jumlahPengumuman);
   }
   // Hitung dari tab yang ada kontennya
+  const tabs = gcGet('pengumumanTabs', []);
   return tabs.filter(t => t.content && t.content.trim().length > 0).length;
 }
 
 // Render badge di link pengumuman di sidebar
+// Baca config notif langsung dari _globalConfig (bukan cache gcGet)
+// agar perubahan toggle di Admin langsung efektif tanpa reload
+function getNotifConfigLive() {
+  const raw = (typeof _globalConfig !== 'undefined' && _globalConfig && _globalConfig['notifPengumuman'])
+    ? _globalConfig['notifPengumuman']
+    : {};
+  return {
+    badgeAktif:        raw.badgeAktif        !== false,
+    badgeSelaluTampil: raw.badgeSelaluTampil !== false,
+    popupAktif:        raw.popupAktif        !== false,
+    popupSelaluMuncul: raw.popupSelaluMuncul !== false,
+    popupJudul:        raw.popupJudul    || 'Ada Pengumuman Baru!',
+    popupSubtitle:     raw.popupSubtitle || 'Portal Pengadaan Kota Surakarta',
+    popupPesan:        raw.popupPesan    || 'Terdapat pengumuman baru yang perlu Anda perhatikan.',
+    popupWarna:        raw.popupWarna    || '#185FA5',
+    popupIkon:         raw.popupIkon     || 'fa-bell',
+    jumlahPengumuman:  raw.jumlahPengumuman || 0,
+  };
+}
+
 function renderNotifBadgeSidebar() {
-  const cfg = getNotifConfig();
-  if (!cfg.badgeAktif) return;
+  const cfg = getNotifConfigLive();
+  if (!cfg.badgeAktif) {
+    // Jika dimatikan, hapus semua badge yang ada
+    document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+    return;
+  }
 
   const jumlah = hitungJumlahPengumuman();
-  if (jumlah <= 0) return;
+  if (jumlah <= 0) {
+    document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+    return;
+  }
 
-  // badgeSelaluTampil: true = selalu ada, false = hilang setelah halaman pengumuman dibuka
-  const selaluTampil = (cfg.badgeSelaluTampil !== false);
-  const seenCount    = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
-  const tampil       = selaluTampil || jumlah > seenCount;
+  // badgeSelaluTampil ON  → tampil selalu, abaikan localStorage
+  // badgeSelaluTampil OFF → tampil hanya jika belum pernah dibuka
+  let tampil;
+  if (cfg.badgeSelaluTampil) {
+    tampil = true;
+  } else {
+    const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
+    tampil = (jumlah > seenCount);
+  }
 
   setTimeout(() => {
     document.querySelectorAll('.nav-link[data-page="pengumuman"]').forEach(link => {
@@ -10535,28 +10567,29 @@ function renderNotifBadgeSidebar() {
 
 // Dipanggil saat pengunjung membuka halaman pengumuman
 function tandaiPengumumanDilihat() {
-  const cfg    = getNotifConfig();
+  const cfg    = getNotifConfigLive();
   const jumlah = hitungJumlahPengumuman();
-  // Jika mode "hilang setelah dilihat", simpan jumlah & hapus badge
-  if (!cfg.badgeSelaluTampil) {
-    localStorage.setItem(NOTIF_SEEN_KEY, jumlah.toString());
-    document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+
+  if (cfg.badgeSelaluTampil) {
+    // Mode selalu tampil → badge tidak dihapus sama sekali
+    return;
   }
-  // Jika mode "selalu tampil", badge tetap ada — tidak lakukan apa-apa
+  // Mode hilang setelah dilihat → simpan jumlah ke localStorage & hapus badge
+  localStorage.setItem(NOTIF_SEEN_KEY, jumlah.toString());
+  document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
 }
 
 // Tampilkan pop-out notifikasi
 function tampilkanNotifPopup() {
-  const cfg = getNotifConfig();
+  const cfg = getNotifConfigLive();
   if (!cfg.popupAktif) return;
 
   const jumlah = hitungJumlahPengumuman();
   if (jumlah <= 0) return;
 
-  // popupSelaluMuncul: true = muncul setiap buka halaman
-  //                    false = tidak muncul lagi setelah diklik "Abaikan"
-  const selaluMuncul = (cfg.popupSelaluMuncul !== false);
-  if (!selaluMuncul) {
+  // popupSelaluMuncul ON  → tampil setiap halaman dibuka, abaikan localStorage
+  // popupSelaluMuncul OFF → tidak muncul lagi jika sudah di-dismiss
+  if (!cfg.popupSelaluMuncul) {
     const dismissedAt = localStorage.getItem(NOTIF_DISMISSED_KEY);
     if (dismissedAt && parseInt(dismissedAt) >= jumlah) return;
   }
@@ -10566,9 +10599,9 @@ function tampilkanNotifPopup() {
 
   document.getElementById('notifPopupHeader').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
   document.getElementById('notifPopupIcon').innerHTML = `<i class="fa-solid ${ikon}"></i>`;
-  document.getElementById('notifPopupTitle').textContent = cfg.popupJudul || 'Ada Pengumuman Baru!';
-  document.getElementById('notifPopupSubtitle').textContent = cfg.popupSubtitle || 'Portal Pengadaan Kota Surakarta';
-  document.getElementById('notifPopupMessage').innerHTML = cfg.popupPesan || 'Terdapat pengumuman baru.';
+  document.getElementById('notifPopupTitle').textContent = cfg.popupJudul;
+  document.getElementById('notifPopupSubtitle').textContent = cfg.popupSubtitle;
+  document.getElementById('notifPopupMessage').innerHTML = cfg.popupPesan;
   document.getElementById('notifPopupBtnLihat').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
 
   const countEl = document.getElementById('notifPopupCount');
@@ -10582,10 +10615,11 @@ function tutupNotifPopup() {
   document.getElementById('notifPopupOverlay').classList.remove('show');
 }
 
-// Tombol "Abaikan" — simpan status jika mode tidak selalu muncul
+// Tombol "Abaikan"
 function tutupNotifPopupDismiss() {
-  const cfg    = getNotifConfig();
+  const cfg    = getNotifConfigLive();
   const jumlah = hitungJumlahPengumuman();
+  // Hanya simpan dismissed jika mode OFF (tidak selalu muncul)
   if (!cfg.popupSelaluMuncul) {
     localStorage.setItem(NOTIF_DISMISSED_KEY, jumlah.toString());
   }
@@ -10812,7 +10846,7 @@ function _initAdminNotifTab() {
 }
 
 function _loadNotifAdminForm() {
-  const cfg = getNotifConfig();
+  const cfg = getNotifConfigLive();
   const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
   const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
 
@@ -10886,10 +10920,14 @@ async function saveNotifPengumumanConfig() {
     popupIkon:         getVal('notif-popup-ikon'),
   };
 
+  // Langsung update _globalConfig agar getNotifConfigLive() langsung efektif
+  if (typeof _globalConfig !== 'undefined') {
+    _globalConfig['notifPengumuman'] = cfg;
+  }
   await pushConfig('notifPengumuman', cfg);
-  _notifConfig = cfg;
 
-  // Re-render badge dengan config baru
+  // Re-render badge & reset dismissed jika toggle berubah
+  localStorage.removeItem(NOTIF_DISMISSED_KEY);
   renderNotifBadgeSidebar();
 
   flashMsg('msgNotifPengumuman');
