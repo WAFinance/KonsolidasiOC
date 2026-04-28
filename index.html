@@ -726,6 +726,34 @@
   @keyframes toastIn  { from { opacity:0; transform: translateY(24px) scale(0.95); } to { opacity:1; transform: translateY(0) scale(1); } }
   @keyframes toastOut { from { opacity:1; transform: translateY(0) scale(1);    } to { opacity:0; transform: translateY(10px) scale(0.95); } }
   @keyframes pulseCheck { 0%{transform:scale(0.5);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+
+  /* ===== PENGUMUMAN TABS ===== */
+  .pengumuman-tab {
+    display:inline-flex; align-items:center; gap:7px;
+    padding:10px 18px; border:none; background:transparent;
+    color:var(--gray-600); font-size:0.85rem; font-weight:600;
+    cursor:pointer; border-bottom:3px solid transparent;
+    border-radius:8px 8px 0 0; transition:all 0.2s;
+    white-space:nowrap;
+  }
+  .pengumuman-tab:hover { background:var(--blue-50); color:var(--blue-700); }
+  .pengumuman-tab.pengumuman-tab-active {
+    background:var(--blue-50); color:var(--blue-700);
+    border-bottom:3px solid var(--blue-600);
+  }
+  .pengumuman-panel { animation:fadeIn 0.18s ease; }
+  .pengumuman-empty-state {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:48px 24px; text-align:center; color:var(--gray-400);
+    background:var(--gray-50); border:1px dashed var(--gray-200); border-radius:var(--radius);
+  }
+  .pengumuman-empty-state i { font-size:48px; margin-bottom:14px; color:var(--gray-200); }
+  .pengumuman-empty-state p { font-size:0.88rem; font-style:italic; }
+  .pengumuman-content-box {
+    background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius);
+    padding:22px 24px; box-shadow:var(--shadow); line-height:1.7; font-size:0.9rem;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
   .upload-summary-item { transition: all 0.3s ease; }
   .upload-summary-item.ready { border-color:#2D7D17!important; border-style:solid!important; background:#EAF3DE; color:#1a4a0d!important; font-weight:600; }
   @media (max-width: 600px) {
@@ -802,6 +830,8 @@
         <div id="revisiPrevHarga" style="font-size:0.74rem;color:#880E4F;margin-top:4px;display:none;"></div>
       </div>
       <div style="font-size:0.74rem;color:var(--gray-400);margin-bottom:14px;"><i class="fa-solid fa-circle-info"></i> Format: PDF, ZIP, atau RAR — maks. 30 MB per file</div>
+      <!-- input lama disembunyikan agar tidak rusak referensi JS lain -->
+      <input type="file" id="revisiFileDok" accept=".pdf,.zip,.rar" style="display:none;" />
       <div style="margin-bottom:16px;">
         <label style="font-size:0.85rem;font-weight:700;color:var(--blue-900);display:block;margin-bottom:6px;">
           <i class="fa-solid fa-comment" style="color:var(--blue-600);"></i> Keterangan Revisi <span style="font-weight:400;color:var(--gray-400);">(opsional)</span>
@@ -810,8 +840,6 @@
           style="width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;"
           placeholder="Contoh: Perbaikan lampiran halaman 3, penambahan stempel perusahaan…"></textarea>
       </div>
-      <!-- input lama disembunyikan agar tidak rusak referensi JS lain -->
-      <input type="file" id="revisiFileDok" accept=".pdf,.zip,.rar" style="display:none;" />
       <!-- Progress bar -->
       <div id="revisiProgressWrap" style="display:none;margin-bottom:14px;">
         <div style="background:var(--gray-100);border-radius:6px;height:8px;overflow:hidden;margin-bottom:5px;">
@@ -1002,6 +1030,26 @@
       <p class="page-subtitle">Unduh dokumen resmi pengadaan di bawah ini.</p>
       <div class="doc-grid" id="docGrid"></div>
       <div class="info-banner" style="margin-top:24px;"><i class="fa-solid fa-circle-info"></i><span>Apabila tautan unduhan belum aktif, silakan hubungi Pokja Pemilihan atau cek portal SPSE.</span></div>
+    </section>
+
+    <!-- DOWNLOAD BERITA ACARA (BA) -->
+    <section class="page" id="page-download-ba">
+      <h2 class="page-title"><i class="fa-solid fa-file-contract"></i> Download Berita Acara (BA)</h2>
+      <p class="page-subtitle">Unduh dokumen Berita Acara resmi terkait proses pengadaan.</p>
+      <div class="doc-grid" id="docGridBA"></div>
+      <div class="info-banner" style="margin-top:24px;"><i class="fa-solid fa-circle-info"></i><span>Apabila tautan unduhan belum aktif, silakan hubungi Pokja Pemilihan atau cek portal SPSE.</span></div>
+    </section>
+
+    <!-- PENGUMUMAN (TABBED) -->
+    <section class="page" id="page-pengumuman">
+      <h2 class="page-title"><i class="fa-solid fa-bell"></i> Pengumuman</h2>
+      <p class="page-subtitle">Informasi resmi terkait proses negosiasi dan hasil akhir pengadaan.</p>
+
+      <!-- Tab Navigation — rendered dynamically by renderPengumumanPublicUI() -->
+      <div id="pengumuman-tab-nav" style="display:flex;gap:0;flex-wrap:wrap;border-bottom:2px solid var(--blue-100);margin-bottom:22px;"></div>
+
+      <!-- Tab Content — rendered dynamically -->
+      <div id="pengumuman-panels-wrap"></div>
     </section>
 
     <!-- AANWIJZING -->
@@ -1267,6 +1315,8 @@
               <button class="admin-tab" onclick="switchAdminTab('sidebar',this)"><i class="fa-solid fa-bars"></i> Sidebar</button>
               <button class="admin-tab" onclick="switchAdminTab('jadwal',this)"><i class="fa-solid fa-calendar-days"></i> Jadwal</button>
               <button class="admin-tab" onclick="switchAdminTab('download',this)"><i class="fa-solid fa-file-arrow-down"></i> Dokumen</button>
+              <button class="admin-tab" onclick="switchAdminTab('download-ba',this)"><i class="fa-solid fa-file-contract"></i> Berita Acara</button>
+              <button class="admin-tab" onclick="switchAdminTab('pengumuman-admin',this)"><i class="fa-solid fa-bell"></i> Pengumuman</button>
               <button class="admin-tab" onclick="switchAdminTab('aanwijzing',this)"><i class="fa-solid fa-video"></i> Aanwijzing</button>
               <button class="admin-tab" onclick="switchAdminTab('running',this)"><i class="fa-solid fa-bullhorn"></i> Running Text</button>
               <button class="admin-tab" onclick="switchAdminTab('formbuilder',this)"><i class="fa-solid fa-wpforms"></i> Form Upload</button>
@@ -1378,6 +1428,60 @@
               <button class="btn-outline" onclick="addDownloadItem()" style="margin-bottom:14px;"><i class="fa-solid fa-plus"></i> Tambah Dokumen</button><br>
               <button class="btn-admin-save" onclick="saveDownload()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Sync</button>
               <span class="admin-save-msg" id="msgDownload">✓ Tersinkron</span>
+            </div>
+
+            <!-- ===== DOWNLOAD BA ADMIN ===== -->
+            <div class="admin-section" id="atab-download-ba">
+              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Isi tautan unduhan Berita Acara (BA).</p>
+              <div id="downloadEditorBA"></div>
+              <button class="btn-outline" onclick="addDownloadItemBA()" style="margin-bottom:14px;"><i class="fa-solid fa-plus"></i> Tambah Berita Acara</button><br>
+              <button class="btn-admin-save" onclick="saveDownloadBA()"><i class="fa-solid fa-floppy-disk"></i> Simpan & Sync</button>
+              <span class="admin-save-msg" id="msgDownloadBA">✓ Tersinkron</span>
+            </div>
+
+            <!-- ===== PENGUMUMAN ADMIN ===== -->
+            <div class="admin-section" id="atab-pengumuman-admin">
+              <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">Kelola tab Pengumuman — tambah, hapus, atur urutan, dan isi konten setiap tab.</p>
+
+              <!-- ── Tambah Tab Baru ── -->
+              <div style="background:#F0F7FF;border:1px solid var(--blue-100);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+                <div style="font-size:0.83rem;font-weight:700;color:var(--blue-900);margin-bottom:10px;"><i class="fa-solid fa-plus-circle" style="color:var(--blue-600);"></i> Tambah Tab Baru</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                  <div class="admin-form-group" style="flex:2;min-width:160px;margin-bottom:0;">
+                    <label>Nama Tab</label>
+                    <input type="text" id="new-tab-label" placeholder="cth: Berita Acara" />
+                  </div>
+                  <div class="admin-form-group" style="flex:1;min-width:160px;margin-bottom:0;">
+                    <label>Icon FontAwesome <span style="font-size:0.72rem;color:var(--gray-400);">(nama saja, cth: fa-file)</span></label>
+                    <input type="text" id="new-tab-icon" placeholder="fa-file" />
+                  </div>
+                  <div class="admin-form-group" style="min-width:60px;margin-bottom:0;">
+                    <label>Warna Icon</label>
+                    <input type="color" id="new-tab-color" value="#185FA5" />
+                  </div>
+                  <button class="btn-admin-save" style="margin-bottom:0;" onclick="addPengumumanTab()"><i class="fa-solid fa-plus"></i> Tambah</button>
+                </div>
+              </div>
+
+              <!-- ── Daftar Tab ── -->
+              <div id="pengumumanTabList" style="margin-bottom:18px;"></div>
+
+              <!-- ── Editor Konten ── -->
+              <div id="pengumumanAdminEditor" style="display:none;">
+                <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;">
+                  <i class="fa-solid fa-pen" style="color:var(--blue-600);"></i> Edit Konten: <span id="pengumumanEditorTabLabel"></span>
+                </div>
+                <div class="admin-form-group">
+                  <label><i class="fa-solid fa-code" style="color:var(--blue-600);"></i> Konten Tab (HTML atau teks biasa)</label>
+                  <textarea id="pengumuman-content-editor" rows="10" placeholder="Masukkan konten pengumuman di sini. Kosongkan jika belum ada pengumuman.&#10;&#10;Contoh: Panduan negosiasi harga dapat diunduh di &lt;a href='...'&gt;sini&lt;/a&gt;."></textarea>
+                  <div style="font-size:0.73rem;color:var(--gray-400);margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Mendukung HTML. Kosongkan untuk tampilkan "Belum ada pengumuman".</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                  <button class="btn-admin-save" onclick="savePengumumanTab()"><i class="fa-solid fa-floppy-disk"></i> Simpan Tab Ini</button>
+                  <button class="btn-outline" onclick="clearPengumumanTab()" style="color:#C0392B;border-color:#C0392B;"><i class="fa-solid fa-eraser"></i> Kosongkan Konten</button>
+                  <span class="admin-save-msg" id="msgPengumuman">✓ Tersimpan</span>
+                </div>
+              </div>
             </div>
 
             <div class="admin-section" id="atab-aanwijzing">
@@ -2030,10 +2134,12 @@ const DEFAULT_FORM_FIELDS = [
 ];
 
 const DEFAULT_SIDEBAR_ITEMS = [
-  { id:'beranda',    label:'Beranda',           icon:'fa-house',                  publik:true,  fixed:true },
-  { id:'download',   label:'Download Dokumen',  icon:'fa-file-arrow-down',        publik:true,  fixed:true },
-  { id:'aanwijzing', label:'Aanwijzing',         icon:'fa-video',                  publik:true,  fixed:true },
-  { id:'admin',      label:'Panel Admin',        icon:'fa-gear',                   publik:false, fixed:true, roleOnly:['admin'] },
+  { id:'beranda',     label:'Beranda',                  icon:'fa-house',            publik:true,  fixed:true },
+  { id:'download',    label:'Download Dokumen',         icon:'fa-file-arrow-down',  publik:true,  fixed:true },
+  { id:'download-ba', label:'Download Berita Acara (BA)', icon:'fa-file-contract',  publik:true,  fixed:true },
+  { id:'aanwijzing',  label:'Aanwijzing',               icon:'fa-video',            publik:true,  fixed:true },
+  { id:'pengumuman',  label:'Pengumuman',               icon:'fa-bell',             publik:true,  fixed:true },
+  { id:'admin',       label:'Panel Admin',              icon:'fa-gear',             publik:false, fixed:true, roleOnly:['admin'] },
 ];
 
 // =================================================================
@@ -2679,13 +2785,13 @@ function renderStatusPenyedia() {
     const revTgl  = latest.reviewTanggal ? new Date(latest.reviewTanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : null;
     const grpId   = 'grp_' + btoa(encodeURIComponent(jenisDok)).replace(/[^a-z0-9]/gi,'').slice(0,12);
 
-    // Revisi per kategori — pakai field terpisah dari backend
+    // revisiLinks[0]=Revisi 1, [1]=Revisi 2, dst (lama→baru) — kini berupa objek {namaFile, link}
     const revLinksRaw = Array.isArray(latest.revisiLinks) ? latest.revisiLinks : [];
-    const revAdm   = Array.isArray(latest.revisiAdm)   ? latest.revisiAdm.filter(l=>l&&l.link&&l.link.startsWith('http'))   : [];
-    const revKual  = Array.isArray(latest.revisiKual)  ? latest.revisiKual.filter(l=>l&&l.link&&l.link.startsWith('http'))  : [];
-    const revTek   = Array.isArray(latest.revisiTek)   ? latest.revisiTek.filter(l=>l&&l.link&&l.link.startsWith('http'))   : [];
-    const revHarga = Array.isArray(latest.revisiHarga) ? latest.revisiHarga.filter(l=>l&&l.link&&l.link.startsWith('http')) : [];
-    const revLinks = revAdm.concat(revKual).concat(revTek).concat(revHarga);
+    const revLinks = revLinksRaw.filter(l => {
+      if (!l) return false;
+      if (typeof l === 'string') return l.startsWith('http');
+      return l.link && l.link.startsWith('http');
+    });
     const getRevUrl  = (l) => (typeof l === 'string') ? l : (l.link || '');
     const getRevNama = (l) => (typeof l === 'string') ? '' : (l.namaFile || '');
     // Links & namaFile per kategori dokumen utama
@@ -2697,61 +2803,46 @@ function renderStatusPenyedia() {
     const namaFileTek  = (latest.namaFileTek  || '').trim();
     const linkHarga    = (latest.linkHarga    || '').trim();
     const namaFileHarga= (latest.namaFileHarga|| '').trim();
-    const tambahanLinks = Array.isArray(latest.tambahanLinks) ? latest.tambahanLinks.filter(l => l && l.startsWith('http')) : [];
+    // Tambahan per-kategori (dinamis)
+    const _helper_tmb = (arr) => Array.isArray(arr) ? arr.filter(t => t && t.link && t.link.startsWith('http')) : [];
+    const tambahanAdm   = _helper_tmb(latest.tambahanAdm);
+    const tambahanKual  = _helper_tmb(latest.tambahanKual);
+    const tambahanTek   = _helper_tmb(latest.tambahanTek);
+    const tambahanHarga = _helper_tmb(latest.tambahanHarga);
+    const totalTambahan = tambahanAdm.length + tambahanKual.length + tambahanTek.length + tambahanHarga.length;
     // Dok. TERBARU = revisi terakhir jika ada, jika tidak = salah satu link kategori utama yang ada
     const latestRevObj = revLinks.length ? revLinks[revLinks.length - 1] : null;
     const latestUrl  = latestRevObj ? getRevUrl(latestRevObj) : (linkAdm || linkKual || linkTek || linkHarga || '');
     const hasLatest  = latestUrl && latestUrl.startsWith('http');
-    // Badge hanya hitung revisi (bukan kategori utama) — lebih bermakna
+    // Total versi = jumlah kategori utama yang terisi + revisi + tambahan
     const jumlahKatUtama = [linkAdm, linkKual, linkTek, linkHarga].filter(l => l && l.startsWith('http')).length;
-    const totalVersi = revLinks.length; // hanya revisi yang dihitung untuk badge
+    const totalVersi = jumlahKatUtama + revLinks.length + totalTambahan;
 
-    // Riwayat upload: kumpulkan revisi per kategori + tambahan
-    const _katRevDef = [
-      { list: revAdm,   label:'Administrasi', color:'#1B5E20', icon:'fa-shield-halved'      },
-      { list: revKual,  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-certificate'         },
-      { list: revTek,   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench'  },
-      { list: revHarga, label:'Harga',        color:'#880E4F', icon:'fa-tags'                },
-    ];
-    // Flatten semua revisi jadi array {tipe, label, idx, url, namaFile, color, icon}
-    const _riwayatItems = [];
-    _katRevDef.forEach(k => {
-      k.list.forEach((rv, ri) => {
-        _riwayatItems.push({ tipe:'revisi', label: k.label, idx: ri+1, url: rv.link, namaFile: rv.namaFile||'', color: k.color, icon: k.icon });
+    // Dok. SEBELUMNYA: hanya tampil jika ada revisi.
+    // Isi: revisi ke-1 s/d ke-(n-1). Tidak ada "Upload Awal" lagi (digantikan oleh kategori).
+    const prevDoksPenyedia = [];
+    if (revLinks.length > 0) {
+      revLinks.slice(0, revLinks.length - 1).forEach((rv, vi) => {
+        prevDoksPenyedia.push({ label: 'Revisi ' + (vi + 1), url: getRevUrl(rv), namaFile: getRevNama(rv) });
       });
-    });
-    tambahanLinks.forEach((url, ti) => {
-      _riwayatItems.push({ tipe:'tambahan', label:'Tambahan', idx: ti+1, url, namaFile:'', color:'#4A148C', icon:'fa-plus-circle' });
-    });
+    }
 
-    // Hitung badge riwayat
-    const _totalRev = _katRevDef.reduce((s,k)=>s+k.list.length,0);
-    const _totalTam = tambahanLinks.length;
-    const _badgeParts = [_totalRev>0?`${_totalRev} revisi`:'', _totalTam>0?`${_totalTam} tambahan`:''].filter(Boolean);
-    const _badgeTxt = _badgeParts.join(', ');
-
-    // Render riwayat dokumen — per kategori dengan label yang jelas
-    const historyHtml = _riwayatItems.length ? `
+    // Render riwayat dokumen sebelumnya
+    const historyHtml = prevDoksPenyedia.length ? `
       <div style="margin-top:14px;border-top:1px dashed var(--gray-200);padding-top:12px;">
         <button id="histBtn-${grpId}" onclick="toggleHistoriUpload('${grpId}')"
-          style="display:inline-flex;align-items:center;gap:6px;background:#F3F0FF;border:1px solid #CE93D8;color:#4A148C;border-radius:7px;padding:6px 14px;font-size:0.80rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:background 0.15s;">
+          style="display:inline-flex;align-items:center;gap:6px;background:#F0F6FF;border:1px solid var(--blue-100);color:var(--blue-700);border-radius:7px;padding:6px 14px;font-size:0.80rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:background 0.15s;">
           <i id="histIcon-${grpId}" class="fa-solid fa-clock-rotate-left"></i>
-          <span id="histLabel-${grpId}">Riwayat Upload (${_badgeTxt})</span>
+          <span id="histLabel-${grpId}">Lihat Dokumen Sebelumnya (${prevDoksPenyedia.length})</span>
         </button>
         <div id="histPanel-${grpId}" style="display:none;">
-          ${_riwayatItems.map(rv => `
-            <div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid ${rv.color};border-radius:8px;padding:10px 14px;margin-bottom:6px;">
-              <div style="font-size:0.80rem;font-weight:700;color:${rv.color};margin-bottom:5px;">
-                <i class="fa-solid ${rv.icon}"></i>
-                ${rv.tipe === 'tambahan'
-                  ? `Tambahan ${rv.idx}${rv.namaFile ? ` &nbsp;·&nbsp; <span style="font-weight:400;color:var(--gray-600);">${rv.namaFile}</span>` : ''}`
-                  : `${rv.label} Rev ${rv.idx}${rv.namaFile ? ` &nbsp;·&nbsp; <span style="font-weight:400;color:var(--gray-600);">${rv.namaFile}</span>` : ''}`
-                }
+          ${prevDoksPenyedia.map(({label, url, namaFile}) => `
+            <div style="background:#FAFAFA;border:1px solid var(--gray-200);border-left:3px solid var(--gray-400);border-radius:8px;padding:12px 14px;margin-bottom:8px;opacity:0.85;">
+              <div style="font-size:0.80rem;font-weight:700;color:var(--gray-600);margin-bottom:4px;">
+                <i class="fa-solid fa-file-arrow-up" style="color:var(--gray-400);"></i> ${label}${namaFile ? ` &nbsp;·&nbsp; <span style="font-weight:400;color:var(--blue-700);">${namaFile}</span>` : ''}
               </div>
-              <div style="display:flex;gap:8px;">
-                <a href="${rv.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:5px;padding:3px 10px;font-size:0.77rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
-                <a href="${rv.url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:5px;padding:3px 10px;font-size:0.77rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i> Download</a>
-              </div>
+              <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue-700);font-size:0.78rem;font-weight:600;text-decoration:none;margin-right:10px;"><i class="fa-solid fa-eye"></i> Lihat</a>
+              <a href="${url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--green-700);font-size:0.78rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i> Download</a>
             </div>`).join('')}
         </div>
       </div>` : '';
@@ -2759,7 +2850,7 @@ function renderStatusPenyedia() {
     return `<div class="status-doc-card">
       <div class="status-doc-header">
         <div>
-          <div class="status-doc-title">${jenisDok}${totalVersi > 0 ? ` <span style="font-size:0.72rem;background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;border-radius:10px;padding:2px 8px;font-weight:600;margin-left:6px;vertical-align:middle;"><i class="fa-solid fa-rotate"></i> ${totalVersi} revisi</span>` : ''}</div>
+          <div class="status-doc-title">${jenisDok}${totalVersi > 1 ? ` <span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 8px;font-weight:600;margin-left:6px;vertical-align:middle;"><i class="fa-solid fa-layer-group"></i> ${totalVersi} versi</span>` : ''}</div>
           <div class="status-doc-meta"><i class="fa-solid fa-clock" style="color:var(--gray-400);font-size:11px;"></i>
             Terbaru: ${tgl}
           </div>
@@ -2778,44 +2869,23 @@ function renderStatusPenyedia() {
             { link: linkTek,   namaFile: namaFileTek,   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
             { link: linkHarga, namaFile: namaFileHarga, label:'Harga',        color:'#880E4F', icon:'fa-tag'      },
           ].filter(c => c.link && c.link.startsWith('http'));
-          const tamBtns = tambahanLinks.map((url,ti) =>
-            `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#4A148C;color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid fa-plus-circle"></i> Tambahan ${ti+1}</a>`
+          const _tmbMeta = [
+            { arr: tambahanAdm,   label:'Adm Tmb',   color:'#2E7D32', icon:'fa-file-alt' },
+            { arr: tambahanKual,  label:'Kual Tmb',  color:'#1565C0', icon:'fa-medal' },
+            { arr: tambahanTek,   label:'Tek Tmb',   color:'#BF360C', icon:'fa-screwdriver-wrench' },
+            { arr: tambahanHarga, label:'Harga Tmb', color:'#6A1042', icon:'fa-tag' },
+          ];
+          const tamBtns = _tmbMeta.flatMap(m => m.arr.map((t,ti) =>
+            `<a href="${t.link}" target="_blank" rel="noopener" title="${t.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:${m.color};color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;border:2px dashed rgba(255,255,255,0.5);"><i class="fa-solid ${m.icon}"></i> ${m.label} ${ti+1}${t.namaFile?' — '+t.namaFile:''}</a>`
+          )).join('');
+          const revBtns = revLinks.filter(rv=>getRevUrl(rv).startsWith('http')).map((rv,ri) =>
+            `<a href="${getRevUrl(rv)}" target="_blank" rel="noopener" title="${getRevNama(rv)||''}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#C62828;color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid fa-rotate"></i> Revisi ${ri+1}${getRevNama(rv) ? ' — '+getRevNama(rv) : ''}</a>`
           ).join('');
-          if (!catRows.length && !tamBtns && !revLinks.length) return '';
-          // Baris kategori utama (upload awal)
+          if (!catRows.length && !tamBtns && !revBtns) return '';
           const catBtns = catRows.map(c =>
             `<a href="${c.link}" target="_blank" rel="noopener" title="${c.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:${c.color};color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;"><i class="fa-solid ${c.icon}"></i> ${c.label}${c.namaFile ? ' — '+c.namaFile : ''}</a>`
           ).join('');
-          // Baris revisi per kategori — pakai field revAdm/revKual/revTek/revHarga
-          const katRevDef = [
-            { list: revAdm,   label:'Administrasi', color:'#1B5E20', icon:'fa-shield-halved'       },
-            { list: revKual,  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-certificate'          },
-            { list: revTek,   label:'Teknis',        color:'#E65100', icon:'fa-screwdriver-wrench'  },
-            { list: revHarga, label:'Harga',         color:'#880E4F', icon:'fa-tags'                },
-          ].filter(k => k.list.length > 0);
-          let revSeksiHtml = '';
-          if (katRevDef.length > 0) {
-            const revRows = katRevDef.map(k => {
-              const btns = k.list.map((rv, ri) =>
-                `<a href="${rv.link}" target="_blank" rel="noopener" title="${rv.namaFile||''}"
-                  style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:${k.color}18;color:${k.color};border:1px solid ${k.color}44;font-size:0.74rem;font-weight:700;text-decoration:none;">
-                  <i class="fa-solid fa-rotate"></i> Rev ${ri+1}${rv.namaFile?' — '+rv.namaFile:''}
-                </a>`
-              ).join('');
-              return `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:4px;">
-                <span style="font-size:0.73rem;font-weight:700;color:${k.color};min-width:90px;white-space:nowrap;"><i class="fa-solid ${k.icon}"></i> ${k.label}:</span>${btns}
-              </div>`;
-            }).join('');
-            revSeksiHtml = `<div style="margin-top:8px;padding:8px 10px;background:#FFF8F2;border:1px solid #FFCC80;border-left:3px solid #E65100;border-radius:7px;">
-              <div style="font-size:0.73rem;font-weight:700;color:#E65100;margin-bottom:4px;"><i class="fa-solid fa-rotate"></i> Revisi Dokumen:</div>
-              ${revRows}
-            </div>`;
-          }
-          return `<div style="margin-top:10px;">
-            <div style="font-size:0.75rem;font-weight:700;color:var(--gray-600);margin-bottom:5px;"><i class="fa-solid fa-folder-open" style="color:var(--blue-600);"></i> Dokumen Upload Awal:</div>
-            <div style="display:flex;flex-wrap:wrap;gap:5px;">${catBtns}${tamBtns}</div>
-            ${revSeksiHtml}
-          </div>`;
+          return `<div style="margin-top:10px;"><div style="font-size:0.75rem;font-weight:700;color:var(--gray-600);margin-bottom:5px;"><i class="fa-solid fa-folder-open" style="color:var(--blue-600);"></i> Link Dokumen:</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${catBtns}${tamBtns}${revBtns}</div></div>`;
         })()}
         ${catatan ? `<div class="status-note-box has-note"><strong><i class="fa-solid fa-comment-dots" style="color:#856404;"></i> Catatan Pokja:</strong><br>${catatan}</div>` : `<div class="status-note-box"><em style="color:var(--gray-400);">Belum ada catatan dari Pokja.</em></div>`}
         ${klarifikasiLog.length ? `<div style="margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>${renderKlarLog(klarifikasiLog)}</div>` : ''}
@@ -2844,12 +2914,13 @@ function toggleHistoriUpload(grpId) {
   const icon  = document.getElementById('histIcon-' + grpId);
   const label = document.getElementById('histLabel-' + grpId);
   if (!panel) return;
-  // Simpan label asli agar bisa dikembalikan saat tutup
-  if (label && !label.dataset.orig) label.dataset.orig = label.textContent;
   const isHidden = panel.style.display === 'none';
   panel.style.display = isHidden ? 'block' : 'none';
-  if (icon)  icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
-  if (label) label.textContent = isHidden ? 'Sembunyikan' : (label.dataset.orig || 'Riwayat Upload');
+  if (icon)  icon.className  = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
+  if (label) {
+    const count = panel.querySelectorAll('[id^=""]').length || panel.children.length;
+    label.textContent = isHidden ? 'Sembunyikan Riwayat Upload' : `Lihat Riwayat Upload Sebelumnya (${count} versi)`;
+  }
 }
 
 // =================================================================
@@ -2885,7 +2956,27 @@ function updateUploadFormLock() {
 function getSidebarItems() {
   const stored = gcGet('sidebarItems', null);
   const custom  = gcGet('customMenus', []);
-  const base = stored || DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}));
+  let base;
+  if (stored) {
+    // Merge: pastikan semua DEFAULT_SIDEBAR_ITEMS selalu ada, meski config lama belum punya
+    const storedIds = stored.map(i => i.id);
+    const merged = [...stored];
+    DEFAULT_SIDEBAR_ITEMS.forEach(def => {
+      if (!storedIds.includes(def.id)) {
+        const defIdx = DEFAULT_SIDEBAR_ITEMS.findIndex(d => d.id === def.id);
+        let insertAfter = -1;
+        for (let i = defIdx - 1; i >= 0; i--) {
+          const prevId = DEFAULT_SIDEBAR_ITEMS[i].id;
+          const foundIdx = merged.findIndex(m => m.id === prevId);
+          if (foundIdx >= 0) { insertAfter = foundIdx; break; }
+        }
+        merged.splice(insertAfter + 1, 0, {...def});
+      }
+    });
+    base = merged;
+  } else {
+    base = DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}));
+  }
   return [...base, ...custom];
 }
 
@@ -3028,6 +3119,12 @@ function showPage(pageId) {
         fetchPenetapanData();
       }, 100);
     }
+  }
+  if (pageId === 'pengumuman') {
+    renderPengumumanPublicUI();
+  }
+  if (pageId === 'download-ba') {
+    renderDownloadBA();
   }
   window.scrollTo({ top:0, behavior:'smooth' });
   // sync mobile bottom nav
@@ -3607,7 +3704,7 @@ async function saveJudulConfig() {
 }
 
 function renderSidebarVisibilityEditor() {
-  const items  = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i})));
+  const items  = getSidebarItems();  // pakai getSidebarItems() agar item baru selalu ada
   const custom = gcGet('customMenus', []);
   let html = '';
   items.forEach(item => {
@@ -3674,7 +3771,7 @@ function previewLoginToggle() {
   }
 }
 
-function toggleSidebarItem(id, checked) { const items = gcGet('sidebarItems', DEFAULT_SIDEBAR_ITEMS.map(i=>({...i}))); const item = items.find(it=>it.id===id); if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; } }
+function toggleSidebarItem(id, checked) { const items = getSidebarItems(); const item = items.find(it=>it.id===id); if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; } }
 
 async function saveSidebarConfig() {
   const items = getSidebarItems();
@@ -3888,7 +3985,9 @@ function renderPokjaAccountsTable() {
 async function syncAccountToSheet(role,username,password) { try { await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateAccount',role,username,password})}); } catch(e){} }
 
 function loadAdminForms() {
-  renderJadwalEditor(); renderDownloadEditor(); renderSidebarVisibilityEditor(); renderFormFieldList();
+  renderJadwalEditor(); renderDownloadEditor(); renderDownloadEditorBA(); renderSidebarVisibilityEditor(); renderFormFieldList();
+  // Init pengumuman admin tab list
+  renderPengumumanTabList();
   const z=gcGet('zoom',DEFAULT_ZOOM);
   document.getElementById('az-tanggal').value=z.tanggal||''; document.getElementById('az-pukul').value=z.pukul||''; document.getElementById('az-meetingid').value=z.meetingid||''; document.getElementById('az-passcode').value=z.passcode||''; document.getElementById('az-link').value=z.link||'';
   document.getElementById('ar-text').value=gcGet('running',DEFAULT_RUNNING);
@@ -4460,6 +4559,7 @@ function bukaModalRevisi(docData) {
 
   // Tampilkan info dokumen sebelumnya
   const tglLama = docData.tanggal ? new Date(docData.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+  // Tampilkan link kategori dokumen yang sudah ada (Adm/Kual/Tek/Harga)
   const _revKatDef = [
     { url: (docData.linkAdm||'').trim(),   nm: docData.namaFileAdm||'',   label:'Administrasi', color:'#1B5E20' },
     { url: (docData.linkKual||'').trim(),  nm: docData.namaFileKual||'',  label:'Kualifikasi',  color:'#0D47A1' },
@@ -4706,78 +4806,59 @@ function renderPokjaTable() {
     const _revTek   = Array.isArray(d.revisiTek)   ? d.revisiTek.filter(r=>r&&r.link&&r.link.startsWith('http'))   : [];
     const _revHarga = Array.isArray(d.revisiHarga) ? d.revisiHarga.filter(r=>r&&r.link&&r.link.startsWith('http')) : [];
     const totalRevisi = _revAdm.length + _revKual.length + _revTek.length + _revHarga.length;
+    // Tambahan per kategori (dinamis)
+    const _tmbAdm   = Array.isArray(d.tambahanAdm)   ? d.tambahanAdm.filter(t=>t&&t.link&&t.link.startsWith('http'))   : [];
+    const _tmbKual  = Array.isArray(d.tambahanKual)  ? d.tambahanKual.filter(t=>t&&t.link&&t.link.startsWith('http'))  : [];
+    const _tmbTek   = Array.isArray(d.tambahanTek)   ? d.tambahanTek.filter(t=>t&&t.link&&t.link.startsWith('http'))   : [];
+    const _tmbHarga = Array.isArray(d.tambahanHarga) ? d.tambahanHarga.filter(t=>t&&t.link&&t.link.startsWith('http')) : [];
+    const totalTmbPokja = _tmbAdm.length + _tmbKual.length + _tmbTek.length + _tmbHarga.length;
 
-    // Definisi kategori
+    // Definisi kategori (utama + badge revisi + badge tambahan)
     const _katMeta = [
-      { link: _lAdm,   revs: _revAdm,   nm: d.namaFileAdm||'',   label:'Adm',   labelFull:'Administrasi', color:'#1B5E20', icon:'fa-file-alt' },
-      { link: _lKual,  revs: _revKual,  nm: d.namaFileKual||'',  label:'Kual',  labelFull:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal'    },
-      { link: _lTek,   revs: _revTek,   nm: d.namaFileTek||'',   label:'Tek',   labelFull:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
-      { link: _lHarga, revs: _revHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', icon:'fa-tag'      },
+      { link: _lAdm,   revs: _revAdm,   tmbs: _tmbAdm,   nm: d.namaFileAdm||'',   label:'Adm',   labelFull:'Administrasi', color:'#1B5E20', tmbColor:'#2E7D32', icon:'fa-file-alt' },
+      { link: _lKual,  revs: _revKual,  tmbs: _tmbKual,  nm: d.namaFileKual||'',  label:'Kual',  labelFull:'Kualifikasi',  color:'#0D47A1', tmbColor:'#1565C0', icon:'fa-medal'    },
+      { link: _lTek,   revs: _revTek,   tmbs: _tmbTek,   nm: d.namaFileTek||'',   label:'Tek',   labelFull:'Teknis',       color:'#E65100', tmbColor:'#BF360C', icon:'fa-screwdriver-wrench' },
+      { link: _lHarga, revs: _revHarga, tmbs: _tmbHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', tmbColor:'#6A1042', icon:'fa-tag'      },
     ];
 
-    // ── fileCell: kolom "Dok. per Kategori" — HANYA upload AWAL (linkAdm/Kual/Tek/Harga) ──
-    let fileCell = '<span style="color:var(--gray-400);">-</span>';
-    const _catAwal = _katMeta.filter(c => c.link && c.link.startsWith('http'));
-    if (_catAwal.length) {
-      fileCell = `<div style="display:flex;flex-direction:column;gap:3px;">${_catAwal.map(c =>
-        `<a href="${c.link}" target="_blank" rel="noopener" title="${c.nm}"
-          style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;background:${c.color};color:#fff;font-size:0.73rem;font-weight:700;text-decoration:none;">
-          <i class="fa-solid ${c.icon}"></i> ${c.label}${c.nm?' — '+c.nm.substring(0,20)+(c.nm.length>20?'…':''):''}
-        </a>`
-      ).join('')}</div>`;
+    // fileCell: tombol kategori utama (badge Rev+Tmb jika ada)
+    let fileCell='<span style="color:var(--gray-400);">-</span>';
+    const _catHasData = _katMeta.filter(c => (c.link && c.link.startsWith('http')) || c.revs.length > 0 || c.tmbs.length > 0);
+    if (_catHasData.length) {
+      fileCell = `<div style="display:flex;flex-direction:column;gap:3px;">${_catHasData.map(c => {
+        const terbaruLink = c.revs.length ? c.revs[c.revs.length-1].link : c.link;
+        const terbaruNm   = c.revs.length ? (c.revs[c.revs.length-1].namaFile||'') : c.nm;
+        const hasRevBadge = c.revs.length > 0 ? `<span style="background:#fff;color:${c.color};border:1px solid ${c.color};border-radius:3px;font-size:0.65rem;padding:0 4px;margin-left:3px;font-weight:800;">Rev ${c.revs.length}</span>` : '';
+        const hasTmbBadge = c.tmbs.length > 0 ? `<span style="background:#fff;color:${c.tmbColor};border:1px solid ${c.tmbColor};border-radius:3px;font-size:0.65rem;padding:0 4px;margin-left:2px;font-weight:800;">+${c.tmbs.length}</span>` : '';
+        return `<a href="${terbaruLink}" target="_blank" rel="noopener" title="${terbaruNm}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;background:${c.color};color:#fff;font-size:0.73rem;font-weight:700;text-decoration:none;">`+
+          `<i class="fa-solid ${c.icon}"></i> ${c.label}${terbaruNm?' — '+terbaruNm.substring(0,20)+(terbaruNm.length>20?'…':''):''}${hasRevBadge}${hasTmbBadge}</a>`;
+      }).join('')}</div>`;
     }
 
-    // ── revisiCol: kolom "Revisi" — revisi per kategori + tambahan, dengan tombol Riwayat ──
-    const _tambahanLinks = Array.isArray(d.tambahanLinks) ? d.tambahanLinks.filter(l=>l&&l.startsWith('http')) : [];
-    const totalRevisi2 = totalRevisi + _tambahanLinks.length;
+    // revisiCol: tampilkan revisi + tambahan per kategori (collapsible)
+    const totalDokExtra = totalRevisi + totalTmbPokja;
     let revisiCol = '';
-    if (totalRevisi2 > 0) {
+    if (totalDokExtra > 0) {
       const revPanelId = 'revPanel-' + origIdx;
       const revBtnId   = 'revBtn-' + origIdx;
-
-      // Baris revisi per kategori
-      const revRows = _katMeta.flatMap(c => c.revs.map((rv, ri) => ({
-        tipe: 'revisi', label: c.labelFull, idx: ri+1,
-        url: rv.link, nm: rv.namaFile||'', color: c.color, icon: c.icon
-      })));
-      // Baris tambahan
-      const tamRows = _tambahanLinks.map((url, ti) => ({
-        tipe: 'tambahan', label: 'Tambahan', idx: ti+1,
-        url: url, nm: '', color: '#4A148C', icon: 'fa-plus-circle'
-      }));
-      const allRows = revRows.concat(tamRows);
-
-      const badgeTxt = [
-        totalRevisi > 0 ? `${totalRevisi} revisi` : '',
-        _tambahanLinks.length > 0 ? `${_tambahanLinks.length} tambahan` : ''
-      ].filter(Boolean).join(', ');
-
+      const revRows = _katMeta.flatMap(c => c.revs.map((rv, ri) => ({ type:'rev', label: c.labelFull, idx: ri+1, url: rv.link, nm: rv.namaFile||'', color: c.color, icon: c.icon })));
+      const tmbRows = _katMeta.flatMap(c => c.tmbs.map((t, ti) => ({ type:'tmb', label: c.labelFull, idx: ti+1, url: t.link, nm: t.namaFile||'', color: c.tmbColor, icon: c.icon })));
+      const allRows = revRows.concat(tmbRows);
+      const btnLabel = [totalRevisi > 0 ? totalRevisi + ' revisi' : '', totalTmbPokja > 0 ? totalTmbPokja + ' tambahan' : ''].filter(Boolean).join(', ');
       revisiCol = `
         <div>
           <button id="${revBtnId}" onclick="toggleRevisiPanel(${origIdx})"
-            style="display:inline-flex;align-items:center;gap:5px;background:#F3F0FF;border:1px solid #CE93D8;color:#4A148C;border-radius:5px;padding:4px 10px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">
-            <i id="revIcon-${origIdx}" class="fa-solid fa-clock-rotate-left"></i>
-            <span id="revLabel-${origIdx}">Riwayat (${badgeTxt})</span>
+            style="display:inline-flex;align-items:center;gap:5px;background:#FFF3F3;border:1px solid #FFCDD2;color:#C62828;border-radius:5px;padding:3px 9px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+            <i id="revIcon-${origIdx}" class="fa-solid fa-rotate"></i>
+            <span>${btnLabel}</span>
           </button>
-          <div id="${revPanelId}" style="display:none;margin-top:6px;min-width:210px;">
+          <div id="${revPanelId}" style="display:none;margin-top:6px;min-width:200px;">
             ${allRows.map(rv => `
-              <div style="background:#FAFAFA;border:1px solid #E0E0E0;border-left:3px solid ${rv.color};border-radius:6px;padding:6px 10px;margin-bottom:4px;font-size:0.75rem;">
-                <div style="color:${rv.color};margin-bottom:3px;font-weight:700;">
-                  <i class="fa-solid ${rv.icon}"></i>
-                  ${rv.tipe==='tambahan'
-                    ? `Tambahan ${rv.idx}${rv.nm?' <span style="font-weight:400;color:var(--gray-600);">— '+rv.nm+'</span>':''}`
-                    : `${rv.label} Rev ${rv.idx}${rv.nm?' <span style="font-weight:400;color:var(--gray-600);">— '+rv.nm+'</span>':''}`
-                  }
-                </div>
+              <div style="background:#FFF8F8;border:1px solid #FFCDD2;border-left:3px solid ${rv.color};border-radius:6px;padding:6px 10px;margin-bottom:4px;font-size:0.75rem;">
+                <div style="color:${rv.color};margin-bottom:3px;font-weight:700;"><i class="fa-solid ${rv.icon}"></i> ${rv.label} ${rv.type==='rev'?'Rev':'Tmb'} ${rv.idx}${rv.nm?` <span style="font-weight:400;color:var(--gray-600);">— ${rv.nm}</span>`:''}</div>
                 <div style="display:flex;gap:4px;">
-                  <a href="${rv.url}" target="_blank" rel="noopener"
-                    style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;">
-                    <i class="fa-solid fa-eye"></i> Lihat
-                  </a>
-                  <a href="${rv.url}" download target="_blank" rel="noopener"
-                    style="display:inline-flex;align-items:center;gap:3px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;">
-                    <i class="fa-solid fa-download"></i>
-                  </a>
+                  <a href="${rv.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
+                  <a href="${rv.url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i></a>
                 </div>
               </div>`).join('')}
           </div>
@@ -4786,9 +4867,12 @@ function renderPokjaTable() {
       revisiCol = `<span style="color:var(--gray-400);font-size:0.78rem;">–</span>`;
     }
 
-    // Badge versi di kolom jenisDok — hanya hitung revisi (bukan kategori awal)
-    const versiLabel = totalRevisi2 > 0
-      ? `<span style="font-size:0.72rem;background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;border-radius:10px;padding:2px 7px;font-weight:600;margin-left:5px;vertical-align:middle;"><i class="fa-solid fa-rotate"></i> ${totalRevisi2}</span>`
+    // Label jumlah versi = jumlah kategori terisi + revisi + tambahan
+    const _katIsi = _katMeta.filter(c => c.link && c.link.startsWith('http')).length;
+    const totalVersi = _katIsi + totalRevisi + totalTmbPokja;
+
+    const versiLabel = totalVersi > 1
+      ? `<span style="font-size:0.72rem;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:10px;padding:2px 7px;font-weight:600;margin-left:5px;vertical-align:middle;"><i class="fa-solid fa-layer-group"></i> ${totalVersi}</span>`
       : '';
 
     const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
@@ -4836,17 +4920,17 @@ function toggleKlarDetail(origIdx) {
 }
 
 function toggleRevisiPanel(origIdx) {
-  const panel    = document.getElementById('revPanel-' + origIdx);
-  const icon     = document.getElementById('revIcon-' + origIdx);
-  const labelEl  = document.getElementById('revLabel-' + origIdx);
-  const origLabel = labelEl ? labelEl.dataset.orig || labelEl.textContent : '';
+  const panel = document.getElementById('revPanel-' + origIdx);
+  const icon  = document.getElementById('revIcon-' + origIdx);
+  const btn   = document.getElementById('revBtn-' + origIdx);
   if (!panel) return;
-  // Simpan label asli sekali
-  if (labelEl && !labelEl.dataset.orig) labelEl.dataset.orig = labelEl.textContent;
   const isHidden = panel.style.display === 'none';
   panel.style.display = isHidden ? 'block' : 'none';
-  if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-clock-rotate-left';
-  if (labelEl) labelEl.textContent = isHidden ? 'Sembunyikan' : labelEl.dataset.orig;
+  if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-rotate';
+  if (btn) {
+    const countEl = btn.querySelector('span');
+    if (countEl) countEl.textContent = isHidden ? 'Sembunyikan' : (panel.children.length + ' revisi');
+  }
 }
 
 function startEditCatatan(idx) {
@@ -4960,14 +5044,21 @@ function openReviewModal(idx) {
     });
   });
   // Link dokumen tambahan
-  if (Array.isArray(d.tambahanLinks)) {
-    d.tambahanLinks.forEach(function(url, ti) {
-      if (url && url.startsWith('http')) {
-        docBtns += `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:#4A148C;color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;">` +
-          `<i class="fa-solid fa-plus-circle"></i> Tambahan ${ti+1}</a>`;
-      }
+  // Tombol tambahan per-kategori
+  var _tmbModalMeta = [
+    { arr: d.tambahanAdm,   label:'Adm Tmb',   color:'#2E7D32', icon:'fa-file-alt' },
+    { arr: d.tambahanKual,  label:'Kual Tmb',  color:'#1565C0', icon:'fa-medal' },
+    { arr: d.tambahanTek,   label:'Tek Tmb',   color:'#BF360C', icon:'fa-screwdriver-wrench' },
+    { arr: d.tambahanHarga, label:'Harga Tmb', color:'#6A1042', icon:'fa-tag' },
+  ];
+  _tmbModalMeta.forEach(function(m) {
+    var arr = Array.isArray(m.arr) ? m.arr : [];
+    arr.forEach(function(t, ti) {
+      if (!t || !t.link || !t.link.startsWith('http')) return;
+      docBtns += `<a href="${t.link}" target="_blank" rel="noopener" title="${t.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:${m.color};color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;border:2px dashed rgba(255,255,255,0.5);">` +
+        `<i class="fa-solid ${m.icon}"></i> ${m.label} ${ti+1}${t.namaFile ? ' — '+t.namaFile : ''}</a>`;
     });
-  }
+  });
   btnWrap.innerHTML = docBtns ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">' + docBtns + '</div>' : '';
   document.getElementById('reviewStatus').value=d.reviewStatus||'Menunggu Evaluasi';
   document.getElementById('reviewCatatan').value=d.catatanPokja||'';
@@ -5190,10 +5281,320 @@ function switchJadwalTab(tab) {
 
 
 function renderAll() {
-  renderJudul(); renderSidebar(); renderCalendar(); renderGantt(); renderDownload(); renderZoom();
-  renderRunning(); renderUploadForm(); renderCustomPages(); renderPokjaStats();
+  renderJudul(); renderSidebar(); renderCalendar(); renderGantt(); renderDownload(); renderDownloadBA(); renderZoom();
+  renderRunning(); renderUploadForm(); renderCustomPages(); renderPokjaStats(); renderPengumumanPublicUI();
   // Catatan: renderUploadForm() di atas akan skip otomatis jika form sedang diisi
 }
+
+// =================================================================
+// DOWNLOAD BERITA ACARA (BA)
+// =================================================================
+const DEFAULT_DOCS_BA = [
+  { title:'Berita Acara Pembukaan Penawaran', desc:'Berita Acara resmi pembukaan dokumen penawaran.', icon:'fa-file-contract', link:'', iconType:'fa' },
+];
+
+function renderDownloadBA() {
+  const docs = gcGet('docsBA', DEFAULT_DOCS_BA);
+  const grid = document.getElementById('docGridBA');
+  if (!grid) return;
+  if (!docs.length) {
+    grid.innerHTML = '<div class="info-banner"><i class="fa-solid fa-circle-info"></i><span>Belum ada Berita Acara yang tersedia.</span></div>';
+    return;
+  }
+  grid.innerHTML = docs.map(d => {
+    const hasLink = d.link && d.link.trim() !== '';
+    const btn = hasLink
+      ? `<a href="${d.link}" class="btn-download" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> Unduh</a>`
+      : `<button class="btn-download" style="background:var(--gray-200);color:var(--gray-600);cursor:not-allowed;" disabled><i class="fa-solid fa-clock"></i> Belum Tersedia</button>`;
+    const iconHtml = d.iconType === 'img' && d.iconImg
+      ? `<img src="${d.iconImg}" alt="${d.title}" />`
+      : `<i class="fa-solid ${d.icon || 'fa-file-contract'}"></i>`;
+    return `<div class="doc-card"><div class="doc-icon">${iconHtml}</div><h3>${d.title}</h3><p>${d.desc||''}</p>${btn}</div>`;
+  }).join('');
+}
+
+function renderDownloadEditorBA() {
+  const docs = gcGet('docsBA', DEFAULT_DOCS_BA);
+  const ed = document.getElementById('downloadEditorBA');
+  if (!ed) return;
+  ed.innerHTML = docs.map((d, i) => `
+    <div class="timeline-editor-item" id="ba-item-${i}">
+      <div class="tei-head">Berita Acara ${i+1}: ${d.title} <button onclick="removeDownloadItemBA(${i})" class="btn-danger-sm" style="float:right;"><i class="fa-solid fa-trash"></i> Hapus</button></div>
+      <div class="tei-row">
+        <div class="admin-form-group"><label>Judul</label><input type="text" id="ba-title-${i}" value="${d.title||''}" /></div>
+        <div class="admin-form-group"><label>Deskripsi</label><input type="text" id="ba-desc-${i}" value="${d.desc||''}" /></div>
+      </div>
+      <div class="admin-form-group"><label>Link Unduhan (URL)</label><input type="url" id="ba-link-${i}" value="${d.link||''}" placeholder="https://drive.google.com/…" /></div>
+      <div class="admin-form-group"><label>Ikon (Font Awesome class)</label><input type="text" id="ba-icon-${i}" value="${d.icon||'fa-file-contract'}" placeholder="fa-file-contract" /><input type="file" id="ba-iconfile-${i}" accept=".png" style="margin-top:4px;font-size:0.78rem;" onchange="previewBAIcon(${i})" /><img id="ba-iconpreview-${i}" style="width:36px;height:36px;object-fit:contain;border:1px solid var(--gray-200);border-radius:6px;margin-top:4px;${d.iconType==='img'&&d.iconImg?'display:block':'display:none'};" src="${d.iconType==='img'&&d.iconImg?d.iconImg:''}" /></div>
+    </div>`).join('');
+}
+
+function previewBAIcon(i) {
+  const file = document.getElementById(`ba-iconfile-${i}`).files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { const img = document.getElementById(`ba-iconpreview-${i}`); img.src = e.target.result; img.style.display = 'block'; };
+  reader.readAsDataURL(file);
+}
+
+function addDownloadItemBA() {
+  let docs = gcGet('docsBA', DEFAULT_DOCS_BA);
+  docs.push({ title:'Berita Acara Baru', desc:'', icon:'fa-file-contract', link:'', iconType:'fa' });
+  _globalConfig['docsBA'] = docs;
+  renderDownloadEditorBA();
+}
+function removeDownloadItemBA(i) {
+  let docs = gcGet('docsBA', DEFAULT_DOCS_BA);
+  docs.splice(i, 1);
+  _globalConfig['docsBA'] = docs;
+  renderDownloadEditorBA();
+}
+async function saveDownloadBA() {
+  let docs = gcGet('docsBA', DEFAULT_DOCS_BA);
+  const promises = docs.map(async (d, i) => {
+    d.title = (document.getElementById('ba-title-'+i)||{value:d.title}).value;
+    d.desc  = (document.getElementById('ba-desc-'+i)||{value:d.desc}).value;
+    d.link  = (document.getElementById('ba-link-'+i)||{value:d.link}).value;
+    const iconTxt  = (document.getElementById('ba-icon-'+i)||{value:d.icon||'fa-file-contract'}).value;
+    const iconFile = document.getElementById('ba-iconfile-'+i)?.files[0];
+    if (iconFile) {
+      const dataUrl = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(iconFile); });
+      d.iconType = 'img'; d.iconImg = dataUrl;
+    } else {
+      if (d.iconType !== 'img') { d.icon = iconTxt; d.iconType = 'fa'; }
+    }
+  });
+  await Promise.all(promises);
+  _globalConfig['docsBA'] = docs;
+  await pushConfig('docsBA', docs);
+  renderDownloadBA();
+  flashMsg('msgDownloadBA');
+}
+
+// =================================================================
+// PENGUMUMAN TABBED
+// =================================================================
+// -------------------------------------------------------
+// PENGUMUMAN TABS — fully dynamic (stored in globalConfig)
+// -------------------------------------------------------
+const DEFAULT_PENGUMUMAN_TABS = [
+  { id:'panduan-negosiasi',   label:'Panduan Negosiasi',            icon:'fa-flag',                color:'#185FA5' },
+  { id:'undangan',            label:'Undangan',                     icon:'fa-envelope-open-text',  color:'#0C6E6E' },
+  { id:'tata-tertib',         label:'Tata Tertib',                  icon:'fa-list-check',          color:'#7B2D8B' },
+  { id:'mekanisme-negosiasi', label:'Mekanisme Negosiasi',          icon:'fa-rotate',              color:'#C0392B' },
+  { id:'hasil-akhir-nego',    label:'Pengumuman Hasil Akhir Nego',  icon:'fa-trophy',              color:'#856404' },
+];
+
+function getPengumumanTabs() {
+  return gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS);
+}
+
+let _currentPengumumanAdminTab = null;
+
+// ── Render public-facing tab nav + panels ────────────────
+function renderPengumumanPublicUI() {
+  const tabs = getPengumumanTabs();
+  const nav  = document.getElementById('pengumuman-tab-nav');
+  const wrap = document.getElementById('pengumuman-panels-wrap');
+  if (!nav || !wrap) return;
+
+  // Build tab buttons
+  nav.innerHTML = tabs.map((tab, i) =>
+    `<button class="pengumuman-tab${i===0?' pengumuman-tab-active':''}" id="ptab-${tab.id}"
+       onclick="switchPengumumanTab('${tab.id}',this)">
+      <i class="fa-solid ${tab.icon}" style="color:${tab.color};"></i> ${tab.label}
+    </button>`
+  ).join('');
+
+  // Build panels
+  wrap.innerHTML = tabs.map((tab, i) =>
+    `<div id="ppanel-${tab.id}" class="pengumuman-panel"${i!==0?' style="display:none;"':''}></div>`
+  ).join('');
+
+  renderPengumumanPanels();
+}
+
+// ── Fill panel content ────────────────────────────────────
+function renderPengumumanPanels() {
+  const tabs = getPengumumanTabs();
+  tabs.forEach(tab => {
+    const panel = document.getElementById('ppanel-' + tab.id);
+    if (!panel) return;
+    const key     = 'pengumuman_' + tab.id.replace(/-/g,'_');
+    const content = gcGet(key, '');
+    if (!content || !content.trim()) {
+      panel.innerHTML = `<div class="pengumuman-empty-state">
+        <i class="fa-solid ${tab.icon}" style="color:${tab.color};opacity:0.3;"></i>
+        <p>Belum ada pengumuman</p>
+      </div>`;
+    } else {
+      panel.innerHTML = `<div class="pengumuman-content-box">${content}</div>`;
+    }
+  });
+}
+
+// ── Switch public tab ─────────────────────────────────────
+function switchPengumumanTab(tabId, btn) {
+  const tabs = getPengumumanTabs();
+  tabs.forEach(t => {
+    const panel  = document.getElementById('ppanel-' + t.id);
+    const tabBtn = document.getElementById('ptab-' + t.id);
+    if (panel)  panel.style.display = (t.id === tabId) ? 'block' : 'none';
+    if (tabBtn) tabBtn.classList.toggle('pengumuman-tab-active', t.id === tabId);
+  });
+}
+
+// ── Render admin tab list ─────────────────────────────────
+function renderPengumumanTabList() {
+  const tabs = getPengumumanTabs();
+  const listEl = document.getElementById('pengumumanTabList');
+  if (!listEl) return;
+
+  if (tabs.length === 0) {
+    listEl.innerHTML = `<div style="color:var(--gray-400);font-size:0.85rem;font-style:italic;padding:10px 0;">Belum ada tab. Tambahkan tab baru di atas.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = tabs.map((tab, i) => `
+    <div id="ptabrow-${tab.id}" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--gray-200);border-radius:9px;margin-bottom:7px;background:${_currentPengumumanAdminTab===tab.id?'var(--blue-50)':'var(--white)'};transition:background 0.15s;">
+      <span style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;background:${tab.color}18;flex-shrink:0;">
+        <i class="fa-solid ${tab.icon}" style="color:${tab.color};font-size:0.85rem;"></i>
+      </span>
+      <span style="flex:1;font-size:0.85rem;font-weight:600;color:var(--gray-800);">${tab.label}</span>
+      <div style="display:flex;gap:5px;flex-shrink:0;">
+        <button onclick="movePengumumanTab(${i},-1)" title="Geser ke atas" ${i===0?'disabled':''} style="background:var(--gray-100);border:none;border-radius:6px;padding:5px 8px;cursor:${i===0?'not-allowed':'pointer'};color:var(--gray-600);font-size:12px;"><i class="fa-solid fa-arrow-up"></i></button>
+        <button onclick="movePengumumanTab(${i},1)" title="Geser ke bawah" ${i===tabs.length-1?'disabled':''} style="background:var(--gray-100);border:none;border-radius:6px;padding:5px 8px;cursor:${i===tabs.length-1?'not-allowed':'pointer'};color:var(--gray-600);font-size:12px;"><i class="fa-solid fa-arrow-down"></i></button>
+        <button onclick="editPengumumanTabContent('${tab.id}')" title="Edit konten" style="background:var(--blue-700);border:none;border-radius:6px;padding:5px 10px;cursor:pointer;color:white;font-size:12px;"><i class="fa-solid fa-pen"></i> Edit Konten</button>
+        <button onclick="confirmDeletePengumumanTab('${tab.id}')" title="Hapus tab" style="background:#C0392B;border:none;border-radius:6px;padding:5px 8px;cursor:pointer;color:white;font-size:12px;"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Open editor for a tab ─────────────────────────────────
+function editPengumumanTabContent(tabId) {
+  const tabs = getPengumumanTabs();
+  const tab  = tabs.find(t => t.id === tabId);
+  if (!tab) return;
+  _currentPengumumanAdminTab = tabId;
+
+  // Highlight active row
+  renderPengumumanTabList();
+
+  // Show editor
+  const editorWrap = document.getElementById('pengumumanAdminEditor');
+  const labelEl    = document.getElementById('pengumumanEditorTabLabel');
+  const editor     = document.getElementById('pengumuman-content-editor');
+  if (editorWrap) editorWrap.style.display = 'block';
+  if (labelEl)    labelEl.innerHTML = `<i class="fa-solid ${tab.icon}" style="color:${tab.color};"></i> ${tab.label}`;
+  if (editor)     editor.value = gcGet('pengumuman_' + tabId.replace(/-/g,'_'), '');
+
+  // Scroll to editor
+  editorWrap && editorWrap.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ── Add a new tab ─────────────────────────────────────────
+async function addPengumumanTab() {
+  const labelInput = document.getElementById('new-tab-label');
+  const iconInput  = document.getElementById('new-tab-icon');
+  const colorInput = document.getElementById('new-tab-color');
+  const label = (labelInput?.value || '').trim();
+  const icon  = (iconInput?.value  || 'fa-file').trim().replace(/^fa-/,'');
+  const color = colorInput?.value || '#185FA5';
+  if (!label) { labelInput && (labelInput.style.border='1.5px solid #C0392B'); return; }
+  if (labelInput) labelInput.style.border = '';
+
+  const tabs = getPengumumanTabs();
+  // Generate slug id from label
+  const id = label.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Date.now().toString(36);
+  tabs.push({ id, label, icon: 'fa-' + icon, color });
+
+  _globalConfig['pengumuman_tabs'] = tabs;
+  await pushConfig('pengumuman_tabs', tabs);
+
+  // Clear form
+  if (labelInput) labelInput.value = '';
+  if (iconInput)  iconInput.value  = '';
+
+  renderPengumumanTabList();
+  renderPengumumanPublicUI();
+  flashMsg('msgPengumuman');
+}
+
+// ── Delete tab ────────────────────────────────────────────
+function confirmDeletePengumumanTab(tabId) {
+  const tabs = getPengumumanTabs();
+  const tab  = tabs.find(t => t.id === tabId);
+  if (!tab) return;
+  if (!confirm(`Hapus tab "${tab.label}"?
+
+Konten tab ini juga akan dihapus dan tidak dapat dikembalikan.`)) return;
+  deletePengumumanTab(tabId);
+}
+
+async function deletePengumumanTab(tabId) {
+  let tabs = getPengumumanTabs().filter(t => t.id !== tabId);
+  _globalConfig['pengumuman_tabs'] = tabs;
+  _globalConfig['pengumuman_' + tabId.replace(/-/g,'_')] = '';
+
+  // Push both changes
+  await pushConfig('pengumuman_tabs', tabs);
+  await pushConfig('pengumuman_' + tabId.replace(/-/g,'_'), '');
+
+  if (_currentPengumumanAdminTab === tabId) {
+    _currentPengumumanAdminTab = tabs.length ? tabs[0].id : null;
+    const editorWrap = document.getElementById('pengumumanAdminEditor');
+    if (editorWrap) editorWrap.style.display = 'none';
+  }
+
+  renderPengumumanTabList();
+  renderPengumumanPublicUI();
+  flashMsg('msgPengumuman');
+}
+
+// ── Move tab (reorder) ────────────────────────────────────
+async function movePengumumanTab(idx, dir) {
+  const tabs = getPengumumanTabs();
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= tabs.length) return;
+  [tabs[idx], tabs[newIdx]] = [tabs[newIdx], tabs[idx]];
+  _globalConfig['pengumuman_tabs'] = tabs;
+  await pushConfig('pengumuman_tabs', tabs);
+  renderPengumumanTabList();
+  renderPengumumanPublicUI();
+}
+
+// ── Old admin tab switcher (kept for compatibility) ───────
+function switchPengumumanAdminTab(tabId, btn) {
+  editPengumumanTabContent(tabId);
+}
+
+// ── Save tab content ──────────────────────────────────────
+async function savePengumumanTab() {
+  const tabId = _currentPengumumanAdminTab;
+  if (!tabId) return;
+  const key     = 'pengumuman_' + tabId.replace(/-/g,'_');
+  const content = (document.getElementById('pengumuman-content-editor')||{value:''}).value;
+  _globalConfig[key] = content;
+  await pushConfig(key, content);
+  renderPengumumanPanels();
+  flashMsg('msgPengumuman');
+}
+
+// ── Clear tab content ─────────────────────────────────────
+async function clearPengumumanTab() {
+  const tabId = _currentPengumumanAdminTab;
+  if (!tabId) return;
+  const key = 'pengumuman_' + tabId.replace(/-/g,'_');
+  _globalConfig[key] = '';
+  await pushConfig(key, '');
+  const editor = document.getElementById('pengumuman-content-editor');
+  if (editor) editor.value = '';
+  renderPengumumanPanels();
+  flashMsg('msgPengumuman');
+}
+
+
 
 async function init() {
   initAuth();
