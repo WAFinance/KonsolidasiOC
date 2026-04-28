@@ -4821,46 +4821,94 @@ function renderPokjaTable() {
       { link: _lHarga, revs: _revHarga, tmbs: _tmbHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', tmbColor:'#6A1042', icon:'fa-tag'      },
     ];
 
-    // fileCell: tombol kategori utama (badge Rev+Tmb jika ada)
-    let fileCell='<span style="color:var(--gray-400);">-</span>';
-    const _catHasData = _katMeta.filter(c => (c.link && c.link.startsWith('http')) || c.revs.length > 0 || c.tmbs.length > 0);
-    if (_catHasData.length) {
-      fileCell = `<div style="display:flex;flex-direction:column;gap:3px;">${_catHasData.map(c => {
-        const terbaruLink = c.revs.length ? c.revs[c.revs.length-1].link : c.link;
-        const terbaruNm   = c.revs.length ? (c.revs[c.revs.length-1].namaFile||'') : c.nm;
-        const hasRevBadge = c.revs.length > 0 ? `<span style="background:#fff;color:${c.color};border:1px solid ${c.color};border-radius:3px;font-size:0.65rem;padding:0 4px;margin-left:3px;font-weight:800;">Rev ${c.revs.length}</span>` : '';
-        const hasTmbBadge = c.tmbs.length > 0 ? `<span style="background:#fff;color:${c.tmbColor};border:1px solid ${c.tmbColor};border-radius:3px;font-size:0.65rem;padding:0 4px;margin-left:2px;font-weight:800;">+${c.tmbs.length}</span>` : '';
-        return `<a href="${terbaruLink}" target="_blank" rel="noopener" title="${terbaruNm}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;background:${c.color};color:#fff;font-size:0.73rem;font-weight:700;text-decoration:none;">`+
-          `<i class="fa-solid ${c.icon}"></i> ${c.label}${terbaruNm?' — '+terbaruNm.substring(0,20)+(terbaruNm.length>20?'…':''):''}${hasRevBadge}${hasTmbBadge}</a>`;
+    // ── fileCell: HANYA dokumen awal (upload pertama) per kategori ──
+    // Revisi & tambahan TIDAK ditampilkan di sini — mereka masuk kolom Revisi
+    let fileCell = '<span style="color:var(--gray-400);font-size:0.78rem;">–</span>';
+    const _catAwal = _katMeta.filter(c => c.link && c.link.startsWith('http'));
+    if (_catAwal.length) {
+      fileCell = `<div style="display:flex;flex-direction:column;gap:4px;">${_catAwal.map(c => {
+        const nmShort = c.nm ? c.nm.substring(0, 22) + (c.nm.length > 22 ? '…' : '') : '';
+        return `<div style="display:flex;align-items:center;gap:4px;">
+          <a href="${c.link}" target="_blank" rel="noopener" title="${c.nm}"
+            style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;
+                   background:${c.color};color:#fff;font-size:0.73rem;font-weight:700;
+                   text-decoration:none;flex:1;min-width:0;white-space:nowrap;overflow:hidden;">
+            <i class="fa-solid ${c.icon}" style="flex-shrink:0;"></i>
+            <span style="overflow:hidden;text-overflow:ellipsis;">${c.label}${nmShort ? ' — ' + nmShort : ''}</span>
+          </a>
+          <a href="${c.link}" download target="_blank" rel="noopener" title="Unduh ${c.label}"
+            style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+                   border-radius:5px;background:#EAF3DE;color:var(--green-700);
+                   border:1px solid #B6DBA0;text-decoration:none;flex-shrink:0;font-size:0.70rem;">
+            <i class="fa-solid fa-download"></i>
+          </a>
+        </div>`;
       }).join('')}</div>`;
     }
 
-    // revisiCol: tampilkan revisi + tambahan per kategori (collapsible)
+    // ── revisiCol: Revisi (Rev 1,2,…) + Tambahan (Tmb 1,2,…) per kategori ──
     const totalDokExtra = totalRevisi + totalTmbPokja;
     let revisiCol = '';
     if (totalDokExtra > 0) {
       const revPanelId = 'revPanel-' + origIdx;
       const revBtnId   = 'revBtn-' + origIdx;
-      const revRows = _katMeta.flatMap(c => c.revs.map((rv, ri) => ({ type:'rev', label: c.labelFull, idx: ri+1, url: rv.link, nm: rv.namaFile||'', color: c.color, icon: c.icon })));
-      const tmbRows = _katMeta.flatMap(c => c.tmbs.map((t, ti) => ({ type:'tmb', label: c.labelFull, idx: ti+1, url: t.link, nm: t.namaFile||'', color: c.tmbColor, icon: c.icon })));
-      const allRows = revRows.concat(tmbRows);
-      const btnLabel = [totalRevisi > 0 ? totalRevisi + ' revisi' : '', totalTmbPokja > 0 ? totalTmbPokja + ' tambahan' : ''].filter(Boolean).join(', ');
+
+      // Kelompokkan per kategori: revisi lalu tambahan
+      const panelHtml = _katMeta.map(c => {
+        const rows = [
+          ...c.revs.map((rv, ri) => ({ type:'Rev', idx: ri+1, url: rv.link, nm: rv.namaFile||'', color: c.color })),
+          ...c.tmbs.map((t,  ti) => ({ type:'Tmb', idx: ti+1, url: t.link,  nm: t.namaFile||'', color: c.tmbColor })),
+        ];
+        if (!rows.length) return '';
+        return `<div style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
+            <i class="fa-solid ${c.icon}" style="color:${c.color};font-size:0.75rem;"></i>
+            <span style="font-size:0.72rem;font-weight:700;color:${c.color};">${c.labelFull}</span>
+            <span style="font-size:0.67rem;background:${c.color}18;color:${c.color};border:1px solid ${c.color}40;
+                         border-radius:10px;padding:1px 6px;font-weight:600;">${rows.length} dok</span>
+          </div>
+          ${rows.map(rv => `
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 8px;margin-bottom:3px;
+                         background:#FAFAFA;border:1px solid #E0E0E0;border-left:3px solid ${rv.color};
+                         border-radius:6px;font-size:0.72rem;">
+              <span style="background:${rv.color};color:#fff;border-radius:4px;padding:1px 6px;
+                           font-size:0.67rem;font-weight:700;flex-shrink:0;">${rv.type} ${rv.idx}</span>
+              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-600);"
+                    title="${rv.nm}">${rv.nm || '(tanpa nama)'}</span>
+              <a href="${rv.url}" target="_blank" rel="noopener"
+                style="display:inline-flex;align-items:center;gap:2px;background:var(--blue-50);
+                       color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;
+                       padding:2px 7px;font-size:0.68rem;font-weight:600;text-decoration:none;flex-shrink:0;">
+                <i class="fa-solid fa-eye"></i> Lihat
+              </a>
+              <a href="${rv.url}" download target="_blank" rel="noopener"
+                style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+                       background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;
+                       border-radius:4px;text-decoration:none;flex-shrink:0;font-size:0.68rem;">
+                <i class="fa-solid fa-download"></i>
+              </a>
+            </div>`).join('')}
+        </div>`;
+      }).filter(Boolean).join('');
+
+      const btnLabel = [
+        totalRevisi   > 0 ? `<i class="fa-solid fa-rotate"></i> ${totalRevisi} revisi` : '',
+        totalTmbPokja > 0 ? `<i class="fa-solid fa-plus-circle"></i> ${totalTmbPokja} tambahan` : '',
+      ].filter(Boolean).join(' &nbsp;');
+
       revisiCol = `
         <div>
           <button id="${revBtnId}" onclick="toggleRevisiPanel(${origIdx})"
-            style="display:inline-flex;align-items:center;gap:5px;background:#FFF3F3;border:1px solid #FFCDD2;color:#C62828;border-radius:5px;padding:3px 9px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">
-            <i id="revIcon-${origIdx}" class="fa-solid fa-rotate"></i>
-            <span>${btnLabel}</span>
+            style="display:inline-flex;align-items:center;gap:5px;background:#F3F8FF;
+                   border:1px solid #BBDEFB;color:#1565C0;border-radius:6px;
+                   padding:4px 10px;font-size:0.72rem;font-weight:700;cursor:pointer;
+                   white-space:nowrap;transition:background 0.15s;">
+            ${btnLabel}
+            <i id="revIcon-${origIdx}" class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
           </button>
-          <div id="${revPanelId}" style="display:none;margin-top:6px;min-width:200px;">
-            ${allRows.map(rv => `
-              <div style="background:#FFF8F8;border:1px solid #FFCDD2;border-left:3px solid ${rv.color};border-radius:6px;padding:6px 10px;margin-bottom:4px;font-size:0.75rem;">
-                <div style="color:${rv.color};margin-bottom:3px;font-weight:700;"><i class="fa-solid ${rv.icon}"></i> ${rv.label} ${rv.type==='rev'?'Rev':'Tmb'} ${rv.idx}${rv.nm?` <span style="font-weight:400;color:var(--gray-600);">— ${rv.nm}</span>`:''}</div>
-                <div style="display:flex;gap:4px;">
-                  <a href="${rv.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-eye"></i> Lihat</a>
-                  <a href="${rv.url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.70rem;font-weight:600;text-decoration:none;"><i class="fa-solid fa-download"></i></a>
-                </div>
-              </div>`).join('')}
+          <div id="${revPanelId}" style="display:none;margin-top:6px;min-width:220px;max-width:280px;
+               background:#fff;border:1px solid #E3EAF5;border-radius:8px;padding:10px 10px 6px;">
+            ${panelHtml}
           </div>
         </div>`;
     } else {
@@ -4926,11 +4974,8 @@ function toggleRevisiPanel(origIdx) {
   if (!panel) return;
   const isHidden = panel.style.display === 'none';
   panel.style.display = isHidden ? 'block' : 'none';
-  if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-rotate';
-  if (btn) {
-    const countEl = btn.querySelector('span');
-    if (countEl) countEl.textContent = isHidden ? 'Sembunyikan' : (panel.children.length + ' revisi');
-  }
+  if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+  if (btn) btn.style.background = isHidden ? '#EBF3FF' : '#F3F8FF';
 }
 
 function startEditCatatan(idx) {
