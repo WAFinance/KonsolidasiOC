@@ -10481,14 +10481,15 @@ const NOTIF_DISMISSED_KEY = 'bpbj_notif_dismissed';
 function getNotifConfig() {
   return gcGet('notifPengumuman', {
     badgeAktif: true,
+    badgeSelaluTampil: true,   // true=selalu tampil, false=hilang setelah dilihat
     popupAktif: true,
+    popupSelaluMuncul: true,   // true=muncul tiap buka halaman, false=tidak lagi setelah ditutup
     popupJudul: 'Ada Pengumuman Baru!',
     popupSubtitle: 'Portal Pengadaan Kota Surakarta',
     popupPesan: 'Terdapat pengumuman baru yang perlu Anda perhatikan. Silakan buka halaman Pengumuman untuk informasi lebih lanjut.',
     popupWarna: '#185FA5',
     popupIkon: 'fa-bell',
-    popupTampilUlang: true, // tampil lagi jika ada pengumuman baru
-    jumlahPengumuman: 0, // diisi admin manual / otomatis dari tab pengumuman
+    jumlahPengumuman: 0,
   });
 }
 
@@ -10512,33 +10513,36 @@ function renderNotifBadgeSidebar() {
   const jumlah = hitungJumlahPengumuman();
   if (jumlah <= 0) return;
 
-  const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
-  const newCount = Math.max(0, jumlah - seenCount);
+  // badgeSelaluTampil: true = selalu ada, false = hilang setelah halaman pengumuman dibuka
+  const selaluTampil = (cfg.badgeSelaluTampil !== false);
+  const seenCount    = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
+  const tampil       = selaluTampil || jumlah > seenCount;
 
-  // Cari semua link nav yang mengarah ke halaman pengumuman
   setTimeout(() => {
     document.querySelectorAll('.nav-link[data-page="pengumuman"]').forEach(link => {
-      // Hapus badge lama jika ada
       const oldBadge = link.querySelector('.notif-sidebar-badge');
       if (oldBadge) oldBadge.remove();
+      if (!tampil) return;
 
-      if (newCount > 0) {
-        const badge = document.createElement('span');
-        badge.className = 'notif-sidebar-badge';
-        badge.textContent = newCount > 99 ? '99+' : newCount;
-        badge.title = newCount + ' pengumuman baru';
-        link.appendChild(badge);
-      }
+      const badge = document.createElement('span');
+      badge.className = 'notif-sidebar-badge';
+      badge.textContent = jumlah > 99 ? '99+' : jumlah;
+      badge.title = jumlah + ' pengumuman';
+      link.appendChild(badge);
     });
   }, 80);
 }
 
-// Tandai pengumuman sudah dilihat (saat buka halaman pengumuman)
+// Dipanggil saat pengunjung membuka halaman pengumuman
 function tandaiPengumumanDilihat() {
+  const cfg    = getNotifConfig();
   const jumlah = hitungJumlahPengumuman();
-  localStorage.setItem(NOTIF_SEEN_KEY, jumlah.toString());
-  // Hapus badge dari sidebar
-  document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+  // Jika mode "hilang setelah dilihat", simpan jumlah & hapus badge
+  if (!cfg.badgeSelaluTampil) {
+    localStorage.setItem(NOTIF_SEEN_KEY, jumlah.toString());
+    document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+  }
+  // Jika mode "selalu tampil", badge tetap ada — tidak lakukan apa-apa
 }
 
 // Tampilkan pop-out notifikasi
@@ -10549,16 +10553,14 @@ function tampilkanNotifPopup() {
   const jumlah = hitungJumlahPengumuman();
   if (jumlah <= 0) return;
 
-  const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
-  const newCount = Math.max(0, jumlah - seenCount);
+  // popupSelaluMuncul: true = muncul setiap buka halaman
+  //                    false = tidak muncul lagi setelah diklik "Abaikan"
+  const selaluMuncul = (cfg.popupSelaluMuncul !== false);
+  if (!selaluMuncul) {
+    const dismissedAt = localStorage.getItem(NOTIF_DISMISSED_KEY);
+    if (dismissedAt && parseInt(dismissedAt) >= jumlah) return;
+  }
 
-  if (newCount <= 0) return; // tidak ada yang baru
-
-  // Cek apakah sudah di-dismiss untuk jumlah ini
-  const dismissedAt = localStorage.getItem(NOTIF_DISMISSED_KEY);
-  if (dismissedAt && parseInt(dismissedAt) >= jumlah && !cfg.popupTampilUlang) return;
-
-  // Isi konten popup
   const warna = cfg.popupWarna || '#185FA5';
   const ikon  = cfg.popupIkon  || 'fa-bell';
 
@@ -10570,13 +10572,8 @@ function tampilkanNotifPopup() {
   document.getElementById('notifPopupBtnLihat').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
 
   const countEl = document.getElementById('notifPopupCount');
-  const countTextEl = document.getElementById('notifPopupCountText');
-  if (newCount > 0) {
-    countEl.style.display = 'inline-flex';
-    countTextEl.textContent = newCount + ' pengumuman baru';
-  } else {
-    countEl.style.display = 'none';
-  }
+  countEl.style.display = 'inline-flex';
+  document.getElementById('notifPopupCountText').textContent = jumlah + ' pengumuman';
 
   document.getElementById('notifPopupOverlay').classList.add('show');
 }
@@ -10585,9 +10582,13 @@ function tutupNotifPopup() {
   document.getElementById('notifPopupOverlay').classList.remove('show');
 }
 
+// Tombol "Abaikan" — simpan status jika mode tidak selalu muncul
 function tutupNotifPopupDismiss() {
+  const cfg    = getNotifConfig();
   const jumlah = hitungJumlahPengumuman();
-  localStorage.setItem(NOTIF_DISMISSED_KEY, jumlah.toString());
+  if (!cfg.popupSelaluMuncul) {
+    localStorage.setItem(NOTIF_DISMISSED_KEY, jumlah.toString());
+  }
   tutupNotifPopup();
 }
 
@@ -10692,13 +10693,23 @@ function _initAdminNotifTab() {
         Badge merah berisi angka akan muncul di menu <strong>Pengumuman</strong> di sidebar ketika ada pengumuman baru.
         Angka otomatis dihitung dari jumlah tab pengumuman yang terisi, atau bisa diatur manual.
       </p>
-      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:10px;">
         <div>
           <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Aktifkan Badge Notifikasi</div>
           <div style="font-size:0.75rem;color:var(--gray-400);">Tampilkan angka merah di menu Pengumuman</div>
         </div>
         <label class="admin-toggle-switch">
           <input type="checkbox" id="notif-badge-aktif" checked>
+          <span class="admin-toggle-slider"></span>
+        </label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:12px;">
+        <div>
+          <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Badge Selalu Tampil</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);">ON = badge tidak hilang meski sudah dibuka &nbsp;|&nbsp; OFF = hilang setelah pengunjung buka halaman Pengumuman</div>
+        </div>
+        <label class="admin-toggle-switch">
+          <input type="checkbox" id="notif-badge-selalu-tampil" checked>
           <span class="admin-toggle-slider"></span>
         </label>
       </div>
@@ -10726,10 +10737,10 @@ function _initAdminNotifTab() {
         Popup muncul otomatis saat pengunjung membuka halaman, hanya jika ada pengumuman baru yang belum dilihat.
       </p>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:10px;">
         <div>
           <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Aktifkan Pop-out</div>
-          <div style="font-size:0.75rem;color:var(--gray-400);">Popup otomatis saat ada pengumuman baru</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);">Popup otomatis saat pengunjung membuka halaman</div>
         </div>
         <label class="admin-toggle-switch">
           <input type="checkbox" id="notif-popup-aktif" checked>
@@ -10739,11 +10750,11 @@ function _initAdminNotifTab() {
 
       <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:14px;">
         <div>
-          <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Tampilkan Ulang jika Ada Baru</div>
-          <div style="font-size:0.75rem;color:var(--gray-400);">Popup muncul lagi jika jumlah pengumuman bertambah</div>
+          <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Pop-out Selalu Muncul</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);">ON = muncul setiap kali halaman dibuka &nbsp;|&nbsp; OFF = tidak muncul lagi setelah pengunjung klik "Abaikan"</div>
         </div>
         <label class="admin-toggle-switch">
-          <input type="checkbox" id="notif-popup-tampil-ulang" checked>
+          <input type="checkbox" id="notif-popup-selalu-muncul" checked>
           <span class="admin-toggle-slider"></span>
         </label>
       </div>
@@ -10805,9 +10816,10 @@ function _loadNotifAdminForm() {
   const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
   const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
 
-  setChk('notif-badge-aktif',        cfg.badgeAktif !== false);
-  setChk('notif-popup-aktif',        cfg.popupAktif !== false);
-  setChk('notif-popup-tampil-ulang', cfg.popupTampilUlang !== false);
+  setChk('notif-badge-aktif',          cfg.badgeAktif !== false);
+  setChk('notif-badge-selalu-tampil',  cfg.badgeSelaluTampil !== false);
+  setChk('notif-popup-aktif',          cfg.popupAktif !== false);
+  setChk('notif-popup-selalu-muncul',  cfg.popupSelaluMuncul !== false);
   setVal('notif-jumlah',             cfg.jumlahPengumuman || 0);
   setVal('notif-popup-judul',        cfg.popupJudul || 'Ada Pengumuman Baru!');
   setVal('notif-popup-subtitle',     cfg.popupSubtitle || 'Portal Pengadaan Kota Surakarta');
@@ -10862,9 +10874,10 @@ async function saveNotifPengumumanConfig() {
   const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
 
   const cfg = {
-    badgeAktif:        getChk('notif-badge-aktif'),
-    popupAktif:        getChk('notif-popup-aktif'),
-    popupTampilUlang:  getChk('notif-popup-tampil-ulang'),
+    badgeAktif:          getChk('notif-badge-aktif'),
+    badgeSelaluTampil:   getChk('notif-badge-selalu-tampil'),
+    popupAktif:          getChk('notif-popup-aktif'),
+    popupSelaluMuncul:   getChk('notif-popup-selalu-muncul'),
     jumlahPengumuman:  parseInt(getVal('notif-jumlah')) || 0,
     popupJudul:        getVal('notif-popup-judul'),
     popupSubtitle:     getVal('notif-popup-subtitle'),
