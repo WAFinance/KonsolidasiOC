@@ -10245,5 +10245,663 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- ================================================================ -->
+<!-- FITUR NOTIFIKASI PENGUMUMAN — Badge Sidebar + Pop-out             -->
+<!-- Tambahan baru: tidak mengubah struktur apapun di atas             -->
+<!-- ================================================================ -->
+<style>
+/* ===== BADGE NOTIFIKASI SIDEBAR ===== */
+.notif-sidebar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  background: #C0392B;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 0 5px;
+  margin-left: auto;
+  flex-shrink: 0;
+  animation: notifPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(192,57,43,0.4);
+}
+@keyframes notifPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(192,57,43,0.4); }
+  60%  { box-shadow: 0 0 0 6px rgba(192,57,43,0); }
+  100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); }
+}
+
+/* ===== POP-OUT NOTIFIKASI ===== */
+#notifPopupOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+#notifPopupOverlay.show { display: flex; }
+
+#notifPopupBox {
+  background: #fff;
+  border-radius: 16px;
+  width: min(480px, 96vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 56px rgba(0,0,0,0.35);
+  animation: notifPopIn 0.3s cubic-bezier(.175,.885,.32,1.275);
+  position: relative;
+}
+@keyframes notifPopIn {
+  from { opacity:0; transform:scale(0.88) translateY(16px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.notif-popup-header {
+  padding: 18px 20px 14px;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+.notif-popup-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.notif-popup-titles { flex: 1; min-width: 0; }
+.notif-popup-titles h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+.notif-popup-titles p {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.82);
+  margin: 0;
+}
+.notif-popup-close {
+  position: absolute;
+  top: 12px; right: 14px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  border-radius: 7px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.2s;
+}
+.notif-popup-close:hover { background: rgba(255,255,255,0.35); }
+
+.notif-popup-body {
+  padding: 18px 20px 20px;
+}
+.notif-popup-message {
+  font-size: 0.9rem;
+  color: var(--gray-800);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+.notif-popup-footer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-100);
+}
+.notif-popup-btn-primary {
+  flex: 1;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.notif-popup-btn-primary:hover { opacity: 0.88; }
+.notif-popup-btn-dismiss {
+  padding: 10px 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: 9px;
+  background: var(--gray-50);
+  color: var(--gray-600);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.notif-popup-btn-dismiss:hover { background: var(--gray-100); }
+.notif-popup-new-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(192,57,43,0.1);
+  color: #C0392B;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* ===== ADMIN TAB NOTIFIKASI PENGUMUMAN ===== */
+#atab-notif-pengumuman .notif-section-box {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+#atab-notif-pengumuman .notif-section-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--blue-900);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.notif-color-preview {
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+</style>
+
+<!-- Pop-out Modal Notifikasi -->
+<div id="notifPopupOverlay">
+  <div id="notifPopupBox">
+    <div class="notif-popup-header" id="notifPopupHeader" style="background:linear-gradient(135deg,#185FA5,#042C53);">
+      <div class="notif-popup-icon" id="notifPopupIcon"><i class="fa-solid fa-bell"></i></div>
+      <div class="notif-popup-titles">
+        <h3 id="notifPopupTitle">Pengumuman Baru</h3>
+        <p id="notifPopupSubtitle">Portal Pengadaan Kota Surakarta</p>
+      </div>
+      <button class="notif-popup-close" onclick="tutupNotifPopup()">&#x2715;</button>
+    </div>
+    <div class="notif-popup-body">
+      <div class="notif-popup-new-count" id="notifPopupCount" style="display:none;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="notifPopupCountText">1 pengumuman baru</span>
+      </div>
+      <div class="notif-popup-message" id="notifPopupMessage">Ada pengumuman baru yang perlu Anda perhatikan.</div>
+      <div class="notif-popup-footer">
+        <button class="notif-popup-btn-primary" id="notifPopupBtnLihat" style="background:linear-gradient(135deg,#185FA5,#042C53);" onclick="notifPopupLihatPengumuman()">
+          <i class="fa-solid fa-bell"></i> Lihat Pengumuman
+        </button>
+        <button class="notif-popup-btn-dismiss" onclick="tutupNotifPopupDismiss()">Abaikan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// NOTIFIKASI PENGUMUMAN — Badge Sidebar + Pop-out
+// ================================================================
+
+// --- State ---
+let _notifConfig = null;
+let _notifLastSeenCount = 0;
+
+// Key localStorage untuk menyimpan jumlah pengumuman yang sudah dilihat
+const NOTIF_SEEN_KEY = 'bpbj_notif_seen_count';
+const NOTIF_DISMISSED_KEY = 'bpbj_notif_dismissed';
+
+// Ambil config notifikasi dari globalConfig
+function getNotifConfig() {
+  return gcGet('notifPengumuman', {
+    badgeAktif: true,
+    popupAktif: true,
+    popupJudul: 'Ada Pengumuman Baru!',
+    popupSubtitle: 'Portal Pengadaan Kota Surakarta',
+    popupPesan: 'Terdapat pengumuman baru yang perlu Anda perhatikan. Silakan buka halaman Pengumuman untuk informasi lebih lanjut.',
+    popupWarna: '#185FA5',
+    popupIkon: 'fa-bell',
+    popupTampilUlang: true, // tampil lagi jika ada pengumuman baru
+    jumlahPengumuman: 0, // diisi admin manual / otomatis dari tab pengumuman
+  });
+}
+
+// Hitung jumlah tab pengumuman yang ada isinya
+function hitungJumlahPengumuman() {
+  const tabs = gcGet('pengumumanTabs', []);
+  const cfg = getNotifConfig();
+  // Jika admin set manual, pakai nilai itu
+  if (cfg.jumlahPengumuman && parseInt(cfg.jumlahPengumuman) > 0) {
+    return parseInt(cfg.jumlahPengumuman);
+  }
+  // Hitung dari tab yang ada kontennya
+  return tabs.filter(t => t.content && t.content.trim().length > 0).length;
+}
+
+// Render badge di link pengumuman di sidebar
+function renderNotifBadgeSidebar() {
+  const cfg = getNotifConfig();
+  if (!cfg.badgeAktif) return;
+
+  const jumlah = hitungJumlahPengumuman();
+  if (jumlah <= 0) return;
+
+  const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
+  const newCount = Math.max(0, jumlah - seenCount);
+
+  // Cari semua link nav yang mengarah ke halaman pengumuman
+  setTimeout(() => {
+    document.querySelectorAll('.nav-link[data-page="pengumuman"]').forEach(link => {
+      // Hapus badge lama jika ada
+      const oldBadge = link.querySelector('.notif-sidebar-badge');
+      if (oldBadge) oldBadge.remove();
+
+      if (newCount > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'notif-sidebar-badge';
+        badge.textContent = newCount > 99 ? '99+' : newCount;
+        badge.title = newCount + ' pengumuman baru';
+        link.appendChild(badge);
+      }
+    });
+  }, 80);
+}
+
+// Tandai pengumuman sudah dilihat (saat buka halaman pengumuman)
+function tandaiPengumumanDilihat() {
+  const jumlah = hitungJumlahPengumuman();
+  localStorage.setItem(NOTIF_SEEN_KEY, jumlah.toString());
+  // Hapus badge dari sidebar
+  document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+}
+
+// Tampilkan pop-out notifikasi
+function tampilkanNotifPopup() {
+  const cfg = getNotifConfig();
+  if (!cfg.popupAktif) return;
+
+  const jumlah = hitungJumlahPengumuman();
+  if (jumlah <= 0) return;
+
+  const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
+  const newCount = Math.max(0, jumlah - seenCount);
+
+  if (newCount <= 0) return; // tidak ada yang baru
+
+  // Cek apakah sudah di-dismiss untuk jumlah ini
+  const dismissedAt = localStorage.getItem(NOTIF_DISMISSED_KEY);
+  if (dismissedAt && parseInt(dismissedAt) >= jumlah && !cfg.popupTampilUlang) return;
+
+  // Isi konten popup
+  const warna = cfg.popupWarna || '#185FA5';
+  const ikon  = cfg.popupIkon  || 'fa-bell';
+
+  document.getElementById('notifPopupHeader').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
+  document.getElementById('notifPopupIcon').innerHTML = `<i class="fa-solid ${ikon}"></i>`;
+  document.getElementById('notifPopupTitle').textContent = cfg.popupJudul || 'Ada Pengumuman Baru!';
+  document.getElementById('notifPopupSubtitle').textContent = cfg.popupSubtitle || 'Portal Pengadaan Kota Surakarta';
+  document.getElementById('notifPopupMessage').innerHTML = cfg.popupPesan || 'Terdapat pengumuman baru.';
+  document.getElementById('notifPopupBtnLihat').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
+
+  const countEl = document.getElementById('notifPopupCount');
+  const countTextEl = document.getElementById('notifPopupCountText');
+  if (newCount > 0) {
+    countEl.style.display = 'inline-flex';
+    countTextEl.textContent = newCount + ' pengumuman baru';
+  } else {
+    countEl.style.display = 'none';
+  }
+
+  document.getElementById('notifPopupOverlay').classList.add('show');
+}
+
+function tutupNotifPopup() {
+  document.getElementById('notifPopupOverlay').classList.remove('show');
+}
+
+function tutupNotifPopupDismiss() {
+  const jumlah = hitungJumlahPengumuman();
+  localStorage.setItem(NOTIF_DISMISSED_KEY, jumlah.toString());
+  tutupNotifPopup();
+}
+
+function notifPopupLihatPengumuman() {
+  tutupNotifPopup();
+  showPage('pengumuman');
+  tandaiPengumumanDilihat();
+}
+
+// Helper gelap warna hex
+function darkenColor(hex, amount) {
+  try {
+    hex = hex.replace('#','');
+    const r = Math.max(0, parseInt(hex.slice(0,2),16) - Math.round(255*amount));
+    const g = Math.max(0, parseInt(hex.slice(2,4),16) - Math.round(255*amount));
+    const b = Math.max(0, parseInt(hex.slice(4,6),16) - Math.round(255*amount));
+    return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+  } catch(e) { return '#042C53'; }
+}
+
+// ================================================================
+// PATCH renderSidebar — tambahkan badge setelah render
+// ================================================================
+(function() {
+  const _origRenderSidebar = window.renderSidebar;
+  if (typeof _origRenderSidebar === 'function') {
+    window.renderSidebar = function() {
+      _origRenderSidebar.apply(this, arguments);
+      renderNotifBadgeSidebar();
+    };
+  }
+})();
+
+// ================================================================
+// PATCH showPage — tandai dilihat saat buka pengumuman
+// ================================================================
+(function() {
+  const _origShowPage = window.showPage;
+  if (typeof _origShowPage === 'function') {
+    window.showPage = function(pageId) {
+      _origShowPage.apply(this, arguments);
+      if (pageId === 'pengumuman') {
+        tandaiPengumumanDilihat();
+      }
+    };
+  }
+})();
+
+// ================================================================
+// ADMIN: Tab Notifikasi Pengumuman
+// ================================================================
+(function() {
+  // Tambahkan tab baru "Notif Pengumuman" di admin panel
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      _initAdminNotifTab();
+      _initNotifSystem();
+    }, 600);
+  });
+})();
+
+function _initNotifSystem() {
+  // Tampilkan popup setelah halaman load selesai (delay 1.5 detik)
+  setTimeout(function() {
+    tampilkanNotifPopup();
+  }, 1500);
+}
+
+function _initAdminNotifTab() {
+  // Tambah tab button
+  const tabsEl = document.querySelector('.admin-tabs');
+  if (!tabsEl) return;
+  if (tabsEl.querySelector('[data-notif-tab]')) return; // sudah ada
+
+  const tabBtn = document.createElement('button');
+  tabBtn.className = 'admin-tab';
+  tabBtn.setAttribute('data-notif-tab', '1');
+  tabBtn.innerHTML = '<i class="fa-solid fa-bell-slash"></i> Notif Pengumuman';
+  tabBtn.onclick = function() { switchAdminTab('notif-pengumuman', this); };
+  tabsEl.appendChild(tabBtn);
+
+  // Tambah section content
+  const adminBody = document.querySelector('#adminDashboard .admin-panel-body');
+  if (!adminBody) return;
+  if (document.getElementById('atab-notif-pengumuman')) return;
+
+  const section = document.createElement('div');
+  section.className = 'admin-section';
+  section.id = 'atab-notif-pengumuman';
+  section.innerHTML = `
+    <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:16px;">
+      Atur notifikasi pengumuman di sidebar (badge merah) dan pop-out pemberitahuan yang muncul otomatis.
+    </p>
+
+    <!-- Badge Sidebar -->
+    <div class="notif-section-box">
+      <div class="notif-section-title">
+        <i class="fa-solid fa-circle-exclamation" style="color:#C0392B;"></i>
+        Badge Notifikasi di Sidebar
+      </div>
+      <p style="font-size:0.80rem;color:var(--gray-600);margin-bottom:12px;">
+        Badge merah berisi angka akan muncul di menu <strong>Pengumuman</strong> di sidebar ketika ada pengumuman baru.
+        Angka otomatis dihitung dari jumlah tab pengumuman yang terisi, atau bisa diatur manual.
+      </p>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:12px;">
+        <div>
+          <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Aktifkan Badge Notifikasi</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);">Tampilkan angka merah di menu Pengumuman</div>
+        </div>
+        <label class="admin-toggle-switch">
+          <input type="checkbox" id="notif-badge-aktif" checked>
+          <span class="admin-toggle-slider"></span>
+        </label>
+      </div>
+      <div class="admin-form-group">
+        <label>Jumlah Pengumuman (atur manual, 0 = hitung otomatis dari tab terisi)</label>
+        <input type="number" id="notif-jumlah" min="0" max="99" value="0" placeholder="0 = otomatis" />
+        <div style="font-size:0.73rem;color:var(--gray-400);margin-top:4px;">
+          <i class="fa-solid fa-circle-info"></i>
+          Isi angka untuk override hitungan otomatis. Badge hanya muncul jika ada pengumuman yang belum dilihat pengunjung.
+        </div>
+      </div>
+      <div style="background:#E8F4FD;border-radius:8px;padding:10px 14px;font-size:0.80rem;color:var(--blue-900);">
+        <i class="fa-solid fa-lightbulb" style="color:var(--blue-600);"></i>
+        <strong>Info:</strong> Badge akan otomatis hilang saat pengunjung membuka halaman Pengumuman.
+      </div>
+    </div>
+
+    <!-- Pop-out Notifikasi -->
+    <div class="notif-section-box">
+      <div class="notif-section-title">
+        <i class="fa-solid fa-bell" style="color:var(--blue-600);"></i>
+        Pop-out Pemberitahuan Otomatis
+      </div>
+      <p style="font-size:0.80rem;color:var(--gray-600);margin-bottom:12px;">
+        Popup muncul otomatis saat pengunjung membuka halaman, hanya jika ada pengumuman baru yang belum dilihat.
+      </p>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:14px;">
+        <div>
+          <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Aktifkan Pop-out</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);">Popup otomatis saat ada pengumuman baru</div>
+        </div>
+        <label class="admin-toggle-switch">
+          <input type="checkbox" id="notif-popup-aktif" checked>
+          <span class="admin-toggle-slider"></span>
+        </label>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-200);border-radius:9px;padding:12px 16px;margin-bottom:14px;">
+        <div>
+          <div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);">Tampilkan Ulang jika Ada Baru</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);">Popup muncul lagi jika jumlah pengumuman bertambah</div>
+        </div>
+        <label class="admin-toggle-switch">
+          <input type="checkbox" id="notif-popup-tampil-ulang" checked>
+          <span class="admin-toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="admin-form-group">
+        <label>Judul Popup</label>
+        <input type="text" id="notif-popup-judul" placeholder="Ada Pengumuman Baru!" value="Ada Pengumuman Baru!" />
+      </div>
+      <div class="admin-form-group">
+        <label>Subtitle Popup</label>
+        <input type="text" id="notif-popup-subtitle" placeholder="Portal Pengadaan Kota Surakarta" value="Portal Pengadaan Kota Surakarta" />
+      </div>
+      <div class="admin-form-group">
+        <label>Pesan Popup (mendukung HTML)</label>
+        <textarea id="notif-popup-pesan" rows="4" placeholder="Terdapat pengumuman baru...">Terdapat pengumuman baru yang perlu Anda perhatikan. Silakan buka halaman <strong>Pengumuman</strong> untuk informasi lebih lanjut.</textarea>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="admin-form-group" style="flex:1;min-width:140px;">
+          <label>Warna Tema Popup</label>
+          <input type="color" id="notif-popup-warna" value="#185FA5" oninput="previewNotifPopupWarna()" />
+        </div>
+        <div class="admin-form-group" style="flex:2;min-width:180px;">
+          <label>Ikon Popup <span style="font-size:0.72rem;color:var(--gray-400);">(nama FontAwesome, cth: fa-bell)</span></label>
+          <input type="text" id="notif-popup-ikon" placeholder="fa-bell" value="fa-bell" />
+        </div>
+      </div>
+
+      <!-- Preview warna -->
+      <div class="notif-color-preview" id="notifColorPreview" style="background:linear-gradient(135deg,#185FA5,#042C53);color:#fff;">
+        <i class="fa-solid fa-bell" id="notifColorPreviewIcon"></i>
+        <span>Preview Warna Popup</span>
+      </div>
+
+      <!-- Tombol preview popup -->
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button class="btn-outline" onclick="previewNotifPopupAdmin()" style="color:var(--blue-700);">
+          <i class="fa-solid fa-eye"></i> Preview Popup
+        </button>
+        <button class="btn-outline" onclick="resetNotifSeen()" style="color:#856404;border-color:#F9A825;">
+          <i class="fa-solid fa-rotate"></i> Reset Status Sudah Dilihat
+        </button>
+      </div>
+    </div>
+
+    <!-- Tombol simpan -->
+    <button class="btn-admin-save" onclick="saveNotifPengumumanConfig()">
+      <i class="fa-solid fa-floppy-disk"></i> Simpan & Sync
+    </button>
+    <span class="admin-save-msg" id="msgNotifPengumuman">✓ Tersinkron</span>
+  `;
+  adminBody.querySelector('.admin-panel-body') ? adminBody.querySelector('.admin-panel-body').appendChild(section) : adminBody.appendChild(section);
+
+  // Load nilai dari config
+  _loadNotifAdminForm();
+}
+
+function _loadNotifAdminForm() {
+  const cfg = getNotifConfig();
+  const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+
+  setChk('notif-badge-aktif',        cfg.badgeAktif !== false);
+  setChk('notif-popup-aktif',        cfg.popupAktif !== false);
+  setChk('notif-popup-tampil-ulang', cfg.popupTampilUlang !== false);
+  setVal('notif-jumlah',             cfg.jumlahPengumuman || 0);
+  setVal('notif-popup-judul',        cfg.popupJudul || 'Ada Pengumuman Baru!');
+  setVal('notif-popup-subtitle',     cfg.popupSubtitle || 'Portal Pengadaan Kota Surakarta');
+  setVal('notif-popup-pesan',        cfg.popupPesan || '');
+  setVal('notif-popup-warna',        cfg.popupWarna || '#185FA5');
+  setVal('notif-popup-ikon',         cfg.popupIkon || 'fa-bell');
+
+  previewNotifPopupWarna();
+}
+
+function previewNotifPopupWarna() {
+  const warna = document.getElementById('notif-popup-warna') ? document.getElementById('notif-popup-warna').value : '#185FA5';
+  const ikon  = document.getElementById('notif-popup-ikon') ? document.getElementById('notif-popup-ikon').value : 'fa-bell';
+  const preview = document.getElementById('notifColorPreview');
+  const iconEl  = document.getElementById('notifColorPreviewIcon');
+  if (preview) preview.style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
+  if (iconEl)  iconEl.className = `fa-solid ${ikon}`;
+}
+
+function previewNotifPopupAdmin() {
+  // Tampilkan popup dengan nilai form saat ini (preview)
+  const warna = (document.getElementById('notif-popup-warna') || {}).value || '#185FA5';
+  const ikon  = (document.getElementById('notif-popup-ikon') || {}).value || 'fa-bell';
+  document.getElementById('notifPopupHeader').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
+  document.getElementById('notifPopupIcon').innerHTML = `<i class="fa-solid ${ikon}"></i>`;
+  document.getElementById('notifPopupTitle').textContent = (document.getElementById('notif-popup-judul')||{}).value || 'Ada Pengumuman Baru!';
+  document.getElementById('notifPopupSubtitle').textContent = (document.getElementById('notif-popup-subtitle')||{}).value || '';
+  document.getElementById('notifPopupMessage').innerHTML = (document.getElementById('notif-popup-pesan')||{}).value || '';
+  document.getElementById('notifPopupBtnLihat').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
+  const jumlah = parseInt((document.getElementById('notif-jumlah')||{}).value || 0);
+  const countEl = document.getElementById('notifPopupCount');
+  const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
+  const newCount  = Math.max(0, (jumlah || hitungJumlahPengumuman()) - seenCount);
+  if (newCount > 0) {
+    countEl.style.display = 'inline-flex';
+    document.getElementById('notifPopupCountText').textContent = newCount + ' pengumuman baru';
+  } else {
+    countEl.style.display = 'none';
+  }
+  document.getElementById('notifPopupOverlay').classList.add('show');
+}
+
+function resetNotifSeen() {
+  localStorage.removeItem(NOTIF_SEEN_KEY);
+  localStorage.removeItem(NOTIF_DISMISSED_KEY);
+  renderNotifBadgeSidebar();
+  showToast('Status "sudah dilihat" direset. Popup akan muncul kembali.', 'info');
+}
+
+async function saveNotifPengumumanConfig() {
+  const getChk = (id) => { const el = document.getElementById(id); return el ? el.checked : true; };
+  const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+  const cfg = {
+    badgeAktif:        getChk('notif-badge-aktif'),
+    popupAktif:        getChk('notif-popup-aktif'),
+    popupTampilUlang:  getChk('notif-popup-tampil-ulang'),
+    jumlahPengumuman:  parseInt(getVal('notif-jumlah')) || 0,
+    popupJudul:        getVal('notif-popup-judul'),
+    popupSubtitle:     getVal('notif-popup-subtitle'),
+    popupPesan:        getVal('notif-popup-pesan'),
+    popupWarna:        getVal('notif-popup-warna'),
+    popupIkon:         getVal('notif-popup-ikon'),
+  };
+
+  await pushConfig('notifPengumuman', cfg);
+  _notifConfig = cfg;
+
+  // Re-render badge dengan config baru
+  renderNotifBadgeSidebar();
+
+  flashMsg('msgNotifPengumuman');
+}
+
+// Helper: tampilkan toast (reuse jika sudah ada fungsi showToast)
+function _notifShowToast(msg, type) {
+  if (typeof showToast === 'function') { showToast(msg, type); return; }
+  alert(msg);
+}
+
+// ================================================================
+// PATCH loadAdminForms — load nilai notif ke form
+// ================================================================
+(function() {
+  const _origLoadAdminForms = window.loadAdminForms;
+  if (typeof _origLoadAdminForms === 'function') {
+    window.loadAdminForms = async function() {
+      await _origLoadAdminForms.apply(this, arguments);
+      // Delay agar DOM tab sudah dirender
+      setTimeout(_loadNotifAdminForm, 300);
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
