@@ -11,6 +11,30 @@
     .pw-eye { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--gray-400); font-size:14px; padding:4px; transition:color var(--transition); }
     .pw-eye:hover { color:var(--blue-600); }
 
+    /* ===== DELEGASI PAKET — LOCK INDICATOR ===== */
+    .delegasi-locked-row { background: #FFFBF0 !important; border-left: 3px solid #FFB74D !important; }
+    .delegasi-lock-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.70rem; font-weight: 700; padding: 3px 8px; border-radius: 12px;
+      background: #FFF3E0; color: #856404; border: 1px solid #FFCC80;
+    }
+    .delegasi-own-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.70rem; font-weight: 700; padding: 3px 8px; border-radius: 12px;
+      background: #EAF3DE; color: #2D7D17; border: 1px solid #B6DBA0;
+    }
+    .btn-review[disabled] {
+      opacity: 0.45 !important; cursor: not-allowed !important;
+      filter: grayscale(1) !important;
+    }
+    /* Info banner delegasi untuk pokja */
+    #delegasiInfoBanner {
+      display: none; background: linear-gradient(135deg, #1B3A5C, #2D5A8E);
+      color: #fff; border-radius: 8px; padding: 10px 16px; margin-bottom: 14px;
+      font-size: 0.82rem; align-items: center; gap: 10px;
+    }
+    #delegasiInfoBanner.show { display: flex; }
+
     /* ===== ADMIN TOGGLE SWITCH ===== */
     .admin-toggle-switch { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
     .admin-toggle-switch input { opacity:0; width:0; height:0; }
@@ -1265,6 +1289,14 @@
     <section class="page" id="page-pokja">
       <h2 class="page-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Evaluasi Pokja</h2>
       <p class="page-subtitle">Evaluasi dokumen yang diunggah oleh penyedia. Data diambil dari Google Spreadsheet.</p>
+      <!-- Banner info delegasi untuk Pokja -->
+      <div id="delegasiInfoBanner">
+        <i class="fa-solid fa-shield-halved" style="font-size:1.2rem;flex-shrink:0;"></i>
+        <div>
+          <strong id="delegasiInfoText">Login sebagai Pokja</strong>
+          <div style="font-size:0.75rem;opacity:0.85;margin-top:2px;">Paket yang <strong>belum di-assign</strong> atau bukan delegasi Anda ditampilkan <i class="fa-solid fa-lock"></i> <em>Read Only</em>. Fitur Evaluasi, WA, dan Email terkunci hingga Admin melakukan assign.</div>
+        </div>
+      </div>
       <div id="pokjaDashboard">
         <div class="admin-panel" style="border-color:var(--blue-600);">
           <div class="admin-panel-header" style="background:linear-gradient(135deg,#0C447C 0%,#185FA5 100%);">
@@ -1290,7 +1322,7 @@
             </div>
             <div style="overflow-x:auto;">
               <table class="pokja-table" id="pokjaTable">
-                <thead><tr><th>#</th><th>Tgl Upload</th><th>Perusahaan</th><th>NPWP</th><th>Jenis Dokumen</th><th>Kontak</th><th>Dok. per Kategori</th><th>Revisi</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>#</th><th>Tgl Upload</th><th>Perusahaan</th><th>NPWP</th><th>Jenis Dokumen</th><th>Kontak</th><th>Dok. per Kategori</th><th>Revisi</th><th>Status</th><th>Catatan</th><th>Delegasi</th><th>Aksi</th></tr></thead>
                 <tbody id="pokjaTableBody"><tr><td colspan="12" style="text-align:center;color:var(--gray-400);padding:28px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data…</td></tr></tbody>
               </table>
             </div>
@@ -1591,6 +1623,65 @@
               </div>
             </div>
 
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HALAMAN DELEGASI PAKET (ADMIN ONLY) ===== -->
+    <section class="page" id="page-delegasi">
+      <h2 class="page-title"><i class="fa-solid fa-people-arrows"></i> Delegasi Paket ke Pokja</h2>
+      <p class="page-subtitle">Assign paket dokumen penyedia kepada anggota Pokja. Hanya Admin yang dapat mengubah delegasi.</p>
+      <div id="delegasiPageContent">
+        <div style="background:var(--white);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;">
+          <!-- Toolbar -->
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--gray-100);flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px;">
+              <i class="fa-solid fa-magnifying-glass" style="color:var(--gray-400);"></i>
+              <input type="text" id="delegasiSearchInput" placeholder="Cari perusahaan / NPWP / jenis dokumen…"
+                style="border:1px solid var(--gray-200);border-radius:8px;padding:7px 12px;font-size:0.85rem;width:100%;outline:none;"
+                oninput="renderDelegasiTable()" />
+            </div>
+            <select id="delegasiFilterPokja" onchange="renderDelegasiTable()"
+              style="border:1px solid var(--gray-200);border-radius:8px;padding:7px 12px;font-size:0.84rem;cursor:pointer;">
+              <option value="">Semua Pokja</option>
+              <option value="__belum__">— Belum Assign —</option>
+              <option value="Pokja 1">Pokja 1</option>
+              <option value="Pokja 2">Pokja 2</option>
+              <option value="Pokja 3">Pokja 3</option>
+              <option value="Pokja 4">Pokja 4</option>
+            </select>
+            <button onclick="loadDelegasiMap().then(renderDelegasiTable)"
+              style="background:var(--blue-600);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.84rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+          <!-- Statistik ringkas -->
+          <div id="delegasiStats" style="display:flex;gap:10px;padding:12px 18px;flex-wrap:wrap;border-bottom:1px solid var(--gray-100);background:var(--gray-50);"></div>
+          <!-- Tabel -->
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.84rem;" id="delegasiTable">
+              <thead>
+                <tr style="background:var(--blue-900);color:#fff;text-align:left;">
+                  <th style="padding:10px 12px;white-space:nowrap;">#</th>
+                  <th style="padding:10px 12px;white-space:nowrap;">Tgl Upload</th>
+                  <th style="padding:10px 12px;">Perusahaan</th>
+                  <th style="padding:10px 12px;white-space:nowrap;">NPWP</th>
+                  <th style="padding:10px 12px;">Jenis Dokumen</th>
+                  <th style="padding:10px 12px;white-space:nowrap;">Status Evaluasi</th>
+                  <th style="padding:10px 12px;min-width:160px;">Assign ke Pokja</th>
+                </tr>
+              </thead>
+              <tbody id="delegasiTbody">
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--gray-400);">
+                  <i class="fa-solid fa-spinner fa-spin"></i> Memuat data…
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="delegasiEmpty" style="display:none;padding:40px;text-align:center;color:var(--gray-400);">
+            <i class="fa-solid fa-inbox" style="font-size:2rem;margin-bottom:10px;display:block;"></i>
+            <p style="font-weight:600;">Tidak ada data yang cocok</p>
           </div>
         </div>
       </div>
@@ -2280,9 +2371,20 @@ function normalizeSubmission(s) {
   s.namaDirektur    = String(s.namaDirektur    ?? '').trim();
   s.jenisDok        = String(s.jenisDok        ?? '').trim();
   s.reviewStatus    = String(s.reviewStatus    ?? '').trim();
+  s.delegasiPokja   = String(s.delegasiPokja   ?? '').trim();
   return s;
 }
-function normalizeSubmissions(arr) { return Array.isArray(arr) ? arr.map(normalizeSubmission) : []; }
+function normalizeSubmissions(arr) {
+  if (!Array.isArray(arr)) return [];
+  const result = arr.map(normalizeSubmission);
+  // Rebuild _delegasiMap dari data submissions (agar sinkron tanpa request extra)
+  result.forEach(s => {
+    const paketKey = (s.npwp || s.namaPerusahaan) + '||' + s.jenisDok;
+    if (s.delegasiPokja) _delegasiMap[paketKey] = s.delegasiPokja;
+    // Jika delegasiPokja kosong, biarkan map lama (mungkin baru diset, belum reload)
+  });
+  return result;
+}
 
 function togglePw(id, btn) {
   const inp = document.getElementById(id);
@@ -2372,6 +2474,201 @@ let adminClickCount  = 0;
 
 // Daftar semua username pokja yang dikenali
 const POKJA_USERNAMES = ['pokja','pokja1','pokja2','pokja3','pokja4','pokja5','pokja6','pokja7','pokja8','pokja9','pokja10'];
+
+// ── Mapping username pokja ke label delegasi ──
+const POKJA_DELEGASI_LABEL = {
+  'pokja1': 'Pokja 1',
+  'pokja2': 'Pokja 2',
+  'pokja3': 'Pokja 3',
+  'pokja4': 'Pokja 4'
+};
+
+// ── State delegasi paket (diisi saat load submissions) ──
+let _delegasiMap = {}; // key: "npwp||jenisDok" → "Pokja 1" | "Pokja 2" | ...
+
+// Muat delegasi map dari server (dipanggil saat login pokja/admin)
+async function loadDelegasiMap() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getDelegasiPaket&t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'ok' && data.delegasiMap) {
+      _delegasiMap = data.delegasiMap;
+    }
+  } catch(e) { _delegasiMap = {}; }
+}
+
+// Simpan delegasi paket (hanya admin)
+async function setDelegasiPaket(npwp, namaPerusahaan, jenisDok, delegasiPokja, selectEl) {
+  if (currentRole !== 'admin') { showToast('Akses Ditolak', 'Hanya Admin yang dapat mendelegasikan paket.', 'error'); return; }
+  if (selectEl) { selectEl.disabled = true; }
+
+  // Optimistic update langsung di memori
+  const paketKey = (npwp || namaPerusahaan) + '||' + jenisDok;
+  const prevValue = _delegasiMap[paketKey];
+  if (delegasiPokja) _delegasiMap[paketKey] = delegasiPokja;
+  else delete _delegasiMap[paketKey];
+  renderPokjaTable();
+  if (typeof renderDelegasiTable === 'function') renderDelegasiTable();
+
+  try {
+    // no-cors + text/plain: tidak memicu preflight OPTIONS (CORS fix)
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'setDelegasiPaket',
+        npwp: npwp, namaPerusahaan: namaPerusahaan,
+        jenisDok: jenisDok, delegasiPokja: delegasiPokja,
+        requestedBy: 'admin'
+      })
+    });
+    showToast('Delegasi Disimpan', delegasiPokja ? ('Paket didelegasikan ke ' + delegasiPokja) : 'Delegasi dihapus', 'success');
+  } catch(e) {
+    // Rollback jika fetch gagal total (offline/network error)
+    if (prevValue !== undefined) _delegasiMap[paketKey] = prevValue;
+    else delete _delegasiMap[paketKey];
+    renderPokjaTable();
+    showToast('Gagal Simpan Delegasi', e.message, 'error');
+  } finally {
+    if (selectEl) { selectEl.disabled = false; }
+  }
+}
+
+// Helper: cek apakah user login (pokja) punya akses ke paket ini
+function cekAkseDelegasiFrontend(npwp, namaPerusahaan, jenisDok) {
+  if (currentRole === 'admin') return true; // admin selalu full akses
+  if (currentRole !== 'pokja') return true; // bukan pokja → tidak di-enforce
+
+  const paketKey = (npwp || namaPerusahaan) + '||' + jenisDok;
+  const delegasi = _delegasiMap[paketKey] || null;
+
+  // Belum ada delegasi → SEMUA pokja dikunci (harus tunggu assign dari admin)
+  if (!delegasi) return false;
+
+  const loginLabel = POKJA_DELEGASI_LABEL[currentPokjaUser] || null;
+  // Pokja umum / pokja5-10 (tidak punya label spesifik): boleh akses
+  // jika paket sudah di-assign ke siapapun
+  if (!loginLabel) return true;
+
+  // Pokja1-4: harus cocok persis dengan label yang di-assign
+  return delegasi === loginLabel;
+}
+
+// ================================================================
+// HALAMAN DELEGASI PAKET (khusus Admin)
+// ================================================================
+function renderDelegasiTable() {
+  if (currentRole !== 'admin') return;
+  var tbody   = document.getElementById('delegasiTbody');
+  var emptyEl = document.getElementById('delegasiEmpty');
+  var statsEl = document.getElementById('delegasiStats');
+  if (!tbody) return;
+
+  var qEl  = document.getElementById('delegasiSearchInput');
+  var fEl  = document.getElementById('delegasiFilterPokja');
+  var q    = qEl  ? qEl.value.toLowerCase().trim()  : '';
+  var fPkj = fEl  ? fEl.value : '';
+
+  var subs = getSubmissions();
+  if (!subs || subs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#888;">Belum ada data dokumen masuk.</td></tr>';
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (statsEl) statsEl.innerHTML = '';
+    return;
+  }
+
+  var rows = subs.filter(function(s) {
+    var nama   = (s.namaPerusahaan || '').toLowerCase();
+    var npwp   = (s.npwp || '').toLowerCase();
+    var jenis  = (s.jenisDok || '').toLowerCase();
+    var matchQ = !q || nama.indexOf(q) >= 0 || npwp.indexOf(q) >= 0 || jenis.indexOf(q) >= 0;
+    var pk     = (s.npwp || s.namaPerusahaan || '') + '||' + (s.jenisDok || '');
+    var dlg    = _delegasiMap[pk] || '';
+    var matchF = !fPkj ? true : (fPkj === '__belum__' ? !dlg : dlg === fPkj);
+    return matchQ && matchF;
+  });
+
+  var total    = subs.length;
+  var assigned = subs.filter(function(s) {
+    var k = (s.npwp || s.namaPerusahaan || '') + '||' + (s.jenisDok || '');
+    return !!_delegasiMap[k];
+  }).length;
+  var belum = total - assigned;
+
+  var perPokjaHtml = ['Pokja 1','Pokja 2','Pokja 3','Pokja 4'].map(function(p) {
+    var c = subs.filter(function(s) {
+      var k = (s.npwp || s.namaPerusahaan || '') + '||' + (s.jenisDok || '');
+      return _delegasiMap[k] === p;
+    }).length;
+    return '<div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:8px 14px;font-size:0.80rem;">'
+      + '<div style="font-weight:700;color:#10478A;">' + p + '</div>'
+      + '<div style="font-size:1.1rem;font-weight:800;color:#343A40;">' + c + '</div>'
+      + '<div style="color:#888;font-size:0.72rem;">paket</div></div>';
+  }).join('');
+
+  if (statsEl) {
+    statsEl.innerHTML =
+      '<div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:8px 14px;font-size:0.80rem;">'
+        + '<div style="font-weight:700;color:#5F5E5A;">Total Paket</div>'
+        + '<div style="font-size:1.1rem;font-weight:800;">' + total + '</div></div>'
+      + '<div style="background:#EAF3DE;border:1px solid #B6DBA0;border-radius:8px;padding:8px 14px;font-size:0.80rem;">'
+        + '<div style="font-weight:700;color:#2D7D17;">Sudah Assign</div>'
+        + '<div style="font-size:1.1rem;font-weight:800;color:#2D7D17;">' + assigned + '</div></div>'
+      + '<div style="background:#FFF3CD;border:1px solid #FFCC80;border-radius:8px;padding:8px 14px;font-size:0.80rem;">'
+        + '<div style="font-weight:700;color:#856404;">Belum Assign</div>'
+        + '<div style="font-size:1.1rem;font-weight:800;color:#856404;">' + belum + '</div></div>'
+      + perPokjaHtml;
+  }
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  var stLabels = {
+    'Lulus / Memenuhi Syarat': '<span style="background:#EAF3DE;color:#2D7D17;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">Lulus</span>',
+    'Memenuhi Syarat':         '<span style="background:#EAF3DE;color:#2D7D17;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">Lulus</span>',
+    'Tidak Memenuhi Syarat':   '<span style="background:#FDEDEC;color:#C0392B;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">Tidak</span>',
+    'Menunggu Evaluasi':       '<span style="background:#FFF3CD;color:#856404;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">Pending</span>'
+  };
+
+  tbody.innerHTML = rows.map(function(s, idx) {
+    var npwp    = s.npwp || '';
+    var nama    = s.namaPerusahaan || '-';
+    var jenis   = s.jenisDok || '-';
+    var tgl     = s.timestamp ? new Date(s.timestamp).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-';
+    var status  = s.reviewStatus || 'Menunggu Evaluasi';
+    var pk      = (npwp || nama) + '||' + jenis;
+    var dlg     = _delegasiMap[pk] || '';
+    var stHtml  = stLabels[status] || ('<span style="background:#e9ecef;color:#5F5E5A;padding:2px 8px;border-radius:10px;font-size:0.75rem;">' + status + '</span>');
+    var eNpwp   = npwp.split("'").join('&#39;');
+    var eNama   = nama.split("'").join('&#39;');
+    var eJenis  = jenis.split("'").join('&#39;');
+    var opts    = ['','Pokja 1','Pokja 2','Pokja 3','Pokja 4'].map(function(v) {
+      return '<option value="' + v + '"' + (dlg === v ? ' selected' : '') + '>' + (v || '-- Belum Assign --') + '</option>';
+    }).join('');
+    var bgSel   = dlg ? '#EAF3DE' : '#fff';
+    var fwSel   = dlg ? '700' : '400';
+    var colSel  = dlg ? '#2D7D17' : '#5F5E5A';
+    var dirHtml = s.namaDirektur ? ('<br><span style="font-size:0.72rem;color:#888;">' + s.namaDirektur + '</span>') : '';
+    var onchg   = "setDelegasiPaket('" + eNpwp + "','" + eNama + "','" + eJenis + "',this.value,this)";
+    return '<tr style="border-bottom:1px solid #e9ecef;">'
+      + '<td style="padding:10px 12px;color:#888;">' + (idx + 1) + '</td>'
+      + '<td style="padding:10px 12px;white-space:nowrap;font-size:0.78rem;">' + tgl + '</td>'
+      + '<td style="padding:10px 12px;"><strong style="font-size:0.85rem;">' + nama + '</strong>' + dirHtml + '</td>'
+      + '<td style="padding:10px 12px;font-family:monospace;font-size:0.78rem;">' + (npwp || '-') + '</td>'
+      + '<td style="padding:10px 12px;font-size:0.80rem;max-width:180px;">' + jenis + '</td>'
+      + '<td style="padding:10px 12px;">' + stHtml + '</td>'
+      + '<td style="padding:10px 12px;">'
+      +   '<select onchange="' + onchg + '" style="font-size:0.82rem;border:1px solid #dee2e6;border-radius:8px;padding:6px 10px;cursor:pointer;width:100%;min-width:130px;background:' + bgSel + ';font-weight:' + fwSel + ';color:' + colSel + ';">'
+      +   opts
+      + '</select></td>'
+      + '</tr>';
+  }).join('');
+}
 
 // ── Session persistence: tahan login saat browser di-refresh ──
 function saveSession() {
@@ -2629,7 +2926,9 @@ function setRole(role) {
   renderSidebar();
   updateRoleUI();
   updateMbnVisibility();
-  if (role === 'pokja' || role === 'admin') loadSubmissionsFromSheet();
+  if (role === 'pokja' || role === 'admin') {
+    loadDelegasiMap().then(() => loadSubmissionsFromSheet());
+  }
   if (role === 'admin') loadAdminForms();
   if (role === 'pokja') showPage('pokja');
   if (role === 'admin') showPage('admin');
@@ -2668,19 +2967,38 @@ function updateRoleUI() {
   const badge     = document.getElementById('roleBadge');
   const logoutBtn = document.getElementById('logoutTopBtn');
   const spInfo    = document.getElementById('sidebarPenyediaInfo');
+  const delegasiBanner = document.getElementById('delegasiInfoBanner');
   if (currentRole) {
     indicator.style.display='block'; logoutBtn.style.display='block';
-    if (currentRole==='admin') { badge.className='role-badge role-admin'; badge.innerHTML='<i class="fa-solid fa-gear"></i> Admin'; }
-    else if (currentRole==='pokja') { badge.className='role-badge role-pokja'; badge.innerHTML=`<i class="fa-solid fa-shield-halved"></i> ${getPokjaDisplayName()}`; }
+    if (currentRole==='admin') {
+      badge.className='role-badge role-admin'; badge.innerHTML='<i class="fa-solid fa-gear"></i> Admin';
+      if (delegasiBanner) delegasiBanner.classList.remove('show');
+    }
+    else if (currentRole==='pokja') {
+      badge.className='role-badge role-pokja'; badge.innerHTML=`<i class="fa-solid fa-shield-halved"></i> ${getPokjaDisplayName()}`;
+      // Tampilkan banner delegasi untuk pokja1-pokja4
+      const loginLabel = POKJA_DELEGASI_LABEL[currentPokjaUser] || null;
+      if (delegasiBanner) {
+        if (loginLabel) {
+          delegasiBanner.classList.add('show');
+          const infoText = document.getElementById('delegasiInfoText');
+          if (infoText) infoText.textContent = `Login sebagai ${currentPokjaUser.toUpperCase()} — hanya dapat memproses paket yang didelegasikan ke ${loginLabel}`;
+        } else {
+          delegasiBanner.classList.remove('show');
+        }
+      }
+    }
     else if (currentRole==='penyedia' && currentPenyedia) {
       badge.className='role-badge role-penyedia';
       badge.innerHTML=`<i class="fa-solid fa-building"></i> ${currentPenyedia.nama.length>20?currentPenyedia.nama.slice(0,18)+'…':currentPenyedia.nama}`;
       spInfo.classList.add('show');
       document.getElementById('spName').textContent  = currentPenyedia.nama;
       document.getElementById('spEmail').textContent = currentPenyedia.email;
+      if (delegasiBanner) delegasiBanner.classList.remove('show');
     }
   } else {
     indicator.style.display='none'; logoutBtn.style.display='none'; spInfo.classList.remove('show');
+    if (delegasiBanner) delegasiBanner.classList.remove('show');
   }
 }
 
@@ -3133,6 +3451,12 @@ function renderSidebar() {
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#0C447C,#185FA5);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Evaluasi Dokumen</span></a></li>`;
     html += negoBtn;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;border-left:3px solid #0a3d0a;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-trophy"></i></span><span class="nav-label">Penetapan Pemenang</span></a></li>`;
+  } else if (currentRole === 'admin') {
+    // Sidebar admin: tampilkan menu khusus admin
+    html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="admin" style="background:linear-gradient(135deg,#856404,#A07800);color:#fff;border-left:3px solid #5c4600;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Panel Admin</span></a></li>`;
+    html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="delegasi" style="background:linear-gradient(135deg,#185FA5,#0C447C);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-people-arrows"></i></span><span class="nav-label">Delegasi Paket</span></a></li>`;
+    html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#4A5568,#2D3748);color:#fff;border-left:3px solid #1a202c;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Evaluasi Dokumen</span></a></li>`;
+    html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout (Admin)</span></a></li>`;
   } else if (currentRole === null) {
     const showPenyedia = gcGet('showLoginPenyedia', true);
     const showPokja    = gcGet('showLoginPokja', true);
@@ -3152,18 +3476,21 @@ function renderSidebar() {
     }
   }
 
-  html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
-  items.forEach(item => {
-    if (item.id === 'upload') return;
-    const isAdminOnly    = item.roleOnly && item.roleOnly.includes('admin') && !item.roleOnly.includes('pokja');
-    const isPokjaOrAdmin = item.roleOnly && (item.roleOnly.includes('pokja') || item.roleOnly.includes('admin'));
-    if (currentRole === null && !item.publik) return;
-    if (currentRole === 'penyedia' && (isAdminOnly || isPokjaOrAdmin)) return;
-    if (currentRole === 'pokja' && isAdminOnly) return;
-    if ((isAdminOnly || isPokjaOrAdmin) && !hasManageSection && currentRole && currentRole !== 'penyedia') { html += `<div class="sidebar-section-label">Manajemen</div>`; hasManageSection = true; }
-    let iconHtml = item.iconType==='img' && item.iconUrl ? `<img src="${item.iconUrl}" class="custom-nav-icon" alt="${item.label}" />` : `<i class="fa-solid ${item.icon||'fa-circle'}"></i>`;
-    html += `<li><a href="#" class="nav-link" data-page="${item.id}"><span class="nav-icon">${iconHtml}</span><span class="nav-label">${item.label}</span></a></li>`;
-  });
+  // Admin punya sidebar khusus — skip loop sidebarItems generik agar tidak dobel
+  if (currentRole !== 'admin') {
+    html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div>`;
+    items.forEach(item => {
+      if (item.id === 'upload') return;
+      const isAdminOnly    = item.roleOnly && item.roleOnly.includes('admin') && !item.roleOnly.includes('pokja');
+      const isPokjaOrAdmin = item.roleOnly && (item.roleOnly.includes('pokja') || item.roleOnly.includes('admin'));
+      if (currentRole === null && !item.publik) return;
+      if (currentRole === 'penyedia' && (isAdminOnly || isPokjaOrAdmin)) return;
+      if (currentRole === 'pokja' && isAdminOnly) return;
+      if ((isAdminOnly || isPokjaOrAdmin) && !hasManageSection && currentRole && currentRole !== 'penyedia') { html += `<div class="sidebar-section-label">Manajemen</div>`; hasManageSection = true; }
+      let iconHtml = item.iconType==='img' && item.iconUrl ? `<img src="${item.iconUrl}" class="custom-nav-icon" alt="${item.label}" />` : `<i class="fa-solid ${item.icon||'fa-circle'}"></i>`;
+      html += `<li><a href="#" class="nav-link" data-page="${item.id}"><span class="nav-icon">${iconHtml}</span><span class="nav-label">${item.label}</span></a></li>`;
+    });
+  }
   if (currentRole === 'pokja')   { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout (${getPokjaDisplayName()})</span></a></li>`; }
   if (currentRole === 'penyedia') { html += `<div style="border-bottom:1px solid var(--gray-100);margin:4px 0;"></div><li style="padding:4px 10px;"><a href="#" class="nav-link" onclick="event.preventDefault();doLogout();" style="color:#C0392B;border-left-color:transparent;"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span class="nav-label">Logout</span></a></li>`; }
   if (currentRole === 'pokja') {
@@ -3226,6 +3553,11 @@ function showPage(pageId) {
   }
   if (pageId === 'download-ba') {
     renderDownloadBA();
+  }
+  if (pageId === 'delegasi') {
+    if (currentRole === 'admin') {
+      loadDelegasiMap().then(() => renderDelegasiTable());
+    }
   }
   window.scrollTo({ top:0, behavior:'smooth' });
   // sync mobile bottom nav
@@ -5040,7 +5372,84 @@ function renderPokjaTable() {
 
 
 
-    return `<tr>
+    // ── Cek akses delegasi untuk baris ini ──
+    const npwpRow   = d.npwp || '';
+    const namaRow   = d.namaPerusahaan || '';
+    const jenisDokRow = d.jenisDok || '';
+    const paketKeyRow = (npwpRow || namaRow) + '||' + jenisDokRow;
+    const delegasiValue = _delegasiMap[paketKeyRow] || '';
+    const hasFullAccess = cekAkseDelegasiFrontend(npwpRow, namaRow, jenisDokRow);
+
+    // ── Buat sel delegasi ──
+    let delegasiCell = '';
+    if (currentRole === 'admin') {
+      // Admin: dropdown untuk assign delegasi
+      const opts = ['', 'Pokja 1', 'Pokja 2', 'Pokja 3', 'Pokja 4'].map(v =>
+        `<option value="${v}"${delegasiValue===v?' selected':''}>${v||'— Belum Assign —'}</option>`
+      ).join('');
+      delegasiCell = `<select onchange="setDelegasiPaket('${npwpRow.replace(/'/g,"\\'")}','${namaRow.replace(/'/g,"\\'")}','${jenisDokRow.replace(/'/g,"\\'")}',this.value,this)"
+        style="font-size:0.75rem;border:1px solid var(--gray-200);border-radius:6px;padding:4px 6px;cursor:pointer;width:100%;min-width:110px;background:${delegasiValue?'#EAF3DE':'var(--white)'};">
+        ${opts}
+      </select>`;
+    } else if (currentRole === 'pokja') {
+      // Pokja: tampilkan badge delegasi
+      if (delegasiValue) {
+        const isOwn = hasFullAccess;
+        delegasiCell = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:12px;background:${isOwn?'#EAF3DE':'#FFF3E0'};color:${isOwn?'#2D7D17':'#856404'};border:1px solid ${isOwn?'#B6DBA0':'#FFCC80'};">
+          <i class="fa-solid ${isOwn?'fa-lock-open':'fa-lock'}"></i> ${delegasiValue}
+        </span>`;
+      } else {
+        delegasiCell = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:12px;background:#F3F4F6;color:#9CA3AF;border:1px solid #E5E7EB;">
+          <i class="fa-solid fa-clock"></i> Belum Assign
+        </span>`;
+      }
+    }
+
+    // ── Status lock untuk tombol aksi ──
+    const isPokja14      = currentRole === 'pokja' && !!POKJA_DELEGASI_LABEL[currentPokjaUser];
+    const belumAssign    = isPokja14 && !delegasiValue;
+    const lockTitle      = belumAssign
+      ? 'Menunggu Assign dari Admin'
+      : 'Bukan Paket yang Didelegasikan';
+    const lockStyle   = `opacity:0.45;cursor:not-allowed;filter:grayscale(1);position:relative;`;
+    const lockIcon    = `<i class="fa-solid fa-lock" style="font-size:0.65rem;margin-left:3px;"></i>`;
+    const lockBtnAttr = `disabled title="${lockTitle}"`;
+
+    // Tombol evaluasi
+    const btnEvaluasi = hasFullAccess
+      ? `<button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Evaluasi</button>`
+      : `<button class="btn-review" ${lockBtnAttr} style="${lockStyle}"><i class="fa-solid fa-pen-to-square"></i> Evaluasi${lockIcon}</button>`;
+
+    // Tombol WA
+    const btnWa = d.telp
+      ? (hasFullAccess
+          ? `<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`
+          : `<button class="btn-review" style="background:#25D366;border-color:#25D366;${lockStyle}" ${lockBtnAttr}><i class="fa-brands fa-whatsapp"></i> WA${lockIcon}</button>`)
+      : '';
+
+    // Tombol Email
+    const btnEmail = d.email
+      ? (hasFullAccess
+          ? `<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`
+          : `<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;${lockStyle}" ${lockBtnAttr}><i class="fa-solid fa-envelope"></i> Email${lockIcon}</button>`)
+      : '';
+
+    // Catatan: jika locked, sembunyikan tombol edit catatan inline
+    const catatanHtmlFinal = !hasFullAccess
+      ? `<div style="display:flex;align-items:flex-start;gap:4px;min-width:120px;">
+           <span style="font-size:0.78rem;flex:1;">${d.catatanPokja||'<em style="color:var(--gray-400);">-</em>'}</span>
+           <i class="fa-solid fa-lock" style="color:var(--gray-400);font-size:10px;margin-top:2px;" title="${lockTitle}"></i>
+         </div>`
+      : catatanHtml;
+
+    // Indikator visual baris terkunci
+    const trStyle = (!hasFullAccess && currentRole === 'pokja' && !!POKJA_DELEGASI_LABEL[currentPokjaUser])
+      ? (delegasiValue
+          ? `style="background:#FFFBF0;border-left:3px solid #FFB74D;"`   // assign ke pokja lain
+          : `style="background:#F9FAFB;border-left:3px solid #D1D5DB;"`)  // belum assign
+      : '';
+
+    return `<tr ${trStyle}>
       <td>${rowNum}</td>
       <td style="white-space:nowrap;">${tgl}</td>
       <td><strong>${d.namaPerusahaan||'-'}</strong><br><span style="color:var(--gray-400);font-size:0.75rem;">${d.namaDirektur||''}</span></td>
@@ -5050,8 +5459,9 @@ function renderPokjaTable() {
       <td>${fileCell}</td>
       <td>${revisiCol}</td>
       <td>${statusLabel[d.reviewStatus||'Menunggu Evaluasi']||'<span class="status-badge status-pending">⏳ Menunggu</span>'}${d.reviewedBy ? `<br><span style="font-size:0.68rem;color:var(--gray-400);margin-top:3px;display:inline-block;"><i class="fa-solid fa-user-shield"></i> ${d.reviewedBy.toUpperCase()}</span>` : ''}</td>
-      <td>${catatanHtml}</td>
-      <td><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-review" onclick="openReviewModal(${origIdx})"><i class="fa-solid fa-pen-to-square"></i> Evaluasi</button>${d.telp?`<button class="btn-review" style="background:#25D366;border-color:#25D366;" onclick="kirimWaLangsung(${origIdx})"><i class="fa-brands fa-whatsapp"></i> WA</button>`:''} ${d.email?`<button class="btn-review" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimEmailLangsung(${origIdx})"><i class="fa-solid fa-envelope"></i> Email</button>`:''}</div></td>
+      <td>${catatanHtmlFinal}</td>
+      <td style="min-width:100px;">${delegasiCell}</td>
+      <td><div style="display:flex;flex-direction:column;gap:4px;">${btnEvaluasi}${btnWa} ${btnEmail}</div></td>
     </tr>`;
   }).join('');
   renderPokjaStats();
@@ -5093,6 +5503,11 @@ function cancelEditCatatan(idx) {
 
 async function saveCatatanInline(idx) {
   const data=getSubmissions(); const d=data[idx]; if(!d) return;
+  // Cek akses delegasi
+  if (!cekAkseDelegasiFrontend(d.npwp||'', d.namaPerusahaan||'', d.jenisDok||'')) {
+    showToast('Akses Ditolak', 'Bukan Paket yang Didelegasikan kepada Anda.', 'error');
+    cancelEditCatatan(idx); return;
+  }
   const newCatatan=document.getElementById(`catatan-input-${idx}`).value.trim();
   const btn=document.querySelector(`#catatan-edit-${idx} button`);
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';}
@@ -5113,6 +5528,10 @@ function kirimWaLangsung(idx) {
   // [FIX] Jika dipanggil dari modal review yang sedang terbuka, gunakan key stabil
   const safeIdx = (currentReviewKey && idx === currentReviewIdx) ? findIdxByKey(currentReviewKey) : idx;
   const d=data[safeIdx >= 0 ? safeIdx : idx]; if(!d) return;
+  // Cek akses delegasi
+  if (!cekAkseDelegasiFrontend(d.npwp||'', d.namaPerusahaan||'', d.jenisDok||'')) {
+    showToast('Akses Ditolak', 'Bukan Paket yang Didelegasikan kepada Anda.', 'error'); return;
+  }
   const telp=String(d.telp||'').trim(); if(!telp){alert('Nomor telepon tidak tersedia.');return;}
   const statusTxt={'Menunggu Evaluasi':'⏳ Menunggu Evaluasi','Memenuhi Syarat':'✅ Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Revisi / Belum Lengkap':'🔄 Revisi / Belum Lengkap','Klarifikasi / Pembuktian Kualifikasi':'🔍 Klarifikasi / Pembuktian Kualifikasi'};
   const status=d.reviewStatus||'Menunggu Evaluasi';
@@ -5136,6 +5555,10 @@ function kirimEmailLangsung(idx) {
   const data=getSubmissions();
   const safeIdx = (currentReviewKey && idx === currentReviewIdx) ? findIdxByKey(currentReviewKey) : idx;
   const d=data[safeIdx >= 0 ? safeIdx : idx]; if(!d) return;
+  // Cek akses delegasi
+  if (!cekAkseDelegasiFrontend(d.npwp||'', d.namaPerusahaan||'', d.jenisDok||'')) {
+    showToast('Akses Ditolak', 'Bukan Paket yang Didelegasikan kepada Anda.', 'error'); return;
+  }
   const emailPenyedia=d.email||''; if(!emailPenyedia){alert('Email tidak tersedia.');return;}
   const statusTxt={'Menunggu Evaluasi':'⏳ Menunggu Evaluasi','Memenuhi Syarat':'✅ Memenuhi Syarat','Tidak Memenuhi Syarat':'❌ Tidak Memenuhi Syarat','Revisi / Belum Lengkap':'🔄 Revisi / Belum Lengkap','Klarifikasi / Pembuktian Kualifikasi':'🔍 Klarifikasi / Pembuktian Kualifikasi'};
   const status=d.reviewStatus||'Menunggu Evaluasi';
@@ -5160,6 +5583,11 @@ function kirimEmailLangsung(idx) {
 
 function openReviewModal(idx) {
   const data=getSubmissions(); const d=data[idx]; if(!d) return;
+  // ── Cek akses delegasi ──
+  if (!cekAkseDelegasiFrontend(d.npwp||'', d.namaPerusahaan||'', d.jenisDok||'')) {
+    showToast('Akses Ditolak', 'Bukan Paket yang Didelegasikan kepada Anda.', 'error');
+    return;
+  }
   currentReviewIdx=idx;
   currentReviewKey=makeSubKey(d); // [FIX] simpan key stabil
   const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
@@ -5766,7 +6194,8 @@ async function init() {
     updateMbnVisibility();
     updateUploadFormLock();
     if (currentRole === 'pokja' || currentRole === 'admin') {
-      loadSubmissionsFromSheet();
+      // Muat delegasiMap dulu SEBELUM submissions agar cekAkseDelegasiFrontend sudah punya data
+      loadDelegasiMap().then(() => loadSubmissionsFromSheet());
       if (currentRole === 'admin') loadAdminForms();
       showPage(currentRole);
     }
@@ -9483,7 +9912,6 @@ function renderRiwayatNegoModal(s, nama) {
   </div><!-- /.nhps-wrap -->
 </div><!-- /#modalNegoHPS -->
 
-</script>
 <!-- ═══════════════════════════════════════════════════════ -->
 <!-- MODAL RIWAYAT NEGOSIASI — berdiri sendiri               -->
 <!-- ═══════════════════════════════════════════════════════ -->
@@ -10969,6 +11397,956 @@ function _notifShowToast(msg, type) {
       await _origLoadAdminForms.apply(this, arguments);
       // Delay agar DOM tab sudah dirender
       setTimeout(_loadNotifAdminForm, 300);
+      // Load FAQ admin tab
+      setTimeout(renderFaqAdminTab, 400);
+    };
+  }
+})();
+</script>
+
+<!-- ================================================================
+     CHAT WIDGET — PENYEDIA BANTUAN
+     Hanya tampil jika role = penyedia
+================================================================ -->
+<style>
+/* ── Chat Bubble Button ── */
+#chatWidgetBtn {
+  display: none; /* tampil hanya jika penyedia login */
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #0C6E6E, #0F8A8A);
+  border-radius: 50%;
+  box-shadow: 0 4px 18px rgba(12,110,110,0.45);
+  cursor: pointer;
+  z-index: 8800;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#chatWidgetBtn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(12,110,110,0.55); }
+#chatWidgetBtn .chat-bubble-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: #C0392B;
+  color: #fff;
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 11px; font-weight: 800;
+  display: none; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  pointer-events: none;
+}
+#chatWidgetBtn .chat-bubble-badge.show { display: flex; }
+
+/* ── Chat Panel ── */
+#chatWidget {
+  display: none;
+  position: fixed;
+  bottom: 95px;
+  right: 28px;
+  width: 360px;
+  max-height: 560px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  z-index: 8900;
+  flex-direction: column;
+  overflow: hidden;
+  animation: chatIn 0.22s cubic-bezier(.175,.885,.32,1.275);
+}
+#chatWidget.open { display: flex; }
+@keyframes chatIn { from{opacity:0;transform:scale(0.88) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+/* Header */
+.chat-header {
+  background: linear-gradient(135deg, #0C6E6E, #0F8A8A);
+  color: #fff;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 11px;
+  flex-shrink: 0;
+}
+.chat-header .ch-avatar {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.chat-header .ch-title { font-weight: 700; font-size: 0.92rem; line-height: 1.2; }
+.chat-header .ch-sub { font-size: 0.72rem; opacity: 0.82; margin-top: 2px; }
+.chat-header .ch-close {
+  margin-left: auto; background: rgba(255,255,255,0.18); border: none; border-radius: 6px;
+  padding: 4px 9px; cursor: pointer; color: #fff; font-size: 13px; flex-shrink: 0;
+}
+.chat-header .ch-close:hover { background: rgba(255,255,255,0.3); }
+
+/* Chat body area */
+#chatBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 8px;
+  display: flex; flex-direction: column; gap: 0;
+}
+
+/* Mode tabs */
+.chat-mode-tabs {
+  display: flex; gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #e9ecef;
+  flex-shrink: 0; background: #f8f9fa;
+}
+.chat-mode-tab {
+  flex: 1; padding: 7px 4px; border-radius: 8px;
+  border: 1.5px solid #dee2e6;
+  background: #fff; color: #5F5E5A; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.chat-mode-tab.active { background: #0C6E6E; color: #fff; border-color: #0C6E6E; }
+
+/* FAQ area */
+.faq-section { padding: 10px 2px; }
+.faq-section-title { font-size: 0.78rem; font-weight: 700; color: var(--blue-900); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1.5px solid #e9ecef; display: flex; align-items: center; gap: 6px; }
+.faq-item {
+  background: #f0f9f9; border: 1px solid #c8e6e6;
+  border-radius: 10px; padding: 10px 13px; margin-bottom: 8px;
+  cursor: pointer; transition: background 0.15s, box-shadow 0.15s;
+}
+.faq-item:hover { background: #d4f0f0; box-shadow: 0 2px 8px rgba(12,110,110,0.12); }
+.faq-item .faq-q { font-size: 0.82rem; font-weight: 700; color: #0C6E6E; display: flex; align-items: flex-start; gap: 7px; }
+.faq-item .faq-q i { flex-shrink: 0; margin-top: 2px; font-size: 12px; }
+.faq-item .faq-a {
+  display: none; margin-top: 8px; font-size: 0.80rem; color: #343a40; line-height: 1.6;
+  border-top: 1px solid #b2d8d8; padding-top: 8px;
+}
+.faq-item.open .faq-a { display: block; }
+.faq-item .faq-chevron { margin-left: auto; flex-shrink: 0; font-size: 11px; color: #0C6E6E; transition: transform 0.2s; }
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+/* Quick choices */
+.chat-choices { padding: 4px 0 2px; }
+.chat-choice-btn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 9px 13px; margin-bottom: 7px;
+  background: #f0f9f9; border: 1.5px solid #b2d8d8;
+  border-radius: 10px; color: #0C6E6E; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; text-align: left;
+}
+.chat-choice-btn:hover { background: #d4f0f0; border-color: #0C6E6E; transform: translateX(2px); }
+.chat-choice-btn i { width: 18px; text-align: center; flex-shrink: 0; }
+
+/* Chat messages (live chat) */
+.chat-msg { display: flex; gap: 7px; margin-bottom: 10px; align-items: flex-end; }
+.chat-msg.from-me { flex-direction: row-reverse; }
+.chat-msg .msg-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #0C6E6E; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; flex-shrink: 0; margin-bottom: 2px;
+}
+.chat-msg.from-me .msg-avatar { background: #185FA5; }
+.chat-msg .msg-bubble {
+  max-width: 78%; background: #f0f9f9; border: 1px solid #c8e6e6;
+  border-radius: 12px 12px 12px 4px; padding: 8px 11px;
+  font-size: 0.81rem; line-height: 1.55; color: #343a40;
+}
+.chat-msg.from-me .msg-bubble {
+  background: #185FA5; color: #fff; border-color: #10478A;
+  border-radius: 12px 12px 4px 12px;
+}
+.chat-msg .msg-time { font-size: 0.65rem; color: #aaa; margin-top: 4px; text-align: right; }
+.chat-msg.from-me .msg-time { color: rgba(255,255,255,0.65); }
+
+/* Chat input area */
+.chat-input-area {
+  display: flex; gap: 7px; padding: 10px 12px;
+  border-top: 1px solid #e9ecef; background: #fff; flex-shrink: 0;
+}
+.chat-input-area textarea {
+  flex: 1; border: 1.5px solid #dee2e6; border-radius: 10px;
+  padding: 8px 11px; font-size: 0.82rem; font-family: inherit; resize: none;
+  outline: none; line-height: 1.4; max-height: 100px; min-height: 38px;
+  transition: border-color 0.2s;
+}
+.chat-input-area textarea:focus { border-color: #0C6E6E; }
+.chat-input-area button {
+  width: 38px; height: 38px; background: #0C6E6E; color: #fff;
+  border: none; border-radius: 10px; cursor: pointer; font-size: 15px;
+  flex-shrink: 0; transition: background 0.18s; display: flex; align-items: center; justify-content: center;
+}
+.chat-input-area button:hover { background: #085555; }
+.chat-input-area button:disabled { background: #aaa; cursor: not-allowed; }
+
+/* Rule notice */
+.chat-rule-notice {
+  background: #FFF8E1; border: 1px solid #FFD54F;
+  border-left: 4px solid #FFC107; border-radius: 8px;
+  padding: 8px 11px; font-size: 0.76rem; color: #856404;
+  margin-bottom: 10px; line-height: 1.5;
+}
+
+/* Admin chat panel (di panel admin) */
+.admin-chat-room {
+  background: #fff; border: 1px solid #dee2e6; border-radius: 12px;
+  overflow: hidden; max-height: 480px; display: flex; flex-direction: column;
+}
+.admin-chat-msgs {
+  flex: 1; overflow-y: auto; padding: 14px; display: flex;
+  flex-direction: column; gap: 0;
+  background: #f8f9fa;
+}
+.admin-chat-empty { text-align: center; padding: 32px 16px; color: #aaa; font-size: 0.85rem; }
+.admin-chat-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #dee2e6; }
+.admin-chat-input-row textarea { flex:1; border:1.5px solid #dee2e6; border-radius:8px; padding:7px 10px; font-size:0.82rem; resize:none; outline:none; min-height:36px; max-height:80px; font-family:inherit; }
+.admin-chat-input-row textarea:focus { border-color:var(--blue-600); }
+.admin-chat-input-row button { padding:7px 16px; background:var(--blue-700); color:#fff; border:none; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; transition:background 0.18s; }
+.admin-chat-input-row button:hover { background:var(--blue-900); }
+.admin-chat-selector { padding: 10px 12px 0; border-bottom: 1px solid #dee2e6; background: #fff; }
+.admin-chat-selector select { width: 100%; padding: 7px 10px; border: 1.5px solid #dee2e6; border-radius: 8px; font-size: 0.82rem; }
+
+/* FAQ admin editor */
+.faq-admin-item {
+  background: #f8f9fa; border: 1px solid #dee2e6;
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 12px;
+}
+.faq-admin-item .fai-head { font-size: 0.82rem; font-weight: 700; color: var(--blue-900); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+/* Unread dot */
+.unread-dot {
+  display: inline-block; width: 8px; height: 8px;
+  background: #C0392B; border-radius: 50; vertical-align: middle;
+  margin-left: 5px; flex-shrink: 0;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  #chatWidget { right: 10px; bottom: 80px; width: calc(100vw - 20px); }
+  #chatWidgetBtn { right: 14px; bottom: 80px; }
+}
+</style>
+
+<!-- Chat Bubble Trigger Button -->
+<button id="chatWidgetBtn" onclick="toggleChatWidget()" title="Bantuan & Chat Admin" style="display:none;">
+  <i class="fa-solid fa-headset"></i>
+  <span class="chat-bubble-badge" id="chatBubbleBadge"></span>
+</button>
+
+<!-- Chat Widget Panel -->
+<div id="chatWidget">
+  <div class="chat-header">
+    <div class="ch-avatar"><i class="fa-solid fa-headset"></i></div>
+    <div>
+      <div class="ch-title">Pusat Bantuan</div>
+      <div class="ch-sub" id="chatHeaderSub">Tanya atau chat dengan admin</div>
+    </div>
+    <button class="ch-close" onclick="closeChatWidget()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- Mode Tabs -->
+  <div class="chat-mode-tabs">
+    <button class="chat-mode-tab active" id="chatTabFaq" onclick="switchChatMode('faq')">
+      <i class="fa-solid fa-circle-question"></i> FAQ
+    </button>
+    <button class="chat-mode-tab" id="chatTabAdmin" onclick="switchChatMode('admin')">
+      <i class="fa-solid fa-comments"></i> Chat Admin
+      <span class="chat-bubble-badge" id="chatAdminTabBadge" style="position:relative;top:-2px;right:0;display:none;background:#C0392B;color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:800;margin-left:3px;border:none;"></span>
+    </button>
+  </div>
+
+  <!-- FAQ Mode -->
+  <div id="chatModeFaq" style="flex:1;overflow-y:auto;padding:12px 14px;">
+    <div id="chatFaqChoiceView">
+      <!-- Topik pilihan -->
+      <div class="faq-section" id="chatFaqTopicSection">
+        <div class="faq-section-title"><i class="fa-solid fa-list-ul" style="color:#0C6E6E;"></i> Pilih Topik Bantuan</div>
+        <div class="chat-choices" id="chatTopicList">
+          <!-- diisi JS -->
+        </div>
+      </div>
+      <div id="chatFaqItems" style="display:none;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <button onclick="backToTopics()" style="background:none;border:1px solid #dee2e6;border-radius:7px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--gray-600);display:flex;align-items:center;gap:5px;font-weight:600;">
+            <i class="fa-solid fa-chevron-left"></i> Kembali
+          </button>
+          <div class="faq-section-title" id="chatFaqTopicTitle" style="margin:0;border:none;padding:0;flex:1;font-size:0.82rem;"></div>
+        </div>
+        <div id="chatFaqList"><!-- diisi JS --></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Chat Mode -->
+  <div id="chatModeAdmin" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <!-- Rule notice di ATAS chat -->
+    <div class="chat-rule-notice" style="margin:10px 14px 0;flex-shrink:0;">
+      <i class="fa-solid fa-circle-info"></i>
+      <strong> Aturan Chat:</strong> Pertanyaan hanya seputar sistem dan proses pengadaan ini. Pesan di luar topik sistem tidak akan dibalas.
+    </div>
+    <div id="chatMsgsWrap" style="flex:1;overflow-y:auto;padding:10px 14px 6px;display:flex;flex-direction:column;gap:0;min-height:80px;">
+      <div style="text-align:center;padding:20px;color:#aaa;font-size:0.80rem;" id="chatNoMsgNote">
+        <i class="fa-regular fa-comment-dots" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+        Belum ada percakapan. Kirim pertanyaan pertama Anda!
+      </div>
+    </div>
+  </div>
+
+  <!-- Input area (hanya muncul di mode admin) -->
+  <div class="chat-input-area" id="chatInputArea" style="display:none;">
+    <textarea id="chatInputMsg" placeholder="Ketik pertanyaan seputar sistem…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></textarea>
+    <button onclick="sendChatMsg()" id="btnSendChat" title="Kirim">
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Admin Panel: Chat Inbox Section (injected via JS) -->
+
+<script>
+// ================================================================
+// CHAT WIDGET — CORE LOGIC
+// ================================================================
+
+// --- State ---
+let _chatMessages = []; // { id, from, nama, pesan, tgl, dibaca, roomId }
+let _chatRoomId   = null; // {email penyedia}
+let _chatFaqData  = []; // array FAQ dari config
+let _chatPollTimer = null;
+let _chatUnread   = 0;
+
+// --- Default FAQ ---
+const DEFAULT_FAQ = [
+  {
+    topik: 'Pendaftaran & Akun',
+    icon:  'fa-user-plus',
+    items: [
+      { q: 'Bagaimana cara mendaftar sebagai penyedia?', a: 'Klik tombol "Login Penyedia" di sidebar, lalu pilih tab "Daftar Baru". Isi nama perusahaan, email, dan password minimal 6 karakter.' },
+      { q: 'Saya lupa password akun penyedia, bagaimana?', a: 'Hubungi admin portal melalui fitur Chat Admin di bawah, atau kirim email ke admin BPBJ untuk reset password.' },
+      { q: 'Apakah satu perusahaan bisa mendaftar lebih dari satu akun?', a: 'Tidak disarankan. Setiap perusahaan cukup mendaftar satu akun dengan email aktif perusahaan.' },
+    ]
+  },
+  {
+    topik: 'Upload Dokumen',
+    icon:  'fa-cloud-arrow-up',
+    items: [
+      { q: 'Format file apa yang diterima untuk upload dokumen?', a: 'Sistem menerima file PDF, JPG, PNG, dan ZIP. Ukuran maksimal per file adalah 30 MB.' },
+      { q: 'Bagaimana jika dokumen saya ditolak atau diminta revisi?', a: 'Status dokumen akan berubah menjadi "Revisi / Belum Lengkap". Silakan login, buka halaman Status Dokumen, dan upload ulang dokumen yang diperbaiki.' },
+      { q: 'Apakah saya bisa upload lebih dari satu kategori dokumen?', a: 'Ya. Sistem mendukung upload untuk 4 kategori: Administrasi, Kualifikasi, Teknis, dan Harga. Masing-masing memiliki slot upload tersendiri.' },
+    ]
+  },
+  {
+    topik: 'Status & Evaluasi',
+    icon:  'fa-magnifying-glass-chart',
+    items: [
+      { q: 'Dimana saya bisa melihat status dokumen yang sudah diupload?', a: 'Login sebagai penyedia, lalu klik menu "Status Dokumen" di sidebar. Semua dokumen beserta status reviewnya akan tampil di sana.' },
+      { q: 'Apa arti status "Klarifikasi / Pembuktian Kualifikasi"?', a: 'Pokja memerlukan klarifikasi lebih lanjut dari perusahaan Anda. Silakan buka halaman Status Dokumen dan balas pertanyaan klarifikasi yang tersedia.' },
+      { q: 'Berapa lama proses evaluasi dokumen?', a: 'Waktu evaluasi mengikuti jadwal tahapan yang tertera di halaman Beranda / Kalender. Pantau terus status dokumen Anda.' },
+    ]
+  },
+  {
+    topik: 'Teknis Sistem',
+    icon:  'fa-gears',
+    items: [
+      { q: 'Saya tidak bisa login, apa yang harus dilakukan?', a: 'Pastikan email dan password sudah benar. Jika masih gagal, coba refresh halaman. Jika tetap tidak bisa, hubungi admin melalui Chat Admin.' },
+      { q: 'Apakah data saya aman di sistem ini?', a: 'Ya. Data tersimpan di Google Spreadsheet yang hanya dapat diakses oleh admin dan Pokja yang berwenang.' },
+      { q: 'Sistem terasa lambat atau error, bagaimana?', a: 'Coba refresh halaman (Ctrl+R). Jika masalah berlanjut, kirim laporan melalui Chat Admin dengan menyebutkan halaman dan tindakan yang menyebabkan error.' },
+    ]
+  },
+];
+
+// ── Helpers waktu ──
+function _chatNow() {
+  return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+function _chatNowFull() {
+  return new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Ambil/simpan pesan dari config ──
+function _chatGetMessages(roomId) {
+  const all = gcGet('chatMessages', {});
+  return all[roomId] ? [...all[roomId]] : [];
+}
+
+async function _chatSaveMessage(roomId, msgObj) {
+  const all = gcGet('chatMessages', {});
+  if (!all[roomId]) all[roomId] = [];
+  all[roomId].push(msgObj);
+  // Batasi 200 pesan per room
+  if (all[roomId].length > 200) all[roomId] = all[roomId].slice(-200);
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
+  await pushConfig('chatMessages', all);
+}
+
+// ── Init: tampilkan/sembunyikan chat button berdasarkan role ──
+function initChatWidget() {
+  const btn = document.getElementById('chatWidgetBtn');
+  if (!btn) return;
+  // Jika belum ada currentRole, coba restore dari session (penting setelah refresh)
+  if (!currentRole) {
+    try {
+      const role = sessionStorage.getItem('_bpbj_role');
+      if (role) {
+        currentRole = role;
+        currentPenyedia = JSON.parse(sessionStorage.getItem('_bpbj_penyedia') || 'null');
+      }
+    } catch(e) {}
+  }
+  if (currentRole === 'penyedia' && currentPenyedia) {
+    btn.style.display = 'flex';
+    _chatRoomId = 'room_' + (currentPenyedia.email || 'penyedia').replace(/[^a-z0-9]/gi, '_');
+    _chatMessages = _chatGetMessages(_chatRoomId);
+    _chatStartPoll();
+    _chatUpdateBadge();
+  } else {
+    btn.style.display = 'none';
+    const panel = document.getElementById('chatWidget');
+    if (panel && panel.classList.contains('open')) closeChatWidget();
+  }
+}
+
+// ── Toggle widget ──
+function toggleChatWidget() {
+  const panel = document.getElementById('chatWidget');
+  if (panel.classList.contains('open')) { closeChatWidget(); }
+  else {
+    panel.classList.add('open');
+    // Reset badge unread
+    _chatUnread = 0;
+    _chatUpdateBadge();
+    // Mark admin messages as read
+    _chatMarkRead();
+    // Render FAQ topics by default
+    renderFaqTopics();
+  }
+}
+function closeChatWidget() {
+  document.getElementById('chatWidget').classList.remove('open');
+}
+
+// ── Mode switch ──
+function switchChatMode(mode) {
+  document.getElementById('chatModeFaq').style.display   = mode === 'faq' ? 'block' : 'none';
+  const adminDiv = document.getElementById('chatModeAdmin');
+  adminDiv.style.display = mode === 'admin' ? 'flex' : 'none';
+  adminDiv.style.flexDirection = 'column';
+  document.getElementById('chatInputArea').style.display = mode === 'admin' ? 'flex' : 'none';
+  document.getElementById('chatTabFaq').classList.toggle('active',   mode === 'faq');
+  document.getElementById('chatTabAdmin').classList.toggle('active', mode === 'admin');
+  if (mode === 'admin') {
+    const tabBadge = document.getElementById('chatAdminTabBadge');
+    if (tabBadge) tabBadge.style.display = 'none';
+    renderChatMessages();
+    _chatMarkRead();
+    setTimeout(() => {
+      const w = document.getElementById('chatMsgsWrap');
+      if (w) w.scrollTop = w.scrollHeight;
+    }, 50);
+  }
+}
+
+// ── FAQ Topics ──
+function renderFaqTopics() {
+  // Ambil FAQ dari config atau default
+  const faq = gcGet('chatFaq', null) || DEFAULT_FAQ;
+  const topicList = document.getElementById('chatTopicList');
+  if (!topicList) return;
+  topicList.innerHTML = faq.map((t, i) => `
+    <button class="chat-choice-btn" onclick="showFaqTopic(${i})">
+      <i class="fa-solid ${t.icon || 'fa-circle-question'}"></i>
+      <span>${t.topik}</span>
+      <i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;opacity:0.5;"></i>
+    </button>`).join('');
+  document.getElementById('chatFaqChoiceView').style.display = 'block';
+}
+
+function showFaqTopic(idx) {
+  const faq = gcGet('chatFaq', null) || DEFAULT_FAQ;
+  const topic = faq[idx];
+  if (!topic) return;
+  document.getElementById('chatFaqTopicTitle').innerHTML = `<i class="fa-solid ${topic.icon||'fa-circle-question'}" style="color:#0C6E6E;"></i> ${topic.topik}`;
+  const listEl = document.getElementById('chatFaqList');
+  listEl.innerHTML = (topic.items || []).map((item, i) => `
+    <div class="faq-item" id="faqItem_${idx}_${i}" onclick="toggleFaqItem('faqItem_${idx}_${i}')">
+      <div class="faq-q">
+        <i class="fa-solid fa-circle-question"></i>
+        <span style="flex:1;">${item.q}</span>
+        <i class="fa-solid fa-chevron-down faq-chevron"></i>
+      </div>
+      <div class="faq-a">${item.a}</div>
+    </div>`).join('') + `
+    <div style="margin-top:14px;border-top:1px solid #e9ecef;padding-top:12px;text-align:center;">
+      <div style="font-size:0.78rem;color:var(--gray-400);margin-bottom:8px;">Tidak menemukan jawaban?</div>
+      <button onclick="switchChatMode('admin')" style="background:#185FA5;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.80rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;">
+        <i class="fa-solid fa-comments"></i> Chat dengan Admin
+      </button>
+    </div>`;
+  // Sembunyikan topik list, tampilkan detail
+  document.getElementById('chatFaqTopicSection').style.display = 'none';
+  document.getElementById('chatFaqItems').style.display = 'block';
+}
+
+function backToTopics() {
+  document.getElementById('chatFaqItems').style.display = 'none';
+  document.getElementById('chatFaqTopicSection').style.display = 'block';
+}
+
+function toggleFaqItem(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+// ── Chat messages render ──
+function renderChatMessages() {
+  const wrap = document.getElementById('chatMsgsWrap');
+  if (!wrap) return;
+  const msgs = _chatGetMessages(_chatRoomId);
+  if (!msgs.length) {
+    wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#aaa;font-size:0.80rem;" id="chatNoMsgNote">
+      <i class="fa-regular fa-comment-dots" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+      Belum ada percakapan. Kirim pertanyaan pertama Anda!
+    </div>`;
+    return;
+  }
+  const myName = (currentPenyedia && currentPenyedia.nama) ? currentPenyedia.nama : 'Penyedia';
+  wrap.innerHTML = msgs.map(m => {
+    const isMe = m.from === 'penyedia';
+    return `<div class="chat-msg ${isMe ? 'from-me' : ''}">
+      <div class="msg-avatar" title="${isMe ? myName : 'Admin'}">${isMe ? '<i class="fa-solid fa-building"></i>' : '<i class="fa-solid fa-user-tie"></i>'}</div>
+      <div>
+        <div class="msg-bubble">${escapeHtml(m.pesan)}</div>
+        <div class="msg-time">${m.tgl || ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── Send message ──
+async function sendChatMsg() {
+  const ta = document.getElementById('chatInputMsg');
+  const msg = (ta.value || '').trim();
+  if (!msg) return;
+  if (msg.length > 1000) { alert('Pesan terlalu panjang (maks. 1000 karakter).'); return; }
+  ta.value = '';
+  ta.style.height = '';
+  const myName = (currentPenyedia && currentPenyedia.nama) ? currentPenyedia.nama : 'Penyedia';
+  const msgObj = {
+    id:     Date.now(),
+    from:   'penyedia',
+    nama:   myName,
+    email:  currentPenyedia ? currentPenyedia.email : '',
+    pesan:  msg,
+    tgl:    _chatNowFull(),
+    dibaca: false,
+    roomId: _chatRoomId,
+  };
+  await _chatSaveMessage(_chatRoomId, msgObj);
+  _chatMessages = _chatGetMessages(_chatRoomId);
+  renderChatMessages();
+  // Notify admin in panel
+  _chatRefreshAdminInbox();
+}
+
+// ── Auto-resize textarea ──
+document.getElementById('chatInputMsg').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+});
+
+// ── Poll for new messages (check every 15s) ──
+function _chatStartPoll() {
+  clearInterval(_chatPollTimer);
+  _chatPollTimer = setInterval(_chatPollMessages, 15000);
+}
+
+async function _chatPollMessages() {
+  if (!_chatRoomId || !currentPenyedia) return;
+  try {
+    const cfg = await fetchGlobalConfig(true);
+    const all = (cfg && cfg.chatMessages) ? cfg.chatMessages : {};
+    const freshMsgs = all[_chatRoomId] ? [...all[_chatRoomId]] : [];
+    const prevLen = _chatMessages.length;
+    _chatMessages = freshMsgs;
+    if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
+    // Count new unread admin messages
+    const newAdminMsgs = freshMsgs.slice(prevLen).filter(m => m.from === 'admin' && !m.dibaca);
+    if (newAdminMsgs.length > 0) {
+      _chatUnread += newAdminMsgs.length;
+      _chatUpdateBadge();
+      const panel = document.getElementById('chatWidget');
+      const isChatOpen = panel.classList.contains('open');
+      const isAdminMode = document.getElementById('chatModeAdmin').style.display !== 'none';
+      if (isChatOpen && isAdminMode) {
+        renderChatMessages();
+        _chatMarkRead();
+      } else {
+        // Show tab badge
+        const tabBadge = document.getElementById('chatAdminTabBadge');
+        if (tabBadge) { tabBadge.textContent = _chatUnread; tabBadge.style.display = 'inline'; }
+      }
+    }
+  } catch(e) {}
+}
+
+function _chatUpdateBadge() {
+  const badge = document.getElementById('chatBubbleBadge');
+  if (!badge) return;
+  if (_chatUnread > 0) { badge.textContent = _chatUnread > 9 ? '9+' : _chatUnread; badge.classList.add('show'); }
+  else { badge.classList.remove('show'); }
+}
+
+async function _chatMarkRead() {
+  if (!_chatRoomId) return;
+  const all = gcGet('chatMessages', {});
+  const msgs = all[_chatRoomId] || [];
+  let changed = false;
+  msgs.forEach(m => { if (m.from === 'admin' && !m.dibaca) { m.dibaca = true; changed = true; } });
+  if (changed) {
+    if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
+    await pushConfig('chatMessages', all);
+  }
+  _chatUnread = 0;
+  _chatUpdateBadge();
+  const tabBadge = document.getElementById('chatAdminTabBadge');
+  if (tabBadge) tabBadge.style.display = 'none';
+}
+
+// ── Patch setRole agar chat widget otomatis diinit ──
+(function() {
+  const _origSetRole = window.setRole;
+  if (typeof _origSetRole === 'function') {
+    window.setRole = function(role) {
+      _origSetRole.apply(this, arguments);
+      setTimeout(initChatWidget, 200);
+    };
+  }
+})();
+
+// ── Init on load ──
+(function() {
+  const _origInit = window.init;
+  if (typeof _origInit === 'function') {
+    window.init = async function() {
+      await _origInit.apply(this, arguments);
+      setTimeout(initChatWidget, 800);
+    };
+  }
+  // Fallback: setelah DOM siap, cek session (handle refresh)
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initChatWidget, 1500);
+  });
+  // Safety: coba lagi setelah 3 detik untuk memastikan session sudah di-restore
+  setTimeout(initChatWidget, 3000);
+})();
+
+// ================================================================
+// ADMIN CHAT INBOX — Panel Admin
+// ================================================================
+
+let _adminChatSelectedRoom = null;
+let _adminChatPollTimer    = null;
+
+function renderChatAdminTab() {
+  const allMsgs = gcGet('chatMessages', {});
+  const rooms = Object.keys(allMsgs);
+
+  // Hitung unread per room
+  const roomList = rooms.map(roomId => {
+    const msgs = allMsgs[roomId] || [];
+    const last = msgs[msgs.length - 1] || null;
+    const unread = msgs.filter(m => m.from === 'penyedia' && !m.dibacaAdmin).length;
+    const email  = msgs.find(m => m.email)?.email || roomId.replace('room_','').replace(/_/g,'@');
+    const nama   = msgs.find(m => m.nama && m.from === 'penyedia')?.nama || email;
+    return { roomId, msgs, last, unread, email, nama };
+  }).sort((a, b) => (b.last?.id || 0) - (a.last?.id || 0));
+
+  const section = document.getElementById('atab-chat-admin');
+  if (!section) return;
+
+  let html = `<div style="margin-bottom:16px;">
+    <div class="faq-section-title"><i class="fa-solid fa-inbox" style="color:#0C6E6E;"></i> Inbox Pertanyaan Penyedia</div>`;
+
+  if (!roomList.length) {
+    html += `<div style="text-align:center;padding:32px;color:#aaa;font-size:0.85rem;"><i class="fa-regular fa-comment-dots" style="font-size:36px;display:block;margin-bottom:10px;"></i>Belum ada pertanyaan masuk dari penyedia.</div>`;
+  } else {
+    // Daftar rooms
+    html += `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">`;
+    roomList.forEach(r => {
+      const lastMsg = r.last ? (r.last.pesan.length > 55 ? r.last.pesan.slice(0,53) + '…' : r.last.pesan) : '';
+      const unreadBadge = r.unread > 0 ? `<span style="background:#C0392B;color:#fff;border-radius:10px;padding:2px 7px;font-size:0.70rem;font-weight:800;">${r.unread}</span>` : '';
+      const isActive = _adminChatSelectedRoom === r.roomId;
+      html += `<div onclick="selectAdminChatRoom('${r.roomId}')" style="display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border-radius:10px;border:1.5px solid ${isActive?'#185FA5':'#dee2e6'};background:${isActive?'#E6F1FB':'#fff'};cursor:pointer;transition:all 0.18s;" onmouseenter="this.style.background='${isActive?'#E6F1FB':'#f0f6ff'}'" onmouseleave="this.style.background='${isActive?'#E6F1FB':'#fff'}'">
+        <div style="width:36px;height:36px;background:#185FA5;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:14px;"><i class="fa-solid fa-building"></i></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:0.85rem;color:var(--blue-900);display:flex;align-items:center;gap:6px;">${escapeHtml(r.nama)} ${unreadBadge}</div>
+          <div style="font-size:0.73rem;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(lastMsg)}</div>
+          ${r.last ? `<div style="font-size:0.68rem;color:#bbb;margin-top:2px;">${r.last.tgl||''}</div>` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+
+    // Area chat
+    if (_adminChatSelectedRoom) {
+      const room = roomList.find(r => r.roomId === _adminChatSelectedRoom);
+      if (room) {
+        html += `<div class="admin-chat-room">
+          <div style="padding:10px 13px;background:linear-gradient(135deg,#1B3A5C,#2D5A8E);color:#fff;font-size:0.85rem;font-weight:700;display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-building"></i> ${escapeHtml(room.nama)}
+            <span style="font-weight:400;opacity:0.75;font-size:0.75rem;">${escapeHtml(room.email)}</span>
+          </div>
+          <div class="admin-chat-msgs" id="adminChatMsgsWrap">`;
+        room.msgs.forEach(m => {
+          const isAdmin = m.from === 'admin';
+          html += `<div class="chat-msg ${isAdmin ? 'from-me' : ''}" style="margin-bottom:10px;">
+            <div class="msg-avatar">${isAdmin ? '<i class="fa-solid fa-user-tie"></i>' : '<i class="fa-solid fa-building"></i>'}</div>
+            <div>
+              <div class="msg-bubble ${isAdmin ? '' : ''}">${escapeHtml(m.pesan)}</div>
+              <div class="msg-time">${m.tgl || ''}</div>
+            </div>
+          </div>`;
+        });
+        html += `</div>
+          <div class="admin-chat-input-row">
+            <textarea id="adminChatInputMsg" placeholder="Balas pertanyaan penyedia (hanya seputar sistem)…" rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdminChatReply();}"></textarea>
+            <button onclick="sendAdminChatReply()"><i class="fa-solid fa-paper-plane"></i> Kirim</button>
+          </div>
+        </div>`;
+      }
+    }
+  }
+  html += `</div>`;
+  section.innerHTML = html;
+
+  // Scroll ke bawah chat admin
+  setTimeout(() => {
+    const w = document.getElementById('adminChatMsgsWrap');
+    if (w) w.scrollTop = w.scrollHeight;
+    // Auto-resize textarea
+    const ta = document.getElementById('adminChatInputMsg');
+    if (ta) ta.addEventListener('input', function() { this.style.height='auto'; this.style.height = Math.min(this.scrollHeight,80)+'px'; });
+  }, 50);
+}
+
+function selectAdminChatRoom(roomId) {
+  _adminChatSelectedRoom = roomId;
+  // Mark penyedia messages as read (dibacaAdmin)
+  const all = gcGet('chatMessages', {});
+  const msgs = all[roomId] || [];
+  msgs.forEach(m => { if (m.from === 'penyedia') m.dibacaAdmin = true; });
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
+  pushConfig('chatMessages', all).catch(() => {});
+  renderChatAdminTab();
+}
+
+async function sendAdminChatReply() {
+  const ta  = document.getElementById('adminChatInputMsg');
+  const msg = (ta ? ta.value : '').trim();
+  if (!msg || !_adminChatSelectedRoom) return;
+  ta.value = '';
+  const msgObj = {
+    id:    Date.now(),
+    from:  'admin',
+    nama:  'Admin',
+    pesan: msg,
+    tgl:   _chatNowFull(),
+    dibaca: false,
+    roomId: _adminChatSelectedRoom,
+  };
+  await _chatSaveMessage(_adminChatSelectedRoom, msgObj);
+  renderChatAdminTab();
+  // Notify penyedia badge will be picked up on next poll
+}
+
+function _chatRefreshAdminInbox() {
+  // Jika panel admin sedang terbuka pada tab chat, re-render
+  const atab = document.getElementById('atab-chat-admin');
+  if (atab && atab.classList.contains('active')) renderChatAdminTab();
+}
+
+// ── Auto-poll admin inbox ──
+function _startAdminChatPoll() {
+  clearInterval(_adminChatPollTimer);
+  _adminChatPollTimer = setInterval(async () => {
+    if (currentRole !== 'admin') return;
+    try {
+      const cfg = await fetchGlobalConfig(true);
+      if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
+        _globalConfig['chatMessages'] = cfg.chatMessages;
+      }
+      _chatRefreshAdminInbox();
+    } catch(e) {}
+  }, 20000);
+}
+
+// ================================================================
+// FAQ ADMIN MANAGEMENT
+// ================================================================
+
+function renderFaqAdminTab() {
+  const section = document.getElementById('atab-faq-admin');
+  if (!section) return;
+  const faq = gcGet('chatFaq', null) || DEFAULT_FAQ;
+
+  let html = `<div>
+    <div class="faq-section-title"><i class="fa-solid fa-circle-question" style="color:#0C6E6E;"></i> Kelola FAQ Bantuan Penyedia</div>
+    <p style="font-size:0.82rem;color:var(--gray-600);margin-bottom:16px;">FAQ ini akan tampil di widget Chat Penyedia. Admin dapat menambah, mengedit, dan menghapus item.</p>`;
+
+  faq.forEach((topik, ti) => {
+    html += `<div class="faq-admin-item">
+      <div class="fai-head">
+        <span><i class="fa-solid ${topik.icon||'fa-circle-question'}" style="color:#0C6E6E;"></i>
+        <input type="text" value="${escapeHtml(topik.topik)}" id="faq-topik-${ti}" style="border:1px solid #dee2e6;border-radius:6px;padding:4px 8px;font-size:0.85rem;font-weight:700;color:var(--blue-900);width:200px;margin-left:6px;"></span>
+        <button onclick="removeFaqTopik(${ti})" style="background:#FDEDEC;color:#C0392B;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-trash"></i> Hapus Topik</button>
+      </div>`;
+    (topik.items || []).forEach((item, ii) => {
+      html += `<div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+        <div style="margin-bottom:6px;"><label style="font-size:0.75rem;font-weight:700;color:#856404;">Pertanyaan</label>
+        <input type="text" value="${escapeHtml(item.q)}" id="faq-q-${ti}-${ii}" style="width:100%;border:1px solid #dee2e6;border-radius:6px;padding:6px 9px;font-size:0.82rem;margin-top:3px;"></div>
+        <div style="margin-bottom:6px;"><label style="font-size:0.75rem;font-weight:700;color:#2D7D17;">Jawaban</label>
+        <textarea id="faq-a-${ti}-${ii}" rows="2" style="width:100%;border:1px solid #dee2e6;border-radius:6px;padding:6px 9px;font-size:0.80rem;resize:vertical;margin-top:3px;font-family:inherit;">${escapeHtml(item.a)}</textarea></div>
+        <button onclick="removeFaqItem(${ti},${ii})" style="background:none;border:1px solid #FFCCCC;color:#C0392B;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.75rem;"><i class="fa-solid fa-xmark"></i> Hapus</button>
+      </div>`;
+    });
+    html += `<button onclick="addFaqItem(${ti})" style="background:none;border:1.5px dashed #0C6E6E;color:#0C6E6E;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:0.78rem;font-weight:600;width:100%;margin-top:4px;"><i class="fa-solid fa-plus"></i> Tambah Pertanyaan</button>
+    </div>`;
+  });
+
+  html += `<button onclick="addFaqTopik()" style="background:none;border:2px dashed #185FA5;color:#185FA5;border-radius:10px;padding:9px 18px;cursor:pointer;font-size:0.82rem;font-weight:700;width:100%;margin-top:8px;margin-bottom:16px;"><i class="fa-solid fa-folder-plus"></i> Tambah Topik Baru</button>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="btn-admin-save" onclick="saveFaqAdmin()"><i class="fa-solid fa-floppy-disk"></i> Simpan FAQ</button>
+    <span class="admin-save-msg" id="msgFaqAdmin">✓ Tersimpan</span>
+  </div></div>`;
+
+  section.innerHTML = html;
+}
+
+function getFaqFromAdminForm() {
+  const faq = gcGet('chatFaq', null) || DEFAULT_FAQ;
+  return faq.map((topik, ti) => {
+    const topikInput = document.getElementById(`faq-topik-${ti}`);
+    return {
+      topik: topikInput ? topikInput.value.trim() : topik.topik,
+      icon:  topik.icon || 'fa-circle-question',
+      items: (topik.items || []).map((item, ii) => {
+        const q = document.getElementById(`faq-q-${ti}-${ii}`);
+        const a = document.getElementById(`faq-a-${ti}-${ii}`);
+        return { q: q ? q.value.trim() : item.q, a: a ? a.value.trim() : item.a };
+      }).filter(i => i.q)
+    };
+  }).filter(t => t.topik);
+}
+
+function addFaqTopik() {
+  const faq = getFaqFromAdminForm();
+  faq.push({ topik: 'Topik Baru', icon: 'fa-circle-question', items: [{ q: 'Pertanyaan contoh?', a: 'Jawaban.' }] });
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatFaq'] = faq;
+  renderFaqAdminTab();
+}
+
+function removeFaqTopik(ti) {
+  if (!confirm('Hapus topik ini beserta semua pertanyaannya?')) return;
+  const faq = getFaqFromAdminForm();
+  faq.splice(ti, 1);
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatFaq'] = faq;
+  renderFaqAdminTab();
+}
+
+function addFaqItem(ti) {
+  const faq = getFaqFromAdminForm();
+  if (!faq[ti]) return;
+  faq[ti].items.push({ q: '', a: '' });
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatFaq'] = faq;
+  renderFaqAdminTab();
+  // Focus pertanyaan baru
+  setTimeout(() => {
+    const lastIdx = faq[ti].items.length - 1;
+    const el = document.getElementById(`faq-q-${ti}-${lastIdx}`);
+    if (el) el.focus();
+  }, 100);
+}
+
+function removeFaqItem(ti, ii) {
+  const faq = getFaqFromAdminForm();
+  if (faq[ti]) { faq[ti].items.splice(ii, 1); }
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatFaq'] = faq;
+  renderFaqAdminTab();
+}
+
+async function saveFaqAdmin() {
+  const faq = getFaqFromAdminForm();
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatFaq'] = faq;
+  await pushConfig('chatFaq', faq);
+  flashMsg('msgFaqAdmin');
+}
+
+// ================================================================
+// INJECT admin tabs: FAQ & Chat ke panel admin
+// ================================================================
+(function() {
+  function injectAdminChatTabs() {
+    // 1. Inject tab buttons
+    const adminTabs = document.querySelector('.admin-tabs');
+    if (adminTabs && !document.getElementById('btnAdminTabFaq')) {
+      const btnFaq = document.createElement('button');
+      btnFaq.className = 'admin-tab';
+      btnFaq.id = 'btnAdminTabFaq';
+      btnFaq.innerHTML = '<i class="fa-solid fa-circle-question"></i> FAQ';
+      btnFaq.onclick = function() { switchAdminTab('faq-admin', this); renderFaqAdminTab(); };
+      adminTabs.appendChild(btnFaq);
+
+      const btnChat = document.createElement('button');
+      btnChat.className = 'admin-tab';
+      btnChat.id = 'btnAdminTabChat';
+      btnChat.innerHTML = '<i class="fa-solid fa-comments"></i> Chat Penyedia';
+      btnChat.onclick = function() { switchAdminTab('chat-admin', this); renderChatAdminTab(); _startAdminChatPoll(); };
+      adminTabs.appendChild(btnChat);
+    }
+
+    // 2. Inject tab content sections
+    const adminBody = document.querySelector('.admin-panel-body');
+    if (adminBody && !document.getElementById('atab-faq-admin')) {
+      const secFaq = document.createElement('div');
+      secFaq.className = 'admin-section';
+      secFaq.id = 'atab-faq-admin';
+      adminBody.appendChild(secFaq);
+
+      const secChat = document.createElement('div');
+      secChat.className = 'admin-section';
+      secChat.id = 'atab-chat-admin';
+      adminBody.appendChild(secChat);
+    }
+  }
+
+  // Try immediately and also after page init
+  injectAdminChatTabs();
+  window.addEventListener('load', injectAdminChatTabs);
+  setTimeout(injectAdminChatTabs, 2000);
+})();
+
+// Also patch setRole for admin to show chat inbox
+(function() {
+  const _o = window.setRole;
+  if (typeof _o === 'function') {
+    window.setRole = function(role) {
+      _o.apply(this, arguments);
+      if (role === 'admin') {
+        setTimeout(() => { injectAdminChatTabs && injectAdminChatTabs(); }, 500);
+        _startAdminChatPoll();
+      }
     };
   }
 })();
