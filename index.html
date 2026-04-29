@@ -12001,13 +12001,18 @@ function _chatNowFull() {
 // ── Ambil/simpan pesan dari config ──
 function _chatGetMessages(roomId) {
   const all = gcGet('chatMessages', {});
-  return all[roomId] ? [...all[roomId]] : [];
+  const msgs = all[roomId] ? [...all[roomId]] : [];
+  // Selalu urutkan berdasarkan id (timestamp) ascending
+  msgs.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+  return msgs;
 }
 
 async function _chatSaveMessage(roomId, msgObj) {
   const all = gcGet('chatMessages', {});
   if (!all[roomId]) all[roomId] = [];
   all[roomId].push(msgObj);
+  // Urutkan berdasarkan id setiap kali simpan
+  all[roomId].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
   // Batasi 200 pesan per room
   if (all[roomId].length > 200) all[roomId] = all[roomId].slice(-200);
   if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
