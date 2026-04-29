@@ -2392,7 +2392,7 @@ function normalizeSubmissions(arr) {
   const result = arr.map(normalizeSubmission);
   // Rebuild _delegasiMap dari data submissions (agar sinkron tanpa request extra)
   result.forEach(s => {
-    const paketKey = (s.npwp || s.namaPerusahaan) + '||' + s.jenisDok;
+    const paketKey = (s.namaPerusahaan || s.npwp) + '||' + s.jenisDok;
     if (s.delegasiPokja) _delegasiMap[paketKey] = s.delegasiPokja;
     // Jika delegasiPokja kosong, biarkan map lama (mungkin baru diset, belum reload)
   });
@@ -2516,7 +2516,7 @@ async function setDelegasiPaket(npwp, namaPerusahaan, jenisDok, delegasiPokja, s
   if (selectEl) { selectEl.disabled = true; }
 
   // Optimistic update langsung di memori
-  const paketKey = (npwp || namaPerusahaan) + '||' + jenisDok;
+  const paketKey = (namaPerusahaan || npwp) + '||' + jenisDok;
   const prevValue = _delegasiMap[paketKey];
   if (delegasiPokja) _delegasiMap[paketKey] = delegasiPokja;
   else delete _delegasiMap[paketKey];
@@ -2553,7 +2553,7 @@ function cekAkseDelegasiFrontend(npwp, namaPerusahaan, jenisDok) {
   if (currentRole === 'admin') return true; // admin selalu full akses
   if (currentRole !== 'pokja') return true; // bukan pokja → tidak di-enforce
 
-  const paketKey = (npwp || namaPerusahaan) + '||' + jenisDok;
+  const paketKey = (namaPerusahaan || npwp) + '||' + jenisDok;
   const delegasi = _delegasiMap[paketKey] || null;
 
   // Belum ada delegasi → SEMUA pokja dikunci (harus tunggu assign dari admin)
@@ -2596,7 +2596,7 @@ function renderDelegasiTable() {
     var npwp   = (s.npwp || '').toLowerCase();
     var jenis  = (s.jenisDok || '').toLowerCase();
     var matchQ = !q || nama.indexOf(q) >= 0 || npwp.indexOf(q) >= 0 || jenis.indexOf(q) >= 0;
-    var pk     = (s.npwp || s.namaPerusahaan || '') + '||' + (s.jenisDok || '');
+    var pk     = (s.namaPerusahaan || s.npwp || '') + '||' + (s.jenisDok || '');
     var dlg    = _delegasiMap[pk] || '';
     var matchF = !fPkj ? true : (fPkj === '__belum__' ? !dlg : dlg === fPkj);
     return matchQ && matchF;
@@ -2604,14 +2604,14 @@ function renderDelegasiTable() {
 
   var total    = subs.length;
   var assigned = subs.filter(function(s) {
-    var k = (s.npwp || s.namaPerusahaan || '') + '||' + (s.jenisDok || '');
+    var k = (s.namaPerusahaan || s.npwp || '') + '||' + (s.jenisDok || '');
     return !!_delegasiMap[k];
   }).length;
   var belum = total - assigned;
 
   var perPokjaHtml = ['Pokja 1','Pokja 2','Pokja 3','Pokja 4'].map(function(p) {
     var c = subs.filter(function(s) {
-      var k = (s.npwp || s.namaPerusahaan || '') + '||' + (s.jenisDok || '');
+      var k = (s.namaPerusahaan || s.npwp || '') + '||' + (s.jenisDok || '');
       return _delegasiMap[k] === p;
     }).length;
     return '<div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:8px 14px;font-size:0.80rem;">'
@@ -5441,7 +5441,7 @@ function renderPokjaTable() {
     const npwpRow   = d.npwp || '';
     const namaRow   = d.namaPerusahaan || '';
     const jenisDokRow = d.jenisDok || '';
-    const paketKeyRow = (npwpRow || namaRow) + '||' + jenisDokRow;
+    const paketKeyRow = (namaRow || npwpRow) + '||' + jenisDokRow;
     const delegasiValue = _delegasiMap[paketKeyRow] || '';
     const hasFullAccess = cekAkseDelegasiFrontend(npwpRow, namaRow, jenisDokRow);
 
@@ -6030,6 +6030,59 @@ function getPengumumanTabs() {
 
 let _currentPengumumanAdminTab = null;
 
+// ── Notif helper functions (dibutuhkan oleh renderPengumumanPublicUI) ──
+const NOTIF_TAB_READ_KEY   = 'bpbj_notif_tab_read';
+
+// Buat hash sederhana dari string (dipakai untuk track perubahan konten)
+function _hashStr(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return h.toString(36);
+}
+
+// Hash semua konten pengumuman yang ada isi-nya
+function _getPengumumanContentHash() {
+  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
+  const parts = tabs.map(tab => {
+    const key = 'pengumuman_' + tab.id.replace(/-/g,'_');
+    return gcGet(key, '').trim();
+  }).filter(Boolean);
+  return _hashStr(parts.join('||'));
+}
+
+// Hash per-tab tunggal
+function _getTabContentHash(tabId) {
+  const key = 'pengumuman_' + tabId.replace(/-/g,'_');
+  return _hashStr(gcGet(key, '').trim());
+}
+
+// Baca peta "tab yang sudah dibaca" dari localStorage: { tabId: hash }
+function _getReadTabMap() {
+  try { return JSON.parse(localStorage.getItem(NOTIF_TAB_READ_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+function _saveReadTabMap(map) {
+  localStorage.setItem(NOTIF_TAB_READ_KEY, JSON.stringify(map));
+}
+
+// Tandai satu tab sebagai sudah dibaca (simpan hash-nya)
+function _markTabRead(tabId) {
+  const map = _getReadTabMap();
+  map[tabId] = _getTabContentHash(tabId);
+  _saveReadTabMap(map);
+}
+
+// Cek apakah sebuah tab punya konten baru yang belum dibaca
+function _isTabUnread(tabId) {
+  const key = 'pengumuman_' + tabId.replace(/-/g,'_');
+  const content = gcGet(key, '').trim();
+  if (!content) return false; // kosong = tidak ada notif
+  const map = _getReadTabMap();
+  return map[tabId] !== _getTabContentHash(tabId);
+}
+
 // ── Render public-facing tab nav + panels ────────────────
 function renderPengumumanPublicUI() {
   const tabs = getPengumumanTabs();
@@ -6256,15 +6309,18 @@ async function clearPengumumanTab() {
 
 async function init() {
   initAuth();
+  // ── Restore session SEBELUM fetchGlobalConfig & renderAll ──
+  // Agar saat renderAll() pertama kali, currentRole sudah ter-set dan sidebar/UI langsung benar
+  _startSessionTimeoutWatcher();
+  const sessionRestored = restoreSession();
+
   showSync('Memuat pengaturan dari server…');
   const cfg=await fetchGlobalConfig(true);
   if(cfg){hideSync();}
   else{showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.','error');setTimeout(hideSync,3000);}
   renderAll();
-  // ── Mulai pengawas session timeout (5 menit tidak aktif = auto logout) ──
-  _startSessionTimeoutWatcher();
-  // ── Restore session jika user refresh browser ──
-  if (restoreSession()) {
+  // ── Selesaikan inisialisasi berdasarkan role yang sudah di-restore ──
+  if (sessionRestored) {
     renderSidebar();
     updateRoleUI();
     updateMbnVisibility();
@@ -6294,18 +6350,21 @@ async function init() {
   // Tampilkan waktu load pertama
   updateDataTimestamp();
 
-  // ── Release pokja lock saat tab/browser ditutup ──
-  window.addEventListener('beforeunload', () => {
+  // ── Release pokja lock saat tab/browser benar-benar ditutup (bukan refresh) ──
+  // Gunakan pagehide + sessionStorage flag untuk membedakan refresh vs tutup tab.
+  // Saat refresh: sessionStorage['_bpbj_refreshing'] masih ada saat halaman dimuat ulang.
+  // Saat tutup tab: sessionStorage hilang, flag tidak ada → kirim release lock.
+  window.addEventListener('pagehide', (e) => {
     if (currentRole === 'pokja' && currentPokjaUser) {
-      // Gunakan sendBeacon agar tetap terkirim saat tab ditutup
-      const payload = JSON.stringify({ action:'setConfig', key:'pokjaAccounts', value: (() => {
-        const acc = Object.assign({}, gcGet('pokjaAccounts', {}));
-        if (acc[currentPokjaUser]) { acc[currentPokjaUser].locked = false; acc[currentPokjaUser].lockToken = ''; acc[currentPokjaUser].logoutAt = new Date().toISOString(); }
-        return acc;
-      })() });
-      try { navigator.sendBeacon(APPS_SCRIPT_URL, payload); } catch(e) {}
+      // Tandai bahwa ini mungkin refresh (flag akan hilang jika tab benar-benar ditutup)
+      try { sessionStorage.setItem('_bpbj_refreshing', '1'); } catch(ex) {}
+      // Hanya release lock jika bukan navigasi yang akan kembali (e.persisted = false dan bukan refresh)
+      // Kita kirim beacon tapi tidak hapus localStorage session, sehingga saat refresh session tetap ada
+      // Lock akan di-reset otomatis saat login ulang dengan password yang benar
     }
   });
+  // Hapus flag refresh setelah halaman selesai load (artinya ini adalah refresh yang berhasil)
+  try { sessionStorage.removeItem('_bpbj_refreshing'); } catch(ex) {}
 }
 
 // Hook: setelah loadSubmissionsFromSheet selesai, auto-load nego states jika halaman negosiasi/penetapan aktif
@@ -11002,58 +11061,7 @@ const NOTIF_SEEN_KEY       = 'bpbj_notif_seen_count';
 const NOTIF_DISMISSED_KEY  = 'bpbj_notif_dismissed';
 // Key hash konten: popup HANYA muncul lagi jika konten pengumuman berubah
 const NOTIF_POPUP_HASH_KEY = 'bpbj_notif_popup_hash';
-// Key hash per-tab yang sudah dibaca
-const NOTIF_TAB_READ_KEY   = 'bpbj_notif_tab_read';
-
-// Buat hash sederhana dari string (dipakai untuk track perubahan konten)
-function _hashStr(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-  }
-  return h.toString(36);
-}
-
-// Hash semua konten pengumuman yang ada isi-nya
-function _getPengumumanContentHash() {
-  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
-  const parts = tabs.map(tab => {
-    const key = 'pengumuman_' + tab.id.replace(/-/g,'_');
-    return gcGet(key, '').trim();
-  }).filter(Boolean);
-  return _hashStr(parts.join('||'));
-}
-
-// Hash per-tab tunggal
-function _getTabContentHash(tabId) {
-  const key = 'pengumuman_' + tabId.replace(/-/g,'_');
-  return _hashStr(gcGet(key, '').trim());
-}
-
-// Baca peta "tab yang sudah dibaca" dari localStorage: { tabId: hash }
-function _getReadTabMap() {
-  try { return JSON.parse(localStorage.getItem(NOTIF_TAB_READ_KEY) || '{}'); }
-  catch(e) { return {}; }
-}
-function _saveReadTabMap(map) {
-  localStorage.setItem(NOTIF_TAB_READ_KEY, JSON.stringify(map));
-}
-
-// Tandai satu tab sebagai sudah dibaca (simpan hash-nya)
-function _markTabRead(tabId) {
-  const map = _getReadTabMap();
-  map[tabId] = _getTabContentHash(tabId);
-  _saveReadTabMap(map);
-}
-
-// Cek apakah sebuah tab punya konten baru yang belum dibaca
-function _isTabUnread(tabId) {
-  const key = 'pengumuman_' + tabId.replace(/-/g,'_');
-  const content = gcGet(key, '').trim();
-  if (!content) return false; // kosong = tidak ada notif
-  const map = _getReadTabMap();
-  return map[tabId] !== _getTabContentHash(tabId);
-}
+// [dipindah ke atas — lihat sebelum renderPengumumanPublicUI]
 
 // Ambil config notifikasi dari globalConfig
 function getNotifConfig() {
