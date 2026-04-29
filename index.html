@@ -2290,6 +2290,18 @@ async function pushConfig(key, value) {
   }
 }
 
+// pushConfigSilent: simpan ke server tanpa menampilkan indikator sinkronisasi.
+// Dipakai untuk chat agar tidak ada tulisan "Menyimpan & sinkronisasi..." tiap pesan.
+function pushConfigSilent(key, value) {
+  if (typeof _globalConfig !== 'undefined') _globalConfig[key] = value;
+  // Fire-and-forget: tidak await, tidak tampilkan indikator
+  fetch(APPS_SCRIPT_URL, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'setConfig', key, value })
+  }).catch(() => {}); // abaikan error silently
+}
+
 function showSync(msg, type='') {
   const el = document.getElementById('syncIndicator');
   document.getElementById('syncMsg').textContent = msg;
@@ -2672,27 +2684,78 @@ function renderDelegasiTable() {
 }
 
 // ── Session persistence: tahan login saat browser di-refresh ──
+// Menggunakan localStorage agar tahan refresh, dengan session timeout 5 menit tidak aktif.
+var SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 menit
+var _sessionTimeoutTimer = null;
+
 function saveSession() {
   try {
     if (currentRole) {
-      sessionStorage.setItem('_bpbj_role',     currentRole);
-      sessionStorage.setItem('_bpbj_penyedia', JSON.stringify(currentPenyedia || null));
-      sessionStorage.setItem('_bpbj_pokjauser', currentPokjaUser || '');
+      localStorage.setItem('_bpbj_role',     currentRole);
+      localStorage.setItem('_bpbj_penyedia', JSON.stringify(currentPenyedia || null));
+      localStorage.setItem('_bpbj_pokjauser', currentPokjaUser || '');
+      localStorage.setItem('_bpbj_lastActive', Date.now().toString());
     } else {
-      sessionStorage.removeItem('_bpbj_role');
-      sessionStorage.removeItem('_bpbj_penyedia');
-      sessionStorage.removeItem('_bpbj_pokjauser');
+      localStorage.removeItem('_bpbj_role');
+      localStorage.removeItem('_bpbj_penyedia');
+      localStorage.removeItem('_bpbj_pokjauser');
+      localStorage.removeItem('_bpbj_lastActive');
     }
   } catch(e) {}
+  // Bersihkan sessionStorage lama jika ada
+  try {
+    sessionStorage.removeItem('_bpbj_role');
+    sessionStorage.removeItem('_bpbj_penyedia');
+    sessionStorage.removeItem('_bpbj_pokjauser');
+  } catch(e) {}
+}
+
+function _updateLastActive() {
+  try { if (currentRole) localStorage.setItem('_bpbj_lastActive', Date.now().toString()); } catch(e) {}
+}
+
+function _startSessionTimeoutWatcher() {
+  clearInterval(_sessionTimeoutTimer);
+  _sessionTimeoutTimer = setInterval(function() {
+    if (!currentRole) return;
+    try {
+      var last = parseInt(localStorage.getItem('_bpbj_lastActive') || '0', 10);
+      if (last > 0 && (Date.now() - last) >= SESSION_TIMEOUT_MS) {
+        // Session timeout — auto logout
+        clearInterval(_sessionTimeoutTimer);
+        showToast('Sesi Berakhir', 'Anda telah logout otomatis karena tidak aktif selama 5 menit.', 'info');
+        setTimeout(function() { doLogout(); }, 800);
+      }
+    } catch(e) {}
+  }, 30000); // cek tiap 30 detik
+  // Update lastActive setiap ada interaksi pengguna
+  ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach(function(evt) {
+    document.addEventListener(evt, _updateLastActive, { passive: true });
+  });
 }
 
 function restoreSession() {
   try {
-    const role = sessionStorage.getItem('_bpbj_role');
+    // Coba dari localStorage dulu, lalu fallback ke sessionStorage lama
+    var role = localStorage.getItem('_bpbj_role') || sessionStorage.getItem('_bpbj_role');
     if (!role) return false;
-    currentRole     = role;
-    currentPenyedia = JSON.parse(sessionStorage.getItem('_bpbj_penyedia') || 'null');
-    currentPokjaUser = sessionStorage.getItem('_bpbj_pokjauser') || null;
+
+    // Cek apakah session sudah expired
+    var lastActive = parseInt(localStorage.getItem('_bpbj_lastActive') || '0', 10);
+    if (lastActive > 0 && (Date.now() - lastActive) >= SESSION_TIMEOUT_MS) {
+      // Sudah expired — hapus dan jangan restore
+      localStorage.removeItem('_bpbj_role');
+      localStorage.removeItem('_bpbj_penyedia');
+      localStorage.removeItem('_bpbj_pokjauser');
+      localStorage.removeItem('_bpbj_lastActive');
+      return false;
+    }
+
+    currentRole      = role;
+    currentPenyedia  = JSON.parse(localStorage.getItem('_bpbj_penyedia') || sessionStorage.getItem('_bpbj_penyedia') || 'null');
+    currentPokjaUser = localStorage.getItem('_bpbj_pokjauser') || sessionStorage.getItem('_bpbj_pokjauser') || null;
+    // Update lastActive agar tidak langsung timeout setelah restore
+    localStorage.setItem('_bpbj_lastActive', Date.now().toString());
     return true;
   } catch(e) { return false; }
 }
@@ -2835,7 +2898,7 @@ async function doLoginPokja() {
   // [FIX] Jika password sudah benar, lock lama (dari browser yang ditutup tanpa logout)
   // otomatis direset dan login diizinkan. Lock hanya berlaku dalam sesi yang sama.
   // Tidak ada lagi pemblokiran akun saat browser ditutup / sesi habis.
-  const myToken = sessionStorage.getItem('_bpbj_locktoken_' + username) || '';
+  const myToken = localStorage.getItem('_bpbj_locktoken_' + username) || sessionStorage.getItem('_bpbj_locktoken_' + username) || '';
   if (isLocked && lockToken && lockToken !== myToken) {
     // Auto-release lock lama — password sudah diverifikasi benar di atas
     // Lanjutkan proses login (tidak return)
@@ -2843,7 +2906,7 @@ async function doLoginPokja() {
 
   // ── Buat lock token baru & simpan ke server ──
   const newToken = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-  sessionStorage.setItem('_bpbj_locktoken_' + username, newToken);
+  localStorage.setItem('_bpbj_locktoken_' + username, newToken);
   const updatedAccounts = Object.assign({}, pokjaAccounts);
   if (!updatedAccounts[username]) updatedAccounts[username] = { password: expectedPass };
   updatedAccounts[username].locked    = true;
@@ -2883,6 +2946,7 @@ async function releasePokjaLock(username) {
     _globalConfig['pokjaAccounts'] = pokjaAccounts;
   }
   sessionStorage.removeItem('_bpbj_locktoken_' + username);
+  localStorage.removeItem('_bpbj_locktoken_' + username);
 }
 
 async function doLoginAdmin() {
@@ -6197,6 +6261,8 @@ async function init() {
   if(cfg){hideSync();}
   else{showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.','error');setTimeout(hideSync,3000);}
   renderAll();
+  // ── Mulai pengawas session timeout (5 menit tidak aktif = auto logout) ──
+  _startSessionTimeoutWatcher();
   // ── Restore session jika user refresh browser ──
   if (restoreSession()) {
     renderSidebar();
@@ -12007,16 +12073,27 @@ function _chatGetMessages(roomId) {
   return msgs;
 }
 
-async function _chatSaveMessage(roomId, msgObj) {
+function _chatSaveMessage(roomId, msgObj) {
+  // 1. Simpan ke local state (_globalConfig) langsung agar render instan
   const all = gcGet('chatMessages', {});
   if (!all[roomId]) all[roomId] = [];
-  all[roomId].push(msgObj);
-  // Urutkan berdasarkan id setiap kali simpan
+  if (!all[roomId].find(m => String(m.id) === String(msgObj.id))) {
+    all[roomId].push(msgObj);
+  }
   all[roomId].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
-  // Batasi 200 pesan per room
   if (all[roomId].length > 200) all[roomId] = all[roomId].slice(-200);
   if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
-  await pushConfig('chatMessages', all);
+  if (roomId === _chatRoomId) _chatMessages = [...all[roomId]];
+
+  // 2. Kirim ke GAS via endpoint khusus kirimPesanChat (lebih ringan, per-pesan)
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'kirimPesanChat', roomId: roomId, msgObj: msgObj })
+  }).catch(() => {});
+
+  return Promise.resolve();
 }
 
 // ── Init: tampilkan/sembunyikan chat button berdasarkan role ──
@@ -12026,10 +12103,10 @@ function initChatWidget() {
   // Jika belum ada currentRole, coba restore dari session (penting setelah refresh)
   if (!currentRole) {
     try {
-      const role = sessionStorage.getItem('_bpbj_role');
+      const role = localStorage.getItem('_bpbj_role') || sessionStorage.getItem('_bpbj_role');
       if (role) {
         currentRole = role;
-        currentPenyedia = JSON.parse(sessionStorage.getItem('_bpbj_penyedia') || 'null');
+        currentPenyedia = JSON.parse(localStorage.getItem('_bpbj_penyedia') || sessionStorage.getItem('_bpbj_penyedia') || 'null');
       }
     } catch(e) {}
   }
@@ -12059,10 +12136,15 @@ function toggleChatWidget() {
     _chatMarkRead();
     // Render FAQ topics by default
     renderFaqTopics();
+    // Aktifkan fast poll jika sudah di tab admin
+    const isAdminMode = document.getElementById('chatModeAdmin') &&
+                        document.getElementById('chatModeAdmin').style.display !== 'none';
+    _chatSetFastPoll(isAdminMode);
   }
 }
 function closeChatWidget() {
   document.getElementById('chatWidget').classList.remove('open');
+  _chatSetFastPoll(false); // kembali ke slow poll saat ditutup
 }
 
 // ── Mode switch ──
@@ -12079,10 +12161,15 @@ function switchChatMode(mode) {
     if (tabBadge) tabBadge.style.display = 'none';
     renderChatMessages();
     _chatMarkRead();
+    _chatSetFastPoll(true); // fast poll saat chat admin aktif
+    // Poll segera agar pesan terbaru langsung muncul tanpa nunggu interval
+    setTimeout(_chatPollMessages, 300);
     setTimeout(() => {
       const w = document.getElementById('chatMsgsWrap');
       if (w) w.scrollTop = w.scrollHeight;
     }, 50);
+  } else {
+    _chatSetFastPoll(false); // kembali ke slow poll di mode FAQ
   }
 }
 
@@ -12142,7 +12229,8 @@ function toggleFaqItem(id) {
 function renderChatMessages() {
   const wrap = document.getElementById('chatMsgsWrap');
   if (!wrap) return;
-  const msgs = _chatGetMessages(_chatRoomId);
+  // Baca dari _chatMessages (sudah sync dengan local state) bukan dari gcGet
+  const msgs = _chatMessages.length > 0 ? _chatMessages : _chatGetMessages(_chatRoomId);
   if (!msgs.length) {
     wrap.innerHTML = `<div style="text-align:center;padding:20px;color:#aaa;font-size:0.80rem;" id="chatNoMsgNote">
       <i class="fa-regular fa-comment-dots" style="font-size:24px;display:block;margin-bottom:8px;"></i>
@@ -12187,10 +12275,10 @@ async function sendChatMsg() {
     dibaca: false,
     roomId: _chatRoomId,
   };
-  await _chatSaveMessage(_chatRoomId, msgObj);
-  _chatMessages = _chatGetMessages(_chatRoomId);
+  // _chatSaveMessage: update lokal state secara atomik + kirim ke server via kirimPesanChat
+  // (endpoint yang sama dengan yang dibaca oleh polling getPesanChat — tidak ada mismatch sheet)
+  _chatSaveMessage(_chatRoomId, msgObj);
   renderChatMessages();
-  // Notify admin in panel
   _chatRefreshAdminInbox();
 }
 
@@ -12200,23 +12288,55 @@ document.getElementById('chatInputMsg').addEventListener('input', function() {
   this.style.height = Math.min(this.scrollHeight, 100) + 'px';
 });
 
-// ── Poll for new messages (check every 15s) ──
+// ── Poll for new messages ──
+// Interval: 4 detik saat chat terbuka & mode admin, 10 detik saat background
+var _chatPollFast = false;
+
 function _chatStartPoll() {
   clearInterval(_chatPollTimer);
-  _chatPollTimer = setInterval(_chatPollMessages, 15000);
+  _chatPollFast = false;
+  _chatPollTimer = setInterval(_chatPollMessages, 10000);
+}
+
+function _chatSetFastPoll(fast) {
+  if (_chatPollFast === fast) return;
+  _chatPollFast = fast;
+  clearInterval(_chatPollTimer);
+  _chatPollTimer = setInterval(_chatPollMessages, fast ? 4000 : 10000);
 }
 
 async function _chatPollMessages() {
   if (!_chatRoomId || !currentPenyedia) return;
   try {
-    const cfg = await fetchGlobalConfig(true);
-    const all = (cfg && cfg.chatMessages) ? cfg.chatMessages : {};
-    const freshMsgs = all[_chatRoomId] ? [...all[_chatRoomId]] : [];
+    // Poll hanya pesan baru (since = id pesan terakhir) — lebih ringan dari getConfig
+    const lastId = _chatMessages.length > 0
+      ? Math.max(..._chatMessages.map(m => Number(m.id) || 0))
+      : 0;
+    const url = APPS_SCRIPT_URL + '?action=getPesanChat&roomId=' + encodeURIComponent(_chatRoomId)
+              + '&since=' + lastId + '&t=' + Date.now();
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.msgs || !data.msgs.length) return;
+
+    // Ada pesan baru dari server
+    const newMsgs = data.msgs;
     const prevLen = _chatMessages.length;
-    _chatMessages = freshMsgs;
+
+    // Merge ke local state
+    newMsgs.forEach(m => {
+      if (!_chatMessages.find(x => String(x.id) === String(m.id))) {
+        _chatMessages.push(m);
+      }
+    });
+    _chatMessages.sort((a, b) => (Number(a.id)||0) - (Number(b.id)||0));
+
+    // Update globalConfig juga
+    const all = gcGet('chatMessages', {});
+    all[_chatRoomId] = [..._chatMessages];
     if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
-    // Count new unread admin messages
-    const newAdminMsgs = freshMsgs.slice(prevLen).filter(m => m.from === 'admin' && !m.dibaca);
+
+    // Hitung pesan admin yang belum dibaca
+    const newAdminMsgs = newMsgs.filter(m => m.from === 'admin' && !m.dibaca);
     if (newAdminMsgs.length > 0) {
       _chatUnread += newAdminMsgs.length;
       _chatUpdateBadge();
@@ -12227,10 +12347,13 @@ async function _chatPollMessages() {
         renderChatMessages();
         _chatMarkRead();
       } else {
-        // Show tab badge
         const tabBadge = document.getElementById('chatAdminTabBadge');
         if (tabBadge) { tabBadge.textContent = _chatUnread; tabBadge.style.display = 'inline'; }
       }
+    } else if (_chatMessages.length > prevLen) {
+      // Ada pesan baru tapi bukan dari admin (misal konfirmasi) — tetap render jika terbuka
+      const panel = document.getElementById('chatWidget');
+      if (panel && panel.classList.contains('open')) renderChatMessages();
     }
   } catch(e) {}
 }
@@ -12250,7 +12373,7 @@ async function _chatMarkRead() {
   msgs.forEach(m => { if (m.from === 'admin' && !m.dibaca) { m.dibaca = true; changed = true; } });
   if (changed) {
     if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
-    await pushConfig('chatMessages', all);
+    pushConfigSilent('chatMessages', all); // silent, tidak blokir UI
   }
   _chatUnread = 0;
   _chatUpdateBadge();
@@ -12403,7 +12526,7 @@ function selectAdminChatRoom(roomId) {
   const msgs = all[roomId] || [];
   msgs.forEach(m => { if (m.from === 'penyedia') m.dibacaAdmin = true; });
   if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
-  pushConfig('chatMessages', all).catch(() => {});
+  pushConfigSilent('chatMessages', all); // silent background sync
   renderChatAdminTab();
   _updateAdminChatBadge();
 }
@@ -12422,9 +12545,15 @@ async function sendAdminChatReply() {
     dibaca: false,
     roomId: _adminChatSelectedRoom,
   };
-  await _chatSaveMessage(_adminChatSelectedRoom, msgObj);
+  // Optimistic: simpan ke local dulu baru render
+  const _allAdmin = gcGet('chatMessages', {});
+  if (!_allAdmin[_adminChatSelectedRoom]) _allAdmin[_adminChatSelectedRoom] = [];
+  _allAdmin[_adminChatSelectedRoom].push(msgObj);
+  _allAdmin[_adminChatSelectedRoom].sort((a,b)=>(Number(a.id)||0)-(Number(b.id)||0));
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = _allAdmin;
   renderChatAdminTab();
-  // Notify penyedia badge will be picked up on next poll
+  // Kirim ke server di background via kirimPesanChat
+  _chatSaveMessage(_adminChatSelectedRoom, msgObj);
 }
 
 function _chatRefreshAdminInbox() {
@@ -12434,20 +12563,51 @@ function _chatRefreshAdminInbox() {
 }
 
 // ── Auto-poll admin inbox ──
+// Interval: 5 detik saat panel admin chat terbuka, 20 detik saat latar
 function _startAdminChatPoll() {
   clearInterval(_adminChatPollTimer);
   _adminChatPollTimer = setInterval(async () => {
     if (currentRole !== 'admin') return;
     try {
+      // Cek apakah panel admin chat sedang terbuka untuk menentukan polling agresif
+      const chatPanel  = document.getElementById('adminFloatChatPanel');
+      const chatTabActive = document.getElementById('atab-chat-admin');
+      const isVisible  = (chatPanel && chatPanel.classList.contains('open')) ||
+                         (chatTabActive && chatTabActive.classList.contains('active'));
+
+      // Poll semua room dari GAS sheet
       const cfg = await fetchGlobalConfig(true);
       if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
-        _globalConfig['chatMessages'] = cfg.chatMessages;
+        const serverMsgs = cfg.chatMessages || {};
+        const localMsgs  = gcGet('chatMessages', {});
+        const merged = {};
+        const allRooms = new Set([...Object.keys(serverMsgs), ...Object.keys(localMsgs)]);
+        allRooms.forEach(room => {
+          const srv = serverMsgs[room] || [];
+          const loc = localMsgs[room] || [];
+          const combined = [...srv];
+          loc.forEach(m => { if (!combined.find(x => String(x.id) === String(m.id))) combined.push(m); });
+          combined.sort((a,b) => (Number(a.id)||0)-(Number(b.id)||0));
+          merged[room] = combined;
+        });
+        _globalConfig['chatMessages'] = merged;
       }
       _chatRefreshAdminInbox();
       _updateAdminChatBadge();
+
+      // Sesuaikan interval berdasarkan visibilitas panel
+      const targetInterval = isVisible ? 5000 : 20000;
+      const currentInterval = _adminChatPollTimer ? _adminChatCurrentInterval : 20000;
+      if (Math.abs(targetInterval - currentInterval) > 1000) {
+        _adminChatCurrentInterval = targetInterval;
+        clearInterval(_adminChatPollTimer);
+        _adminChatPollTimer = setInterval(arguments.callee, targetInterval);
+      }
     } catch(e) {}
   }, 20000);
+  _adminChatCurrentInterval = 20000;
 }
+var _adminChatCurrentInterval = 20000;
 
 // ================================================================
 // FAQ ADMIN MANAGEMENT
@@ -12569,7 +12729,18 @@ async function saveFaqAdmin() {
       btnChat.className = 'admin-tab';
       btnChat.id = 'btnAdminTabChat';
       btnChat.innerHTML = '<i class="fa-solid fa-comments"></i> Chat Penyedia <span id="adminChatBadge" style="display:none;background:#C0392B;color:#fff;border-radius:10px;padding:1px 7px;font-size:0.70rem;font-weight:800;margin-left:4px;vertical-align:middle;">0</span>';
-      btnChat.onclick = function() { switchAdminTab('chat-admin', this); renderChatAdminTab(); _startAdminChatPoll(); };
+      btnChat.onclick = function() { switchAdminTab('chat-admin', this); renderChatAdminTab(); _startAdminChatPoll();
+        // Poll segera saat tab dibuka
+        setTimeout(async () => {
+          try {
+            const cfg = await fetchGlobalConfig(true);
+            if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
+              _globalConfig['chatMessages'] = cfg.chatMessages;
+            }
+            renderChatAdminTab(); _updateAdminChatBadge();
+          } catch(e) {}
+        }, 300);
+      };
       adminTabs.appendChild(btnChat);
     }
 
@@ -12643,6 +12814,17 @@ function toggleAdminFloatChat() {
     panel.classList.add('open');
     afcRenderRoomList();
     _afcStartPoll();
+    // Poll segera saat panel dibuka agar pesan terbaru langsung terlihat
+    setTimeout(async () => {
+      try {
+        const cfg = await fetchGlobalConfig(true);
+        if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
+          _globalConfig['chatMessages'] = cfg.chatMessages;
+        }
+        afcRenderRoomList();
+        afcUpdateBadge();
+      } catch(e) {}
+    }, 300);
   }
 }
 
@@ -12708,7 +12890,7 @@ function afcOpenRoom(roomId) {
   const msgs = all[roomId] || [];
   msgs.forEach(m => { if (m.from === 'penyedia') m.dibacaAdmin = true; });
   if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
-  pushConfig('chatMessages', all).catch(() => {});
+  pushConfigSilent('chatMessages', all);
   afcUpdateBadge();
   _updateAdminChatBadge(); // sync badge di panel admin juga
 
@@ -12790,7 +12972,7 @@ async function afcSendReply() {
     dibaca: false,
     roomId: _afcSelectedRoom,
   };
-  await _chatSaveMessage(_afcSelectedRoom, msgObj);
+  _chatSaveMessage(_afcSelectedRoom, msgObj); // optimistic, non-blocking
   afcRenderMessages(_afcSelectedRoom);
   // Juga sync ke panel admin tab jika terbuka
   _chatRefreshAdminInbox();
@@ -12813,20 +12995,21 @@ function afcUpdateBadge() {
   }
 }
 
-// ── Polling otomatis setiap 20 detik ──
+// ── Polling otomatis — 5 detik saat panel terbuka, 15 detik saat background ──
 function _afcStartPoll() {
   clearInterval(_afcPollTimer);
   _afcPollTimer = setInterval(async () => {
     if (currentRole !== 'admin') return;
     try {
+      const panel = document.getElementById('adminFloatChatPanel');
+      const isOpen = panel && panel.classList.contains('open');
       const cfg = await fetchGlobalConfig(true);
       if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
         _globalConfig['chatMessages'] = cfg.chatMessages;
       }
       afcUpdateBadge();
       _updateAdminChatBadge();
-      const panel = document.getElementById('adminFloatChatPanel');
-      if (panel && panel.classList.contains('open')) {
+      if (isOpen) {
         if (_afcSelectedRoom) {
           afcRenderMessages(_afcSelectedRoom);
         } else {
@@ -12834,7 +13017,7 @@ function _afcStartPoll() {
         }
       }
     } catch(e) {}
-  }, 20000);
+  }, 5000);
 }
 
 // ── Init saat load halaman ──
