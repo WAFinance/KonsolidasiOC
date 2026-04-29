@@ -1332,12 +1332,6 @@
       </div>
     </section>
 
-    <!-- NEGOSIASI -->
-    <section class="page" id="page-negosiasi">
-      <h2 class="page-title"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</h2>
-      <p class="page-subtitle" id="negoSidebarSubtitle">Daftar penyedia yang telah Memenuhi Syarat dan masuk ke tahap negosiasi.</p>
-      <div id="negosiasiPageContent"></div>
-    </section>
 
     <!-- PENETAPAN PEMENANG -->
     <section class="page" id="page-penetapan">
@@ -1834,7 +1828,7 @@
       <button class="panduan-tab" onclick="switchPanduanTab('login',this)"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
       <button class="panduan-tab" onclick="switchPanduanTab('upload',this)"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dokumen</button>
       <button class="panduan-tab panduan-tab-penyedia-only" onclick="switchPanduanTab('status',this)"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</button>
-      <button class="panduan-tab panduan-tab-penyedia-only" onclick="switchPanduanTab('negosiasi',this)"><i class="fa-solid fa-handshake"></i> Negosiasi</button>
+
     </div>
     <div class="panduan-body">
       <!-- TAB: DAFTAR BARU -->
@@ -1900,20 +1894,7 @@
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Klik <strong>Refresh</strong> untuk memperbarui data</h4><p>Status diperbarui otomatis setiap <strong>20 detik</strong>. Anda juga dapat klik tombol <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Refresh</span> kapan saja untuk memuat data terbaru secara manual.</p><div class="step-tip"><i class="fa-solid fa-bell"></i> Notifikasi perubahan status juga dikirim melalui WhatsApp atau email oleh Pokja jika kontak Anda terdaftar.</div></div></div>
       </div>
-      <!-- TAB: NEGOSIASI (penyedia login only) -->
-      <div class="panduan-section" id="panduan-negosiasi">
-        <div class="panduan-intro-box">
-          <h3><i class="fa-solid fa-circle-info"></i> Proses Negosiasi Harga</h3>
-          <p>Setelah dokumen Anda dinyatakan <strong>Lulus</strong>, Pokja akan mengundang Anda ke tahap negosiasi harga. Menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</span> akan muncul otomatis di sidebar.</p>
-        </div>
-        <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</span> di sidebar</h4><p>Menu ini muncul otomatis setelah status evaluasi Anda dinyatakan Lulus. Di sini Anda dapat melihat tabel rincian penawaran yang dikirimkan Pokja.</p></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Tinjau rincian harga dari Pokja</h4><p>Periksa item pekerjaan, harga satuan, dan total yang ditawarkan Pokja. Bandingkan dengan penawaran awal Anda untuk memutuskan respons.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Perhatikan kolom selisih terhadap HPS — nilai ini menjadi dasar pertimbangan kesepakatan.</div></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Berikan penawaran balik atau setujui</h4><p>Anda dapat mengajukan counter-offer dengan mengisi nilai penawaran baru, atau langsung menyetujui harga yang ditawarkan Pokja. Setiap putaran tersimpan sebagai riwayat negosiasi.</p></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">4</div><div class="panduan-step-content"><h4>Nyatakan Sepakat atau Tolak di Pengumuman Pemenang</h4><p>Setelah Pokja menetapkan harga final, menu <span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-bell"></i> Pengumuman Pemenang</span> muncul di sidebar. Buka halaman tersebut dan klik <strong>Sepakat</strong> atau <strong>Tolak</strong> sesuai keputusan Anda.</p><div class="step-tip"><i class="fa-solid fa-triangle-exclamation"></i> Keputusan Sepakat/Tolak bersifat final dan akan langsung tercatat di sistem Pokja.</div></div></div>
-      </div>
+
     </div>
     <div class="panduan-footer">
       <div class="panduan-footer-note"><i class="fa-solid fa-circle-info" style="color:#7B2D8B;"></i> Butuh bantuan lebih lanjut? Hubungi Pokja Pemilihan BPBJ Kota Surakarta.</div>
@@ -1936,7 +1917,6 @@
     </div>
     <div class="panduan-tabs" id="panduanPokjaTabs">
       <button class="panduan-tab active" onclick="switchPanduanPokjaTab('evaluasi',this)"><i class="fa-solid fa-clipboard-check"></i> Evaluasi Dokumen</button>
-      <button class="panduan-tab" onclick="switchPanduanPokjaTab('negosiasi',this)"><i class="fa-solid fa-handshake"></i> Negosiasi</button>
       <button class="panduan-tab" onclick="switchPanduanPokjaTab('notifikasi',this)"><i class="fa-solid fa-bell"></i> Notifikasi WA & Email</button>
       <button class="panduan-tab" onclick="switchPanduanPokjaTab('penetapan',this)"><i class="fa-solid fa-gavel"></i> Penetapan Pemenang</button>
     </div>
@@ -1957,18 +1937,6 @@
         <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>4</span></div><div class="panduan-step-content"><h4>Simpan hasil evaluasi</h4><p>Klik <strong>Simpan</strong> untuk mengonfirmasi keputusan evaluasi. Data tersimpan ke Google Sheets dan penyedia dapat melihat hasilnya secara real-time.</p></div></div>
       </div>
 
-      <!-- TAB: NEGOSIASI -->
-      <div class="panduan-section" id="panduan-pokja-negosiasi">
-        <div class="panduan-intro-box" style="border-left-color:#4A5568;background:linear-gradient(135deg,rgba(74,85,104,0.07),rgba(45,55,72,0.07));border-color:rgba(74,85,104,0.2);">
-          <h3 style="color:#2D3748;"><i class="fa-solid fa-circle-info"></i> Proses Negosiasi Harga</h3>
-          <p>Pokja melakukan negosiasi harga penawaran dengan penyedia yang lulus evaluasi untuk mendapatkan harga terbaik sesuai HPS.</p>
-        </div>
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>1</span></div><div class="panduan-step-content"><h4>Buka menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-handshake"></i> Negosiasi Harga</span></h4><p>Daftar penyedia yang siap dinegosiasi ditampilkan. Hanya penyedia dengan status evaluasi <strong>Lulus</strong> yang dapat masuk tahap ini.</p></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>2</span></div><div class="panduan-step-content"><h4>Input penawaran dan counter HPS</h4><p>Masukkan detail item pekerjaan, harga satuan, dan total. Gunakan fitur perbandingan dengan HPS untuk memastikan nilai negosiasi wajar.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Dokumentasikan setiap putaran negosiasi — sistem menyimpan riwayat penawaran secara otomatis.</div></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Tetapkan Harga Final</h4><p>Setelah kesepakatan tercapai, klik <strong>Tetapkan Harga Final</strong>. Penyedia akan mendapat notifikasi dan diminta menyatakan persetujuan atau penolakan.</p></div></div>
-      </div>
 
       <!-- TAB: NOTIFIKASI WA & EMAIL -->
       <div class="panduan-section" id="panduan-pokja-notifikasi">
@@ -2809,22 +2777,27 @@ async function doLoginPenyedia() {
   if (!email)    { errEl.textContent = '❌ Email tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   if (!password) { errEl.textContent = '❌ Password tidak boleh kosong.'; shakeModal('loginOverlayPenyedia'); return; }
   setButtonLoading('btnDoLoginPenyedia', true, 'Memverifikasi…');
-  const cfg = await fetchGlobalConfig(true);
-  const penyediaAccounts = gcGet('penyediaAccounts', []);
-  let account = penyediaAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
-  if (!account) {
-    try {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
-      const data = await res.json();
-      if (data.status === 'ok' && data.account) {
-        account = data.account;
-        const idx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
-        if (idx >= 0) { penyediaAccounts[idx] = data.account; } else { penyediaAccounts.push(data.account); }
-        _globalConfig['penyediaAccounts'] = penyediaAccounts;
-      }
-    } catch(e) {}
+
+  // Verifikasi ke server — sumber kebenaran adalah sheet Akun
+  let account = null;
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'ok' && data.account) {
+      account = data.account;
+    }
+  } catch(e) {
+    setButtonLoading('btnDoLoginPenyedia', false);
+    errEl.textContent = '❌ Gagal menghubungi server. Periksa koneksi internet.';
+    shakeModal('loginOverlayPenyedia');
+    return;
   }
-  if (!account) { setButtonLoading('btnDoLoginPenyedia', false); errEl.textContent = '❌ Email atau password salah. Belum punya akun? Klik Daftar Baru.'; shakeModal('loginOverlayPenyedia'); return; }
+  if (!account) {
+    setButtonLoading('btnDoLoginPenyedia', false);
+    errEl.textContent = '❌ Email atau password salah. Belum punya akun? Klik Daftar Baru.';
+    shakeModal('loginOverlayPenyedia');
+    return;
+  }
   showModalSuccess('loginOverlayPenyedia', `Selamat datang, ${account.nama}! ✓`, 1400);
   setButtonLoading('btnDoLoginPenyedia', false);
   setTimeout(() => { currentPenyedia = { nama: account.nama, email: account.email }; if (currentRole === 'pokja') doLogoutSilent(); setRole('penyedia'); closeAllLoginOverlays(); }, 1500);
@@ -2840,84 +2813,41 @@ async function doLoginPokja() {
   if (!username || !password) { errEl.textContent = '❌ Username dan password wajib diisi.'; shakeModal('loginOverlayPokja'); return; }
   if (!POKJA_USERNAMES.includes(username)) { errEl.textContent = '❌ Username tidak dikenali.'; shakeModal('loginOverlayPokja'); return; }
   setButtonLoading('btnDoLoginPokja', true, 'Memverifikasi…');
-  const cfg = await fetchGlobalConfig(true);
 
-  // ── Ambil password akun pokja ini ──
-  // Config menyimpan: pokjaAccounts = { pokja:{password,lock}, pokja1:{...}, ... }
-  // Fallback: pokjaUsername/pokjaPassword untuk akun 'pokja' lama
-  const pokjaAccounts = (cfg && cfg.pokjaAccounts) ? cfg.pokjaAccounts : {};
-  let expectedPass, isLocked, lockToken;
-  if (pokjaAccounts[username]) {
-    expectedPass = pokjaAccounts[username].password || '';
-    isLocked     = pokjaAccounts[username].locked   || false;
-    lockToken    = pokjaAccounts[username].lockToken || '';
-  } else if (username === 'pokja') {
-    // Fallback ke config lama (password dari sheet Akun)
-    expectedPass = (cfg && cfg.pokjaPassword) ? cfg.pokjaPassword : '';
-    isLocked = false;
-  } else {
-    // Akun pokja1-10: ambil password dari sheet Akun
-    expectedPass = '';
-    isLocked = false;
-    // Coba ambil dari data sheet (pokjaAccountsFromSheet) jika ada
-    if (cfg && cfg.pokjaAccountsFromSheet && cfg.pokjaAccountsFromSheet[username]) {
-      expectedPass = cfg.pokjaAccountsFromSheet[username].password || '';
-    }
-  }
-
-  // Coba juga dari array akun sheet (format berbeda)
-  if (!pokjaAccounts[username] && cfg && Array.isArray(cfg.accounts)) {
-    const sheetAcc = cfg.accounts.find(a => (a.username||'').toLowerCase() === username && (a.role||'').toLowerCase() === 'pokja');
-    if (sheetAcc && sheetAcc.password) expectedPass = sheetAcc.password;
-  }
-
-  if (password !== expectedPass) {
-    // Jika expectedPass kosong → password belum diatur di sheet Akun
-    if (!expectedPass) {
+  // Verifikasi ke server — sumber kebenaran adalah sheet Akun
+  let verified = false;
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPokja&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'ok') {
+      verified = true;
+    } else {
       setButtonLoading('btnDoLoginPokja', false);
-      errEl.textContent = '❌ Password belum diatur. Hubungi Admin untuk mengatur password akun ini melalui sheet Akun.';
+      errEl.textContent = '❌ ' + (data.message || 'Username atau password salah.');
       shakeModal('loginOverlayPokja');
       return;
     }
-    // Satu lagi fallback: coba fetch langsung dari endpoint akun di sheet
-    let verified = false;
-    try {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=loginPokja&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
-      const data = await res.json();
-      if (data.status === 'ok') verified = true;
-    } catch(e) {}
-    if (!verified) {
-      setButtonLoading('btnDoLoginPokja', false);
-      errEl.textContent = '❌ Username atau password salah.';
-      shakeModal('loginOverlayPokja');
-      return;
-    }
+  } catch(e) {
+    setButtonLoading('btnDoLoginPokja', false);
+    errEl.textContent = '❌ Gagal menghubungi server. Periksa koneksi internet.';
+    shakeModal('loginOverlayPokja');
+    return;
   }
 
-  // ── Cek session lock ──
-  // [FIX] Jika password sudah benar, lock lama (dari browser yang ditutup tanpa logout)
-  // otomatis direset dan login diizinkan. Lock hanya berlaku dalam sesi yang sama.
-  // Tidak ada lagi pemblokiran akun saat browser ditutup / sesi habis.
-  const myToken = localStorage.getItem('_bpbj_locktoken_' + username) || sessionStorage.getItem('_bpbj_locktoken_' + username) || '';
-  if (isLocked && lockToken && lockToken !== myToken) {
-    // Auto-release lock lama — password sudah diverifikasi benar di atas
-    // Lanjutkan proses login (tidak return)
-  }
-
-  // ── Buat lock token baru & simpan ke server ──
+  // ── Buat lock token & simpan ke server ──
+  const cfg = _globalConfig || {};
+  const pokjaAccounts = (cfg.pokjaAccounts) ? Object.assign({}, cfg.pokjaAccounts) : {};
   const newToken = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
   localStorage.setItem('_bpbj_locktoken_' + username, newToken);
-  const updatedAccounts = Object.assign({}, pokjaAccounts);
-  if (!updatedAccounts[username]) updatedAccounts[username] = { password: expectedPass };
-  updatedAccounts[username].locked    = true;
-  updatedAccounts[username].lockToken = newToken;
-  updatedAccounts[username].loginAt   = new Date().toISOString();
-  // Push lock ke server (fire-and-forget)
+  if (!pokjaAccounts[username]) pokjaAccounts[username] = {};
+  pokjaAccounts[username].locked    = true;
+  pokjaAccounts[username].lockToken = newToken;
+  pokjaAccounts[username].loginAt   = new Date().toISOString();
   try {
     fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'setConfig', key:'pokjaAccounts', value: updatedAccounts }) });
+      body: JSON.stringify({ action:'setConfig', key:'pokjaAccounts', value: pokjaAccounts }) });
   } catch(e) {}
-  _globalConfig['pokjaAccounts'] = updatedAccounts;
+  if (typeof _globalConfig !== 'undefined') _globalConfig['pokjaAccounts'] = pokjaAccounts;
 
   showModalSuccess('loginOverlayPokja', `Login ${username} berhasil! ✓`, 1200);
   setButtonLoading('btnDoLoginPokja', false);
@@ -2950,22 +2880,29 @@ async function releasePokjaLock(username) {
 }
 
 async function doLoginAdmin() {
-  const username = document.getElementById('adminUsernameInput').value.trim();
+  const username = document.getElementById('adminUsernameInput').value.trim().toLowerCase();
   const password = document.getElementById('adminPasswordInput').value;
   const errEl    = document.getElementById('errorLoginAdmin');
   errEl.textContent = '';
   if (!username || !password) { errEl.textContent = '❌ Username dan password wajib diisi.'; shakeModal('loginOverlayAdmin'); return; }
   setButtonLoading('btnDoLoginAdmin', true, 'Memverifikasi…');
-  const cfg = await fetchGlobalConfig(true);
-  const adminUser = (cfg && cfg.adminUsername) ? cfg.adminUsername : 'admin';
-  const adminPass = (cfg && cfg.adminPassword) ? cfg.adminPassword : 'admin123';
-  if (username === adminUser && password === adminPass) {
-    showModalSuccess('loginOverlayAdmin', 'Login admin berhasil! ✓', 1200);
+
+  // Verifikasi ke server — sumber kebenaran adalah sheet Akun
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginAdmin&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'ok') {
+      showModalSuccess('loginOverlayAdmin', 'Login admin berhasil! ✓', 1200);
+      setButtonLoading('btnDoLoginAdmin', false);
+      setTimeout(() => { if (currentRole === 'penyedia' || currentRole === 'pokja') doLogoutSilent(); setRole('admin'); closeAllLoginOverlays(); }, 1300);
+    } else {
+      setButtonLoading('btnDoLoginAdmin', false);
+      errEl.textContent = '❌ ' + (data.message || 'Username atau password salah.');
+      shakeModal('loginOverlayAdmin');
+    }
+  } catch(e) {
     setButtonLoading('btnDoLoginAdmin', false);
-    setTimeout(() => { if (currentRole === 'penyedia' || currentRole === 'pokja') doLogoutSilent(); setRole('admin'); closeAllLoginOverlays(); }, 1300);
-  } else {
-    setButtonLoading('btnDoLoginAdmin', false);
-    errEl.textContent = '❌ Username atau password salah.';
+    errEl.textContent = '❌ Gagal menghubungi server. Periksa koneksi internet.';
     shakeModal('loginOverlayAdmin');
   }
 }
@@ -3470,18 +3407,8 @@ function renderSidebar() {
   let html    = '';
   let hasManageSection = false;
 
-  const negoBtn = `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="negosiasi" style="background:linear-gradient(135deg,#1A237E,#283593);color:#fff;border-left:3px solid #0d1660;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-handshake"></i></span><span class="nav-label">Negosiasi Harga</span></a></li>`;
-
   if (currentRole === 'penyedia') {
     const allSubs = getSubmissions();
-    // Penyedia tampil di menu Negosiasi jika:
-    // 1. Saat ini statusnya Lulus / Memenuhi Syarat, ATAU
-    // 2. Sudah ada negoHistory dari spreadsheet (artinya pernah lulus dan nego sudah dimulai)
-    const lulusAny = allSubs.some(s =>
-      currentPenyedia &&
-      (s.namaPerusahaan === currentPenyedia.nama || s.email === currentPenyedia.email || s.npwp === currentPenyedia.npwp) &&
-      ((s.reviewStatus === 'Memenuhi Syarat' || s.reviewStatus === 'Lulus / Memenuhi Syarat') || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0))
-    );
     // Cek apakah penyedia punya menu Pengumuman Pemenang:
     // Muncul segera setelah negosiasi DEAL (giliran=Selesai / harga disepakati),
     // ATAU sudah ada penetapanStatus / harga final dari Pokja
@@ -3508,13 +3435,11 @@ function renderSidebar() {
     });
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-upload" data-page="upload"><span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="nav-label">Upload Dokumen</span></a></li>`;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="status"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="nav-label">Status Pengajuan</span></a></li>`;
-    if (lulusAny) html += negoBtn;
     if (adaPengumuman) html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#B8860B,#DAA520);color:#fff;border-left:3px solid #8B6914;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-bell"></i></span><span class="nav-label">Pengumuman Pemenang</span></a></li>`;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Pengaturan Akun</span></a></li>`;
   } else if (currentRole === 'pokja') {
     // Sidebar lengkap untuk Pokja
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#0C447C,#185FA5);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Evaluasi Dokumen</span></a></li>`;
-    html += negoBtn;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;border-left:3px solid #0a3d0a;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-trophy"></i></span><span class="nav-label">Penetapan Pemenang</span></a></li>`;
   } else if (currentRole === 'admin') {
     // Sidebar admin: tampilkan menu khusus admin
@@ -3595,13 +3520,6 @@ function showPage(pageId) {
   }
   if (pageId === 'status' && currentRole === 'penyedia' && currentPenyedia) {
     loadStatusPenyedia();
-  }
-  if (pageId === 'negosiasi') {
-    renderNegosiasiPage();
-    // Auto-load state negosiasi terbaru dari server
-    if (currentRole === 'pokja' || currentRole === 'penyedia') {
-      setTimeout(loadAllNegoStates, 100);
-    }
   }
   if (pageId === 'penetapan') {
     renderPenetapanPage();
@@ -4406,11 +4324,17 @@ async function saveFormFields() { const fields=gcGet('formFields',DEFAULT_FORM_F
 
 async function changeAdminPassword() {
   const oldPass=document.getElementById('ak-admin-old').value; const newPass=document.getElementById('ak-admin-new').value; const confirm=document.getElementById('ak-admin-confirm').value; const msgEl=document.getElementById('msgAkunAdmin');
-  const cfg=await fetchGlobalConfig(true); const storedPass=(cfg&&cfg.adminPassword)?cfg.adminPassword:'admin123';
-  if(oldPass!==storedPass){msgEl.style.color='#C0392B';msgEl.textContent='❌ Password lama salah.';return;}
+  if(!oldPass){msgEl.style.color='#C0392B';msgEl.textContent='❌ Isi password lama.';return;}
   if(newPass.length<8){msgEl.style.color='#C0392B';msgEl.textContent='❌ Min. 8 karakter.';return;}
   if(newPass!==confirm){msgEl.style.color='#C0392B';msgEl.textContent='❌ Konfirmasi tidak cocok.';return;}
+  // Verifikasi password lama ke server
+  const cfg=await fetchGlobalConfig(true);
   const adminUser=(cfg&&cfg.adminUsername)?cfg.adminUsername:'admin';
+  try {
+    const res=await fetch(APPS_SCRIPT_URL+'?action=loginAdmin&username='+encodeURIComponent(adminUser)+'&password='+encodeURIComponent(oldPass)+'&t='+Date.now());
+    const data=await res.json();
+    if(data.status!=='ok'){msgEl.style.color='#C0392B';msgEl.textContent='❌ Password lama salah.';return;}
+  } catch(e){msgEl.style.color='#C0392B';msgEl.textContent='❌ Gagal menghubungi server.';return;}
   await syncAccountToSheet('admin',adminUser,newPass);
   msgEl.style.color='#3B6D11';msgEl.textContent='✓ Password admin berhasil diubah.';
   ['ak-admin-old','ak-admin-new','ak-admin-confirm'].forEach(id=>document.getElementById(id).value='');
@@ -4423,10 +4347,8 @@ async function changePokjaPassword() {
   if (!username) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Pilih username.'; return; }
   if (newPass.length < 6) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Min. 6 karakter.'; return; }
   if (newPass !== confirm) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
-  const pokjaAccounts = Object.assign({}, gcGet('pokjaAccounts', {}));
-  if (!pokjaAccounts[username]) pokjaAccounts[username] = {};
-  pokjaAccounts[username].password = newPass;
-  await pushConfig('pokjaAccounts', pokjaAccounts);
+  // Simpan ke sheet Akun (sumber kebenaran)
+  await syncAccountToSheet('pokja', username, newPass);
   msgEl.style.color='#3B6D11'; msgEl.textContent=`✓ Password ${username} berhasil diperbarui.`;
   ['ak-pokja-new','ak-pokja-confirm'].forEach(id=>document.getElementById(id).value='');
   renderPokjaAccountsTable();
@@ -6455,8 +6377,6 @@ async function autoRefreshSubmissions() {
         // Update halaman aktif
         const pPage = document.getElementById('page-penetapan');
         if (pPage && pPage.classList.contains('active')) renderPenetapanPage();
-        const nPage = document.getElementById('page-negosiasi');
-        if (nPage && nPage.classList.contains('active')) renderNegosiasiPage();
         // Update sidebar penyedia jika ada perubahan status
         if (currentRole === 'penyedia') renderSidebar();
       }
@@ -6893,7 +6813,7 @@ function bukaMenuPanduan() {
     btn.style.display = isPenyedia ? '' : 'none';
   });
   if (isPenyedia) {
-    if (desc) desc.textContent = 'Panduan lengkap untuk Penyedia — dari pendaftaran hingga negosiasi';
+    if (desc) desc.textContent = 'Panduan lengkap untuk Penyedia — dari pendaftaran hingga status pengajuan';
   } else {
     if (desc) desc.textContent = 'Panduan untuk mendaftar, login, dan upload dokumen penawaran';
     // Reset ke tab pertama jika sedang di tab yang disembunyikan
