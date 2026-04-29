@@ -56,6 +56,7 @@
     #loginLockPopup .lp-close { display:block; margin-top:12px; text-align:center; background:rgba(255,255,255,0.18); border:none; color:#fff; border-radius:7px; padding:5px 20px; cursor:pointer; font-size:0.80rem; width:100%; }
     #loginLockPopup .lp-close:hover { background:rgba(255,255,255,0.28); }
     @keyframes lockPopIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+    @keyframes chatBadgePulse { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -5972,12 +5973,10 @@ function renderPengumumanPublicUI() {
   const wrap = document.getElementById('pengumuman-panels-wrap');
   if (!nav || !wrap) return;
 
-  // Build tab buttons — badge muncul jika tab punya konten
+  // Build tab buttons — badge muncul hanya jika tab punya konten DAN belum dibaca
   nav.innerHTML = tabs.map((tab, i) => {
-    const key     = 'pengumuman_' + tab.id.replace(/-/g,'_');
-    const konten  = gcGet(key, '');
-    const adaIsi  = konten && konten.trim().length > 0;
-    const badge   = adaIsi ? `<span class="ptab-badge">!</span>` : '';
+    const unread  = _isTabUnread(tab.id);
+    const badge   = unread ? `<span class="ptab-badge">!</span>` : '';
     return `<button class="pengumuman-tab${i===0?' pengumuman-tab-active':''}" id="ptab-${tab.id}"
        onclick="switchPengumumanTab('${tab.id}',this)">
       <i class="fa-solid ${tab.icon}" style="color:${tab.color};"></i> ${tab.label}${badge}
@@ -5990,6 +5989,12 @@ function renderPengumumanPublicUI() {
   ).join('');
 
   renderPengumumanPanels();
+
+  // Tab pertama otomatis aktif dan langsung ditandai sudah dibaca
+  if (tabs.length > 0) {
+    _markTabRead(tabs[0].id);
+    renderNotifBadgeSidebar();
+  }
 }
 
 // ── Fill panel content ────────────────────────────────────
@@ -6020,12 +6025,17 @@ function switchPengumumanTab(tabId, btn) {
     if (panel)  panel.style.display = (t.id === tabId) ? 'block' : 'none';
     if (tabBtn) tabBtn.classList.toggle('pengumuman-tab-active', t.id === tabId);
   });
-  // Sembunyikan badge "!" pada tab yang sedang aktif (sudah dilihat)
+
+  // Tandai tab ini sudah dibaca → hapus badge "!" permanen
+  _markTabRead(tabId);
   const activeBtn = document.getElementById('ptab-' + tabId);
   if (activeBtn) {
     const b = activeBtn.querySelector('.ptab-badge');
-    if (b) b.style.opacity = '0.35';
+    if (b) b.remove(); // hapus total, bukan sekadar opacity
   }
+
+  // Update badge sidebar
+  renderNotifBadgeSidebar();
 }
 
 // ── Render admin tab list ─────────────────────────────────
@@ -10921,9 +10931,63 @@ document.addEventListener('DOMContentLoaded', function() {
 let _notifConfig = null;
 let _notifLastSeenCount = 0;
 
-// Key localStorage untuk menyimpan jumlah pengumuman yang sudah dilihat
-const NOTIF_SEEN_KEY = 'bpbj_notif_seen_count';
-const NOTIF_DISMISSED_KEY = 'bpbj_notif_dismissed';
+// Key localStorage
+const NOTIF_SEEN_KEY       = 'bpbj_notif_seen_count';
+const NOTIF_DISMISSED_KEY  = 'bpbj_notif_dismissed';
+// Key hash konten: popup HANYA muncul lagi jika konten pengumuman berubah
+const NOTIF_POPUP_HASH_KEY = 'bpbj_notif_popup_hash';
+// Key hash per-tab yang sudah dibaca
+const NOTIF_TAB_READ_KEY   = 'bpbj_notif_tab_read';
+
+// Buat hash sederhana dari string (dipakai untuk track perubahan konten)
+function _hashStr(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return h.toString(36);
+}
+
+// Hash semua konten pengumuman yang ada isi-nya
+function _getPengumumanContentHash() {
+  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
+  const parts = tabs.map(tab => {
+    const key = 'pengumuman_' + tab.id.replace(/-/g,'_');
+    return gcGet(key, '').trim();
+  }).filter(Boolean);
+  return _hashStr(parts.join('||'));
+}
+
+// Hash per-tab tunggal
+function _getTabContentHash(tabId) {
+  const key = 'pengumuman_' + tabId.replace(/-/g,'_');
+  return _hashStr(gcGet(key, '').trim());
+}
+
+// Baca peta "tab yang sudah dibaca" dari localStorage: { tabId: hash }
+function _getReadTabMap() {
+  try { return JSON.parse(localStorage.getItem(NOTIF_TAB_READ_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+function _saveReadTabMap(map) {
+  localStorage.setItem(NOTIF_TAB_READ_KEY, JSON.stringify(map));
+}
+
+// Tandai satu tab sebagai sudah dibaca (simpan hash-nya)
+function _markTabRead(tabId) {
+  const map = _getReadTabMap();
+  map[tabId] = _getTabContentHash(tabId);
+  _saveReadTabMap(map);
+}
+
+// Cek apakah sebuah tab punya konten baru yang belum dibaca
+function _isTabUnread(tabId) {
+  const key = 'pengumuman_' + tabId.replace(/-/g,'_');
+  const content = gcGet(key, '').trim();
+  if (!content) return false; // kosong = tidak ada notif
+  const map = _getReadTabMap();
+  return map[tabId] !== _getTabContentHash(tabId);
+}
 
 // Ambil config notifikasi dari globalConfig
 function getNotifConfig() {
@@ -10941,16 +11005,19 @@ function getNotifConfig() {
   });
 }
 
-// Hitung jumlah tab pengumuman yang ada isinya
+// Hitung tab pengumuman yang ada isinya (total)
 function hitungJumlahPengumuman() {
-  const cfg = getNotifConfigLive();
-  // Jika admin set manual, pakai nilai itu
-  if (cfg.jumlahPengumuman && parseInt(cfg.jumlahPengumuman) > 0) {
-    return parseInt(cfg.jumlahPengumuman);
-  }
-  // Hitung dari tab yang ada kontennya
-  const tabs = gcGet('pengumumanTabs', []);
-  return tabs.filter(t => t.content && t.content.trim().length > 0).length;
+  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
+  return tabs.filter(t => {
+    const key = 'pengumuman_' + t.id.replace(/-/g,'_');
+    return gcGet(key,'').trim().length > 0;
+  }).length;
+}
+
+// Hitung tab yang ada konten DAN belum dibaca (untuk badge sidebar)
+function hitungTabBelumDibaca() {
+  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
+  return tabs.filter(t => _isTabUnread(t.id)).length;
 }
 
 // Render badge di link pengumuman di sidebar
@@ -10977,54 +11044,38 @@ function getNotifConfigLive() {
 function renderNotifBadgeSidebar() {
   const cfg = getNotifConfigLive();
   if (!cfg.badgeAktif) {
-    // Jika dimatikan, hapus semua badge yang ada
     document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
     return;
   }
 
-  const jumlah = hitungJumlahPengumuman();
-  if (jumlah <= 0) {
-    document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
-    return;
-  }
-
-  // badgeSelaluTampil ON  → tampil selalu, abaikan localStorage
-  // badgeSelaluTampil OFF → tampil hanya jika belum pernah dibuka
-  let tampil;
-  if (cfg.badgeSelaluTampil) {
-    tampil = true;
-  } else {
-    const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
-    tampil = (jumlah > seenCount);
-  }
+  // Selalu pakai hitungTabBelumDibaca() — badge hanya tampil jika ada konten yang belum dibaca
+  const belumDibaca = hitungTabBelumDibaca();
 
   setTimeout(() => {
     document.querySelectorAll('.nav-link[data-page="pengumuman"]').forEach(link => {
       const oldBadge = link.querySelector('.notif-sidebar-badge');
       if (oldBadge) oldBadge.remove();
-      if (!tampil) return;
+      if (belumDibaca <= 0) return;
 
       const badge = document.createElement('span');
       badge.className = 'notif-sidebar-badge';
-      badge.textContent = jumlah > 99 ? '99+' : jumlah;
-      badge.title = jumlah + ' pengumuman';
+      badge.textContent = belumDibaca > 99 ? '99+' : belumDibaca;
+      badge.title = belumDibaca + ' pengumuman belum dibaca';
       link.appendChild(badge);
     });
   }, 80);
 }
 
 // Dipanggil saat pengunjung membuka halaman pengumuman
+// Tidak langsung tandai semua — tab baru ditandai saat diklik (lihat switchPengumumanTab)
 function tandaiPengumumanDilihat() {
-  const cfg    = getNotifConfigLive();
-  const jumlah = hitungJumlahPengumuman();
-
-  if (cfg.badgeSelaluTampil) {
-    // Mode selalu tampil → badge tidak dihapus sama sekali
-    return;
+  // Tandai tab yang sedang aktif saat halaman pengumuman pertama kali dibuka
+  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
+  if (tabs.length > 0) {
+    // Tandai tab pertama (yang otomatis aktif saat halaman dibuka)
+    _markTabRead(tabs[0].id);
   }
-  // Mode hilang setelah dilihat → simpan jumlah ke localStorage & hapus badge
-  localStorage.setItem(NOTIF_SEEN_KEY, jumlah.toString());
-  document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+  renderNotifBadgeSidebar();
 }
 
 // Tampilkan pop-out notifikasi
@@ -11032,15 +11083,18 @@ function tampilkanNotifPopup() {
   const cfg = getNotifConfigLive();
   if (!cfg.popupAktif) return;
 
-  const jumlah = hitungJumlahPengumuman();
-  if (jumlah <= 0) return;
+  // Hitung berapa tab yang belum dibaca
+  const belumDibaca = hitungTabBelumDibaca();
+  if (belumDibaca <= 0) return; // semua sudah dibaca, tidak perlu popup
 
-  // popupSelaluMuncul ON  → tampil setiap halaman dibuka, abaikan localStorage
-  // popupSelaluMuncul OFF → tidak muncul lagi jika sudah di-dismiss
-  if (!cfg.popupSelaluMuncul) {
-    const dismissedAt = localStorage.getItem(NOTIF_DISMISSED_KEY);
-    if (dismissedAt && parseInt(dismissedAt) >= jumlah) return;
-  }
+  // Cek apakah konten pengumuman sudah berubah sejak terakhir di-dismiss
+  const currentHash = _getPengumumanContentHash();
+  const dismissedHash = localStorage.getItem(NOTIF_POPUP_HASH_KEY);
+
+  // Popup TIDAK muncul jika:
+  // - hash sama (konten tidak berubah sejak terakhir diabaikan), DAN
+  // - popupSelaluMuncul tidak aktif
+  if (!cfg.popupSelaluMuncul && dismissedHash === currentHash) return;
 
   const warna = cfg.popupWarna || '#185FA5';
   const ikon  = cfg.popupIkon  || 'fa-bell';
@@ -11054,7 +11108,7 @@ function tampilkanNotifPopup() {
 
   const countEl = document.getElementById('notifPopupCount');
   countEl.style.display = 'inline-flex';
-  document.getElementById('notifPopupCountText').textContent = jumlah + ' pengumuman';
+  document.getElementById('notifPopupCountText').textContent = belumDibaca + ' pengumuman baru';
 
   document.getElementById('notifPopupOverlay').classList.add('show');
 }
@@ -11063,21 +11117,20 @@ function tutupNotifPopup() {
   document.getElementById('notifPopupOverlay').classList.remove('show');
 }
 
-// Tombol "Abaikan"
+// Tombol "Abaikan" — simpan hash konten saat ini agar popup tidak muncul lagi
+// kecuali ada pengumuman baru (hash berubah)
 function tutupNotifPopupDismiss() {
-  const cfg    = getNotifConfigLive();
-  const jumlah = hitungJumlahPengumuman();
-  // Hanya simpan dismissed jika mode OFF (tidak selalu muncul)
-  if (!cfg.popupSelaluMuncul) {
-    localStorage.setItem(NOTIF_DISMISSED_KEY, jumlah.toString());
-  }
+  const currentHash = _getPengumumanContentHash();
+  localStorage.setItem(NOTIF_POPUP_HASH_KEY, currentHash);
   tutupNotifPopup();
 }
 
 function notifPopupLihatPengumuman() {
   tutupNotifPopup();
+  // Simpan hash juga saat klik "Lihat" — sudah mau dibuka, tidak perlu popup lagi
+  localStorage.setItem(NOTIF_POPUP_HASH_KEY, _getPengumumanContentHash());
   showPage('pengumuman');
-  tandaiPengumumanDilihat();
+  // Jangan tandai semua dibaca di sini — biarkan switchPengumumanTab yang handle per-tab
 }
 
 // Helper gelap warna hex
@@ -11322,7 +11375,7 @@ function previewNotifPopupWarna() {
 }
 
 function previewNotifPopupAdmin() {
-  // Tampilkan popup dengan nilai form saat ini (preview)
+  // Tampilkan popup dengan nilai form saat ini (preview untuk admin)
   const warna = (document.getElementById('notif-popup-warna') || {}).value || '#185FA5';
   const ikon  = (document.getElementById('notif-popup-ikon') || {}).value || 'fa-bell';
   document.getElementById('notifPopupHeader').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
@@ -11331,13 +11384,11 @@ function previewNotifPopupAdmin() {
   document.getElementById('notifPopupSubtitle').textContent = (document.getElementById('notif-popup-subtitle')||{}).value || '';
   document.getElementById('notifPopupMessage').innerHTML = (document.getElementById('notif-popup-pesan')||{}).value || '';
   document.getElementById('notifPopupBtnLihat').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
-  const jumlah = parseInt((document.getElementById('notif-jumlah')||{}).value || 0);
-  const countEl = document.getElementById('notifPopupCount');
-  const seenCount = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0');
-  const newCount  = Math.max(0, (jumlah || hitungJumlahPengumuman()) - seenCount);
-  if (newCount > 0) {
+  const countEl  = document.getElementById('notifPopupCount');
+  const belumDibaca = hitungTabBelumDibaca() || hitungJumlahPengumuman();
+  if (belumDibaca > 0) {
     countEl.style.display = 'inline-flex';
-    document.getElementById('notifPopupCountText').textContent = newCount + ' pengumuman baru';
+    document.getElementById('notifPopupCountText').textContent = belumDibaca + ' pengumuman baru';
   } else {
     countEl.style.display = 'none';
   }
@@ -11345,10 +11396,15 @@ function previewNotifPopupAdmin() {
 }
 
 function resetNotifSeen() {
+  // Reset semua: hapus hash dismiss popup, hapus semua tab yang sudah dibaca
+  localStorage.removeItem(NOTIF_POPUP_HASH_KEY);
+  localStorage.removeItem(NOTIF_TAB_READ_KEY);
   localStorage.removeItem(NOTIF_SEEN_KEY);
   localStorage.removeItem(NOTIF_DISMISSED_KEY);
   renderNotifBadgeSidebar();
-  showToast('Status "sudah dilihat" direset. Popup akan muncul kembali.', 'info');
+  // Re-render tab pengumuman agar badge ! muncul kembali
+  renderPengumumanPublicUI && renderPengumumanPublicUI();
+  if (typeof showToast === 'function') showToast('Status notifikasi direset. Popup dan badge akan muncul kembali.', 'info');
 }
 
 async function saveNotifPengumumanConfig() {
@@ -11368,14 +11424,13 @@ async function saveNotifPengumumanConfig() {
     popupIkon:         getVal('notif-popup-ikon'),
   };
 
-  // Langsung update _globalConfig agar getNotifConfigLive() langsung efektif
   if (typeof _globalConfig !== 'undefined') {
     _globalConfig['notifPengumuman'] = cfg;
   }
   await pushConfig('notifPengumuman', cfg);
 
-  // Re-render badge & reset dismissed jika toggle berubah
-  localStorage.removeItem(NOTIF_DISMISSED_KEY);
+  // Hapus hash dismiss agar popup bisa muncul lagi jika admin mengubah config
+  localStorage.removeItem(NOTIF_POPUP_HASH_KEY);
   renderNotifBadgeSidebar();
 
   flashMsg('msgNotifPengumuman');
@@ -11629,6 +11684,144 @@ function _notifShowToast(msg, type) {
   #chatWidget { right: 10px; bottom: 80px; width: calc(100vw - 20px); }
   #chatWidgetBtn { right: 14px; bottom: 80px; }
 }
+
+/* ===== ADMIN FLOATING CHAT WIDGET ===== */
+#adminFloatChatBtn {
+  display: none; /* tampil hanya jika admin login */
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #1B3A5C, #2D5A8E);
+  border-radius: 50%;
+  box-shadow: 0 4px 18px rgba(27,58,92,0.5);
+  cursor: pointer;
+  z-index: 8800;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#adminFloatChatBtn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(27,58,92,0.65); }
+#adminFloatChatBtn .afc-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: #C0392B; color: #fff; border-radius: 50%;
+  width: 20px; height: 20px; font-size: 11px; font-weight: 800;
+  display: none; align-items: center; justify-content: center;
+  border: 2px solid #fff; pointer-events: none;
+}
+#adminFloatChatBtn .afc-badge.show { display: flex; }
+
+/* Admin floating panel */
+#adminFloatChatPanel {
+  display: none;
+  position: fixed;
+  bottom: 95px;
+  right: 28px;
+  width: 380px;
+  max-height: 580px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.20);
+  z-index: 8900;
+  flex-direction: column;
+  overflow: hidden;
+  animation: chatIn 0.22s cubic-bezier(.175,.885,.32,1.275);
+}
+#adminFloatChatPanel.open { display: flex; }
+
+/* Header admin float */
+.afc-header {
+  background: linear-gradient(135deg, #1B3A5C, #2D5A8E);
+  color: #fff; padding: 13px 16px;
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.afc-header .afc-avatar {
+  width: 34px; height: 34px; background: rgba(255,255,255,0.20);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.afc-header .afc-title { font-weight: 700; font-size: 0.90rem; line-height: 1.2; }
+.afc-header .afc-sub { font-size: 0.70rem; opacity: 0.80; margin-top: 1px; }
+.afc-header .afc-close {
+  margin-left: auto; background: rgba(255,255,255,0.18); border: none;
+  border-radius: 6px; padding: 4px 9px; cursor: pointer; color: #fff; font-size: 13px;
+}
+.afc-header .afc-close:hover { background: rgba(255,255,255,0.3); }
+
+/* Room list */
+#afcRoomList {
+  flex: 1; overflow-y: auto; padding: 10px 10px 6px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.afc-room-item {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 9px 11px; border-radius: 10px;
+  border: 1.5px solid #dee2e6; background: #fff;
+  cursor: pointer; transition: all 0.18s;
+}
+.afc-room-item:hover, .afc-room-item.active { background: #E6F1FB; border-color: #185FA5; }
+.afc-room-avatar {
+  width: 34px; height: 34px; background: #185FA5; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 13px; flex-shrink: 0;
+}
+.afc-room-nama { font-weight: 700; font-size: 0.83rem; color: #042C53; display: flex; align-items: center; gap: 5px; }
+.afc-room-preview { font-size: 0.71rem; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.afc-room-time { font-size: 0.65rem; color: #bbb; margin-top: 2px; }
+.afc-unread-badge { background: #C0392B; color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 0.68rem; font-weight: 800; }
+
+/* Chat room view */
+#afcChatRoom {
+  flex: 1; display: none; flex-direction: column; overflow: hidden;
+}
+#afcChatRoom.open { display: flex; }
+.afc-room-header {
+  background: #f0f6ff; border-bottom: 1px solid #dee2e6;
+  padding: 9px 13px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.afc-room-header .afc-back {
+  background: none; border: 1px solid #dee2e6; border-radius: 6px;
+  padding: 4px 9px; cursor: pointer; font-size: 0.75rem; color: #5F5E5A;
+  display: flex; align-items: center; gap: 4px; font-weight: 600;
+}
+.afc-room-header .afc-back:hover { background: #dee2e6; }
+.afc-room-header .afc-room-nama-hdr { font-weight: 700; font-size: 0.83rem; color: #042C53; flex: 1; }
+#afcMsgsWrap {
+  flex: 1; overflow-y: auto; padding: 10px 12px 6px;
+  display: flex; flex-direction: column; gap: 0;
+  background: #f8f9fa;
+}
+.afc-input-row {
+  display: flex; gap: 7px; padding: 9px 10px;
+  border-top: 1px solid #e9ecef; background: #fff; flex-shrink: 0;
+}
+.afc-input-row textarea {
+  flex: 1; border: 1.5px solid #dee2e6; border-radius: 9px;
+  padding: 7px 10px; font-size: 0.81rem; font-family: inherit;
+  resize: none; outline: none; min-height: 36px; max-height: 80px;
+  transition: border-color 0.2s;
+}
+.afc-input-row textarea:focus { border-color: #185FA5; }
+.afc-input-row button {
+  width: 38px; height: 38px; background: #185FA5; color: #fff;
+  border: none; border-radius: 9px; cursor: pointer; font-size: 15px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: background 0.18s;
+}
+.afc-input-row button:hover { background: #042C53; }
+
+.afc-empty {
+  text-align: center; padding: 32px 16px; color: #aaa; font-size: 0.82rem;
+}
+
+@media (max-width: 480px) {
+  #adminFloatChatPanel { right: 10px; bottom: 80px; width: calc(100vw - 20px); }
+  #adminFloatChatBtn { right: 14px; bottom: 80px; }
+}
 </style>
 
 <!-- Chat Bubble Trigger Button -->
@@ -11707,6 +11900,43 @@ function _notifShowToast(msg, type) {
 </div>
 
 <!-- Admin Panel: Chat Inbox Section (injected via JS) -->
+
+<!-- ===== ADMIN FLOATING CHAT WIDGET ===== -->
+<button id="adminFloatChatBtn" onclick="toggleAdminFloatChat()" title="Inbox Chat Penyedia">
+  <i class="fa-solid fa-inbox"></i>
+  <span class="afc-badge" id="afcBadge"></span>
+</button>
+
+<div id="adminFloatChatPanel">
+  <!-- Header -->
+  <div class="afc-header">
+    <div class="afc-avatar"><i class="fa-solid fa-inbox"></i></div>
+    <div>
+      <div class="afc-title">Inbox Chat Penyedia</div>
+      <div class="afc-sub" id="afcHeaderSub">Memuat percakapan…</div>
+    </div>
+    <button class="afc-close" onclick="closeAdminFloatChat()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- Room List View -->
+  <div id="afcRoomList">
+    <div class="afc-empty"><i class="fa-regular fa-comment-dots" style="font-size:28px;display:block;margin-bottom:8px;"></i>Belum ada percakapan masuk.</div>
+  </div>
+
+  <!-- Single Room Chat View -->
+  <div id="afcChatRoom">
+    <div class="afc-room-header">
+      <button class="afc-back" onclick="afcBackToList()"><i class="fa-solid fa-chevron-left"></i> Kembali</button>
+      <div class="afc-room-nama-hdr" id="afcRoomNamaHdr">—</div>
+    </div>
+    <div id="afcMsgsWrap"></div>
+    <div class="afc-input-row">
+      <textarea id="afcInputMsg" placeholder="Balas pertanyaan penyedia…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();afcSendReply();}"></textarea>
+      <button onclick="afcSendReply()" title="Kirim"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ================================================================
@@ -12056,6 +12286,26 @@ async function _chatMarkRead() {
 // ================================================================
 
 let _adminChatSelectedRoom = null;
+// ── Hitung & tampilkan badge unread chat di tab button ──
+function _updateAdminChatBadge() {
+  const badge = document.getElementById('adminChatBadge');
+  if (!badge) return;
+  const allMsgs = gcGet('chatMessages', {});
+  let total = 0;
+  Object.values(allMsgs).forEach(msgs => {
+    total += (msgs || []).filter(m => m.from === 'penyedia' && !m.dibacaAdmin).length;
+  });
+  if (total > 0) {
+    badge.textContent = total > 99 ? '99+' : String(total);
+    badge.style.display = 'inline-block';
+    // Animasi pulse jika ada pesan baru
+    badge.style.animation = 'none';
+    setTimeout(() => { badge.style.animation = 'chatBadgePulse 0.4s ease'; }, 10);
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 let _adminChatPollTimer    = null;
 
 function renderChatAdminTab() {
@@ -12150,6 +12400,7 @@ function selectAdminChatRoom(roomId) {
   if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
   pushConfig('chatMessages', all).catch(() => {});
   renderChatAdminTab();
+  _updateAdminChatBadge();
 }
 
 async function sendAdminChatReply() {
@@ -12188,6 +12439,7 @@ function _startAdminChatPoll() {
         _globalConfig['chatMessages'] = cfg.chatMessages;
       }
       _chatRefreshAdminInbox();
+      _updateAdminChatBadge();
     } catch(e) {}
   }, 20000);
 }
@@ -12298,8 +12550,8 @@ async function saveFaqAdmin() {
 // ================================================================
 (function() {
   function injectAdminChatTabs() {
-    // 1. Inject tab buttons
-    const adminTabs = document.querySelector('.admin-tabs');
+    // 1. Inject tab buttons — pakai selector spesifik ke #adminDashboard
+    const adminTabs = document.querySelector('#adminDashboard .admin-tabs');
     if (adminTabs && !document.getElementById('btnAdminTabFaq')) {
       const btnFaq = document.createElement('button');
       btnFaq.className = 'admin-tab';
@@ -12311,13 +12563,13 @@ async function saveFaqAdmin() {
       const btnChat = document.createElement('button');
       btnChat.className = 'admin-tab';
       btnChat.id = 'btnAdminTabChat';
-      btnChat.innerHTML = '<i class="fa-solid fa-comments"></i> Chat Penyedia';
+      btnChat.innerHTML = '<i class="fa-solid fa-comments"></i> Chat Penyedia <span id="adminChatBadge" style="display:none;background:#C0392B;color:#fff;border-radius:10px;padding:1px 7px;font-size:0.70rem;font-weight:800;margin-left:4px;vertical-align:middle;">0</span>';
       btnChat.onclick = function() { switchAdminTab('chat-admin', this); renderChatAdminTab(); _startAdminChatPoll(); };
       adminTabs.appendChild(btnChat);
     }
 
-    // 2. Inject tab content sections
-    const adminBody = document.querySelector('.admin-panel-body');
+    // 2. Inject tab content sections — pakai selector spesifik ke #adminDashboard
+    const adminBody = document.querySelector('#adminDashboard .admin-panel-body');
     if (adminBody && !document.getElementById('atab-faq-admin')) {
       const secFaq = document.createElement('div');
       secFaq.className = 'admin-section';
@@ -12333,8 +12585,8 @@ async function saveFaqAdmin() {
 
   // Try immediately and also after page init
   injectAdminChatTabs();
-  window.addEventListener('load', injectAdminChatTabs);
-  setTimeout(injectAdminChatTabs, 2000);
+  window.addEventListener('load', () => { injectAdminChatTabs(); setTimeout(_updateAdminChatBadge, 500); });
+  setTimeout(() => { injectAdminChatTabs(); _updateAdminChatBadge(); }, 2000);
 })();
 
 // Also patch setRole for admin to show chat inbox
@@ -12344,12 +12596,245 @@ async function saveFaqAdmin() {
     window.setRole = function(role) {
       _o.apply(this, arguments);
       if (role === 'admin') {
-        setTimeout(() => { injectAdminChatTabs && injectAdminChatTabs(); }, 500);
+        setTimeout(() => { injectAdminChatTabs && injectAdminChatTabs(); _updateAdminChatBadge(); }, 500);
         _startAdminChatPoll();
+        setTimeout(initAdminFloatChat, 600);
+      } else {
+        // Sembunyikan widget admin jika logout
+        const btn = document.getElementById('adminFloatChatBtn');
+        const panel = document.getElementById('adminFloatChatPanel');
+        if (btn) btn.style.display = 'none';
+        if (panel) panel.classList.remove('open');
       }
     };
   }
 })();
+
+// ================================================================
+// ADMIN FLOATING CHAT WIDGET — LOGIC
+// ================================================================
+
+let _afcSelectedRoom = null;
+let _afcPollTimer    = null;
+
+// ── Init: tampilkan tombol hanya untuk admin ──
+function initAdminFloatChat() {
+  const btn = document.getElementById('adminFloatChatBtn');
+  if (!btn) return;
+  if (currentRole === 'admin') {
+    btn.style.display = 'flex';
+    afcUpdateBadge();
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+// ── Toggle panel ──
+function toggleAdminFloatChat() {
+  const panel = document.getElementById('adminFloatChatPanel');
+  if (panel.classList.contains('open')) {
+    closeAdminFloatChat();
+  } else {
+    panel.classList.add('open');
+    afcRenderRoomList();
+    _afcStartPoll();
+  }
+}
+
+function closeAdminFloatChat() {
+  document.getElementById('adminFloatChatPanel').classList.remove('open');
+  clearInterval(_afcPollTimer);
+}
+
+// ── Render daftar rooms ──
+function afcRenderRoomList() {
+  const allMsgs = gcGet('chatMessages', {});
+  const rooms = Object.keys(allMsgs);
+
+  const roomList = rooms.map(roomId => {
+    const msgs = allMsgs[roomId] || [];
+    const last  = msgs[msgs.length - 1] || null;
+    const unread = msgs.filter(m => m.from === 'penyedia' && !m.dibacaAdmin).length;
+    const nama   = msgs.find(m => m.nama && m.from === 'penyedia')?.nama
+                 || roomId.replace('room_','').replace(/_/g, '@');
+    const email  = msgs.find(m => m.email)?.email || '';
+    return { roomId, msgs, last, unread, nama, email };
+  }).sort((a, b) => (b.last?.id || 0) - (a.last?.id || 0));
+
+  const listEl   = document.getElementById('afcRoomList');
+  const roomView = document.getElementById('afcChatRoom');
+  if (!listEl) return;
+
+  listEl.style.display   = 'flex';
+  roomView.classList.remove('open');
+
+  const totalUnread = roomList.reduce((s, r) => s + r.unread, 0);
+  const sub = document.getElementById('afcHeaderSub');
+  if (sub) sub.textContent = roomList.length
+    ? `${roomList.length} percakapan${totalUnread ? ' · ' + totalUnread + ' belum dibaca' : ''}`
+    : 'Belum ada percakapan';
+
+  if (!roomList.length) {
+    listEl.innerHTML = `<div class="afc-empty"><i class="fa-regular fa-comment-dots" style="font-size:28px;display:block;margin-bottom:8px;"></i>Belum ada percakapan masuk.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = roomList.map(r => {
+    const preview  = r.last ? (r.last.pesan.length > 48 ? r.last.pesan.slice(0,46) + '…' : r.last.pesan) : '';
+    const unreadBadge = r.unread > 0 ? `<span class="afc-unread-badge">${r.unread}</span>` : '';
+    const isActive = _afcSelectedRoom === r.roomId;
+    return `<div class="afc-room-item${isActive ? ' active' : ''}" onclick="afcOpenRoom('${r.roomId}')">
+      <div class="afc-room-avatar"><i class="fa-solid fa-building"></i></div>
+      <div style="flex:1;min-width:0;">
+        <div class="afc-room-nama">${escapeHtml(r.nama)} ${unreadBadge}</div>
+        <div class="afc-room-preview">${escapeHtml(preview)}</div>
+        ${r.last ? `<div class="afc-room-time">${r.last.tgl || ''}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Buka satu room ──
+function afcOpenRoom(roomId) {
+  _afcSelectedRoom = roomId;
+
+  // Mark as read
+  const all  = gcGet('chatMessages', {});
+  const msgs = all[roomId] || [];
+  msgs.forEach(m => { if (m.from === 'penyedia') m.dibacaAdmin = true; });
+  if (typeof _globalConfig !== 'undefined') _globalConfig['chatMessages'] = all;
+  pushConfig('chatMessages', all).catch(() => {});
+  afcUpdateBadge();
+  _updateAdminChatBadge(); // sync badge di panel admin juga
+
+  // Sembunyikan list, tampilkan room
+  document.getElementById('afcRoomList').style.display = 'none';
+  const roomView = document.getElementById('afcChatRoom');
+  roomView.classList.add('open');
+
+  // Set nama header
+  const allMsgs = gcGet('chatMessages', {});
+  const roomMsgs = allMsgs[roomId] || [];
+  const nama = roomMsgs.find(m => m.nama && m.from === 'penyedia')?.nama
+             || roomId.replace('room_','').replace(/_/g, '@');
+  const email = roomMsgs.find(m => m.email)?.email || '';
+  const hdr = document.getElementById('afcRoomNamaHdr');
+  if (hdr) hdr.innerHTML = `<span>${escapeHtml(nama)}</span><span style="font-weight:400;font-size:0.72rem;color:#888;margin-left:6px;">${escapeHtml(email)}</span>`;
+
+  afcRenderMessages(roomId);
+
+  // Auto-resize textarea
+  setTimeout(() => {
+    const ta = document.getElementById('afcInputMsg');
+    if (ta) {
+      ta.focus();
+      ta.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+      });
+    }
+  }, 80);
+}
+
+// ── Kembali ke daftar room ──
+function afcBackToList() {
+  _afcSelectedRoom = null;
+  document.getElementById('afcRoomList').style.display = 'flex';
+  document.getElementById('afcChatRoom').classList.remove('open');
+  afcRenderRoomList();
+}
+
+// ── Render pesan dalam room ──
+function afcRenderMessages(roomId) {
+  const wrap = document.getElementById('afcMsgsWrap');
+  if (!wrap) return;
+  const allMsgs = gcGet('chatMessages', {});
+  const msgs = allMsgs[roomId] || [];
+
+  if (!msgs.length) {
+    wrap.innerHTML = `<div class="afc-empty"><i class="fa-regular fa-comment-dots" style="font-size:24px;display:block;margin-bottom:8px;"></i>Belum ada pesan.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = msgs.map(m => {
+    const isAdmin = m.from === 'admin';
+    return `<div class="chat-msg ${isAdmin ? 'from-me' : ''}" style="margin-bottom:10px;">
+      <div class="msg-avatar">${isAdmin ? '<i class="fa-solid fa-user-tie"></i>' : '<i class="fa-solid fa-building"></i>'}</div>
+      <div>
+        <div class="msg-bubble">${escapeHtml(m.pesan)}</div>
+        <div class="msg-time">${m.tgl || ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+// ── Kirim balasan ──
+async function afcSendReply() {
+  const ta  = document.getElementById('afcInputMsg');
+  const msg = (ta ? ta.value : '').trim();
+  if (!msg || !_afcSelectedRoom) return;
+  ta.value = '';
+  ta.style.height = '';
+  const msgObj = {
+    id:    Date.now(),
+    from:  'admin',
+    nama:  'Admin',
+    pesan: msg,
+    tgl:   _chatNowFull(),
+    dibaca: false,
+    roomId: _afcSelectedRoom,
+  };
+  await _chatSaveMessage(_afcSelectedRoom, msgObj);
+  afcRenderMessages(_afcSelectedRoom);
+  // Juga sync ke panel admin tab jika terbuka
+  _chatRefreshAdminInbox();
+}
+
+// ── Update badge tombol ──
+function afcUpdateBadge() {
+  const badge = document.getElementById('afcBadge');
+  if (!badge) return;
+  const allMsgs = gcGet('chatMessages', {});
+  let total = 0;
+  Object.values(allMsgs).forEach(msgs => {
+    total += (msgs || []).filter(m => m.from === 'penyedia' && !m.dibacaAdmin).length;
+  });
+  if (total > 0) {
+    badge.textContent = total > 99 ? '99+' : String(total);
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+// ── Polling otomatis setiap 20 detik ──
+function _afcStartPoll() {
+  clearInterval(_afcPollTimer);
+  _afcPollTimer = setInterval(async () => {
+    if (currentRole !== 'admin') return;
+    try {
+      const cfg = await fetchGlobalConfig(true);
+      if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
+        _globalConfig['chatMessages'] = cfg.chatMessages;
+      }
+      afcUpdateBadge();
+      _updateAdminChatBadge();
+      const panel = document.getElementById('adminFloatChatPanel');
+      if (panel && panel.classList.contains('open')) {
+        if (_afcSelectedRoom) {
+          afcRenderMessages(_afcSelectedRoom);
+        } else {
+          afcRenderRoomList();
+        }
+      }
+    } catch(e) {}
+  }, 20000);
+}
+
+// ── Init saat load halaman ──
+document.addEventListener('DOMContentLoaded', () => setTimeout(initAdminFloatChat, 1800));
+setTimeout(initAdminFloatChat, 3500);
 </script>
 
 </body>
