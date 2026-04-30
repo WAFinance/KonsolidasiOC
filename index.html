@@ -414,6 +414,10 @@
     .custom-page-content { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:28px; box-shadow:var(--shadow); }
     .icon-preview { width:40px; height:40px; border:1px solid var(--gray-200); border-radius:8px; object-fit:contain; margin-top:6px; display:none; }
     .notif-tmpl-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px; padding:12px 14px; font-size:0.8rem; color:var(--gray-600); line-height:1.8; }
+    /* details/summary cross-browser marker removal */
+    details > summary { list-style:none; }
+    details > summary::-webkit-details-marker { display:none; }
+    details > summary::marker { display:none; }
     footer { background:var(--blue-900); color:rgba(255,255,255,0.75); text-align:center; padding:12px; font-size:0.80rem; }
     footer strong { color:var(--white); }
 
@@ -611,6 +615,8 @@
       /* ─── REVIEW MODAL ─── */
       #reviewModal > div { width:min(98vw,620px); max-height:95vh; border-radius:10px; }
       #reviewModal > div > div:last-child { padding:16px 16px; }
+      #reviewFormGrid { grid-template-columns: 1fr !important; }
+      #reviewDocTiles { grid-template-columns: repeat(4,1fr) !important; }
       #reviewDocButtons { gap:6px; }
       .btn-view-doc, .btn-dl-doc { font-size:0.72rem; padding:5px 9px; }
 
@@ -1334,12 +1340,6 @@
 
 
     <!-- PENETAPAN PEMENANG -->
-    <section class="page" id="page-penetapan">
-      <h2 class="page-title" style="color:#1B5E20;"><i class="fa-solid fa-trophy" style="color:#1B5E20;"></i> Penetapan Pemenang</h2>
-      <p class="page-subtitle">Daftar penyedia yang telah menyelesaikan negosiasi (Harga Deal) dan menunggu penetapan pemenang.</p>
-      <div id="penetapanPageContent"></div>
-    </section>
-
     <!-- ADMIN -->
     <section class="page" id="page-admin">
       <h2 class="page-title"><i class="fa-solid fa-gear"></i> Panel Admin</h2>
@@ -1688,41 +1688,104 @@
 
 <!-- MODAL REVIEW DOKUMEN -->
 <div id="reviewModal">
-  <div style="background:var(--white);border-radius:12px;width:min(620px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);position:relative;">
+  <div style="background:var(--white);border-radius:12px;width:min(640px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);position:relative;">
     <div id="reviewLoadingOverlay" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,0.9);border-radius:12px;z-index:20;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
       <div style="width:44px;height:44px;border:4px solid var(--blue-100);border-top-color:var(--blue-600);border-radius:50%;animation:spin2 0.7s linear infinite;"></div>
       <p style="font-size:0.88rem;font-weight:600;color:var(--blue-800);" id="reviewLoadingMsg">Menyimpan review…</p>
     </div>
-    <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:700;font-size:1rem;"><i class="fa-solid fa-file-circle-check"></i> &nbsp;Evaluasi Dokumen &nbsp;<span id="reviewModalPokjaTag" style="font-size:0.78rem;opacity:0.85;font-weight:400;background:rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;"></span></span>
-      <button onclick="closeReviewModal()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
-    </div>
-    <div style="padding:22px 24px;">
-      <div id="reviewModalInfo" style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:0.85rem;color:var(--blue-800);"></div>
-      <div id="reviewDocButtons" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;"></div>
-      <div class="admin-form-group"><label>Status Evaluasi <span style="color:#C0392B;">*</span></label><select id="reviewStatus" onchange="updateNotifPreview()"><option value="Menunggu Evaluasi">⏳ Menunggu Evaluasi</option><option value="Memenuhi Syarat">✅ Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Revisi / Belum Lengkap">🔄 Revisi / Belum Lengkap</option><option value="Klarifikasi / Pembuktian Kualifikasi">🔍 Klarifikasi / Pembuktian Kualifikasi</option></select></div>
-      <div class="admin-form-group"><label><i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja</label><textarea id="reviewCatatan" rows="4" oninput="updateNotifPreview()" style="border-left:3px solid var(--blue-600);background:#F8FBFF;"></textarea></div>
-      <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:0.85rem;font-weight:700;color:var(--gray-800);"><i class="fa-solid fa-bell"></i> &nbsp;Preview Notifikasi ke Penyedia</div>
-          <button id="btnEditNotifPreview" onclick="toggleEditNotifPreview()" title="Edit template notifikasi" style="background:none;border:1px solid var(--gray-200);border-radius:6px;cursor:pointer;color:var(--blue-600);padding:4px 8px;font-size:12px;display:inline-flex;align-items:center;gap:5px;transition:background 0.15s;" onmouseenter="this.style.background='var(--blue-50)'" onmouseleave="this.style.background='none'"><i class="fa-solid fa-pencil"></i> Edit</button>
+
+    <!-- ── Header ── -->
+    <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));color:white;padding:14px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:8px;">
+          <i class="fa-solid fa-file-circle-check"></i> Evaluasi Dokumen
+          <span id="reviewModalPokjaTag" style="font-size:0.72rem;font-weight:400;background:rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;"></span>
         </div>
-        <div id="notifModeInfo" style="display:none;"></div>
-        <div class="notif-tmpl-box" id="notifPreview"></div>
-        <div id="notifEditArea" style="display:none;margin-top:8px;">
-          <textarea id="notifEditInput" rows="6" style="width:100%;font-size:0.80rem;border:1px solid var(--blue-600);border-radius:6px;padding:8px 10px;font-family:monospace;resize:vertical;background:#F8FBFF;"></textarea>
-          <div style="font-size:0.72rem;color:var(--gray-400);margin:4px 0 8px;">Variabel: <code>{namaPerusahaan}</code> <code>{status}</code> <code>{catatan}</code> <code>{paketNama}</code></div>
-          <div style="display:flex;gap:6px;">
-            <button onclick="simpanEditNotifPreview()" style="background:var(--blue-700);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:0.80rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-check"></i> Terapkan</button>
-            <button onclick="batalEditNotifPreview()" style="background:var(--gray-100);border:none;border-radius:6px;padding:6px 12px;font-size:0.80rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i> Batal</button>
-          </div>
+        <div id="reviewModalTimestamp" style="font-size:0.72rem;opacity:0.75;margin-top:3px;display:none;">
+          <i class="fa-solid fa-clock"></i> <span id="reviewModalTimestampText"></span>
         </div>
       </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
-        <button onclick="closeReviewModal()" style="padding:9px 18px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.85rem;">Batal</button>
-        <button id="btnSimpanReview" class="btn-admin-save" onclick="simpanReview()"><i class="fa-solid fa-floppy-disk"></i> Simpan Evaluasi</button>
-        <button id="btnKirimWa" class="btn-admin-save" style="background:#25D366;border-color:#25D366;" onclick="kirimNotifWa()"><i class="fa-brands fa-whatsapp"></i> Kirim WhatsApp</button>
-        <button id="btnKirimEmail" class="btn-admin-save" style="background:#E05C2A;border-color:#E05C2A;" onclick="kirimNotifEmail()"><i class="fa-solid fa-envelope"></i> Kirim Email</button>
+      <button onclick="closeReviewModal()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+
+    <div style="padding:16px 20px;">
+
+      <!-- ── Info Penyedia ── -->
+      <div id="reviewModalInfo" style="background:var(--blue-50);border:1px solid var(--blue-100);border-left:4px solid var(--blue-600);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.84rem;color:var(--blue-800);line-height:1.6;"></div>
+
+      <!-- ── Dokumen: 4 tile utama ── -->
+      <div style="margin-bottom:6px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
+          <i class="fa-solid fa-folder-open" style="color:var(--blue-600);"></i> Dokumen Penawaran
+        </div>
+        <div id="reviewDocTiles" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+      </div>
+
+      <!-- ── Tombol lihat detail semua dokumen ── -->
+      <div style="margin-bottom:14px;">
+        <button id="btnToggleAllDocs" onclick="toggleReviewAllDocs()"
+          style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--gray-200);border-radius:7px;padding:5px 12px;font-size:0.75rem;font-weight:600;color:var(--blue-600);cursor:pointer;transition:all 0.15s;"
+          onmouseenter="this.style.background='var(--blue-50)'" onmouseleave="this.style.background='none'">
+          <i class="fa-solid fa-layer-group"></i> Lihat Semua Dokumen &amp; Revisi
+          <i id="iconToggleAllDocs" class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
+        </button>
+        <div id="reviewDocAllPanel" style="display:none;margin-top:8px;"></div>
+      </div>
+
+      <div style="border-top:1px solid var(--gray-100);margin-bottom:14px;"></div>
+
+      <!-- ── Status + Catatan ── -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;" id="reviewFormGrid">
+        <div class="admin-form-group" style="margin-bottom:0;">
+          <label style="font-size:0.80rem;font-weight:700;color:var(--gray-800);margin-bottom:5px;display:block;">Status Evaluasi <span style="color:#C0392B;">*</span></label>
+          <select id="reviewStatus" onchange="updateNotifPreview()" style="width:100%;border-radius:7px;border:1px solid var(--gray-200);padding:8px 10px;font-size:0.85rem;background:var(--white);">
+            <option value="Menunggu Evaluasi">⏳ Menunggu Evaluasi</option>
+            <option value="Memenuhi Syarat">✅ Memenuhi Syarat</option>
+            <option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option>
+            <option value="Revisi / Belum Lengkap">🔄 Revisi / Belum Lengkap</option>
+            <option value="Klarifikasi / Pembuktian Kualifikasi">🔍 Klarifikasi / Pembuktian Kualifikasi</option>
+          </select>
+        </div>
+        <div class="admin-form-group" style="margin-bottom:0;">
+          <label style="font-size:0.80rem;font-weight:700;color:var(--gray-800);margin-bottom:5px;display:block;">
+            <i class="fa-solid fa-note-sticky" style="color:var(--blue-600);"></i> Catatan Pokja
+          </label>
+          <textarea id="reviewCatatan" rows="2" oninput="updateNotifPreview()"
+            style="width:100%;border:1px solid var(--gray-200);border-left:3px solid var(--blue-600);border-radius:7px;background:#F8FBFF;padding:7px 10px;font-size:0.83rem;resize:vertical;font-family:inherit;"></textarea>
+        </div>
+      </div>
+
+      <!-- ── Preview Notifikasi ── -->
+      <details style="margin-bottom:14px;">
+        <summary style="cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--gray-800);padding:9px 12px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:7px;display:flex;align-items:center;gap:7px;outline:none;">
+          <i class="fa-solid fa-bell" style="color:var(--blue-600);"></i> Preview Notifikasi ke Penyedia
+          <button id="btnEditNotifPreview" onclick="event.preventDefault();toggleEditNotifPreview()" title="Edit template"
+            style="margin-left:auto;background:none;border:1px solid var(--gray-200);border-radius:5px;cursor:pointer;color:var(--blue-600);padding:3px 8px;font-size:11px;display:inline-flex;align-items:center;gap:4px;"
+            onmouseenter="this.style.background='var(--blue-50)'" onmouseleave="this.style.background='none'">
+            <i class="fa-solid fa-pencil"></i> Edit
+          </button>
+        </summary>
+        <div style="border:1px solid var(--gray-200);border-top:none;border-radius:0 0 7px 7px;padding:10px 12px;">
+          <div id="notifModeInfo" style="display:none;"></div>
+          <div class="notif-tmpl-box" id="notifPreview"></div>
+          <div id="notifEditArea" style="display:none;margin-top:8px;">
+            <textarea id="notifEditInput" rows="5"
+              style="width:100%;font-size:0.80rem;border:1px solid var(--blue-600);border-radius:6px;padding:8px 10px;font-family:monospace;resize:vertical;background:#F8FBFF;"></textarea>
+            <div style="font-size:0.72rem;color:var(--gray-400);margin:4px 0 8px;">Variabel: <code>{namaPerusahaan}</code> <code>{status}</code> <code>{catatan}</code> <code>{paketNama}</code></div>
+            <div style="display:flex;gap:6px;">
+              <button onclick="simpanEditNotifPreview()" style="background:var(--blue-700);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:0.80rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-check"></i> Terapkan</button>
+              <button onclick="batalEditNotifPreview()" style="background:var(--gray-100);border:none;border-radius:6px;padding:6px 12px;font-size:0.80rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i> Batal</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ── Action buttons ── -->
+      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--gray-100);">
+        <button onclick="closeReviewModal()" style="padding:8px 16px;border-radius:7px;border:1px solid var(--gray-200);background:var(--gray-50);cursor:pointer;font-size:0.84rem;">Batal</button>
+        <button id="btnSimpanReview" class="btn-admin-save" onclick="simpanReview()" style="padding:8px 18px;"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
+        <button id="btnKirimWa" class="btn-admin-save" style="background:#25D366;border-color:#25D366;padding:8px 18px;" onclick="kirimNotifWa()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+        <button id="btnKirimEmail" class="btn-admin-save" style="background:#E05C2A;border-color:#E05C2A;padding:8px 18px;" onclick="kirimNotifEmail()"><i class="fa-solid fa-envelope"></i> Email</button>
       </div>
       <div id="reviewModalMsg" style="display:none;margin-top:12px;"></div>
     </div>
@@ -1883,13 +1946,30 @@
         </div>
         <div class="panduan-step"><div class="panduan-step-num">1</div><div class="panduan-step-content"><h4>Buka <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-clipboard-list"></i> Status Pengajuan</span> di sidebar</h4><p>Menu ini memuat daftar dokumen yang telah Anda kirimkan beserta status terkini dari masing-masing dokumen.</p></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Pahami arti status yang ditampilkan</h4>
+        <div class="panduan-step"><div class="panduan-step-num">2</div><div class="panduan-step-content"><h4>Pahami arti 5 status pengajuan yang ditampilkan</h4>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-hourglass-half"></i> Menunggu Evaluasi</span><span style="color:var(--gray-600);">Dokumen diterima, sedang antre untuk dievaluasi Pokja.</span></div>
-            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Lulus / Memenuhi Syarat</span><span style="color:var(--gray-600);">Dokumen dinyatakan memenuhi persyaratan administrasi.</span></div>
-            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge" style="background:#FDEDEC;color:#922B21;"><i class="fa-solid fa-circle-xmark"></i> Tidak Memenuhi</span><span style="color:var(--gray-600);">Dokumen belum memenuhi syarat. Periksa catatan dari Pokja.</span></div>
-            <div style="display:flex;align-items:center;gap:10px;background:var(--gray-50);border-radius:7px;padding:9px 12px;font-size:0.82rem;"><span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Perlu Revisi / Klarifikasi</span><span style="color:var(--gray-600);">Ada pertanyaan atau perbaikan yang diminta Pokja.</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px;background:#FFFDE7;border:1px solid #FFE082;border-radius:7px;padding:9px 12px;font-size:0.82rem;">
+              <span class="panduan-badge panduan-badge-yellow" style="flex-shrink:0;"><i class="fa-solid fa-hourglass-half"></i> Menunggu Evaluasi</span>
+              <span style="color:var(--gray-600);">Dokumen berhasil diterima dan sedang dalam antrean untuk dievaluasi oleh Pokja. Tidak diperlukan tindakan dari Anda.</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;background:#EAF3DE;border:1px solid #B6DBA0;border-radius:7px;padding:9px 12px;font-size:0.82rem;">
+              <span class="panduan-badge panduan-badge-green" style="flex-shrink:0;"><i class="fa-solid fa-circle-check"></i> Memenuhi Syarat</span>
+              <span style="color:var(--gray-600);">Selamat! Dokumen Anda dinyatakan memenuhi seluruh persyaratan. Tunggu informasi selanjutnya dari Pokja.</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;background:#FDEDEC;border:1px solid #F5B7B1;border-radius:7px;padding:9px 12px;font-size:0.82rem;">
+              <span class="panduan-badge" style="background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;flex-shrink:0;"><i class="fa-solid fa-circle-xmark"></i> Tidak Memenuhi Syarat</span>
+              <span style="color:var(--gray-600);">Dokumen Anda tidak memenuhi persyaratan yang ditetapkan. Periksa catatan dari Pokja untuk keterangan lebih lanjut.</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;background:#EBF5FB;border:1px solid #AED6F1;border-radius:7px;padding:9px 12px;font-size:0.82rem;">
+              <span class="panduan-badge panduan-badge-blue" style="flex-shrink:0;"><i class="fa-solid fa-rotate"></i> Revisi / Belum Lengkap</span>
+              <span style="color:var(--gray-600);">Ada dokumen yang perlu diperbaiki atau dilengkapi. Klik tombol <strong>Upload Ulang / Revisi</strong> untuk mengirim dokumen terbaru.</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;background:#F5EEF8;border:1px solid #D2B4DE;border-radius:7px;padding:9px 12px;font-size:0.82rem;">
+              <span class="panduan-badge" style="background:#F5EEF8;color:#6C3483;border:1px solid #D2B4DE;flex-shrink:0;"><i class="fa-solid fa-magnifying-glass"></i> Klarifikasi / Pembuktian Kualifikasi</span>
+              <span style="color:var(--gray-600);">Pokja mengundang Anda untuk hadir langsung dalam proses pembuktian kualifikasi. Periksa notifikasi WhatsApp/email untuk informasi jadwal dan lokasi dari Pokja.</span>
+            </div>
           </div>
+          <div class="step-tip" style="margin-top:10px;"><i class="fa-solid fa-triangle-exclamation"></i> Segera tindak lanjuti status <strong>Revisi</strong> atau <strong>Klarifikasi</strong> sebelum batas waktu yang ditentukan Pokja.</div>
         </div></div>
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num">3</div><div class="panduan-step-content"><h4>Klik <strong>Refresh</strong> untuk memperbarui data</h4><p>Status diperbarui otomatis setiap <strong>20 detik</strong>. Anda juga dapat klik tombol <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Refresh</span> kapan saja untuk memuat data terbaru secara manual.</p><div class="step-tip"><i class="fa-solid fa-bell"></i> Notifikasi perubahan status juga dikirim melalui WhatsApp atau email oleh Pokja jika kontak Anda terdaftar.</div></div></div>
@@ -1911,14 +1991,13 @@
     <div class="panduan-header" style="background:linear-gradient(135deg,#2D3748,#4A5568);">
       <div>
         <h2><i class="fa-solid fa-book-open"></i> Panduan Penggunaan Pokja</h2>
-        <p>Panduan lengkap untuk akun Pokja — dari login hingga penetapan pemenang</p>
+        <p>Panduan penggunaan portal untuk akun Pokja</p>
       </div>
       <button class="panduan-close" onclick="tutupPanduanPokja()">&#x2715;</button>
     </div>
     <div class="panduan-tabs" id="panduanPokjaTabs">
       <button class="panduan-tab active" onclick="switchPanduanPokjaTab('evaluasi',this)"><i class="fa-solid fa-clipboard-check"></i> Evaluasi Dokumen</button>
-      <button class="panduan-tab" onclick="switchPanduanPokjaTab('notifikasi',this)"><i class="fa-solid fa-bell"></i> Notifikasi WA & Email</button>
-      <button class="panduan-tab" onclick="switchPanduanPokjaTab('penetapan',this)"><i class="fa-solid fa-gavel"></i> Penetapan Pemenang</button>
+      <button class="panduan-tab" onclick="switchPanduanPokjaTab('notifikasi',this)"><i class="fa-solid fa-bell"></i> Notifikasi WA &amp; Email</button>
     </div>
     <div class="panduan-body">
 
@@ -1932,7 +2011,17 @@
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>2</span></div><div class="panduan-step-content"><h4>Tinjau dokumen penyedia</h4><p>Klik baris penyedia untuk membuka detail. Anda dapat mengunduh dokumen, memeriksa kelengkapan data perusahaan (NPWP, alamat, direktur), dan melihat file lampiran.</p></div></div>
         <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Tetapkan status evaluasi</h4><p>Pilih status: <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Lulus</span>, <span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-hourglass-half"></i> Proses</span>, atau <span class="panduan-badge" style="background:#FDEDEC;color:#922B21;"><i class="fa-solid fa-circle-xmark"></i> Tidak Lulus</span>. Tambahkan catatan evaluasi jika diperlukan.</p><div class="step-tip"><i class="fa-solid fa-lightbulb"></i> Status evaluasi langsung terlihat oleh penyedia di halaman Status Pengajuan mereka.</div></div></div>
+        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Tetapkan status evaluasi</h4>
+          <p>Pilih salah satu dari 5 status yang tersedia sesuai hasil penilaian dokumen:</p>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:0.80rem;"><span class="panduan-badge panduan-badge-yellow"><i class="fa-solid fa-hourglass-half"></i> Menunggu Evaluasi</span><span style="color:var(--gray-600);">Belum diperiksa / dalam proses.</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:0.80rem;"><span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Memenuhi Syarat</span><span style="color:var(--gray-600);">Dokumen lulus seluruh persyaratan.</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:0.80rem;"><span class="panduan-badge" style="background:#FDEDEC;color:#922B21;"><i class="fa-solid fa-circle-xmark"></i> Tidak Memenuhi Syarat</span><span style="color:var(--gray-600);">Dokumen gagal memenuhi syarat.</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:0.80rem;"><span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-rotate"></i> Revisi / Belum Lengkap</span><span style="color:var(--gray-600);">Penyedia perlu melengkapi atau memperbaiki dokumen.</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:0.80rem;"><span class="panduan-badge" style="background:#F5EEF8;color:#6C3483;"><i class="fa-solid fa-magnifying-glass"></i> Klarifikasi / Pembuktian Kualifikasi</span><span style="color:var(--gray-600);">Penyedia dipanggil untuk pembuktian atau klarifikasi langsung.</span></div>
+          </div>
+          <div class="step-tip" style="margin-top:8px;"><i class="fa-solid fa-lightbulb"></i> Status evaluasi langsung terlihat oleh penyedia di halaman Status Pengajuan mereka secara real-time.</div>
+        </div></div>
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>4</span></div><div class="panduan-step-content"><h4>Simpan hasil evaluasi</h4><p>Klik <strong>Simpan</strong> untuk mengonfirmasi keputusan evaluasi. Data tersimpan ke Google Sheets dan penyedia dapat melihat hasilnya secara real-time.</p></div></div>
       </div>
@@ -1951,21 +2040,6 @@
         <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Edit pesan jika diperlukan, lalu kirim</h4><p>Preview pesan akan ditampilkan sebelum dikirim. Anda dapat menyesuaikan isi pesan, lalu klik <strong>Kirim</strong> untuk mengirimkan notifikasi ke penyedia.</p></div></div>
         <hr class="panduan-step-divider">
         <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>4</span></div><div class="panduan-step-content"><h4>Kirim Undangan Pembuktian Kualifikasi</h4><p>Untuk undangan pembuktian kualifikasi, gunakan tombol <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-envelope-open-text"></i> Undangan Pembuktian</span>. Isi tanggal, lokasi, dan pesan undangan, lalu klik <strong>Kirim Undangan</strong>.</p><div class="step-tip"><i class="fa-solid fa-calendar-check"></i> Undangan terkirim ke WhatsApp dan email penyedia secara bersamaan jika kedua kontak tersedia.</div></div></div>
-      </div>
-
-      <!-- TAB: PENETAPAN -->
-      <div class="panduan-section" id="panduan-pokja-penetapan">
-        <div class="panduan-intro-box" style="border-left-color:#4A5568;background:linear-gradient(135deg,rgba(74,85,104,0.07),rgba(45,55,72,0.07));border-color:rgba(74,85,104,0.2);">
-          <h3 style="color:#2D3748;"><i class="fa-solid fa-circle-info"></i> Penetapan Pemenang</h3>
-          <p>Tahap akhir proses pengadaan. Pokja menetapkan pemenang berdasarkan hasil evaluasi dan negosiasi yang telah selesai.</p>
-        </div>
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>1</span></div><div class="panduan-step-content"><h4>Buka menu <span class="panduan-badge panduan-badge-blue"><i class="fa-solid fa-gavel"></i> Penetapan</span></h4><p>Halaman penetapan menampilkan daftar penyedia yang telah melewati seluruh tahapan evaluasi dan negosiasi.</p></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>2</span></div><div class="panduan-step-content"><h4>Verifikasi persetujuan penyedia</h4><p>Pastikan penyedia sudah menyatakan <span class="panduan-badge panduan-badge-green"><i class="fa-solid fa-circle-check"></i> Sepakat</span> terhadap harga final. Status persetujuan ditampilkan secara real-time.</p></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>3</span></div><div class="panduan-step-content"><h4>Tetapkan Pemenang</h4><p>Klik tombol <strong>Tetapkan sebagai Pemenang</strong> untuk penyedia yang memenuhi syarat. Sistem akan mengunci data dan mengirimkan notifikasi resmi kepada penyedia terpilih.</p><div class="step-tip"><i class="fa-solid fa-triangle-exclamation"></i> Penetapan pemenang bersifat final. Pastikan seluruh dokumen dan proses telah sesuai ketentuan sebelum mengonfirmasi.</div></div></div>
-        <hr class="panduan-step-divider">
-        <div class="panduan-step"><div class="panduan-step-num" style="background:linear-gradient(135deg,#2D3748,#4A5568);"><span>4</span></div><div class="panduan-step-content"><h4>Unduh Berita Acara</h4><p>Setelah penetapan selesai, unduh dokumen Berita Acara Penetapan Pemenang sebagai arsip resmi proses pengadaan.</p></div></div>
       </div>
 
     </div>
@@ -3258,22 +3332,25 @@ function renderStatusPenyedia() {
           <span style="font-size:0.80rem;color:var(--gray-400);font-style:italic;"><i class="fa-regular fa-comment"></i> Belum ada catatan dari Pokja.</span>
         </div>`;
 
-    // Klarifikasi log
+    // Klarifikasi log — jika ada, tampilkan sebagai riwayat saja (tidak ada action balas)
     const klarHtml = klarifikasiLog.length ? `
       <div style="margin-top:14px;border-top:1px solid var(--gray-100);padding-top:12px;">
         <div style="font-size:0.75rem;font-weight:700;color:var(--blue-900);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;"><i class="fa-solid fa-comments" style="color:var(--blue-600);"></i> Riwayat Klarifikasi (${klarifikasiLog.length})</div>
         ${renderKlarLog(klarifikasiLog)}
       </div>` : '';
 
-    // Aksi utama
-    const isDariPokjaFn = (k) => {
-      if (k.dariPokja === true || k.dariPokja === 'true' || k.dariPokja === 1) return true;
-      const p = (k.pengirim || '').toLowerCase();
-      return p === 'pokja' || p.startsWith('pokja') || POKJA_USERNAMES.some(u => p === u.toLowerCase());
-    };
-    const hasUnreplied = klarifikasiLog.filter(k=>isDariPokjaFn(k)&&!k.balasanPenyedia).length > 0;
-    const allReplied   = !hasUnreplied && klarifikasiLog.some(k=>isDariPokjaFn(k));
-    const needRevisi   = status === 'Revisi / Belum Lengkap' || status === 'Perlu Revisi / Klarifikasi' || status === 'Klarifikasi / Pembuktian Kualifikasi';
+    // Aksi utama — tidak ada lagi tombol Balas Klarifikasi, hanya Upload Ulang untuk Revisi
+    const needRevisi = status === 'Revisi / Belum Lengkap' || status === 'Perlu Revisi / Klarifikasi';
+
+    // Info tambahan untuk status Klarifikasi / Pembuktian Kualifikasi
+    const klarPembuktianInfo = status === 'Klarifikasi / Pembuktian Kualifikasi'
+      ? `<div style="background:#F5EEF8;border:1px solid #D2B4DE;border-left:4px solid #7B2D8B;border-radius:8px;padding:12px 14px;margin-top:12px;display:flex;align-items:flex-start;gap:10px;">
+          <i class="fa-solid fa-magnifying-glass" style="color:#7B2D8B;margin-top:2px;flex-shrink:0;"></i>
+          <div>
+            <div style="font-size:0.80rem;font-weight:700;color:#4A1A6C;margin-bottom:3px;">Klarifikasi / Pembuktian Kualifikasi</div>
+            <div style="font-size:0.78rem;color:#6C3483;line-height:1.55;">Pokja mengundang Anda untuk hadir langsung dalam proses pembuktian kualifikasi. Silakan hubungi Pokja atau periksa notifikasi WhatsApp/email untuk informasi jadwal dan lokasi.</div>
+          </div>
+        </div>` : '';
 
     const aksiBtns = [
       needRevisi ? `<button onclick="bukaModalRevisiByIdx(${allIdx})"
@@ -3282,15 +3359,6 @@ function renderStatusPenyedia() {
                transition:background 0.2s;box-shadow:0 2px 6px rgba(24,95,165,0.25);"
         onmouseenter="this.style.background='var(--blue-900)'" onmouseleave="this.style.background='var(--blue-700)'">
         <i class="fa-solid fa-cloud-arrow-up"></i> Upload Ulang / Revisi</button>` : '',
-      hasUnreplied ? `<button onclick="bukaModalKlarifikasi(${allIdx})"
-        style="display:inline-flex;align-items:center;gap:7px;background:#C62828;color:white;border:none;
-               border-radius:8px;padding:9px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;
-               transition:background 0.2s;box-shadow:0 2px 6px rgba(198,40,40,0.2);"
-        onmouseenter="this.style.background='#8B0000'" onmouseleave="this.style.background='#C62828'">
-        <i class="fa-solid fa-reply"></i> Balas Klarifikasi Pokja
-        <span style="background:#fff;color:#C62828;border-radius:10px;padding:1px 6px;font-size:0.70rem;font-weight:800;margin-left:2px;">!</span>
-      </button>` : '',
-      allReplied ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;color:#2D7D17;font-weight:600;background:#EAF3DE;border:1px solid #B6DBA0;border-radius:7px;padding:7px 12px;"><i class="fa-solid fa-circle-check"></i> Semua klarifikasi sudah ditanggapi</span>` : '',
     ].filter(Boolean).join('');
 
     return `<div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;
@@ -3325,6 +3393,9 @@ function renderStatusPenyedia() {
 
         <!-- Revisi lintas-kategori (collapsible) -->
         ${revHtml}
+
+        <!-- Klarifikasi / Pembuktian info — di atas catatan -->
+        ${klarPembuktianInfo}
 
         <!-- Catatan Pokja -->
         ${catatanHtml}
@@ -3460,12 +3531,10 @@ function renderSidebar() {
     });
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link nav-upload" data-page="upload"><span class="nav-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="nav-label">Upload Dokumen</span></a></li>`;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="status"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="nav-label">Status Pengajuan</span></a></li>`;
-    if (adaPengumuman) html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#B8860B,#DAA520);color:#fff;border-left:3px solid #8B6914;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-bell"></i></span><span class="nav-label">Pengumuman Pemenang</span></a></li>`;
     html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link nav-status" data-page="settings-penyedia" style="background:linear-gradient(135deg,#4A5568,#2D3748);"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Pengaturan Akun</span></a></li>`;
   } else if (currentRole === 'pokja') {
     // Sidebar lengkap untuk Pokja
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#0C447C,#185FA5);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Evaluasi Dokumen</span></a></li>`;
-    html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="penetapan" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;border-left:3px solid #0a3d0a;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-trophy"></i></span><span class="nav-label">Penetapan Pemenang</span></a></li>`;
   } else if (currentRole === 'admin') {
     // Sidebar admin: tampilkan menu khusus admin
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="admin" style="background:linear-gradient(135deg,#856404,#A07800);color:#fff;border-left:3px solid #5c4600;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Panel Admin</span></a></li>`;
@@ -5619,47 +5688,95 @@ function openReviewModal(idx) {
   const klarLog = Array.isArray(d.klarifikasiLog) ? d.klarifikasiLog : [];
   const klarSection = klarLog.length ? `<div style="margin-top:10px;border-top:1px solid var(--blue-100);padding-top:10px;"><div style="font-size:0.80rem;font-weight:700;color:#856404;margin-bottom:6px;"><i class="fa-solid fa-comments"></i> Klarifikasi dari Penyedia (${klarLog.length})</div>${klarLog.map(k=>`<div style="background:#FFFDE7;border:1px solid #FFD54F;border-left:3px solid #856404;border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:0.80rem;"><div style="color:var(--gray-400);font-size:0.70rem;margin-bottom:2px;"><i class="fa-solid fa-clock"></i> ${k.tgl||''} &nbsp;·&nbsp; <strong style="color:#856404;">${k.pengirim||'Penyedia'}</strong></div><div style="color:var(--gray-800);">${k.pesan||''}</div></div>`).join('')}</div>` : '';
   document.getElementById('reviewModalInfo').innerHTML=`<strong>${d.namaPerusahaan||'-'}</strong> &nbsp;|&nbsp; NPWP: ${d.npwp||'-'}<br><span style="color:var(--gray-600);">Jenis: ${d.jenisDok||'-'}</span><br><span style="color:var(--gray-600);">Kontak: ${d.telp||'-'} / ${d.email||'-'}</span>${klarSection}`;
-  const btnWrap=document.getElementById('reviewDocButtons');
-  // Tampilkan tombol per kategori dokumen + revisi per kategori
-  var docBtns = '';
+  const btnWrap=document.getElementById('reviewDocButtons'); // kept for compat (unused now)
+  // ── 4 tile utama ──
   var docCategories = [
-    { key:'linkAdm',   namaKey:'namaFileAdm',   revKey:'revisiAdm',   label:'Administrasi', color:'#1B5E20', icon:'fa-file-alt' },
-    { key:'linkKual',  namaKey:'namaFileKual',  revKey:'revisiKual',  label:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal'    },
-    { key:'linkTek',   namaKey:'namaFileTek',   revKey:'revisiTek',   label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench' },
-    { key:'linkHarga', namaKey:'namaFileHarga', revKey:'revisiHarga', label:'Harga',        color:'#880E4F', icon:'fa-tag'      }
+    { key:'linkAdm',   namaKey:'namaFileAdm',   revKey:'revisiAdm',   label:'Administrasi', color:'#1B5E20', bg:'#EAF3DE', border:'#B6DBA0', icon:'fa-file-alt' },
+    { key:'linkKual',  namaKey:'namaFileKual',  revKey:'revisiKual',  label:'Kualifikasi',  color:'#0D47A1', bg:'#E3F2FD', border:'#90CAF9', icon:'fa-medal'    },
+    { key:'linkTek',   namaKey:'namaFileTek',   revKey:'revisiTek',   label:'Teknis',       color:'#E65100', bg:'#FBE9E7', border:'#FFAB91', icon:'fa-screwdriver-wrench' },
+    { key:'linkHarga', namaKey:'namaFileHarga', revKey:'revisiHarga', label:'Harga',        color:'#6A1B4D', bg:'#F3E5F5', border:'#CE93D8', icon:'fa-tag'      }
   ];
+  var tilesHtml = '';
+  var allDocsHtml = '';
   docCategories.forEach(function(cat) {
     var url  = d[cat.key]||'';
     var nm   = d[cat.namaKey]||'';
+    var nmShort = nm.length > 22 ? nm.substring(0,20)+'…' : nm;
     var revs = Array.isArray(d[cat.revKey]) ? d[cat.revKey].filter(function(r){return r&&r.link&&r.link.startsWith('http');}) : [];
-    // Tombol upload utama
-    if (url && url.startsWith('http')) {
-      docBtns += `<a href="${url}" target="_blank" rel="noopener" title="${nm}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:${cat.color};color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;">` +
-        `<i class="fa-solid ${cat.icon}"></i> ${cat.label}${nm ? ' — '+nm : ''}</a>`;
+    var hasDoc = url && url.startsWith('http');
+    var revCount = revs.length;
+    // tile
+    if (hasDoc) {
+      tilesHtml += `<a href="${url}" target="_blank" rel="noopener"
+        style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+               background:${cat.bg};border:1px solid ${cat.border};border-radius:9px;
+               padding:10px 6px;text-decoration:none;transition:box-shadow 0.15s;min-height:72px;"
+        onmouseenter="this.style.boxShadow='0 3px 10px rgba(0,0,0,0.12)'" onmouseleave="this.style.boxShadow='none'">
+        <span style="width:30px;height:30px;background:${cat.color};border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid ${cat.icon}" style="color:#fff;font-size:13px;"></i>
+        </span>
+        <span style="font-size:0.72rem;font-weight:700;color:${cat.color};text-align:center;line-height:1.2;">${cat.label}</span>
+        ${revCount>0?`<span style="font-size:0.60rem;background:${cat.color};color:#fff;border-radius:8px;padding:1px 6px;font-weight:700;">${revCount} Rev</span>`:''}
+      </a>`;
+    } else {
+      tilesHtml += `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+               background:var(--gray-50);border:1px dashed var(--gray-200);border-radius:9px;
+               padding:10px 6px;min-height:72px;opacity:0.55;">
+        <span style="width:30px;height:30px;background:var(--gray-200);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+          <i class="fa-solid ${cat.icon}" style="color:var(--gray-400);font-size:13px;"></i>
+        </span>
+        <span style="font-size:0.72rem;font-weight:600;color:var(--gray-400);text-align:center;line-height:1.2;">${cat.label}</span>
+        <span style="font-size:0.60rem;color:var(--gray-400);">–</span>
+      </div>`;
     }
-    // Tombol revisi per slot
-    revs.forEach(function(rv, ri) {
-      docBtns += `<a href="${rv.link}" target="_blank" rel="noopener" title="${rv.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:${cat.color};color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;opacity:0.85;border:2px dashed rgba(255,255,255,0.6);">` +
-        `<i class="fa-solid fa-rotate"></i> ${cat.label} Rev ${ri+1}${rv.namaFile ? ' — '+rv.namaFile : ''}</a>`;
+    // detail panel row
+    var allRow = '';
+    if (hasDoc) {
+      allRow += `<a href="${url}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;
+               background:${cat.color};color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;margin:2px;">
+        <i class="fa-solid ${cat.icon}"></i> ${cat.label}${nm?' — '+nm:''}</a>`;
+    }
+    revs.forEach(function(rv,ri){
+      allRow += `<a href="${rv.link}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;
+               background:${cat.color};color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;
+               margin:2px;opacity:0.82;border:2px dashed rgba(255,255,255,0.55);">
+        <i class="fa-solid fa-rotate"></i> ${cat.label} Rev ${ri+1}${rv.namaFile?' — '+rv.namaFile:''}</a>`;
     });
+    if (allRow) allDocsHtml += allRow;
   });
-  // Link dokumen tambahan
-  // Tombol tambahan per-kategori
+  // tambahan per-kategori
   var _tmbModalMeta = [
     { arr: d.tambahanAdm,   label:'Adm Tmb',   color:'#2E7D32', icon:'fa-file-alt' },
     { arr: d.tambahanKual,  label:'Kual Tmb',  color:'#1565C0', icon:'fa-medal' },
     { arr: d.tambahanTek,   label:'Tek Tmb',   color:'#BF360C', icon:'fa-screwdriver-wrench' },
     { arr: d.tambahanHarga, label:'Harga Tmb', color:'#6A1042', icon:'fa-tag' },
   ];
+  var tmbHtml = '';
   _tmbModalMeta.forEach(function(m) {
     var arr = Array.isArray(m.arr) ? m.arr : [];
     arr.forEach(function(t, ti) {
       if (!t || !t.link || !t.link.startsWith('http')) return;
-      docBtns += `<a href="${t.link}" target="_blank" rel="noopener" title="${t.namaFile||''}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;background:${m.color};color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;margin:2px;border:2px dashed rgba(255,255,255,0.5);">` +
-        `<i class="fa-solid ${m.icon}"></i> ${m.label} ${ti+1}${t.namaFile ? ' — '+t.namaFile : ''}</a>`;
+      tmbHtml += `<a href="${t.link}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;
+               background:${m.color};color:#fff;font-size:0.75rem;font-weight:700;text-decoration:none;
+               margin:2px;border:2px dashed rgba(255,255,255,0.5);">
+        <i class="fa-solid ${m.icon}"></i> ${m.label} ${ti+1}${t.namaFile?' — '+t.namaFile:''}</a>`;
     });
   });
-  btnWrap.innerHTML = docBtns ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">' + docBtns + '</div>' : '';
+  document.getElementById('reviewDocTiles').innerHTML = tilesHtml;
+  var allPanel = document.getElementById('reviewDocAllPanel');
+  var allContent = (allDocsHtml||tmbHtml)
+    ? `<div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:2px;">${allDocsHtml}${tmbHtml?`<div style="width:100%;height:1px;background:var(--gray-100);margin:6px 0;"></div>${tmbHtml}`:''}</div>`
+    : `<div style="font-size:0.80rem;color:var(--gray-400);padding:8px;">Tidak ada dokumen.</div>`;
+  allPanel.innerHTML = allContent;
+  allPanel.style.display = 'none';
+  // reset toggle icon
+  var ic = document.getElementById('iconToggleAllDocs');
+  if (ic) ic.className = 'fa-solid fa-chevron-down';
+  var bt = document.getElementById('btnToggleAllDocs');
+  if (bt) bt.querySelector('i:not(.fa-layer-group)') && (bt.querySelector('i.fa-solid.fa-chevron-down')||bt.querySelector('i.fa-solid.fa-chevron-up'));
   document.getElementById('reviewStatus').value=d.reviewStatus||'Menunggu Evaluasi';
   document.getElementById('reviewCatatan').value=d.catatanPokja||'';
   document.getElementById('reviewModalMsg').style.display='none';
@@ -5667,6 +5784,20 @@ function openReviewModal(idx) {
   // Set pokja identity tag in modal header
   const pkTag = document.getElementById('reviewModalPokjaTag');
   if (pkTag) pkTag.textContent = currentPokjaUser ? '👤 ' + currentPokjaUser.toUpperCase() : '';
+  // Show timestamp if available
+  const tsEl = document.getElementById('reviewModalTimestamp');
+  const tsTxt = document.getElementById('reviewModalTimestampText');
+  if (tsEl && tsTxt) {
+    const tgl = d.reviewTanggal || d.timestamp || '';
+    if (tgl) {
+      try {
+        const dt = new Date(tgl);
+        const fmt = dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        tsTxt.textContent = 'Terakhir dievaluasi: ' + fmt + (d.reviewedBy ? ' · ' + d.reviewedBy.toUpperCase() : '');
+        tsEl.style.display = 'block';
+      } catch(e) { tsEl.style.display = 'none'; }
+    } else { tsEl.style.display = 'none'; }
+  }
   // Reset edit preview state
   document.getElementById('notifEditArea').style.display='none';
   document.getElementById('notifPreview').style.display='block';
@@ -5679,6 +5810,17 @@ function openReviewModal(idx) {
 function updateNotifModeInfo() { /* tidak digunakan */ }
 
 function closeReviewModal(){ document.getElementById('reviewModal').classList.remove('show'); currentReviewIdx=null; currentReviewKey=null; }
+
+function toggleReviewAllDocs() {
+  var panel = document.getElementById('reviewDocAllPanel');
+  var icon  = document.getElementById('iconToggleAllDocs');
+  var btn   = document.getElementById('btnToggleAllDocs');
+  if (!panel) return;
+  var isHidden = panel.style.display === 'none' || panel.style.display === '';
+  panel.style.display = isHidden ? 'block' : 'none';
+  if (icon) icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+  if (btn)  btn.style.background = isHidden ? 'var(--blue-50)' : 'none';
+}
 
 function fillTemplate(template,vars){return template.replace(/\{(\w+)\}/g,(_,k)=>vars[k]!==undefined?vars[k]:'');}
 
