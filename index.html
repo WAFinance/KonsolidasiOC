@@ -3014,18 +3014,31 @@ async function doGantiPasswordPenyedia() {
   const confirm  = document.getElementById('sp-confirm-password').value;
   const msgEl    = document.getElementById('msgGantiPassword');
   msgEl.textContent = '';
-  const penyediaAccounts = gcGet('penyediaAccounts', []);
-  const accountIdx = penyediaAccounts.findIndex(a => a.email.toLowerCase() === currentPenyedia.email.toLowerCase());
-  if (accountIdx < 0) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Akun tidak ditemukan.'; return; }
-  if (penyediaAccounts[accountIdx].password !== oldPass) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Password lama salah.'; return; }
+  if (!oldPass) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Isi password lama.'; return; }
   if (newPass.length < 6) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Password baru minimal 6 karakter.'; return; }
   if (newPass !== confirm) { msgEl.style.color='#C0392B'; msgEl.textContent='❌ Konfirmasi tidak cocok.'; return; }
-  penyediaAccounts[accountIdx].password = newPass;
-  _globalConfig['penyediaAccounts'] = penyediaAccounts;
-  try { await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'updatePenyediaPassword', email:currentPenyedia.email, newPassword:newPass }) }); } catch(e) {}
-  await pushConfig('penyediaAccounts', penyediaAccounts);
-  msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Password berhasil diubah!';
-  ['sp-old-password','sp-new-password','sp-confirm-password'].forEach(id=>document.getElementById(id).value='');
+  msgEl.style.color='#856404'; msgEl.textContent='⏳ Memproses...';
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'changePenyediaPassword',
+        email: currentPenyedia.email,
+        oldPassword: oldPass,
+        newPassword: newPass
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      msgEl.style.color='#3B6D11'; msgEl.textContent='✓ Password berhasil diubah!';
+      ['sp-old-password','sp-new-password','sp-confirm-password'].forEach(id=>document.getElementById(id).value='');
+    } else {
+      msgEl.style.color='#C0392B'; msgEl.textContent='❌ ' + (data.message || 'Gagal mengubah password.');
+    }
+  } catch(e) {
+    msgEl.style.color='#C0392B'; msgEl.textContent='❌ Gagal menghubungi server. Coba lagi.';
+  }
 }
 
 // =================================================================
@@ -3142,6 +3155,17 @@ function renderStatusPenyedia() {
     const linkHarga    = (latest.linkHarga    || '').trim();
     const namaFileHarga= (latest.namaFileHarga|| '').trim();
 
+    // ── Timestamp upload per kategori ──
+    const _getLastUploadTgl = (logArr) => {
+      if (!Array.isArray(logArr) || !logArr.length) return null;
+      const last = logArr[logArr.length - 1];
+      return last && last.tgl ? last.tgl : null;
+    };
+    const tglUploadAdm   = _getLastUploadTgl(latest.logUploadAdm);
+    const tglUploadKual  = _getLastUploadTgl(latest.logUploadKual);
+    const tglUploadTek   = _getLastUploadTgl(latest.logUploadTek);
+    const tglUploadHarga = _getLastUploadTgl(latest.logUploadHarga);
+
     const _helper_tmb = (arr) => Array.isArray(arr) ? arr.filter(t => t && t.link && t.link.startsWith('http')) : [];
     const tambahanAdm   = _helper_tmb(latest.tambahanAdm);
     const tambahanKual  = _helper_tmb(latest.tambahanKual);
@@ -3154,10 +3178,10 @@ function renderStatusPenyedia() {
 
     // ── Kategori dokumen utama (awal) ──
     const katMeta = [
-      { link: linkAdm,   nm: namaFileAdm,   label:'Administrasi', short:'Adm',  color:'#1B5E20', bg:'#E8F5E9', icon:'fa-file-alt',            tmbs: tambahanAdm,   tmbColor:'#2E7D32' },
-      { link: linkKual,  nm: namaFileKual,  label:'Kualifikasi',  short:'Kual', color:'#0D47A1', bg:'#E3F2FD', icon:'fa-medal',                tmbs: tambahanKual,  tmbColor:'#1565C0' },
-      { link: linkTek,   nm: namaFileTek,   label:'Teknis',       short:'Tek',  color:'#E65100', bg:'#FBE9E7', icon:'fa-screwdriver-wrench',   tmbs: tambahanTek,   tmbColor:'#BF360C' },
-      { link: linkHarga, nm: namaFileHarga, label:'Harga',        short:'Harga',color:'#880E4F', bg:'#FCE4EC', icon:'fa-tag',                  tmbs: tambahanHarga, tmbColor:'#6A1042' },
+      { link: linkAdm,   nm: namaFileAdm,   label:'Administrasi', short:'Adm',  color:'#1B5E20', bg:'#E8F5E9', icon:'fa-file-alt',            tmbs: tambahanAdm,   tmbColor:'#2E7D32', tglUpload: tglUploadAdm   },
+      { link: linkKual,  nm: namaFileKual,  label:'Kualifikasi',  short:'Kual', color:'#0D47A1', bg:'#E3F2FD', icon:'fa-medal',                tmbs: tambahanKual,  tmbColor:'#1565C0', tglUpload: tglUploadKual  },
+      { link: linkTek,   nm: namaFileTek,   label:'Teknis',       short:'Tek',  color:'#E65100', bg:'#FBE9E7', icon:'fa-screwdriver-wrench',   tmbs: tambahanTek,   tmbColor:'#BF360C', tglUpload: tglUploadTek   },
+      { link: linkHarga, nm: namaFileHarga, label:'Harga',        short:'Harga',color:'#880E4F', bg:'#FCE4EC', icon:'fa-tag',                  tmbs: tambahanHarga, tmbColor:'#6A1042', tglUpload: tglUploadHarga },
     ];
 
     // Blok dokumen per kategori (awal + tambahan + revisi kategori)
@@ -3192,6 +3216,7 @@ function renderStatusPenyedia() {
             ` : ''}
           </div>
         </div>
+        ${c.tglUpload ? `<div style="font-size:0.68rem;color:${c.color};opacity:0.8;margin-top:5px;display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-clock" style="font-size:0.60rem;"></i> Diupload: ${c.tglUpload}</div>` : ''}
         ${tmbItems}
       </div>`;
     }).join('');
@@ -5233,12 +5258,23 @@ function renderPokjaTable() {
     const _tmbHarga = Array.isArray(d.tambahanHarga) ? d.tambahanHarga.filter(t=>t&&t.link&&t.link.startsWith('http')) : [];
     const totalTmbPokja = _tmbAdm.length + _tmbKual.length + _tmbTek.length + _tmbHarga.length;
 
+    // Timestamp upload per kategori (dari log server)
+    const _getLastUploadTglPokja = (logArr) => {
+      if (!Array.isArray(logArr) || !logArr.length) return null;
+      const last = logArr[logArr.length - 1];
+      return last && last.tgl ? last.tgl : null;
+    };
+    const _tglUpAdm   = _getLastUploadTglPokja(d.logUploadAdm);
+    const _tglUpKual  = _getLastUploadTglPokja(d.logUploadKual);
+    const _tglUpTek   = _getLastUploadTglPokja(d.logUploadTek);
+    const _tglUpHarga = _getLastUploadTglPokja(d.logUploadHarga);
+
     // Definisi kategori (utama + badge revisi + badge tambahan)
     const _katMeta = [
-      { link: _lAdm,   revs: _revAdm,   tmbs: _tmbAdm,   nm: d.namaFileAdm||'',   label:'Adm',   labelFull:'Administrasi', color:'#1B5E20', tmbColor:'#2E7D32', icon:'fa-file-alt' },
-      { link: _lKual,  revs: _revKual,  tmbs: _tmbKual,  nm: d.namaFileKual||'',  label:'Kual',  labelFull:'Kualifikasi',  color:'#0D47A1', tmbColor:'#1565C0', icon:'fa-medal'    },
-      { link: _lTek,   revs: _revTek,   tmbs: _tmbTek,   nm: d.namaFileTek||'',   label:'Tek',   labelFull:'Teknis',       color:'#E65100', tmbColor:'#BF360C', icon:'fa-screwdriver-wrench' },
-      { link: _lHarga, revs: _revHarga, tmbs: _tmbHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', tmbColor:'#6A1042', icon:'fa-tag'      },
+      { link: _lAdm,   revs: _revAdm,   tmbs: _tmbAdm,   nm: d.namaFileAdm||'',   label:'Adm',   labelFull:'Administrasi', color:'#1B5E20', tmbColor:'#2E7D32', icon:'fa-file-alt',            tglUpload: _tglUpAdm   },
+      { link: _lKual,  revs: _revKual,  tmbs: _tmbKual,  nm: d.namaFileKual||'',  label:'Kual',  labelFull:'Kualifikasi',  color:'#0D47A1', tmbColor:'#1565C0', icon:'fa-medal',                tglUpload: _tglUpKual  },
+      { link: _lTek,   revs: _revTek,   tmbs: _tmbTek,   nm: d.namaFileTek||'',   label:'Tek',   labelFull:'Teknis',       color:'#E65100', tmbColor:'#BF360C', icon:'fa-screwdriver-wrench',   tglUpload: _tglUpTek   },
+      { link: _lHarga, revs: _revHarga, tmbs: _tmbHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', tmbColor:'#6A1042', icon:'fa-tag',                  tglUpload: _tglUpHarga },
     ];
 
     // ── fileCell: HANYA dokumen awal (upload pertama) per kategori ──
@@ -5248,7 +5284,8 @@ function renderPokjaTable() {
     if (_catAwal.length) {
       fileCell = `<div style="display:flex;flex-direction:column;gap:4px;">${_catAwal.map(c => {
         const nmShort = c.nm ? c.nm.substring(0, 22) + (c.nm.length > 22 ? '…' : '') : '';
-        return `<div style="display:flex;align-items:center;gap:4px;">
+        return `<div style="display:flex;flex-direction:column;gap:2px;">
+          <div style="display:flex;align-items:center;gap:4px;">
           <a href="${c.link}" target="_blank" rel="noopener" title="${c.nm}"
             style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;
                    background:${c.color};color:#fff;font-size:0.73rem;font-weight:700;
@@ -5262,6 +5299,8 @@ function renderPokjaTable() {
                    border:1px solid #B6DBA0;text-decoration:none;flex-shrink:0;font-size:0.70rem;">
             <i class="fa-solid fa-download"></i>
           </a>
+          </div>
+          ${c.tglUpload ? `<span style="font-size:0.63rem;color:${c.color};opacity:0.75;padding-left:2px;display:flex;align-items:center;gap:3px;"><i class="fa-solid fa-clock" style="font-size:0.58rem;"></i> ${c.tglUpload}</span>` : ''}
         </div>`;
       }).join('')}</div>`;
     }
@@ -12641,8 +12680,7 @@ async function saveFaqAdmin() {
 // ================================================================
 // INJECT admin tabs: FAQ & Chat ke panel admin
 // ================================================================
-(function() {
-  function injectAdminChatTabs() {
+function injectAdminChatTabs() {
     // 1. Inject tab buttons — pakai selector spesifik ke #adminDashboard
     const adminTabs = document.querySelector('#adminDashboard .admin-tabs');
     if (adminTabs && !document.getElementById('btnAdminTabFaq')) {
@@ -12685,8 +12723,8 @@ async function saveFaqAdmin() {
       secChat.id = 'atab-chat-admin';
       adminBody.appendChild(secChat);
     }
-  }
-
+}
+(function() {
   // Try immediately and also after page init
   injectAdminChatTabs();
   window.addEventListener('load', () => { injectAdminChatTabs(); setTimeout(_updateAdminChatBadge, 500); });
