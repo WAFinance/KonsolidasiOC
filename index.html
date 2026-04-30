@@ -1341,6 +1341,16 @@
 
     <!-- PENETAPAN PEMENANG -->
     <!-- ADMIN -->
+    <section class="page" id="page-negosiasi">
+      <h2 class="page-title"><i class="fa-solid fa-handshake"></i> Negosiasi</h2>
+      <div id="negosiasiPageContent">
+        <div style="text-align:center;padding:60px 20px;color:#9FA8DA;">
+          <i class="fa-solid fa-rotate fa-spin" style="font-size:32px;display:block;margin-bottom:14px;opacity:0.5;"></i>
+          <div style="font-size:0.9rem;">Memuat data negosiasi…</div>
+        </div>
+      </div>
+    </section>
+
     <section class="page" id="page-admin">
       <h2 class="page-title"><i class="fa-solid fa-gear"></i> Panel Admin</h2>
       <p class="page-subtitle">Kelola seluruh konten dan konfigurasi portal. <strong style="color:var(--blue-700);">Semua pengaturan tersinkron ke Google Spreadsheet.</strong></p>
@@ -2112,9 +2122,9 @@
 /* ── Modal wrapper ── */
 #modalNegoHPS { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.62); z-index:320; align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto; }
 #modalNegoHPS.show { display:flex; }
-.nhps-wrap { background:#fff; border-radius:14px; width:min(1400px,99vw); margin:auto; box-shadow:0 16px 56px rgba(0,0,0,0.38); animation:modalIn 0.22s ease; display:flex; flex-direction:column; }
+.nhps-wrap { background:#fff; border-radius:14px; width:min(1600px,99vw); margin:auto; box-shadow:0 16px 56px rgba(0,0,0,0.38); animation:modalIn 0.22s ease; display:flex; flex-direction:column; }
 .nhps-header { background:linear-gradient(135deg,#0d1b6e,#1A237E,#283593); color:#fff; padding:14px 22px; border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; gap:10px; }
-.nhps-header h3 { font-size:1rem; font-weight:700; margin:0; display:flex; align-items:center; gap:9px; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.nhps-header h3 { font-size:1rem; font-weight:700; margin:0; display:flex; align-items:center; gap:9px; flex:1; min-width:0; flex-wrap:wrap; }
 .nhps-header .nhps-sub { font-weight:400; font-size:0.80rem; opacity:0.78; }
 .nhps-close { background:rgba(255,255,255,0.18); border:none; color:#fff; border-radius:6px; padding:5px 12px; cursor:pointer; font-size:15px; line-height:1; flex-shrink:0; transition:background 0.15s; }
 .nhps-close:hover { background:rgba(255,255,255,0.32); }
@@ -2149,7 +2159,7 @@
 
 /* ── HPS Table ── */
 .nhps-tbl-wrap { overflow-x:auto; border-radius:9px; border:1.5px solid #C5CAE9; box-shadow:0 2px 8px rgba(26,35,126,0.07); }
-.nhps-tbl { width:100%; border-collapse:collapse; font-size:0.80rem; min-width:900px; }
+.nhps-tbl { width:100%; border-collapse:collapse; font-size:0.80rem; min-width:1300px; }
 .nhps-tbl thead tr { background:linear-gradient(135deg,#1A237E,#283593); }
 .nhps-tbl thead th { color:#fff; padding:10px 12px; font-weight:700; text-align:left; white-space:nowrap; border-right:1px solid rgba(255,255,255,0.15); }
 .nhps-tbl thead th:last-child { border-right:none; }
@@ -2284,6 +2294,7 @@ const DEFAULT_SIDEBAR_ITEMS = [
   { id:'download-ba', label:'Download Berita Acara (BA)', icon:'fa-file-contract',  publik:true,  fixed:true },
   { id:'aanwijzing',  label:'Aanwijzing',               icon:'fa-video',            publik:true,  fixed:true },
   { id:'pengumuman',  label:'Pengumuman',               icon:'fa-bell',             publik:true,  fixed:true },
+  { id:'negosiasi',   label:'Negosiasi',                icon:'fa-handshake',        publik:false, fixed:true, roleOnly:['pokja','admin'] },
   { id:'admin',       label:'Panel Admin',              icon:'fa-gear',             publik:false, fixed:true, roleOnly:['admin'] },
 ];
 
@@ -2360,7 +2371,7 @@ async function loadSubmissionsFromSheet() {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now(), { signal: controller.signal });
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now(), { signal: controller.signal });
     clearTimeout(timeout);
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
@@ -2550,6 +2561,19 @@ async function loadDelegasiMap() {
       _delegasiMap = data.delegasiMap;
     }
   } catch(e) { _delegasiMap = {}; }
+  // Merge dengan data delegasiPokja dari submissions (fallback jika key tidak cocok)
+  const subs = typeof getSubmissions === 'function' ? getSubmissions() : (_submissions || []);
+  subs.forEach(s => {
+    if (!s.delegasiPokja) return;
+    const nama = (s.namaPerusahaan || '').trim();
+    const npwp = (s.npwp || '').trim();
+    const dok  = (s.jenisDok || '').trim();
+    // Key standar: namaPerusahaan||jenisDok
+    const keyNama = (nama || npwp) + '||' + dok;
+    const keyNpwp = (npwp || nama) + '||' + dok;
+    if (!_delegasiMap[keyNama]) _delegasiMap[keyNama] = s.delegasiPokja;
+    if (!_delegasiMap[keyNpwp]) _delegasiMap[keyNpwp] = s.delegasiPokja;
+  });
 }
 
 // Simpan delegasi paket (hanya admin)
@@ -3535,6 +3559,7 @@ function renderSidebar() {
   } else if (currentRole === 'pokja') {
     // Sidebar lengkap untuk Pokja
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="pokja" style="background:linear-gradient(135deg,#0C447C,#185FA5);color:#fff;border-left:3px solid #042C53;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="nav-label">Evaluasi Dokumen</span></a></li>`;
+    html += `<li style="padding:2px 10px 2px;"><a href="#" class="nav-link" data-page="negosiasi" style="background:linear-gradient(135deg,#1A237E,#283593);color:#fff;border-left:3px solid #0d1b6e;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-handshake"></i></span><span class="nav-label">Negosiasi</span></a></li>`;
   } else if (currentRole === 'admin') {
     // Sidebar admin: tampilkan menu khusus admin
     html += `<li style="padding:6px 10px 2px;"><a href="#" class="nav-link" data-page="admin" style="background:linear-gradient(135deg,#856404,#A07800);color:#fff;border-left:3px solid #5c4600;margin:2px 0;border-radius:8px;padding:11px 12px;font-weight:700;"><span class="nav-icon" style="color:#fff;"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Panel Admin</span></a></li>`;
@@ -3614,6 +3639,25 @@ function showPage(pageId) {
   }
   if (pageId === 'status' && currentRole === 'penyedia' && currentPenyedia) {
     loadStatusPenyedia();
+  }
+  if (pageId === 'negosiasi') {
+    // Render dengan data yg sudah ada dulu (kalau ada)
+    if (typeof renderNegosiasiPage === 'function') renderNegosiasiPage();
+    // Lalu fetch fresh dari server
+    if (currentRole === 'pokja' || currentRole === 'penyedia') {
+      setTimeout(async () => {
+        const subs = typeof getSubmissions === 'function' ? getSubmissions() : [];
+        // Jika submissions belum ada, load dulu baru nego states
+        if (!subs || subs.length === 0) {
+          if (typeof loadSubmissionsFromSheet === 'function') {
+            await loadSubmissionsFromSheet();
+          }
+        }
+        // Selalu fetch nego states (batch) → akan render ulang setelah selesai
+        if (typeof loadAllNegoStates === 'function') loadAllNegoStates();
+        else if (typeof renderNegosiasiPage === 'function') renderNegosiasiPage();
+      }, 80);
+    }
   }
   if (pageId === 'penetapan') {
     renderPenetapanPage();
@@ -6494,7 +6538,7 @@ async function autoRefreshSubmissions() {
   // Silent background refresh: tidak ada spinner, tidak reset halaman.
   // Hanya update data di memori + render ulang jika ada perubahan.
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const prevCount = _submissions.length;
@@ -6570,7 +6614,7 @@ async function autoRefreshSubmissions() {
 // Muat jumlah peserta untuk tampilan publik (beranda)
 async function loadPublicPesertaCount() {
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       _submissions = normalizeSubmissions(data.submissions);
@@ -7057,7 +7101,7 @@ async function bukaModalPeserta() {
   // Muat dari server jika belum ada
   if (!_submissions.length) {
     try {
-      const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+      const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
       const data = await res.json();
       if (data.status === 'ok' && Array.isArray(data.submissions)) {
         _submissions = normalizeSubmissions(data.submissions);
@@ -7166,7 +7210,7 @@ function updateDataTimestamp() {
         }
       } else {
         // Pokja / admin / publik: ambil semua
-        const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&t=' + Date.now());
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           newSubs = normalizeSubmissions(data.submissions);
@@ -7520,12 +7564,12 @@ function bukaModalNegoFinal(idx) {
 
     (async () => {
       try {
-        const qs  = new URLSearchParams({ action: 'getNegoHPS', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
+        const qs  = new URLSearchParams({ action: 'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
         const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
         const json = await res.json();
-        if (json.status === 'ok' && json.data) {
+        if (json.status === 'ok' && json.negosiasi) {
           // Simpan ke submissions agar tersedia untuk berikutnya
-          _submissions[idx].negosiasi = json.data;
+          _submissions[idx].negosiasi = json.negosiasi;
           _negoFinalItems = _getNegoFinalItemsFromState(_submissions[idx]);
         }
       } catch(e) {}
@@ -8588,24 +8632,24 @@ document.getElementById('modalUndanganKlarifikasi').addEventListener('click', fu
 // NEGOSIASI HPS — TABEL BERBASIS KOMPONEN
 // =================================================================
 // State global HPS modal
+// =================================================================
+// MODUL NEGOSIASI OFFLINE — INPUT MANUAL POKJA
+// Pokja menginput HPS, Penawaran, dan Hasil Negosiasi secara manual.
+// Tidak ada alur bolak-balik dengan penyedia.
+// =================================================================
+
 let _nhps = {
-  subIdx    : null,   // index di _submissions
-  subData   : null,   // data penyedia
-  hpsItems  : [],     // array item HPS (source of truth)
-  negoState : null,   // state dari backend
-  activeTab : 'parse' // 'parse' | 'tabel' | 'histori'
+  subIdx    : null,
+  subData   : null,
+  hpsItems  : [],       // array { no, uraian, vol, sat, hargaSat, hargaPenawaran, hargaNego }
+  negoState : null,     // state dari server
+  activeTab : 'input'
 };
 
-// Format Rupiah helper (pakai yang sudah ada kalau ada)
-function nhFmtRp(n) { return 'Rp\u00a0' + Math.round(n||0).toLocaleString('id-ID'); }
+// Format Rupiah helper
+function nhFmtRp(n) { return 'Rp ' + Math.round(n||0).toLocaleString('id-ID'); }
 function nhPpn(excl)  { return Math.round((parseFloat(excl)||0) * 0.11); }
 function nhIncl(excl) { return Math.round((parseFloat(excl)||0) * 1.11); }
-function nhInclFromItems(items) {
-  return items.reduce((s, it) => {
-    const excl = Math.round((it.vol||1)*(it.hargaSat||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-}
 function nhPct(a, b)  {
   if (!b || !a) return null;
   return ((a - b) / b * 100).toFixed(1);
@@ -8616,59 +8660,60 @@ const NHPS_TEMPLATES = [
   {
     name : 'Tenaga Kebersihan',
     items: [
-      { uraian:'Upah',                          vol:12, sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
-      { uraian:'THR',                           vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
-      { uraian:'Kompensasi',                    vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'Upah',                               vol:12, sat:'Orang/Bulan', hargaSat:2724200,   usePpn:false },
+      { uraian:'THR',                                vol:1,  sat:'Orang/Bulan', hargaSat:2724200,   usePpn:false },
+      { uraian:'Kompensasi',                         vol:1,  sat:'Orang/Bulan', hargaSat:2724200,   usePpn:false },
       { uraian:'BPJS Kesehatan dan Ketenagakerjaan', vol:12, sat:'Orang/Bulan', hargaSat:123678.68, usePpn:false },
-      { uraian:'Seragam dan Kelengkapan',       vol:1,  sat:'Paket',       hargaSat:300000,   usePpn:true  },
-      { uraian:'Management Fee',                vol:12, sat:'Bulan',       hargaSat:166176.20,usePpn:true  },
+      { uraian:'Seragam dan Kelengkapan',            vol:1,  sat:'Paket',       hargaSat:300000,    usePpn:true  },
+      { uraian:'Management Fee',                     vol:12, sat:'Bulan',       hargaSat:166176.20, usePpn:true  },
     ]
   },
   {
     name : 'Tenaga Keamanan (Ketua Regu)',
     items: [
-      { uraian:'Upah',                          vol:12, sat:'Orang/Bulan', hargaSat:2774200,  usePpn:false },
-      { uraian:'THR',                           vol:1,  sat:'Orang/Bulan', hargaSat:2774200,  usePpn:false },
-      { uraian:'Kompensasi',                    vol:1,  sat:'Orang/Bulan', hargaSat:2774200,  usePpn:false },
+      { uraian:'Upah',                               vol:12, sat:'Orang/Bulan', hargaSat:2774200,   usePpn:false },
+      { uraian:'THR',                                vol:1,  sat:'Orang/Bulan', hargaSat:2774200,   usePpn:false },
+      { uraian:'Kompensasi',                         vol:1,  sat:'Orang/Bulan', hargaSat:2774200,   usePpn:false },
       { uraian:'BPJS Kesehatan dan Ketenagakerjaan', vol:12, sat:'Orang/Bulan', hargaSat:125948.68, usePpn:false },
-      { uraian:'Seragam dan Kelengkapan',       vol:1,  sat:'Paket',       hargaSat:1200000,  usePpn:true  },
-      { uraian:'Management Fee',                vol:12, sat:'Bulan',       hargaSat:221936,   usePpn:true  },
+      { uraian:'Seragam dan Kelengkapan',            vol:1,  sat:'Paket',       hargaSat:1200000,   usePpn:true  },
+      { uraian:'Management Fee',                     vol:12, sat:'Bulan',       hargaSat:221936,    usePpn:true  },
     ]
   },
   {
     name : 'Tenaga Pengemudi',
     items: [
-      { uraian:'Upah',                          vol:12, sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
-      { uraian:'THR',                           vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
-      { uraian:'Kompensasi',                    vol:1,  sat:'Orang/Bulan', hargaSat:2724200,  usePpn:false },
+      { uraian:'Upah',                               vol:12, sat:'Orang/Bulan', hargaSat:2724200,   usePpn:false },
+      { uraian:'THR',                                vol:1,  sat:'Orang/Bulan', hargaSat:2724200,   usePpn:false },
+      { uraian:'Kompensasi',                         vol:1,  sat:'Orang/Bulan', hargaSat:2724200,   usePpn:false },
       { uraian:'BPJS Kesehatan dan Ketenagakerjaan', vol:12, sat:'Orang/Bulan', hargaSat:123678.68, usePpn:false },
-      { uraian:'Seragam dan Kelengkapan',       vol:1,  sat:'Paket',       hargaSat:300000,   usePpn:true  },
-      { uraian:'Management Fee',                vol:12, sat:'Bulan',       hargaSat:166176.20,usePpn:true  },
+      { uraian:'Seragam dan Kelengkapan',            vol:1,  sat:'Paket',       hargaSat:300000,    usePpn:true  },
+      { uraian:'Management Fee',                     vol:12, sat:'Bulan',       hargaSat:166176.20, usePpn:true  },
     ]
   }
 ];
 
-// ── Buka modal ────────────────────────────────────────────────────────
+// ── Buka modal negosiasi (hanya Pokja) ──────────────────────────────
 function bukaModalNegoHPS(idx) {
+  if (currentRole !== 'pokja') return;
   const all = getSubmissions();
   const d   = all[idx];
   if (!d) return;
   _nhps.subIdx   = idx;
   _nhps.subData  = d;
-  _nhps.hpsItems = [{ uraian:'', vol:1, sat:'Unit', hargaSat:0 }];
+  _nhps.hpsItems = [];
   _nhps.negoState = null;
 
   document.getElementById('nhpsNamaPerusahaan').textContent = d.namaPerusahaan || '';
+  document.getElementById('nhpsStatusBadge').textContent   = '';
   document.getElementById('modalNegoHPS').classList.add('show');
-  nhpsSwitchTab('parse');
   nhpsLoadFromServer();
 }
 
 function tutupModalNegoHPS() {
   document.getElementById('modalNegoHPS').classList.remove('show');
-  _nhps = { subIdx:null, subData:null, hpsItems:[], negoState:null, activeTab:'parse' };
-  // Re-render kartu list supaya status & harga DEAL langsung tampil tanpa reload
-  if (document.getElementById('page-negosiasi') && document.getElementById('page-negosiasi').classList.contains('active')) {
+  _nhps = { subIdx:null, subData:null, hpsItems:[], negoState:null, activeTab:'input' };
+  if (document.getElementById('page-negosiasi') &&
+      document.getElementById('page-negosiasi').classList.contains('active')) {
     renderNegosiasiPage();
   }
 }
@@ -8677,52 +8722,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const m = document.getElementById('modalNegoHPS');
   if (m) m.addEventListener('click', function(e){ if(e.target===this) tutupModalNegoHPS(); });
 });
-
-// ── Fetch state dari backend ──────────────────────────────────────────
-async function nhpsLoadFromServer() {
-  if (!_nhps.subData) return;
-  nhpsSetMsg('info', '<i class="fa-solid fa-rotate fa-spin"></i> Memuat data dari server…');
-  try {
-    const qs  = new URLSearchParams({
-      action: 'getNegoHPS',
-      npwp  : _nhps.subData.npwp || '',
-      namaPerusahaan: _nhps.subData.namaPerusahaan || ''
-    });
-    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
-    const json = await res.json();
-    if (json.status === 'ok') {
-      _nhps.negoState = json.data || null;
-      if (json.data && Array.isArray(json.data.hpsItems) && json.data.hpsItems.length) {
-        _nhps.hpsItems = json.data.hpsItems;
-        // Jika HPS sudah ada & terkunci, langsung tampilkan tab Negosiasi
-        if (json.data.hpsLocked) {
-          nhpsSwitchTab('tabel');
-        } else {
-          nhpsRenderInputTable();
-        }
-      } else {
-        nhpsRenderInputTable();
-      }
-    } else {
-      nhpsRenderInputTable();
-    }
-    nhpsSetMsg(null);
-  } catch(e) {
-    nhpsRenderInputTable();
-    nhpsSetMsg(null);
-  }
-  nhpsRenderAll();
-}
-
-// ── Tab switcher ──────────────────────────────────────────────────────
-function nhpsSwitchTab(tabId) {
-  _nhps.activeTab = tabId;
-  document.querySelectorAll('.nhps-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
-  document.querySelectorAll('.nhps-panel').forEach(p => p.style.display = p.dataset.panel === tabId ? 'block' : 'none');
-  if (tabId === 'parse') nhpsRenderInputTable();
-  if (tabId === 'tabel') nhpsRenderTabel();
-  // 'histori' kini modal terpisah — bukaRiwayatNego()
-}
 
 // ── Pesan inline ──────────────────────────────────────────────────────
 function nhpsSetMsg(type, html) {
@@ -8735,926 +8734,394 @@ function nhpsSetMsg(type, html) {
   el.style.display = 'block';
 }
 
-// ── Render seluruh UI ─────────────────────────────────────────────────
-function nhpsRenderAll() {
-  if (_nhps.activeTab === 'tabel') nhpsRenderTabel();
-  nhpsRenderGiliran();
-}
-
-// ── Render giliran indicator ──────────────────────────────────────────
-function nhpsRenderGiliran() {
-  const el  = document.getElementById('nhpsGiliran');
-  if (!el) return;
-  const s   = _nhps.negoState;
-  const isPokja    = currentRole === 'pokja';
-  const isPenyedia = currentRole === 'penyedia';
-  if (!s || !_nhps.hpsItems.length) {
-    if (isPokja) {
-      el.className = 'nhps-giliran g-pokja';
-      el.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Pokja: Input HPS dan simpan tabel untuk memulai negosiasi.';
-    } else {
-      el.className = 'nhps-giliran g-wait';
-      el.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Menunggu Pokja menginput tabel HPS…';
+// ── Load dari server ──────────────────────────────────────────────────
+async function nhpsLoadFromServer() {
+  if (!_nhps.subData) return;
+  nhpsSetMsg('info', '<i class="fa-solid fa-rotate fa-spin"></i> Memuat data dari server…');
+  try {
+    const qs  = new URLSearchParams({
+      action         : 'getNegosiasi',
+      npwp           : _nhps.subData.npwp || '',
+      namaPerusahaan : _nhps.subData.namaPerusahaan || ''
+    });
+    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
+    const json = await res.json();
+    if (json.status === 'ok' && json.negosiasi) {
+      _nhps.negoState = json.negosiasi;
+      // Isi items dari hpsItems jika ada
+      if (Array.isArray(json.negosiasi.hpsItems) && json.negosiasi.hpsItems.length) {
+        _nhps.hpsItems = json.negosiasi.hpsItems.map((it, i) => ({
+          no         : it.no || (i+1),
+          uraian     : it.uraian || '',
+          vol        : parseFloat(it.vol)      || 1,
+          sat        : it.sat   || 'Unit',
+          hargaSat   : parseFloat(it.hargaSat) || 0,
+          usePpn     : it.usePpn !== false,
+          // Penawaran penyedia dari penawaranItems (index sama)
+          hargaPenawaran : (Array.isArray(json.negosiasi.penawaranItems) && json.negosiasi.penawaranItems[i])
+                           ? (parseFloat(json.negosiasi.penawaranItems[i].hargaSat) || 0) : 0,
+          // Hasil negosiasi dari negoItems (index sama)
+          hargaNego  : (Array.isArray(json.negosiasi.negoItems) && json.negosiasi.negoItems[i])
+                       ? (parseFloat(json.negosiasi.negoItems[i].hargaSat) || 0) : 0
+        }));
+      }
     }
-    return;
+    nhpsSetMsg(null);
+  } catch(e) {
+    nhpsSetMsg(null);
   }
-  const giliran = s.giliran || 'Pokja';
-  if (s.giliran === 'Selesai' || s.status === 'Harga Disetujui Oleh Penyedia') {
-    el.className = 'nhps-giliran g-done';
-    el.innerHTML = '<i class="fa-solid fa-circle-check"></i> Negosiasi selesai — Semua harga telah disetujui.';
-    return;
-  }
-  const milikku = (isPokja && giliran === 'Pokja') || (isPenyedia && giliran === 'Penyedia');
-  if (milikku) {
-    const cls = isPokja ? 'g-pokja' : 'g-peny';
-    el.className = 'nhps-giliran ' + cls;
-    el.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <strong>Giliran Anda</strong> — Isi kolom nego di tabel lalu klik <strong>Simpan</strong>.`;
-  } else {
-    el.className = 'nhps-giliran g-wait';
-    el.innerHTML = `<i class="fa-solid fa-hourglass-half"></i> Menunggu giliran <strong>${giliran}</strong>…`;
-  }
+  nhpsRenderTabel();
+  nhpsRenderStatusBadge();
 }
 
-// ── Load template ke tabel input langsung ────────────────────────────
+// ── Load template ke tabel ────────────────────────────────────────────
 function nhpsLoadTemplate(idx) {
   const tmpl = NHPS_TEMPLATES[idx];
   if (!tmpl) return;
-  if (_nhps.hpsItems.length > 0 && !confirm(`Ganti tabel dengan template "${tmpl.name}"?\nData yang sudah diinput akan hilang.`)) return;
-  _nhps.hpsItems = tmpl.items.map(it => ({ ...it }));
-  nhpsRenderInputTable();
-  nhpsSetMsg('ok', `<i class="fa-solid fa-circle-check"></i> Template <strong>${tmpl.name}</strong> dimuat. Sesuaikan nilai jika perlu, lalu klik <strong>Buat HPS</strong>.`);
+  if (_nhps.hpsItems.length > 0 && !confirm('Ganti tabel dengan template "' + tmpl.name + '"?\nData yang sudah diinput akan hilang.')) return;
+  _nhps.hpsItems = tmpl.items.map((it, i) => ({
+    no: i+1, uraian: it.uraian, vol: it.vol, sat: it.sat,
+    hargaSat: it.hargaSat, usePpn: it.usePpn !== false,
+    hargaPenawaran: 0, hargaNego: 0
+  }));
+  nhpsRenderTabel();
+  nhpsSetMsg('ok', '<i class="fa-solid fa-circle-check"></i> Template <strong>' + tmpl.name + '</strong> dimuat.');
 }
 
-// ── Kosongkan tabel input ─────────────────────────────────────────────
 function nhpsKosongkanTabel() {
   if (!confirm('Kosongkan seluruh tabel?')) return;
-  _nhps.hpsItems = [{ uraian:'', vol:1, sat:'Unit', hargaSat:0 }];
-  nhpsRenderInputTable();
+  _nhps.hpsItems = [{ no:1, uraian:'', vol:1, sat:'Unit', hargaSat:0, usePpn:true, hargaPenawaran:0, hargaNego:0 }];
+  nhpsRenderTabel();
   nhpsSetMsg(null);
 }
 
-// ── Tambah baris di tabel input (panel parse) ─────────────────────────
-function nhpsTambahBarisInput() {
-  // Flush nilai dari DOM terlebih dahulu
-  _nhpsFlushInputDOM();
-  _nhps.hpsItems.push({ uraian:'', vol:1, sat:'Unit', hargaSat:0, usePpn:true });
-  nhpsRenderInputTable();
-  // Fokus ke field uraian baris baru
-  const tbody = document.getElementById('nhpsInputTbody');
-  if (tbody) {
-    const rows = tbody.querySelectorAll('tr');
-    const lastRow = rows[rows.length - 1];
-    if (lastRow) {
-      const inp = lastRow.querySelector('input[data-field="uraian"]');
-      if (inp) inp.focus();
-    }
-  }
+function nhpsTambahBaris() {
+  _nhpsFlushDOM();
+  const n = _nhps.hpsItems.length + 1;
+  _nhps.hpsItems.push({ no:n, uraian:'', vol:1, sat:'Unit', hargaSat:0, usePpn:true, hargaPenawaran:0, hargaNego:0 });
+  nhpsRenderTabel();
+  // Fokus ke uraian baris baru
+  setTimeout(() => {
+    const el = document.getElementById('nhpsUraian_' + (n-1));
+    if (el) el.focus();
+  }, 50);
 }
 
-// ── Hapus baris di tabel input (panel parse) ──────────────────────────
-function nhpsHapusBarisInput(i) {
-  _nhpsFlushInputDOM();
+function nhpsHapusBaris(i) {
+  _nhpsFlushDOM();
   if (_nhps.hpsItems.length <= 1) {
-    _nhps.hpsItems = [{ uraian:'', vol:1, sat:'Unit', hargaSat:0 }];
-    nhpsRenderInputTable();
+    _nhps.hpsItems = [{ no:1, uraian:'', vol:1, sat:'Unit', hargaSat:0, usePpn:true, hargaPenawaran:0, hargaNego:0 }];
+    nhpsRenderTabel();
     return;
   }
   _nhps.hpsItems.splice(i, 1);
-  nhpsRenderInputTable();
-}
-
-// ── Flush nilai input DOM → _nhps.hpsItems ────────────────────────────
-function _nhpsFlushInputDOM() {
-  const tbody = document.getElementById('nhpsInputTbody');
-  if (!tbody) return;
-  tbody.querySelectorAll('tr[data-row]').forEach(tr => {
-    const i = parseInt(tr.dataset.row);
-    if (!_nhps.hpsItems[i]) return;
-    const uraian = tr.querySelector('[data-field="uraian"]')?.value ?? _nhps.hpsItems[i].uraian;
-    const vol    = parseFloat(tr.querySelector('[data-field="vol"]')?.value)    || 1;
-    const sat    = tr.querySelector('[data-field="sat"]')?.value ?? _nhps.hpsItems[i].sat;
-    const hs     = parseFloat(tr.querySelector('[data-field="hs"]')?.value)     || 0;
-    const ppnCb  = tr.querySelector('[data-field="ppn"]');
-    const usePpn = ppnCb ? ppnCb.checked : (_nhps.hpsItems[i].usePpn !== false);
-    _nhps.hpsItems[i] = { uraian, vol, sat, hargaSat: hs, usePpn };
-  });
-}
-
-// ── Render tabel input HPS (panel parse) ─────────────────────────────
-function nhpsRenderInputTable() {
-  const tbody = document.getElementById('nhpsInputTbody');
-  const tfoot = document.getElementById('nhpsInputTfoot');
-  if (!tbody || !tfoot) return;
-
-  const locked = _nhps.negoState && _nhps.negoState.hpsLocked;
-  const isPokja = currentRole === 'pokja';
-  const editable = isPokja && !locked;
-
-  const inp = (field, val, type='text', extra='') => {
-    if (!editable) return `<span style="padding:2px 4px;">${val||'–'}</span>`;
-    const numStyle = type === 'number' ? 'text-align:right;' : '';
-    return `<input type="${type}" data-field="${field}" value="${val??''}"
-      style="width:100%;border:1px solid #C5CAE9;border-radius:5px;padding:5px 7px;font-size:0.82rem;font-family:inherit;background:#fff;${numStyle}"
-      oninput="nhpsOnInputChange(this)" ${extra}/>`;
-  };
-
-  tbody.innerHTML = _nhps.hpsItems.map((it, i) => {
-    const vol      = it.vol  || 1;
-    const hs       = it.hargaSat || 0;
-    const usePpn   = it.usePpn !== false;
-    const exclRow  = Math.round(vol * hs);
-    const ppnRow   = usePpn ? Math.round(exclRow * 0.11) : 0;
-    const totalRow = exclRow + ppnRow;
-
-    const ppnCell = editable
-      ? `<label style="display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:0.78rem;color:#5C6BC0;font-weight:600;">
-           <input type="checkbox" data-field="ppn" ${usePpn ? 'checked' : ''}
-             style="width:14px;height:14px;cursor:pointer;accent-color:#5C6BC0;"
-             onchange="nhpsOnInputChange(this)" />
-           11%
-         </label>`
-      : `<span style="font-size:0.80rem;font-weight:700;color:${usePpn?'#5C6BC0':'#aaa'};">${usePpn?'11%':'–'}</span>`;
-
-    return `<tr data-row="${i}" style="background:${i%2===0?'#F8F9FF':'#fff'};">
-      <td style="text-align:center;color:#888;font-size:0.80rem;width:36px;">${i+1}</td>
-      <td style="padding:4px 6px;">${inp('uraian', (it.uraian||'').replace(/"/g,'&quot;'))}</td>
-      <td style="padding:4px 6px;width:80px;">${inp('vol', vol, 'number', 'min="0" step="any"')}</td>
-      <td style="padding:4px 6px;width:110px;">${inp('sat', it.sat||'Unit')}</td>
-      <td style="padding:4px 6px;width:145px;">${inp('hs', hs, 'number', 'min="0" step="1"')}</td>
-      <td style="text-align:center;width:60px;background:#E8EAF6;padding:4px 6px;">${ppnCell}</td>
-      <td style="text-align:right;font-weight:700;color:#1A237E;font-size:0.83rem;padding:4px 8px;background:#EEF;width:150px;" id="nhpsIT_total_${i}">${nhFmtRp(totalRow)}</td>
-      <td style="text-align:center;width:40px;background:#ECEFF1;">
-        ${editable ? `<button onclick="nhpsHapusBarisInput(${i})"
-          style="background:#ef5350;color:#fff;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:11px;"
-          title="Hapus baris"><i class="fa-solid fa-times"></i></button>` : ''}
-      </td>
-    </tr>`;
-  }).join('');
-
-  nhpsRenderInputTfoot();
-}
-
-// ── Render tfoot summary tabel input ─────────────────────────────────
-function nhpsRenderInputTfoot() {
-  const tfoot = document.getElementById('nhpsInputTfoot');
-  if (!tfoot) return;
-  const totExcl  = _nhps.hpsItems.reduce((s,it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
-  const totPPN   = _nhps.hpsItems.reduce((s,it) => {
-    const excl = Math.round((it.vol||1)*(it.hargaSat||0));
-    return s + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-  const totIncl  = totExcl + totPPN;
-  tfoot.innerHTML = `
-    <tr style="background:#E8EAF6;font-size:0.80rem;">
-      <td colspan="6" style="text-align:right;padding:5px 8px;font-weight:600;color:#333;">Sub Total (Excl. PPN)</td>
-      <td style="text-align:right;padding:5px 8px;font-weight:700;color:#1A237E;">${nhFmtRp(totExcl)}</td>
-      <td></td>
-    </tr>
-    <tr style="background:#E8EAF6;font-size:0.80rem;">
-      <td colspan="6" style="text-align:right;padding:5px 8px;font-weight:600;color:#5C6BC0;">PPN 11%</td>
-      <td style="text-align:right;padding:5px 8px;font-weight:700;color:#5C6BC0;">${nhFmtRp(totPPN)}</td>
-      <td></td>
-    </tr>
-    <tr style="background:#1A237E;">
-      <td colspan="6" style="text-align:right;padding:7px 8px;font-weight:700;color:#fff;font-size:0.85rem;">TOTAL HARGA (Incl. PPN)</td>
-      <td style="text-align:right;padding:7px 8px;font-weight:800;color:#FFD54F;font-size:0.90rem;">${nhFmtRp(totIncl)}</td>
-      <td style="background:#1A237E;"></td>
-    </tr>`;
-}
-
-// ── Handler oninput — update total baris & tfoot live ─────────────────
-function nhpsOnInputChange(el) {
-  const tr = el.closest('tr[data-row]');
-  if (!tr) return;
-  const i = parseInt(tr.dataset.row);
-  // Baca nilai langsung dari DOM row (tanpa flush semua)
-  const vol = parseFloat(tr.querySelector('[data-field="vol"]')?.value)  || 1;
-  const hs  = parseFloat(tr.querySelector('[data-field="hs"]')?.value)   || 0;
-  const sat = tr.querySelector('[data-field="sat"]')?.value || 'Unit';
-  const uraian = tr.querySelector('[data-field="uraian"]')?.value || '';
-  const ppnCb  = tr.querySelector('[data-field="ppn"]');
-  const usePpn = ppnCb ? ppnCb.checked : (_nhps.hpsItems[i]?.usePpn !== false);
-  // Update state
-  if (_nhps.hpsItems[i]) {
-    _nhps.hpsItems[i] = { uraian, vol, sat, hargaSat: hs, usePpn };
-  }
-  // Update total kolom baris ini
-  const exclRow  = Math.round(vol * hs);
-  const ppnRow   = usePpn ? Math.round(exclRow * 0.11) : 0;
-  const totalRow = exclRow + ppnRow;
-  const totalEl = document.getElementById('nhpsIT_total_' + i);
-  if (totalEl) totalEl.textContent = nhFmtRp(totalRow);
-  // Update tfoot
-  nhpsRenderInputTfoot();
-}
-
-// ── Render tabel utama Negosiasi HPS ─────────────────────────────────
-function nhpsRenderTabel() {
-  const wrap = document.getElementById('nhpsTabelWrap');
-  if (!wrap) return;
-  const items = _nhps.hpsItems;
-  const s     = _nhps.negoState;
-  const isPokja    = currentRole === 'pokja';
-  const isPenyedia = currentRole === 'penyedia';
-  const isSelesai  = s && (s.giliran === 'Selesai' || s.status === 'Harga Disetujui Oleh Penyedia');
-
-  // Tentukan siapa yang bisa edit kolom mana
-  const giliran      = s ? (s.giliran || 'Pokja') : 'Pokja';
-  const canPeny      = isPenyedia && !isSelesai && giliran === 'Penyedia' && items.length > 0;
-  const canPokja     = isPokja   && !isSelesai && giliran === 'Pokja'    && items.length > 0;
-  const hpsEditable  = isPokja && !isSelesai && (!s || !s.hpsLocked);
-
-  // Ambil nilai nego dari state
-  const negoPeny  = (s && Array.isArray(s.negoPenyedia))  ? s.negoPenyedia  : items.map(() => null);
-  const negoPokja = (s && Array.isArray(s.negoPokja))     ? s.negoPokja     : items.map(() => null);
-
-  if (!items.length) {
-    wrap.innerHTML = `<div class="nhps-tbl-empty">
-      <i class="fa-solid fa-table-cells-large"></i>
-      <div style="font-weight:700;margin-bottom:8px;">${isPokja ? 'Belum ada tabel HPS' : 'Menunggu Pokja menginput HPS'}</div>
-      ${isPokja ? '<div style="font-size:0.80rem;">Gunakan tab <strong>Input / Parse HPS</strong> untuk membuat tabel.</div>' : '<div style="font-size:0.80rem;">Tabel HPS akan muncul di sini setelah Pokja menyimpannya.</div>'}
-    </div>`;
-    nhpsRenderSummary([], [], []);
-    return;
-  }
-
-  // Hitung total per kolom — menggunakan usePpn per item untuk akurasi PPN
-  const totHPS     = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
-  const totHPSIncl = items.reduce((s, it) => {
-    const excl = Math.round((it.vol||1)*(it.hargaSat||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-  const totHPSPpn  = totHPSIncl - totHPS;
-
-  const totPeny = items.reduce((s, it, i) => s + (negoPeny[i] != null ? Math.round((it.vol||1)*(negoPeny[i]||0)) : 0), 0);
-  const totPenyIncl = items.reduce((s, it, i) => {
-    if (negoPeny[i] == null) return s;
-    const excl = Math.round((it.vol||1)*(negoPeny[i]||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-
-  const totPokja = items.reduce((s, it, i) => s + (negoPokja[i] != null ? Math.round((it.vol||1)*(negoPokja[i]||0)) : 0), 0);
-  const totPokjaIncl = items.reduce((s, it, i) => {
-    if (negoPokja[i] == null) return s;
-    const excl = Math.round((it.vol||1)*(negoPokja[i]||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-
-  const hasPeny  = negoPeny.some(v => v !== null && v !== undefined);
-  const hasPokja = negoPokja.some(v => v !== null && v !== undefined);
-
-  nhpsRenderSummary(
-    [totHPS, totHPSPpn, totHPSIncl],
-    hasPeny  ? [totPeny,  totPenyIncl  - totPeny,  totPenyIncl]  : null,
-    hasPokja ? [totPokja, totPokjaIncl - totPokja, totPokjaIncl] : null
-  );
-
-  // Build header
-  let thPeny  = `<th class="col-peny"  colspan="3">Nego Penyedia<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">(Harga Satuan | PPN | Total)</span></th>`;
-  let thPokja = `<th class="col-pokja" colspan="3">Nego Pokja<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">(Harga Satuan | PPN | Total)</span></th>`;
-  let thDiff  = `<th style="background:rgba(60,20,80,0.28);">Selisih<br><span style="font-weight:400;font-size:0.70rem;opacity:0.85;">Peny vs HPS</span></th>`;
-
-  // Build rows
-  const rows = items.map((it, i) => {
-    const usePpn       = it.usePpn !== false;
-    const ppnLabel     = usePpn ? '<span style="font-size:0.72rem;font-weight:700;color:#5C6BC0;">11%</span>' : '<span style="font-size:0.72rem;color:#aaa;">–</span>';
-    const exclHPS      = Math.round((it.vol||1) * (it.hargaSat||0));
-    const ppnHPS       = usePpn ? Math.round(exclHPS * 0.11) : 0;
-    const totalHPS     = exclHPS + ppnHPS;
-    const vPeny        = negoPeny[i];
-    const vPokja       = negoPokja[i];
-    const exclPeny     = vPeny  != null ? Math.round((it.vol||1)*(vPeny||0))  : null;
-    const exclPokja    = vPokja != null ? Math.round((it.vol||1)*(vPokja||0)) : null;
-    const ppnPeny      = exclPeny  != null ? (usePpn ? Math.round(exclPeny  * 0.11) : 0) : null;
-    const ppnPokja     = exclPokja != null ? (usePpn ? Math.round(exclPokja * 0.11) : 0) : null;
-    const totalPeny    = exclPeny  != null ? exclPeny  + (ppnPeny  || 0) : null;
-    const totalPokja   = exclPokja != null ? exclPokja + (ppnPokja || 0) : null;
-
-    // Diff peny vs HPS (bandingkan harga satuan, bukan total incl.)
-    const pct = nhPct(vPeny, it.hargaSat);
-    let diffClass = '', diffBadge = '';
-    if (pct !== null) {
-      const pctNum = parseFloat(pct);
-      if (pctNum <= 0) { diffClass = 'td-diff-ok';   diffBadge = `<span class="nhps-diff nhps-diff-ok">${pctNum}%</span>`; }
-      else if (pctNum < 10) { diffClass = 'td-diff-warn'; diffBadge = `<span class="nhps-diff nhps-diff-warn">+${pctNum}%</span>`; }
-      else { diffClass = 'td-diff-bad';  diffBadge = `<span class="nhps-diff nhps-diff-bad">+${pctNum}%</span>`; }
-    }
-
-    // HPS editable saat pokja & hps belum dikunci
-    const hpsCell = hpsEditable
-      ? `<td class="td-hps td-num"><input id="nhpsHargaSat_${i}" type="number" class="nhps-input" value="${it.hargaSat||0}" oninput="nhpsUpdateHPS(${i})" style="width:115px;"/></td>
-         <td class="td-hps td-num" style="font-size:0.75rem;">${ppnLabel}</td>
-         <td class="td-hps td-num" id="nhpsTotalHPS_${i}">${nhFmtRp(totalHPS)}</td>`
-      : `<td class="td-hps td-num">${nhFmtRp(it.hargaSat||0)}</td>
-         <td class="td-hps td-num" style="font-size:0.75rem;">${ppnLabel}</td>
-         <td class="td-hps td-num">${nhFmtRp(totalHPS)}</td>`;
-
-    // Nego Penyedia
-    const penyCell = canPeny
-      ? `<td class="td-peny td-num"><input id="nhpsPeny_${i}" type="number" class="nhps-input nhps-input-peny" value="${vPeny||''}" placeholder="0" oninput="nhpsUpdatePeny(${i})" style="width:115px;"/></td>
-         <td class="td-peny td-num" style="font-size:0.75rem;">${ppnLabel}</td>
-         <td class="td-peny td-num" id="nhpsTotalPeny_${i}">${vPeny!=null ? nhFmtRp(totalPeny) : '<span style="color:#ccc;">–</span>'}</td>`
-      : `<td class="td-peny td-num">${vPeny!=null ? nhFmtRp(vPeny) : '<span style="color:#ccc;">–</span>'}</td>
-         <td class="td-peny td-num" style="font-size:0.75rem;">${vPeny!=null ? ppnLabel : '<span style="color:#ccc;">–</span>'}</td>
-         <td class="td-peny td-num">${totalPeny!=null ? nhFmtRp(totalPeny) : '<span style="color:#ccc;">–</span>'}</td>`;
-
-    // Nego Pokja
-    const pokjaCell = canPokja
-      ? `<td class="td-pokja td-num"><input id="nhpsPokja_${i}" type="number" class="nhps-input nhps-input-pokja" value="${vPokja||''}" placeholder="0" oninput="nhpsUpdatePokja(${i})" style="width:115px;"/></td>
-         <td class="td-pokja td-num" style="font-size:0.75rem;">${ppnLabel}</td>
-         <td class="td-pokja td-num" id="nhpsTotalPokja_${i}">${vPokja!=null ? nhFmtRp(totalPokja) : '<span style="color:#ccc;">–</span>'}</td>`
-      : `<td class="td-pokja td-num">${vPokja!=null ? nhFmtRp(vPokja) : '<span style="color:#ccc;">–</span>'}</td>
-         <td class="td-pokja td-num" style="font-size:0.75rem;">${vPokja!=null ? ppnLabel : '<span style="color:#ccc;">–</span>'}</td>
-         <td class="td-pokja td-num">${totalPokja!=null ? nhFmtRp(totalPokja) : '<span style="color:#ccc;">–</span>'}</td>`;
-
-    return `<tr>
-      <td style="color:#888;text-align:center;">${i+1}</td>
-      <td class="td-uraian">${it.uraian||'-'}</td>
-      <td class="td-num">${(it.vol||1).toLocaleString('id-ID')}</td>
-      <td>${it.sat||'-'}</td>
-      ${hpsCell}
-      ${penyCell}
-      ${pokjaCell}
-      <td class="${diffClass} td-num" style="text-align:center;">${diffBadge||'<span style="color:#ccc;">–</span>'}</td>
-    </tr>`;
-  }).join('');
-
-  // Total rows
-  const totRow = `<tr class="row-total">
-    <td colspan="4" style="text-align:right;font-size:0.82rem;">TOTAL Excl. PPN</td>
-    <td class="td-hps td-num">${nhFmtRp(totHPS)}</td>
-    <td class="td-hps td-num" style="font-size:0.70rem;"></td>
-    <td class="td-hps td-num"></td>
-    <td class="td-peny td-num">${hasPeny  ? nhFmtRp(totPeny)  : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-peny td-num" style="font-size:0.70rem;"></td>
-    <td class="td-peny td-num"></td>
-    <td class="td-pokja td-num">${hasPokja ? nhFmtRp(totPokja) : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-pokja td-num" style="font-size:0.70rem;"></td>
-    <td class="td-pokja td-num"></td>
-    <td></td>
-  </tr>
-  <tr class="row-total">
-    <td colspan="4" style="text-align:right;font-size:0.82rem;">PPN 11% (per item)</td>
-    <td class="td-hps td-num">${nhFmtRp(totHPSPpn)}</td>
-    <td class="td-hps td-num"></td>
-    <td class="td-hps td-num"></td>
-    <td class="td-peny td-num">${hasPeny  ? nhFmtRp(totPenyIncl  - totPeny)  : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-peny td-num"></td>
-    <td class="td-peny td-num"></td>
-    <td class="td-pokja td-num">${hasPokja ? nhFmtRp(totPokjaIncl - totPokja) : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-pokja td-num"></td>
-    <td class="td-pokja td-num"></td>
-    <td></td>
-  </tr>
-  <tr class="row-total" style="font-size:0.85rem;">
-    <td colspan="4" style="text-align:right;color:#1A237E;font-weight:800;">TOTAL Incl. PPN</td>
-    <td class="td-hps td-num" colspan="3" style="color:#1A237E;">${nhFmtRp(totHPSIncl)}</td>
-    <td class="td-peny td-num" colspan="3" style="color:#1B5E20;">${hasPeny  ? nhFmtRp(totPenyIncl)  : '<span style="color:#bbb;">–</span>'}</td>
-    <td class="td-pokja td-num" colspan="3" style="color:#B71C1C;">${hasPokja ? nhFmtRp(totPokjaIncl) : '<span style="color:#bbb;">–</span>'}</td>
-    <td></td>
-  </tr>`;
-
-  // Tambahkan tombol tambah/hapus baris jika HPS editable
-  const editToolbar = hpsEditable ? `
-    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-      <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsTambahBaris()"><i class="fa-solid fa-plus"></i> Tambah Baris</button>
-      <span style="font-size:0.75rem;color:#9FA8DA;"><i class="fa-solid fa-circle-info"></i> Klik angka di kolom HPS untuk mengedit langsung.</span>
-    </div>` : '';
-
-  wrap.innerHTML = editToolbar + `<div class="nhps-tbl-wrap">
-    <table class="nhps-tbl">
-      <thead>
-        <tr>
-          <th rowspan="2" style="width:36px;">#</th>
-          <th rowspan="2">Uraian / Komponen</th>
-          <th rowspan="2" class="col-hps">Volume</th>
-          <th rowspan="2" class="col-hps">Satuan</th>
-          <th class="col-hps"  colspan="3">HPS Pokja</th>
-          ${thPeny}
-          ${thPokja}
-          <th rowspan="2" style="background:rgba(60,20,80,0.28);text-align:center;">Selisih</th>
-        </tr>
-        <tr>
-          <th class="col-hps" style="font-size:0.70rem;font-weight:500;">Harga Sat.</th>
-          <th class="col-hps" style="font-size:0.70rem;font-weight:500;">PPN</th>
-          <th class="col-hps" style="font-size:0.70rem;font-weight:500;">Total</th>
-          <th class="col-peny" style="font-size:0.70rem;font-weight:500;">Harga Sat.</th>
-          <th class="col-peny" style="font-size:0.70rem;font-weight:500;">PPN</th>
-          <th class="col-peny" style="font-size:0.70rem;font-weight:500;">Total</th>
-          <th class="col-pokja" style="font-size:0.70rem;font-weight:500;">Harga Sat.</th>
-          <th class="col-pokja" style="font-size:0.70rem;font-weight:500;">PPN</th>
-          <th class="col-pokja" style="font-size:0.70rem;font-weight:500;">Total</th>
-        </tr>
-      </thead>
-      <tbody>${rows}${totRow}</tbody>
-    </table>
-  </div>`;
-}
-
-// ── Update HPS inline (edit by Pokja) ────────────────────────────────
-function nhpsUpdateHPS(i) {
-  const v = parseFloat(document.getElementById('nhpsHargaSat_'+i)?.value) || 0;
-  if (_nhps.hpsItems[i]) _nhps.hpsItems[i].hargaSat = v;
-  const vol    = _nhps.hpsItems[i]?.vol || 1;
-  const usePpn = _nhps.hpsItems[i]?.usePpn !== false;
-  const total  = document.getElementById('nhpsTotalHPS_'+i);
-  if (total) {
-    const excl = Math.round(vol * v);
-    const incl = excl + (usePpn ? Math.round(excl * 0.11) : 0);
-    total.textContent = nhFmtRp(incl);
-  }
-  nhpsRenderSummaryLive();
-}
-
-function nhpsUpdatePeny(i) {
-  const v   = parseFloat(document.getElementById('nhpsPeny_'+i)?.value);
-  const el  = document.getElementById('nhpsTotalPeny_'+i);
-  const vol = _nhps.hpsItems[i]?.vol || 1;
-  const usePpn = _nhps.hpsItems[i]?.usePpn !== false;
-  if (el) {
-    if (!isNaN(v)) {
-      const excl = Math.round(vol * v);
-      const incl = excl + (usePpn ? Math.round(excl * 0.11) : 0);
-      el.textContent = nhFmtRp(incl);
-    } else {
-      el.textContent = '–';
-    }
-  }
-  nhpsRenderSummaryLive();
-}
-
-function nhpsUpdatePokja(i) {
-  const v   = parseFloat(document.getElementById('nhpsPokja_'+i)?.value);
-  const el  = document.getElementById('nhpsTotalPokja_'+i);
-  const vol = _nhps.hpsItems[i]?.vol || 1;
-  const usePpn = _nhps.hpsItems[i]?.usePpn !== false;
-  if (el) {
-    if (!isNaN(v)) {
-      const excl = Math.round(vol * v);
-      const incl = excl + (usePpn ? Math.round(excl * 0.11) : 0);
-      el.textContent = nhFmtRp(incl);
-    } else {
-      el.textContent = '–';
-    }
-  }
-  nhpsRenderSummaryLive();
-}
-
-function nhpsRenderSummaryLive() {
-  // Ambil dari inputs yang ada di DOM
-  const items = _nhps.hpsItems;
-  const totHPS = items.reduce((s, it, i) => {
-    const inp = document.getElementById('nhpsHargaSat_'+i);
-    const hs  = inp ? (parseFloat(inp.value)||0) : (it.hargaSat||0);
-    return s + Math.round((it.vol||1) * hs);
-  }, 0);
-  const totHPSIncl = items.reduce((s, it, i) => {
-    const inp = document.getElementById('nhpsHargaSat_'+i);
-    const hs  = inp ? (parseFloat(inp.value)||0) : (it.hargaSat||0);
-    const excl = Math.round((it.vol||1) * hs);
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-
-  const penyVals = items.map((it, i) => {
-    const inp = document.getElementById('nhpsPeny_'+i);
-    return inp ? (parseFloat(inp.value)||null) : null;
-  });
-  const pokjaVals = items.map((it, i) => {
-    const inp = document.getElementById('nhpsPokja_'+i);
-    return inp ? (parseFloat(inp.value)||null) : null;
-  });
-
-  const hasPeny  = penyVals.some(v => v !== null && v > 0);
-  const hasPokja = pokjaVals.some(v => v !== null && v > 0);
-
-  const totPeny  = hasPeny  ? items.reduce((s,it,i) => s + Math.round((it.vol||1)*(penyVals[i]||0)),  0) : null;
-  const totPokja = hasPokja ? items.reduce((s,it,i) => s + Math.round((it.vol||1)*(pokjaVals[i]||0)), 0) : null;
-  const totPenyIncl = hasPeny ? items.reduce((s,it,i) => {
-    const excl = Math.round((it.vol||1)*(penyVals[i]||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0) : null;
-  const totPokjaIncl = hasPokja ? items.reduce((s,it,i) => {
-    const excl = Math.round((it.vol||1)*(pokjaVals[i]||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0) : null;
-
-  nhpsRenderSummary(
-    [totHPS, totHPSIncl - totHPS, totHPSIncl],
-    totPeny     != null ? [totPeny,  totPenyIncl  - totPeny,  totPenyIncl]  : null,
-    totPokja    != null ? [totPokja, totPokjaIncl - totPokja, totPokjaIncl] : null
-  );
-}
-
-// ── Tambah baris baru (oleh Pokja saat HPS belum dikunci) ─────────────
-function nhpsTambahBaris() {
-  _nhps.hpsItems.push({ uraian: 'Item Baru', vol: 1, sat: 'Unit', hargaSat: 0 });
+  _nhps.hpsItems.forEach((it,j) => { it.no = j+1; });
   nhpsRenderTabel();
 }
 
-// ── Render summary bar ────────────────────────────────────────────────
-function nhpsRenderSummary(hps, peny, pokja) {
-  const el = document.getElementById('nhpsSummary');
-  if (!el) return;
-  const mkCard = (vals, cls, lbl, color) => {
-    if (!vals) return `<div class="nhps-sum-card ${cls}"><div class="sv" style="color:${color};opacity:0.4;">–</div><div class="sl">${lbl}</div></div>`;
-    return `<div class="nhps-sum-card ${cls}">
-      <div class="sv">${nhFmtRp(vals[0])}</div>
-      <div class="sl">${lbl} (Excl.)</div>
-      <div class="sv" style="font-size:0.80rem;margin-top:4px;">${nhFmtRp(vals[2])}</div>
-      <div class="sl">(Incl. PPN)</div>
-    </div>`;
+// ── Flush DOM → state ─────────────────────────────────────────────────
+function _nhpsFlushDOM() {
+  _nhps.hpsItems.forEach((it, i) => {
+    const uraian    = document.getElementById('nhpsUraian_'+i);
+    const vol       = document.getElementById('nhpsVol_'+i);
+    const sat       = document.getElementById('nhpsSat_'+i);
+    const hs        = document.getElementById('nhpsHPS_'+i);
+    const pen       = document.getElementById('nhpsPen_'+i);
+    const nego      = document.getElementById('nhpsNego_'+i);
+    const ppnCb     = document.getElementById('nhpsPPN_'+i);
+    if (uraian) it.uraian         = uraian.value;
+    if (vol)    it.vol            = parseFloat(vol.value)  || 1;
+    if (sat)    it.sat            = sat.value;
+    if (hs)     it.hargaSat       = parseFloat(hs.value)   || 0;
+    if (pen)    it.hargaPenawaran = parseFloat(pen.value)  || 0;
+    if (nego)   it.hargaNego      = parseFloat(nego.value) || 0;
+    if (ppnCb)  it.usePpn         = ppnCb.checked;
+  });
+}
+
+// ── Update total baris live ───────────────────────────────────────────
+function nhpsUpdateRow(i) {
+  _nhpsFlushDOM();
+  const it = _nhps.hpsItems[i];
+  if (!it) return;
+  const vol = it.vol || 1;
+  const ppn = it.usePpn !== false;
+
+  const excHPS  = Math.round(vol * (it.hargaSat       || 0));
+  const excPen  = Math.round(vol * (it.hargaPenawaran || 0));
+  const excNego = Math.round(vol * (it.hargaNego      || 0));
+
+  const totHPS  = excHPS  + (ppn ? Math.round(excHPS  * 0.11) : 0);
+  const totPen  = excPen  + (ppn ? Math.round(excPen  * 0.11) : 0);
+  const totNego = excNego + (ppn ? Math.round(excNego * 0.11) : 0);
+
+  const el = (id) => document.getElementById(id);
+  if (el('nhpsTotHPS_'+i))  el('nhpsTotHPS_'+i).textContent  = nhFmtRp(totHPS);
+  if (el('nhpsTotPen_'+i))  el('nhpsTotPen_'+i).textContent  = nhFmtRp(totPen);
+  if (el('nhpsTotNego_'+i)) el('nhpsTotNego_'+i).textContent = nhFmtRp(totNego);
+  nhpsRenderTfoot();
+}
+
+// ── Render tabel 3 kolom (HPS | Penawaran | Hasil Nego) ───────────────
+function nhpsRenderTabel() {
+  const tbody = document.getElementById('nhpsTbody');
+  if (!tbody) return;
+  const items = _nhps.hpsItems;
+  const s     = _nhps.negoState;
+  const isFinal = s && s.status === 'Final';
+
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:#9FA8DA;">Belum ada item. Gunakan Template Cepat atau tambah baris manual.</td></tr>';
+    nhpsRenderTfoot();
+    return;
+  }
+
+  const inp = (id, val, type='text', extra='', w='100%') => {
+    if (isFinal) return '<span style="padding:2px 4px;">' + (val||'–') + '</span>';
+    const numStyle = type==='number' ? 'text-align:right;' : '';
+    return '<input type="' + type + '" id="' + id + '" value="' + (val??'') + '" style="width:' + w + ';border:1px solid #C5CAE9;border-radius:5px;padding:5px 7px;font-size:0.82rem;font-family:inherit;background:#fff;' + numStyle + '" oninput="nhpsUpdateRow(' + extra + ')" ' + (type==='number' ? 'min="0" step="any"' : '') + '/>';
   };
-  el.innerHTML =
-    mkCard(hps,   'sc-hps',   'Total HPS Pokja',    '#1A237E') +
-    mkCard(peny,  'sc-peny',  'Total Nego Penyedia', '#1B5E20') +
-    mkCard(pokja, 'sc-pokja', 'Total Nego Pokja',    '#B71C1C');
-}
 
-// ── Render histori ────────────────────────────────────────────────────
-function nhpsRenderHistori() {
-  const wrap = document.getElementById('nhpsHistoriWrap');
-  if (!wrap) return;
-  const s = _nhps.negoState;
-  if (!s || !Array.isArray(s.histori) || !s.histori.length) {
-    wrap.innerHTML = `<div style="text-align:center;padding:50px 20px;color:#9FA8DA;">
-      <i class="fa-solid fa-clock-rotate-left" style="font-size:36px;display:block;margin-bottom:12px;opacity:0.3;"></i>
-      <div style="font-weight:700;">Belum ada riwayat negosiasi</div>
-    </div>`;
-    return;
-  }
+  tbody.innerHTML = items.map((it, i) => {
+    const vol  = it.vol  || 1;
+    const ppn  = it.usePpn !== false;
+    const excHPS  = Math.round(vol * (it.hargaSat       || 0));
+    const excPen  = Math.round(vol * (it.hargaPenawaran || 0));
+    const excNego = Math.round(vol * (it.hargaNego      || 0));
+    const totHPS  = excHPS  + (ppn ? Math.round(excHPS  * 0.11) : 0);
+    const totPen  = excPen  + (ppn ? Math.round(excPen  * 0.11) : 0);
+    const totNego = excNego + (ppn ? Math.round(excNego * 0.11) : 0);
 
-  wrap.innerHTML = s.histori.map((h, hi) => {
-    const colorMap = { HPS:'#1A237E', Penyedia:'#1B5E20', Pokja:'#B71C1C', Persetujuan:'#004D40' };
-    const bgMap    = { HPS:'#E8EAF6', Penyedia:'#E8F5E9', Pokja:'#FFEBEE', Persetujuan:'#E0F2F1' };
-    const c = colorMap[h.role] || '#555';
-    const bg = bgMap[h.role] || '#F5F5F5';
+    // Selisih penawaran vs HPS
+    const selPen = (it.hargaPenawaran > 0 && it.hargaSat > 0)
+      ? ((it.hargaPenawaran - it.hargaSat) / it.hargaSat * 100).toFixed(1) : null;
+    const selPenHtml = selPen !== null
+      ? '<span style="font-size:0.72rem;font-weight:700;color:' + (parseFloat(selPen)<=0?'#1B5E20':parseFloat(selPen)<10?'#856404':'#B71C1C') + ';">' + (parseFloat(selPen)>0?'+':'') + selPen + '%</span>'
+      : '<span style="color:#ccc;">–</span>';
 
-    // Render tabel item jika ada
-    let itemsHtml = '';
-    if (Array.isArray(h.items) && h.items.length) {
-      const rows = h.items.map((it, i) => `<tr>
-        <td style="padding:4px 8px;">${i+1}</td>
-        <td style="padding:4px 8px;font-weight:600;">${it.uraian||'-'}</td>
-        <td style="padding:4px 8px;text-align:right;">${(it.vol||1).toLocaleString('id-ID')}</td>
-        <td style="padding:4px 8px;">${it.sat||'-'}</td>
-        <td style="padding:4px 8px;text-align:right;">${nhFmtRp(it.hargaSat||it.hargaNego||0)}</td>
-        <td style="padding:4px 8px;text-align:right;">${nhFmtRp(Math.round((it.vol||1)*(it.hargaSat||it.hargaNego||0)))}</td>
-      </tr>`).join('');
-      const gt = h.items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaSat||it.hargaNego||0)), 0);
-      itemsHtml = `<details style="margin-top:10px;">
-        <summary style="cursor:pointer;font-size:0.78rem;color:${c};font-weight:700;"><i class="fa-solid fa-table"></i> Lihat Rincian ${h.items.length} Item</summary>
-        <div style="overflow-x:auto;margin-top:8px;border-radius:7px;border:1px solid #ddd;">
-          <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
-            <thead><tr style="background:${bg};">
-              <th style="padding:5px 8px;">#</th><th style="padding:5px 8px;">Uraian</th>
-              <th style="padding:5px 8px;">Vol</th><th style="padding:5px 8px;">Sat</th>
-              <th style="padding:5px 8px;text-align:right;">Harga Sat.</th>
-              <th style="padding:5px 8px;text-align:right;">Total</th>
-            </tr></thead>
-            <tbody>${rows}</tbody>
-            <tfoot><tr style="background:${bg};font-weight:700;">
-              <td colspan="5" style="padding:5px 8px;text-align:right;">Total Excl. PPN</td>
-              <td style="padding:5px 8px;text-align:right;">${nhFmtRp(gt)}</td>
-            </tr>
-            <tr style="background:${bg};font-weight:700;">
-              <td colspan="5" style="padding:5px 8px;text-align:right;">Total Incl. PPN</td>
-              <td style="padding:5px 8px;text-align:right;color:${c};">${nhFmtRp(nhIncl(gt))}</td>
-            </tr></tfoot>
-          </table>
-        </div>
-      </details>`;
-    }
+    // Selisih hasil nego vs HPS
+    const selNego = (it.hargaNego > 0 && it.hargaSat > 0)
+      ? ((it.hargaNego - it.hargaSat) / it.hargaSat * 100).toFixed(1) : null;
+    const selNegoHtml = selNego !== null
+      ? '<span style="font-size:0.72rem;font-weight:700;color:' + (parseFloat(selNego)<=0?'#1B5E20':parseFloat(selNego)<10?'#856404':'#B71C1C') + ';">' + (parseFloat(selNego)>0?'+':'') + selNego + '%</span>'
+      : '<span style="color:#ccc;">–</span>';
 
-    return `<div style="background:${bg};border:1.5px solid ${c}33;border-left:4px solid ${c};border-radius:10px;padding:12px 16px;margin-bottom:12px;position:relative;">
-      ${hi === s.histori.length - 1 ? `<span style="position:absolute;top:8px;right:12px;background:${c};color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:10px;">Terbaru</span>` : ''}
-      <div style="font-size:0.75rem;font-weight:700;color:${c};margin-bottom:6px;display:flex;align-items:center;gap:7px;">
-        <i class="fa-solid ${h.role==='HPS'?'fa-landmark':h.role==='Persetujuan'?'fa-circle-check':h.role==='Pokja'?'fa-users':'fa-building'}"></i>
-        ${h.label||h.role} &nbsp;·&nbsp; <span style="font-weight:400;opacity:0.8;">${h.timestamp||''}</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px;">
-        <div style="background:rgba(255,255,255,0.65);border-radius:6px;padding:6px 10px;text-align:center;">
-          <div style="font-size:0.85rem;font-weight:700;color:${c};">${nhFmtRp(h.totalExcl||h.hargaExcl||0)}</div>
-          <div style="font-size:0.68rem;color:#666;">Total Excl. PPN</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.65);border-radius:6px;padding:6px 10px;text-align:center;">
-          <div style="font-size:0.85rem;font-weight:700;">${nhFmtRp(nhPpn(h.totalExcl||h.hargaExcl||0))}</div>
-          <div style="font-size:0.68rem;color:#666;">PPN 11%</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.65);border-radius:6px;padding:6px 10px;text-align:center;">
-          <div style="font-size:0.85rem;font-weight:700;color:${c};">${nhFmtRp(h.totalIncl||h.hargaIncl||nhIncl(h.totalExcl||h.hargaExcl||0))}</div>
-          <div style="font-size:0.68rem;color:#666;">Total Incl. PPN</div>
-        </div>
-      </div>
-      ${h.catatan ? `<div style="font-size:0.75rem;color:#555;font-style:italic;"><i class="fa-solid fa-comment-dots"></i> "${h.catatan}"</div>` : ''}
-      ${itemsHtml}
-    </div>`;
+    const ppnCell = isFinal
+      ? '<span style="font-size:0.80rem;font-weight:700;color:' + (ppn?'#5C6BC0':'#aaa') + ';">' + (ppn?'11%':'–') + '</span>'
+      : '<label style="display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-size:0.78rem;color:#5C6BC0;font-weight:600;"><input type="checkbox" id="nhpsPPN_' + i + '" ' + (ppn?'checked':'') + ' style="width:14px;height:14px;cursor:pointer;accent-color:#5C6BC0;" onchange="nhpsUpdateRow(' + i + ')"/>11%</label>';
+
+    return '<tr style="background:' + (i%2===0?'#F8F9FF':'#fff') + ';">' +
+      '<td style="text-align:center;color:#888;font-size:0.80rem;width:36px;">' + (i+1) + '</td>' +
+      '<td style="padding:4px 6px;min-width:180px;">' + inp('nhpsUraian_'+i, (it.uraian||'').replace(/"/g,'&quot;'), 'text', i) + '</td>' +
+      '<td style="padding:4px 6px;width:80px;">' + inp('nhpsVol_'+i, vol, 'number', i, '75px') + '</td>' +
+      '<td style="padding:4px 6px;width:100px;">' + inp('nhpsSat_'+i, it.sat||'Unit', 'text', i, '90px') + '</td>' +
+      '<td style="padding:4px 6px;width:55px;text-align:center;background:#E8EAF6;">' + ppnCell + '</td>' +
+      // HPS
+      '<td style="padding:4px 6px;width:130px;background:#EEF;">' + inp('nhpsHPS_'+i, it.hargaSat||0, 'number', i, '120px') + '</td>' +
+      '<td style="text-align:right;font-weight:700;color:#1A237E;font-size:0.82rem;padding:4px 8px;background:#E8EAF6;width:130px;" id="nhpsTotHPS_' + i + '">' + nhFmtRp(totHPS) + '</td>' +
+      // Penawaran
+      '<td style="padding:4px 6px;width:130px;background:#F1F8E9;">' + inp('nhpsPen_'+i, it.hargaPenawaran||0, 'number', i, '120px') + '</td>' +
+      '<td style="text-align:right;font-weight:700;color:#1B5E20;font-size:0.82rem;padding:4px 8px;background:#E8F5E9;width:130px;" id="nhpsTotPen_' + i + '">' + nhFmtRp(totPen) + '</td>' +
+      '<td style="text-align:center;width:60px;background:#F9FBE7;">' + selPenHtml + '</td>' +
+      // Hasil Nego
+      '<td style="padding:4px 6px;width:130px;background:#FFF8E1;">' + inp('nhpsNego_'+i, it.hargaNego||0, 'number', i, '120px') + '</td>' +
+      '<td style="text-align:right;font-weight:700;color:#E65100;font-size:0.82rem;padding:4px 8px;background:#FFF3E0;width:130px;" id="nhpsTotNego_' + i + '">' + nhFmtRp(totNego) + '</td>' +
+      '<td style="text-align:center;width:60px;background:#FFF8E1;">' + selNegoHtml + '</td>' +
+      '<td style="text-align:center;width:38px;background:#ECEFF1;">' +
+        (isFinal ? '' : '<button onclick="nhpsHapusBaris(' + i + ')" style="background:#ef5350;color:#fff;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:11px;" title="Hapus"><i class="fa-solid fa-times"></i></button>') +
+      '</td>' +
+    '</tr>';
   }).join('');
+
+  nhpsRenderTfoot();
 }
 
-// ── Kumpulkan nilai input di tabel saat ini ──────────────────────────
-function nhpsCollectInputs(kolom) {
-  // kolom: 'hps' | 'peny' | 'pokja'
-  return _nhps.hpsItems.map((it, i) => {
-    const prefix = { hps:'nhpsHargaSat', peny:'nhpsPeny', pokja:'nhpsPokja' }[kolom];
-    const el = document.getElementById(prefix + '_' + i);
-    const v  = el ? (parseFloat(el.value) || null) : null;
-    return { ...it, hargaNego: v };
+// ── Render tfoot summary ──────────────────────────────────────────────
+function nhpsRenderTfoot() {
+  const tfoot = document.getElementById('nhpsTfoot');
+  if (!tfoot) return;
+  _nhpsFlushDOM();
+  const items = _nhps.hpsItems;
+
+  let totHPSExcl=0, totHPSIncl=0, totPenExcl=0, totPenIncl=0, totNegoExcl=0, totNegoIncl=0;
+  items.forEach(it => {
+    const vol  = it.vol  || 1;
+    const ppn  = it.usePpn !== false;
+    const eHPS  = Math.round(vol * (it.hargaSat       || 0));
+    const ePen  = Math.round(vol * (it.hargaPenawaran || 0));
+    const eNego = Math.round(vol * (it.hargaNego      || 0));
+    totHPSExcl  += eHPS;  totHPSIncl  += eHPS  + (ppn ? Math.round(eHPS  * 0.11) : 0);
+    totPenExcl  += ePen;  totPenIncl  += ePen  + (ppn ? Math.round(ePen  * 0.11) : 0);
+    totNegoExcl += eNego; totNegoIncl += eNego + (ppn ? Math.round(eNego * 0.11) : 0);
   });
+
+  const mkCell = (val, color, bg, colspan=1) =>
+    '<td colspan="' + colspan + '" style="text-align:right;padding:6px 10px;font-weight:700;color:' + color + ';background:' + bg + ';">' + nhFmtRp(val) + '</td>';
+
+  tfoot.innerHTML =
+    '<tr style="background:#E8EAF6;font-size:0.80rem;">' +
+      '<td colspan="5" style="text-align:right;padding:5px 8px;font-weight:600;color:#555;">Sub Total Excl. PPN</td>' +
+      mkCell(totHPSExcl,  '#1A237E', '#E8EAF6', 2) +
+      mkCell(totPenExcl,  '#1B5E20', '#E8F5E9', 2) + '<td style="background:#F9FBE7;"></td>' +
+      mkCell(totNegoExcl, '#E65100', '#FFF3E0', 2) + '<td style="background:#FFF8E1;"></td>' +
+      '<td style="background:#ECEFF1;"></td>' +
+    '</tr>' +
+    '<tr style="background:#E8EAF6;font-size:0.80rem;">' +
+      '<td colspan="5" style="text-align:right;padding:5px 8px;font-weight:600;color:#5C6BC0;">PPN 11%</td>' +
+      mkCell(totHPSIncl-totHPSExcl,   '#5C6BC0', '#E8EAF6', 2) +
+      mkCell(totPenIncl-totPenExcl,   '#5C6BC0', '#E8F5E9', 2) + '<td style="background:#F9FBE7;"></td>' +
+      mkCell(totNegoIncl-totNegoExcl, '#5C6BC0', '#FFF3E0', 2) + '<td style="background:#FFF8E1;"></td>' +
+      '<td style="background:#ECEFF1;"></td>' +
+    '</tr>' +
+    '<tr style="font-size:0.86rem;">' +
+      '<td colspan="5" style="text-align:right;padding:7px 8px;font-weight:800;color:#fff;background:#1A237E;">TOTAL Incl. PPN</td>' +
+      '<td colspan="2" style="text-align:right;padding:7px 8px;font-weight:800;color:#FFD54F;background:#1A237E;">' + nhFmtRp(totHPSIncl)  + '</td>' +
+      '<td colspan="2" style="text-align:right;padding:7px 8px;font-weight:800;color:#fff;background:#1B5E20;">'  + nhFmtRp(totPenIncl)  + '</td>' +
+      '<td style="background:#F9FBE7;"></td>' +
+      '<td colspan="2" style="text-align:right;padding:7px 8px;font-weight:800;color:#fff;background:#E65100;">'  + nhFmtRp(totNegoIncl) + '</td>' +
+      '<td style="background:#FFF8E1;"></td>' +
+      '<td style="background:#ECEFF1;"></td>' +
+    '</tr>';
 }
 
-// ── Simpan HPS oleh Pokja ─────────────────────────────────────────────
-async function nhpsSimpanHPS() {
-  // Flush nilai dari tabel input DOM
-  _nhpsFlushInputDOM();
-
-  if (!_nhps.subData || !_nhps.hpsItems.length) {
-    nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Tidak ada tabel HPS untuk disimpan.'); return;
+// ── Render status badge (Draft/Final) ─────────────────────────────────
+function nhpsRenderStatusBadge() {
+  const el = document.getElementById('nhpsStatusBadge');
+  if (!el) return;
+  const s = _nhps.negoState;
+  if (!s) { el.textContent = ''; return; }
+  if (s.status === 'Final') {
+    el.innerHTML = '<span style="background:#C8E6C9;color:#1B5E20;border:1px solid #81C784;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Final</span>';
+  } else {
+    el.innerHTML = '<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-pencil"></i> Draft</span>';
   }
-  // Validasi: pastikan minimal ada 1 uraian & harga
-  const valid = _nhps.hpsItems.some(it => it.uraian && it.hargaSat > 0);
-  if (!valid) {
-    nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Isi minimal satu baris dengan Uraian dan Harga Satuan > 0.');
+}
+
+// ── Simpan data negosiasi ke server ───────────────────────────────────
+async function nhpsSimpan(statusOverride) {
+  _nhpsFlushDOM();
+  if (!_nhps.subData) return;
+
+  const items = _nhps.hpsItems.filter(it => it.uraian);
+  if (!items.length) {
+    nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Isi minimal satu baris Uraian sebelum menyimpan.');
     return;
   }
 
-  const btn = document.getElementById('nhpsBtnSimpanHPS');
+  const status = statusOverride || (document.getElementById('nhpsStatusSelect')?.value || 'Draft');
+  const catatan = (document.getElementById('nhpsCatatan')?.value || '').trim();
+
+  const toItem = (it) => ({
+    no      : it.no,
+    uraian  : it.uraian,
+    vol     : it.vol  || 1,
+    sat     : it.sat  || 'Unit',
+    hargaSat: it.hargaSat || 0,
+    total   : Math.round((it.vol||1) * (it.hargaSat||0)),
+    usePpn  : it.usePpn !== false
+  });
+  const toPenItem = (it) => ({
+    no      : it.no,
+    uraian  : it.uraian,
+    vol     : it.vol  || 1,
+    sat     : it.sat  || 'Unit',
+    hargaSat: it.hargaPenawaran || 0,
+    total   : Math.round((it.vol||1) * (it.hargaPenawaran||0)),
+    usePpn  : it.usePpn !== false
+  });
+  const toNegoItem = (it) => ({
+    no      : it.no,
+    uraian  : it.uraian,
+    vol     : it.vol  || 1,
+    sat     : it.sat  || 'Unit',
+    hargaSat: it.hargaNego || 0,
+    total   : Math.round((it.vol||1) * (it.hargaNego||0)),
+    usePpn  : it.usePpn !== false
+  });
+
+  const btn = statusOverride === 'Final'
+    ? document.getElementById('nhpsBtnFinal')
+    : document.getElementById('nhpsBtnSimpan');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="nhps-spin"></span> Menyimpan…'; }
-
-  const items = _nhps.hpsItems.filter(it => it.uraian); // buang baris kosong
-  _nhps.hpsItems = items;
-  const totalExcl = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaSat||0)), 0);
-  const totalIncl = nhInclFromItems(items);
+  nhpsSetMsg('info', '<i class="fa-solid fa-rotate fa-spin"></i> Menyimpan data…');
 
   try {
     const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify({
-        action        : 'submitHPSItems',
-        npwp          : _nhps.subData.npwp || '',
-        namaPerusahaan: _nhps.subData.namaPerusahaan || '',
-        hpsItems      : items,
-        totalExcl,
-        totalIncl
-      })
-    });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      nhpsSetMsg('ok', `<i class="fa-solid fa-circle-check"></i> <strong>HPS berhasil disimpan & dikunci!</strong> Penyedia kini dapat mengisi kolom negosiasi.`);
-      await nhpsLoadFromServer();
-      nhpsSwitchTab('tabel');
-    } else {
-      nhpsSetMsg('err', `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message||'Gagal menyimpan HPS.'}`);
-    }
-  } catch(e) {
-    nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
-  }
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-landmark"></i> Buat HPS & Mulai Negosiasi'; }
-}
-
-// ── Simpan Nego Penyedia ──────────────────────────────────────────────
-async function nhpsSimpanNegoPenyedia() {
-  if (!_nhps.subData || !_nhps.hpsItems.length) return;
-  const vals = _nhps.hpsItems.map((it, i) => {
-    const el = document.getElementById('nhpsPeny_'+i);
-    return el ? (parseFloat(el.value)||0) : 0;
-  });
-  if (vals.every(v => !v)) {
-    nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Isi minimal satu harga nego sebelum menyimpan.'); return;
-  }
-  const btn = document.getElementById('nhpsBtnNegoPeny');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="nhps-spin"></span> Mengirim…'; }
-
-  const items = _nhps.hpsItems.map((it, i) => ({ ...it, hargaNego: vals[i] }));
-  const totalExcl = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaNego||0)), 0);
-  const totalIncl = items.reduce((s, it) => {
-    const excl = Math.round((it.vol||1)*(it.hargaNego||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-  const catatan   = (document.getElementById('nhpsNotePeny')?.value||'').trim();
-
-  try {
-    const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify({
-        action        : 'submitNegoItemsPenyedia',
-        npwp          : _nhps.subData.npwp || '',
-        namaPerusahaan: _nhps.subData.namaPerusahaan || '',
-        items, totalExcl, totalIncl, catatan
-      })
-    });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      nhpsSetMsg('ok', '<i class="fa-solid fa-circle-check"></i> <strong>Penawaran Penyedia dikirim!</strong> Menunggu respons Pokja.');
-      await nhpsLoadFromServer();
-    } else {
-      nhpsSetMsg('err', `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message||'Gagal.'}`);
-    }
-  } catch(e) {
-    nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
-  }
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Penawaran Saya'; }
-}
-
-// ── Simpan Nego Pokja ─────────────────────────────────────────────────
-async function nhpsSimpanNegoPokja() {
-  if (!_nhps.subData || !_nhps.hpsItems.length) return;
-  const vals = _nhps.hpsItems.map((it, i) => {
-    const el = document.getElementById('nhpsPokja_'+i);
-    return el ? (parseFloat(el.value)||0) : 0;
-  });
-  if (vals.every(v => !v)) {
-    nhpsSetMsg('warn', '<i class="fa-solid fa-triangle-exclamation"></i> Isi minimal satu harga nego Pokja sebelum menyimpan.'); return;
-  }
-  const btn = document.getElementById('nhpsBtnNegoPokja');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="nhps-spin"></span> Mengirim…'; }
-
-  const items = _nhps.hpsItems.map((it, i) => ({ ...it, hargaNego: vals[i] }));
-  const totalExcl = items.reduce((s, it) => s + Math.round((it.vol||1)*(it.hargaNego||0)), 0);
-  const totalIncl = items.reduce((s, it) => {
-    const excl = Math.round((it.vol||1)*(it.hargaNego||0));
-    return s + excl + (it.usePpn !== false ? Math.round(excl * 0.11) : 0);
-  }, 0);
-  const catatan   = (document.getElementById('nhpsNotePokja')?.value||'').trim();
-
-  try {
-    const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify({
-        action        : 'submitNegoItemsPokja',
-        npwp          : _nhps.subData.npwp || '',
-        namaPerusahaan: _nhps.subData.namaPerusahaan || '',
-        items, totalExcl, totalIncl, catatan
-      })
-    });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      nhpsSetMsg('ok', '<i class="fa-solid fa-circle-check"></i> <strong>Counter-offer Pokja dikirim!</strong> Menunggu respons Penyedia.');
-      await nhpsLoadFromServer();
-    } else {
-      nhpsSetMsg('err', `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message||'Gagal.'}`);
-    }
-  } catch(e) {
-    nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
-  }
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-gavel"></i> Kirim Counter-Offer Pokja'; }
-}
-
-// ── Setujui semua harga (Penyedia) ────────────────────────────────────
-async function nhpsSetujui() {
-  if (!_nhps.subData) return;
-  if (!confirm('Yakin menyetujui semua harga negosiasi ini?\n\nAksi ini tidak dapat dibatalkan.')) return;
-  const btn = document.getElementById('nhpsBtnSetujui');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="nhps-spin"></span> Memproses…'; }
-  const catatan = (document.getElementById('nhpsNotePeny')?.value||'Harga disetujui oleh Penyedia.').trim();
-  try {
-    const res  = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify({
-        action        : 'setujuiNegoHPS',
-        npwp          : _nhps.subData.npwp || '',
-        namaPerusahaan: _nhps.subData.namaPerusahaan || '',
+      method : 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body   : JSON.stringify({
+        action         : 'simpanNegosiasi',
+        namaPerusahaan : _nhps.subData.namaPerusahaan || '',
+        npwp           : _nhps.subData.npwp || '',
+        jenisDok       : _nhps.subData.jenisDok || '',
+        pokja          : currentPokjaUser || 'pokja',
+        status,
+        hpsItems       : items.map(toItem),
+        penawaranItems : items.map(toPenItem),
+        negoItems      : items.map(toNegoItem),
         catatan
       })
     });
     const json = await res.json();
     if (json.status === 'ok') {
-      nhpsSetMsg('ok', '<i class="fa-solid fa-circle-check"></i> <strong>Negosiasi selesai!</strong> Semua harga telah disetujui.');
+      const label = status === 'Final' ? 'Final' : 'Draft';
+      nhpsSetMsg('ok', '<i class="fa-solid fa-circle-check"></i> Data negosiasi berhasil disimpan sebagai <strong>' + label + '</strong>.');
       await nhpsLoadFromServer();
+      // Sync ke _submissions
+      if (_nhps.subIdx >= 0 && _nhps.negoState) {
+        const subs = getSubmissions();
+        if (subs[_nhps.subIdx]) subs[_nhps.subIdx].negosiasi = _nhps.negoState;
+      }
     } else {
-      nhpsSetMsg('err', `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message||'Gagal.'}`);
+      nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> ' + (json.message || 'Gagal menyimpan.'));
     }
   } catch(e) {
     nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
   }
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Setujui & DEAL'; }
+
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = statusOverride === 'Final'
+      ? '<i class="fa-solid fa-circle-check"></i> Simpan &amp; Final'
+      : '<i class="fa-solid fa-floppy-disk"></i> Simpan Draft';
+  }
 }
 
-// ── Setujui negosiasi oleh Pokja (force DEAL) ─────────────────────────
-async function nhpsSetujuiOlehPokja() {
+async function nhpsSimpanDraft()  { await nhpsSimpan('Draft'); }
+async function nhpsSimpanFinal()  {
+  if (!confirm('Simpan sebagai FINAL?\nData tidak dapat diubah lagi setelah status Final.')) return;
+  await nhpsSimpan('Final');
+}
+
+// ── Hapus data negosiasi ──────────────────────────────────────────────
+async function nhpsHapusData() {
   if (!_nhps.subData) return;
-  if (!confirm('Setujui dan tutup negosiasi ini sebagai DEAL?\n\nHarga final diambil dari penawaran terakhir Penyedia.\nAksi ini tidak dapat dibatalkan.')) return;
-  const btn = document.getElementById('nhpsBtnSetujuiPokja');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="nhps-spin"></span> Memproses…'; }
-  const catatan = (document.getElementById('nhpsNotePokja')?.value || 'Harga disetujui dan dikunci oleh Pokja.').trim();
+  if (!confirm('Hapus semua data negosiasi untuk penyedia ini?\nAksi tidak dapat dibatalkan.')) return;
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', headers: {'Content-Type':'text/plain'},
-      body: JSON.stringify({
-        action: 'setujuiNegoHPS',
-        npwp: _nhps.subData.npwp || '',
-        namaPerusahaan: _nhps.subData.namaPerusahaan || '',
-        catatan
+    const res  = await fetch(APPS_SCRIPT_URL, {
+      method : 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body   : JSON.stringify({
+        action         : 'hapusNegosiasi',
+        namaPerusahaan : _nhps.subData.namaPerusahaan || '',
+        npwp           : _nhps.subData.npwp || '',
+        pokja          : currentPokjaUser || 'pokja'
       })
     });
     const json = await res.json();
     if (json.status === 'ok') {
-      nhpsSetMsg('ok', '<i class="fa-solid fa-handshake"></i> <strong>DEAL!</strong> Negosiasi selesai. Data terkunci.');
-      await nhpsLoadFromServer();
-      nhpsSwitchTab('tabel');
+      _nhps.hpsItems  = [];
+      _nhps.negoState = null;
+      nhpsSetMsg('ok', '<i class="fa-solid fa-trash"></i> Data negosiasi dihapus.');
+      nhpsRenderTabel();
+      nhpsRenderStatusBadge();
     } else {
-      nhpsSetMsg('err', `<i class="fa-solid fa-triangle-exclamation"></i> ${json.message||'Gagal.'}`);
+      nhpsSetMsg('err', json.message || 'Gagal menghapus.');
     }
   } catch(e) {
-    nhpsSetMsg('err', '<i class="fa-solid fa-triangle-exclamation"></i> Gagal terhubung ke server.');
+    nhpsSetMsg('err', 'Gagal terhubung ke server.');
   }
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-handshake"></i> Setujui & DEAL'; }
 }
-
-// ── Render footer buttons berdasarkan role, tab, dan state ───────────
-function nhpsRenderFooter() {
-  const s          = _nhps.negoState;
-  const isPokja    = currentRole === 'pokja';
-  const isPenyedia = currentRole === 'penyedia';
-  const isSelesai  = s && (s.giliran === 'Selesai' || s.status === 'Harga Disetujui Oleh Penyedia');
-  const giliran    = s ? (s.giliran||'Pokja') : 'Pokja';
-  const hpsExist   = _nhps.hpsItems.some(it => it.uraian || it.hargaSat > 0);
-  const hpsLocked  = s && s.hpsLocked;
-  const activeTab  = _nhps.activeTab;
-
-  const btnClose = `<button class="nhps-btn nhps-btn-gray" onclick="tutupModalNegoHPS()"><i class="fa-solid fa-xmark"></i> Tutup</button>`;
-  const noteField = (id, placeholder, color) =>
-    `<input type="text" id="${id}" class="nhps-input" placeholder="${placeholder}" style="min-width:180px;text-align:left;border-color:${color};max-width:280px;" />`;
-
-  let btns = '';
-
-  if (isSelesai) {
-    btns = `<span class="nhps-giliran g-done" style="margin:0;padding:6px 14px;">
-      <i class="fa-solid fa-circle-check"></i> Negosiasi Selesai — Harga DEAL ✓
-    </span>`;
-
-  } else if (isPokja) {
-    if (activeTab === 'parse') {
-      if (!hpsLocked) {
-        btns = `<button id="nhpsBtnSimpanHPS" class="nhps-btn nhps-btn-primary" onclick="nhpsSimpanHPS()">
-          <i class="fa-solid fa-landmark"></i> Buat HPS &amp; Mulai Negosiasi
-        </button>`;
-      } else {
-        btns = `<span style="font-size:0.80rem;color:#5C6BC0;padding:4px 8px;"><i class="fa-solid fa-lock"></i> HPS sudah dikunci.</span>
-        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsSwitchTab('tabel')">
-          <i class="fa-solid fa-arrow-right"></i> Ke Tabel Negosiasi
-        </button>`;
-      }
-    } else if (activeTab === 'tabel') {
-      if (hpsLocked && giliran === 'Pokja') {
-        btns += noteField('nhpsNotePokja', 'Catatan counter-offer (opsional)…', '#B71C1C');
-        btns += `<button id="nhpsBtnNegoPokja" class="nhps-btn nhps-btn-warn" onclick="nhpsSimpanNegoPokja()">
-          <i class="fa-solid fa-gavel"></i> Kirim Counter-Offer
-        </button>`;
-      }
-      if (hpsLocked && s && Array.isArray(s.negoPenyedia) && s.negoPenyedia.some(v => v != null)) {
-        btns += `<button id="nhpsBtnSetujuiPokja" class="nhps-btn" style="background:#004D40;color:#fff;" onclick="nhpsSetujuiOlehPokja()">
-          <i class="fa-solid fa-handshake"></i> Setujui &amp; DEAL
-        </button>`;
-      }
-    }
-
-  } else if (isPenyedia) {
-    if (hpsExist && giliran === 'Penyedia') {
-      btns += noteField('nhpsNotePeny', 'Catatan penawaran (opsional)…', '#1B5E20');
-      btns += `<button id="nhpsBtnNegoPeny" class="nhps-btn nhps-btn-success" onclick="nhpsSimpanNegoPenyedia()">
-        <i class="fa-solid fa-paper-plane"></i> Ajukan Negosiasi
-      </button>`;
-      if (s && Array.isArray(s.negoPokja) && s.negoPokja.some(v => v != null)) {
-        btns += `<button id="nhpsBtnSetujui" class="nhps-btn" style="background:#1B5E20;color:#fff;" onclick="nhpsSetujui()">
-          <i class="fa-solid fa-circle-check"></i> Setujui &amp; DEAL
-        </button>`;
-      }
-    } else if (!hpsExist || giliran === 'Pokja') {
-      btns = `<span class="nhps-giliran g-wait" style="margin:0;padding:6px 14px;font-size:0.78rem;">
-        <i class="fa-solid fa-hourglass-half"></i> ${!hpsExist ? 'Menunggu Pokja menginput tabel HPS…' : 'Menunggu Counter-Offer dari Pokja…'}
-      </span>`;
-    }
-  }
-
-  const footerLeft = s
-    ? `<span class="nhps-footer-left"><i class="fa-solid fa-rotate"></i>
-       <a href="#" style="color:#5C6BC0;font-weight:600;text-decoration:none;" onclick="nhpsLoadFromServer();return false;">Refresh</a></span>`
-    : '';
-
-  const footer = document.getElementById('nhpsFooter');
-  if (footer) footer.innerHTML = footerLeft + btnClose + btns;
-}
-
-// Re-render footer when tab changes or data loads
-const _origNhpsSwitchTab = nhpsSwitchTab;
-nhpsSwitchTab = function(tabId) {
-  _origNhpsSwitchTab(tabId);
-  nhpsRenderFooter();
-};
-const _origNhpsLoadFromServer = nhpsLoadFromServer;
-nhpsLoadFromServer = async function() {
-  await _origNhpsLoadFromServer();
-  nhpsRenderFooter();
-  // ── Sync data negosiasi terbaru kembali ke _submissions ──
-  // Supaya renderNegosiasiPage() selalu pakai data terkini (termasuk hargaDisepakati setelah DEAL)
-  if (_nhps.subIdx >= 0 && _nhps.negoState) {
-    const subs = getSubmissions();
-    if (subs[_nhps.subIdx]) {
-      subs[_nhps.subIdx].negosiasi = _nhps.negoState;
-    }
-  }
-};
-
 
 // =================================================================
 // =================================================================
@@ -9664,38 +9131,30 @@ nhpsLoadFromServer = async function() {
 // ── Cache negosiasi state per penyedia ──────────────────────────────────
 const _negoStateCache = {};
 
-// ── Fetch semua state negosiasi dari server dan simpan ke cache ──────────
+// ── Fetch semua state negosiasi dari server (BATCH — 1 request) ──────────
 async function loadAllNegoStates() {
-  const all = getSubmissions();
-  const lulusList = all.filter(s => s.reviewStatus === 'Memenuhi Syarat');
-  const byKey = {};
-  lulusList.forEach(s => {
-    const k = s.npwp || s.namaPerusahaan;
-    if (!byKey[k]) byKey[k] = s;
-  });
-  const peserta = Object.values(byKey);
-  const fetches = peserta.map(async s => {
-    const npwp = s.npwp || '';
-    const nama  = s.namaPerusahaan || '';
-    const cacheKey = npwp || nama;
-    try {
-      const qs  = new URLSearchParams({ action: 'getNegoHPS', npwp, namaPerusahaan: nama });
-      const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
-      const json = await res.json();
-      if (json.status === 'ok' && json.data) {
-        _negoStateCache[cacheKey] = json.data;
-        // Sync ke _submissions
-        const idx = all.findIndex(x => (x.npwp && x.npwp === npwp) || x.namaPerusahaan === nama);
-        if (idx >= 0) { _submissions[idx].negosiasi = json.data; }
-      }
-    } catch(e) {}
-  });
-  await Promise.all(fetches);
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getAllNegosiasi&t=' + Date.now());
+    const json = await res.json();
+    if (json.status === 'ok' && json.negosiasi) {
+      const negoMap = json.negosiasi;
+      const all = getSubmissions();
+      all.forEach((s, idx) => {
+        const npwp = (s.npwp || '').toString().trim();
+        const nama = (s.namaPerusahaan || '').toString().trim();
+        const state = negoMap[npwp] || negoMap['__nama__' + nama] || null;
+        if (state) {
+          _submissions[idx].negosiasi = state;
+          const cacheKey = npwp || nama;
+          _negoStateCache[cacheKey] = state;
+        }
+      });
+    }
+  } catch(e) {}
   renderNegosiasiPage();
   // Juga update halaman penetapan jika sedang aktif
   const pPage = document.getElementById('page-penetapan');
   if (pPage && pPage.classList.contains('active')) renderPenetapanPage();
-  // Update sidebar penyedia agar menu Pengumuman Pemenang muncul setelah data nego termuat
   if (currentRole === 'penyedia') renderSidebar();
 }
 
@@ -9710,6 +9169,16 @@ function refreshNegoData() {
   });
 }
 
+// Helper: cek apakah reviewStatus termasuk "lulus"
+function _isReviewLulus(status) {
+  const s = (status || '').toLowerCase().trim();
+  return s === 'memenuhi syarat' ||
+         s === 'lulus / memenuhi syarat' ||
+         s === 'lulus' ||
+         s.includes('memenuhi syarat') ||
+         s.includes('lulus');
+}
+
 function renderNegosiasiPage() {
   const wrap = document.getElementById('negosiasiPageContent');
   if (!wrap) return;
@@ -9719,11 +9188,20 @@ function renderNegosiasiPage() {
   const isPenyedia = currentRole === 'penyedia';
   if (!isPokja && !isPenyedia) return;
 
-  let lulusList = all.filter(s => s.reviewStatus === 'Memenuhi Syarat');
+  // Tampilkan loading jika data submissions belum ada sama sekali
+  if (!all || all.length === 0) {
+    wrap.innerHTML = `<div style="text-align:center;padding:60px 20px;color:#9FA8DA;">
+      <i class="fa-solid fa-rotate fa-spin" style="font-size:32px;display:block;margin-bottom:14px;opacity:0.5;"></i>
+      <div style="font-size:0.9rem;">Memuat data penyedia…</div>
+    </div>`;
+    return;
+  }
+
+  let lulusList = all.filter(s => _isReviewLulus(s.reviewStatus));
   if (isPenyedia && currentPenyedia) {
     lulusList = all.filter(s => {
       const milik = s.namaPerusahaan === currentPenyedia.nama || s.email === currentPenyedia.email || s.npwp === currentPenyedia.npwp;
-      return milik && ((s.reviewStatus === 'Memenuhi Syarat' || s.reviewStatus === 'Lulus / Memenuhi Syarat') || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0));
+      return milik && (_isReviewLulus(s.reviewStatus) || (Array.isArray(s.negoHistory) && s.negoHistory.length > 0));
     });
   }
   const byPerusahaan = {};
@@ -9744,7 +9222,7 @@ function renderNegosiasiPage() {
 
   const infoBar = `<div style="background:#E8EAF6;border:1px solid #C5CAE9;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.83rem;color:#1A237E;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
     <span><i class="fa-solid fa-circle-info"></i> <strong>${pesertaLulus.length} penyedia</strong> masuk tahap negosiasi.
-    Klik <strong>Negosiasi HPS (Tabel)</strong> untuk membuka panel negosiasi.</span>
+    Klik <strong>Input Hasil Negosiasi</strong> untuk mengisi tabel HPS, Penawaran dan Hasil Negosiasi.</span>
     <button id="btnRefreshNego" onclick="refreshNegoData()" style="display:inline-flex;align-items:center;gap:6px;background:#1A237E;color:white;border:none;border-radius:7px;padding:7px 14px;font-size:0.80rem;font-weight:700;cursor:pointer;white-space:nowrap;">
       <i class="fa-solid fa-rotate"></i> Refresh Data
     </button>
@@ -9756,33 +9234,26 @@ function renderNegosiasiPage() {
     const negoHistory = Array.isArray(s.negoHistory) ? s.negoHistory : [];
     const undangan    = s.undanganPembuktian;
 
-    // ── Status Nego yang akurat — baca dari field negosiasi (server) ──
+    // ── Status Nego — baca dari state server (model offline: Draft / Final) ──
     const negosiasi  = s.negosiasi || null;
-    const isSelesai  = negosiasi && (
-      negosiasi.giliran === 'Selesai' ||
-      negosiasi.status  === 'Harga Disetujui Oleh Penyedia' ||
-      (typeof negosiasi.status === 'string' && negosiasi.status.toLowerCase().includes('disetujui'))
-    );
-    const isOngoing  = !isSelesai && negosiasi && negosiasi.hpsLocked === true;
-    const hasHistory = negosiasi && (
-      (Array.isArray(negosiasi.histori) && negosiasi.histori.length > 0) ||
-      (Array.isArray(s.negoHistory)     && s.negoHistory.length  > 0)
-    );
-    const hpsAdaSaja = !isSelesai && !isOngoing && negosiasi && Array.isArray(negosiasi.hpsItems) && negosiasi.hpsItems.length > 0;
+    const isFinal    = negosiasi && negosiasi.status === 'Final';
+    const isDraft    = negosiasi && negosiasi.status === 'Draft';
+    const hasNego    = negosiasi && Array.isArray(negosiasi.hpsItems) && negosiasi.hpsItems.length > 0;
+    const hasNegoItems = negosiasi && Array.isArray(negosiasi.negoItems) && negosiasi.negoItems.some(it => (it.hargaSat||0) > 0);
 
     let negoBadge;
-    if (isSelesai) {
-      negoBadge = `<span style="background:#C8E6C9;color:#1B5E20;border:1px solid #81C784;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-handshake"></i> Negosiasi Selesai — DEAL ✓</span>`;
-    } else if (isOngoing) {
-      negoBadge = `<span style="background:#E8EAF6;color:#1A237E;border:1px solid #9FA8DA;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-rotate"></i> Negosiasi Sedang Berjalan</span>`;
-    } else if (hpsAdaSaja) {
-      negoBadge = `<span style="background:#E3F2FD;color:#0D47A1;border:1px solid #90CAF9;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-landmark"></i> HPS Sudah Di-input</span>`;
+    if (isFinal) {
+      negoBadge = `<span style="background:#C8E6C9;color:#1B5E20;border:1px solid #81C784;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Final ✓</span>`;
+    } else if (isDraft && hasNego) {
+      negoBadge = `<span style="background:#E3F2FD;color:#0D47A1;border:1px solid #90CAF9;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-pencil"></i> Draft</span>`;
     } else {
-      negoBadge = `<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-clock"></i> Belum Ada Nego</span>`;
+      negoBadge = `<span style="background:#FFF3CD;color:#856404;border:1px solid #FFD54F;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-clock"></i> Belum Diisi</span>`;
     }
 
     // Warna border-left kartu sesuai status
-    const borderColor = isSelesai ? '#1B5E20' : isOngoing ? '#1A237E' : hpsAdaSaja ? '#1565C0' : '#856404';
+    const borderColor = isFinal ? '#1B5E20' : isDraft ? '#1565C0' : '#856404';
+    // Untuk kompatibilitas dengan kode lain yang masih pakai isSelesai
+    const isSelesai = isFinal;
 
     const undanganBox = undangan ? `
       <div style="background:#EAF3DE;border:1px solid #B6DBA0;border-left:4px solid #1B5E20;border-radius:7px;padding:9px 13px;font-size:0.80rem;color:#1B5E20;margin-top:10px;">
@@ -9791,69 +9262,58 @@ function renderNegosiasiPage() {
         ${undangan.lokasi  ? `<br><i class="fa-solid fa-location-dot"></i> ${undangan.lokasi}` : ''}
       </div>` : '';
 
-    // ── Kotak Hasil Negosiasi — tampil hanya jika DEAL sudah terjadi ──
+    // ── Kotak Hasil Negosiasi — tampil jika ada data negosiasi ──
     let hasilNegoBox = '';
-    if (isSelesai && negosiasi) {
-      // Prioritas 1: field hargaDisepakati langsung di state (diisi saat setujuiNegoHPS)
-      let dealExcl = parseFloat(negosiasi.hargaDisepakatiExcl) || 0;
-      let dealIncl = parseFloat(negosiasi.hargaDisepakatiIncl) || 0;
-
-      // Prioritas 2: ambil dari entri histori 'Persetujuan' (model tabel-items)
-      if (!dealExcl && Array.isArray(negosiasi.histori) && negosiasi.histori.length) {
-        // Cari entri Persetujuan, fallback ke entri Penyedia terakhir
-        const persetujuan = negosiasi.histori.filter(h => h.role === 'Persetujuan');
-        const penyediaH   = negosiasi.histori.filter(h => h.role === 'Penyedia');
-        const acuan = persetujuan.length ? persetujuan[persetujuan.length-1]
-                    : penyediaH.length   ? penyediaH[penyediaH.length-1]
-                    : negosiasi.histori[negosiasi.histori.length-1];
-        dealExcl = parseFloat(acuan.totalExcl || acuan.hargaExcl) || 0;
-        dealIncl = parseFloat(acuan.totalIncl || acuan.hargaIncl) || nhIncl(dealExcl);
+    if (hasNego && negosiasi) {
+      // Hitung total dari totalNego (server) atau negoItems
+      let negoExcl = parseFloat((negosiasi.totalNego || {}).excl) || 0;
+      let negoIncl = parseFloat((negosiasi.totalNego || {}).incl) || 0;
+      if (!negoExcl && Array.isArray(negosiasi.negoItems)) {
+        negoExcl = negosiasi.negoItems.reduce((acc,it) => acc + Math.round((parseFloat(it.vol)||1)*(parseFloat(it.hargaSat)||0)), 0);
+        negoIncl = nhIncl(negoExcl);
       }
-
-      // Prioritas 3: hitung dari hpsItems terakhir penyedia (negosiasi model tabel baru)
-      if (!dealExcl && Array.isArray(negosiasi.hpsItems) && negosiasi.hpsItems.length) {
-        const negoItemsPeny = negosiasi.hpsItems;
-        dealExcl = negoItemsPeny.reduce((acc, it) => acc + Math.round((parseFloat(it.vol)||1) * (parseFloat(it.negoPenyedia || it.hargaSat)||0)), 0);
-        dealIncl = nhIncl(dealExcl);
+      let hpsExcl = parseFloat((negosiasi.totalHPS || {}).excl) || 0;
+      let hpsIncl = parseFloat((negosiasi.totalHPS || {}).incl) || 0;
+      if (!hpsExcl && Array.isArray(negosiasi.hpsItems)) {
+        hpsExcl = negosiasi.hpsItems.reduce((acc,it) => acc + Math.round((parseFloat(it.vol)||1)*(parseFloat(it.hargaSat)||0)), 0);
+        hpsIncl = nhIncl(hpsExcl);
       }
+      let penExcl = parseFloat((negosiasi.totalPenawaran || {}).excl) || 0;
+      let penIncl = parseFloat((negosiasi.totalPenawaran || {}).incl) || 0;
 
-      if (dealExcl || dealIncl) {
-        if (!dealIncl) dealIncl = nhIncl(dealExcl);
-        hasilNegoBox = `
-          <div style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:1.5px solid #66BB6A;border-left:4px solid #1B5E20;border-radius:8px;padding:11px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:1.4rem;">🤝</span>
-              <div>
-                <div style="font-size:0.75rem;font-weight:700;color:#1B5E20;letter-spacing:0.3px;">HASIL NEGOSIASI — HARGA DEAL</div>
-                <div style="font-size:0.72rem;color:#388E3C;margin-top:1px;">Negosiasi selesai dan harga telah disepakati</div>
-              </div>
+      const bgColor  = isFinal ? 'linear-gradient(135deg,#E8F5E9,#F1F8E9)' : 'linear-gradient(135deg,#FFF8E1,#FFFDE7)';
+      const bdColor  = isFinal ? '#66BB6A' : '#FFD54F';
+      const bdLeft   = isFinal ? '#1B5E20' : '#F57F17';
+      const titleTxt = isFinal ? 'HASIL NEGOSIASI — FINAL ✓' : 'HASIL NEGOSIASI — DRAFT';
+      const icon     = isFinal ? '✅' : '📝';
+      hasilNegoBox = `
+        <div style="background:${bgColor};border:1.5px solid ${bdColor};border-left:4px solid ${bdLeft};border-radius:8px;padding:11px 16px;margin-top:10px;">
+          <div style="font-size:0.75rem;font-weight:700;color:${bdLeft};margin-bottom:8px;">${icon} ${titleTxt}</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="font-size:0.65rem;color:#555;font-weight:600;">HPS (Incl. PPN)</div>
+              <div style="font-size:0.82rem;font-weight:700;color:#1A237E;">${nhFmtRp(hpsIncl||nhIncl(hpsExcl))}</div>
             </div>
-            <div style="display:flex;gap:14px;flex-wrap:wrap;">
-              <div style="text-align:right;">
-                <div style="font-size:0.68rem;color:#555;font-weight:600;">Excl. PPN</div>
-                <div style="font-size:0.88rem;font-weight:800;color:#1B5E20;">${nhFmtRp(dealExcl)}</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-size:0.68rem;color:#555;font-weight:600;">Incl. PPN</div>
-                <div style="font-size:0.92rem;font-weight:800;color:#1B5E20;border-left:2px solid #A5D6A7;padding-left:10px;">${nhFmtRp(dealIncl)}</div>
-              </div>
-            </div>
-          </div>`;
-      }
+            ${penExcl ? `<div style="text-align:center;">
+              <div style="font-size:0.65rem;color:#555;font-weight:600;">Penawaran (Incl.)</div>
+              <div style="font-size:0.82rem;font-weight:700;color:#1B5E20;">${nhFmtRp(penIncl||nhIncl(penExcl))}</div>
+            </div>` : ''}
+            ${negoExcl ? `<div style="text-align:center;border-left:2px solid ${bdColor};padding-left:12px;">
+              <div style="font-size:0.65rem;color:#555;font-weight:600;">Hasil Nego (Incl.)</div>
+              <div style="font-size:0.92rem;font-weight:800;color:${bdLeft};">${nhFmtRp(negoIncl||nhIncl(negoExcl))}</div>
+            </div>` : ''}
+          </div>
+        </div>`;
     }
 
-    // Tombol Riwayat Nego — selalu sejajar dengan Kirim Undangan di baris bawah
-    const riwayatBtn = (hasHistory || isOngoing || isSelesai) ? `
-      <button onclick="bukaRiwayatNego(${origIdx})"
-        style="display:inline-flex;align-items:center;gap:6px;background:#F3E5F5;color:#6A1B9A;border:1px solid #CE93D8;border-radius:7px;padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
-        <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Nego
-      </button>` : '';
+    // Riwayat nego tidak digunakan di model offline — hapus
+    const riwayatBtn = '';
 
     const pokjaActions = isPokja ? `
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <button onclick="bukaModalNegoHPS(${origIdx})"
           style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0d1b6e,#1A237E);color:white;border:none;border-radius:7px;padding:9px 18px;font-size:0.83rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,35,126,0.22);">
-          <i class="fa-solid fa-table"></i> Negosiasi HPS (Tabel)
+          <i class="fa-solid fa-table"></i> Input Hasil Negosiasi
         </button>
         <button onclick="bukaModalUndangan(${origIdx})"
           style="display:inline-flex;align-items:center;gap:6px;background:#1B5E20;color:white;border:none;border-radius:7px;padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
@@ -9862,14 +9322,8 @@ function renderNegosiasiPage() {
         ${riwayatBtn}
       </div>` : '';
 
-    const penyediaActions = isPenyedia ? `
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="bukaModalNegoHPS(${origIdx})"
-          style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0d1b6e,#1A237E);color:white;border:none;border-radius:7px;padding:9px 18px;font-size:0.83rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,35,126,0.22);">
-          <i class="fa-solid fa-table"></i> Negosiasi HPS (Tabel)
-        </button>
-        ${riwayatBtn}
-      </div>` : '';
+    // Penyedia tidak perlu akses modal negosiasi (input hanya oleh Pokja offline)
+    const penyediaActions = '';
 
     return `<div style="background:white;border:1px solid var(--gray-200);border-left:4px solid ${borderColor};border-radius:10px;padding:16px 20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(26,35,126,0.07);">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
@@ -9915,10 +9369,10 @@ async function bukaRiwayatNego(idx) {
 
   // Fetch data
   try {
-    const qs  = new URLSearchParams({ action:'getNegoHPS', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
+    const qs  = new URLSearchParams({ action:'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
     const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
     const json = await res.json();
-    const s    = (json.status === 'ok' && json.data) ? json.data : null;
+    const s    = (json.status === 'ok' && json.negosiasi) ? json.negosiasi : null;
     renderRiwayatNegoModal(s, d.namaPerusahaan);
   } catch(e) {
     document.getElementById('riwayatNegoWrap').innerHTML =
@@ -10039,110 +9493,102 @@ function renderRiwayatNegoModal(s, nama) {
 
     <!-- Header -->
     <div class="nhps-header">
-      <h3>
+      <h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <i class="fa-solid fa-table"></i>
-        Negosiasi HPS — Berbasis Tabel
+        Input Hasil Negosiasi
         <span class="nhps-sub" id="nhpsNamaPerusahaan"></span>
+        <span id="nhpsStatusBadge" style="margin-left:6px;"></span>
       </h3>
       <button class="nhps-close" onclick="tutupModalNegoHPS()">✕</button>
-    </div>
-
-    <!-- Tabs -->
-    <div class="nhps-tabs" id="nhpsTabs">
-      <button class="nhps-tab active" data-tab="parse" onclick="nhpsSwitchTab('parse')">
-        <i class="fa-solid fa-table"></i> Input HPS
-      </button>
-      <button class="nhps-tab" data-tab="tabel" onclick="nhpsSwitchTab('tabel')">
-        <i class="fa-solid fa-table-cells-large"></i> Tabel Negosiasi
-      </button>
-    </div>
-
-    <!-- Giliran indicator -->
-    <div id="nhpsGiliran" class="nhps-giliran g-wait" style="margin:14px 22px 0;">
-      <i class="fa-solid fa-hourglass-half"></i> Memuat…
     </div>
 
     <!-- Message bar -->
     <div id="nhpsMsg" class="nhps-info" style="display:none;margin:10px 22px 0;"></div>
 
-    <!-- Body: Tab Input HPS (tabel langsung) -->
-    <div class="nhps-body nhps-panel" data-panel="parse">
+    <!-- Body -->
+    <div class="nhps-body">
 
-      <!-- Template selector -->
-      <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span style="font-size:0.80rem;font-weight:700;color:#5C6BC0;"><i class="fa-solid fa-wand-magic-sparkles"></i> Template Cepat:</span>
+      <!-- Template selector & toolbar -->
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:0.80rem;font-weight:700;color:#5C6BC0;"><i class="fa-solid fa-wand-magic-sparkles"></i> Template:</span>
         <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsLoadTemplate(0)"><i class="fa-solid fa-broom"></i> Kebersihan</button>
         <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsLoadTemplate(1)"><i class="fa-solid fa-shield-halved"></i> Keamanan</button>
         <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsLoadTemplate(2)"><i class="fa-solid fa-car"></i> Pengemudi</button>
-        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsKosongkanTabel()" style="margin-left:auto;"><i class="fa-solid fa-trash"></i> Kosongkan</button>
-      </div>
-
-      <!-- Tabel Input HPS langsung -->
-      <div class="nhps-tbl-wrap" style="margin-bottom:12px;">
-        <table class="nhps-tbl" id="nhpsInputTable">
-          <thead>
-            <tr>
-              <th style="width:36px;text-align:center;">NO</th>
-              <th style="min-width:200px;">URAIAN</th>
-              <th style="width:80px;text-align:center;">VOLUME</th>
-              <th style="width:110px;">SATUAN</th>
-              <th style="width:140px;text-align:right;">HARGA SATUAN</th>
-              <th style="width:60px;text-align:center;">PPN</th>
-              <th style="width:150px;text-align:right;">TOTAL HARGA</th>
-              <th style="width:40px;text-align:center;background:#37474F;">
-                <i class="fa-solid fa-trash-can" style="font-size:11px;opacity:0.7;"></i>
-              </th>
-            </tr>
-          </thead>
-          <tbody id="nhpsInputTbody">
-            <!-- baris dirender oleh JS -->
-          </tbody>
-          <tfoot id="nhpsInputTfoot">
-            <!-- total dirender oleh JS -->
-          </tfoot>
-        </table>
-      </div>
-
-      <!-- Toolbar bawah tabel -->
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsTambahBarisInput()">
-          <i class="fa-solid fa-plus"></i> Tambah Baris
-        </button>
-        <span style="font-size:0.75rem;color:#9FA8DA;"><i class="fa-solid fa-circle-info"></i> Centang PPN untuk item yang kena PPN 11%. Item seperti Upah bisa dikosongkan.</span>
-      </div>
-
-    </div><!-- /panel parse -->
-
-    <!-- Body: Tab Tabel -->
-    <div class="nhps-body nhps-panel" data-panel="tabel" style="display:none;">
-      <!-- Summary cards -->
-      <div class="nhps-summary" id="nhpsSummary">
-        <div class="nhps-sum-card sc-hps"><div class="sv" style="opacity:0.4;">–</div><div class="sl">Total HPS Pokja</div></div>
-        <div class="nhps-sum-card sc-peny"><div class="sv" style="opacity:0.4;">–</div><div class="sl">Total Nego Penyedia</div></div>
-        <div class="nhps-sum-card sc-pokja"><div class="sv" style="opacity:0.4;">–</div><div class="sl">Total Nego Pokja</div></div>
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsTambahBaris()" style="background:#E8F5E9;border-color:#A5D6A7;color:#1B5E20;"><i class="fa-solid fa-plus"></i> Tambah Baris</button>
+        <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsKosongkanTabel()" style="margin-left:auto;background:#FFEBEE;border-color:#EF9A9A;color:#B71C1C;"><i class="fa-solid fa-trash"></i> Kosongkan</button>
       </div>
 
       <!-- Keterangan kolom warna -->
-      <div style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;font-size:0.75rem;">
-        <span><span style="display:inline-block;width:12px;height:12px;background:#E8EAF6;border:1px solid #9FA8DA;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>HPS Pokja</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Nego Penyedia</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#FFEBEE;border:1px solid #EF9A9A;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Nego Pokja</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#C8E6C9;border:1px solid #81C784;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Selisih ≤ 0%</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#FFF9C4;border:1px solid #FDD835;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Selisih &lt; 10%</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#FFCDD2;border:1px solid #EF9A9A;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Selisih ≥ 10%</span>
+      <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap;font-size:0.75rem;">
+        <span><span style="display:inline-block;width:12px;height:12px;background:#EEF;border:1px solid #9FA8DA;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>HPS</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#F1F8E9;border:1px solid #A5D6A7;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Penawaran Penyedia</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#FFF8E1;border:1px solid #FFD54F;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Hasil Negosiasi</span>
+        <span style="margin-left:auto;font-size:0.72rem;color:#9FA8DA;"><i class="fa-solid fa-circle-info"></i> Centang PPN 11% per item sesuai komponen.</span>
       </div>
 
-      <div id="nhpsTabelWrap">
-        <div class="nhps-tbl-empty">
-          <i class="fa-solid fa-rotate fa-spin"></i>
-          <div>Memuat tabel…</div>
+      <!-- Tabel 3 kolom -->
+      <div class="nhps-tbl-wrap">
+        <table class="nhps-tbl" id="nhpsMainTable">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:36px;">#</th>
+              <th rowspan="2" style="min-width:180px;">URAIAN / KOMPONEN</th>
+              <th rowspan="2" style="width:75px;">VOL</th>
+              <th rowspan="2" style="width:90px;">SATUAN</th>
+              <th rowspan="2" style="width:55px;background:#E8EAF6;">PPN</th>
+              <th colspan="2" style="background:#E8EAF6;color:#1A237E;">HPS</th>
+              <th colspan="3" style="background:#E8F5E9;color:#1B5E20;">PENAWARAN PENYEDIA</th>
+              <th colspan="3" style="background:#FFF8E1;color:#E65100;">HASIL NEGOSIASI</th>
+              <th rowspan="2" style="width:38px;background:#ECEFF1;"></th>
+            </tr>
+            <tr>
+              <th style="background:#EEF;color:#1A237E;width:130px;">Harga Sat.</th>
+              <th style="background:#E8EAF6;color:#1A237E;width:130px;">Total Incl.</th>
+              <th style="background:#F1F8E9;color:#1B5E20;width:130px;">Harga Sat.</th>
+              <th style="background:#E8F5E9;color:#1B5E20;width:130px;">Total Incl.</th>
+              <th style="background:#F9FBE7;color:#558B2F;width:60px;">Selisih</th>
+              <th style="background:#FFF8E1;color:#E65100;width:130px;">Harga Sat.</th>
+              <th style="background:#FFF3E0;color:#E65100;width:130px;">Total Incl.</th>
+              <th style="background:#FFF8E1;color:#558B2F;width:60px;">Selisih</th>
+            </tr>
+          </thead>
+          <tbody id="nhpsTbody">
+            <tr><td colspan="14" style="text-align:center;padding:30px;color:#9FA8DA;"><i class="fa-solid fa-rotate fa-spin"></i> Memuat…</td></tr>
+          </tbody>
+          <tfoot id="nhpsTfoot"></tfoot>
+        </table>
+      </div>
+
+      <!-- Catatan & Status -->
+      <div style="margin-top:16px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="flex:1;min-width:220px;">
+          <label style="font-size:0.78rem;font-weight:700;color:#555;display:block;margin-bottom:4px;"><i class="fa-solid fa-comment-dots"></i> Catatan Pokja</label>
+          <textarea id="nhpsCatatan" rows="2" style="width:100%;border:1px solid #C5CAE9;border-radius:7px;padding:8px 10px;font-size:0.82rem;resize:vertical;" placeholder="Catatan hasil negosiasi (opsional)…"></textarea>
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:#555;display:block;margin-bottom:4px;"><i class="fa-solid fa-flag"></i> Status</label>
+          <select id="nhpsStatusSelect" style="border:1px solid #C5CAE9;border-radius:7px;padding:8px 12px;font-size:0.82rem;font-weight:700;">
+            <option value="Draft">Draft</option>
+            <option value="Final">Final</option>
+          </select>
         </div>
       </div>
-    </div><!-- /panel tabel -->
+
+    </div><!-- /.nhps-body -->
 
     <!-- Footer -->
-    <div class="nhps-footer" id="nhpsFooter">
+    <div class="nhps-footer" id="nhpsFooter" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <button class="nhps-btn nhps-btn-gray" onclick="tutupModalNegoHPS()"><i class="fa-solid fa-xmark"></i> Tutup</button>
+      <button id="nhpsBtnSimpan" class="nhps-btn nhps-btn-primary" onclick="nhpsSimpanDraft()">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Draft
+      </button>
+      <button id="nhpsBtnFinal" class="nhps-btn" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;" onclick="nhpsSimpanFinal()">
+        <i class="fa-solid fa-circle-check"></i> Simpan &amp; Final
+      </button>
+      <button class="nhps-btn nhps-btn-gray nhps-btn-sm" onclick="nhpsHapusData()" style="background:#FFEBEE;border-color:#EF9A9A;color:#B71C1C;margin-left:auto;">
+        <i class="fa-solid fa-trash"></i> Hapus Data
+      </button>
+      <a href="#" style="font-size:0.78rem;color:#5C6BC0;text-decoration:none;" onclick="nhpsLoadFromServer();return false;"><i class="fa-solid fa-rotate"></i> Refresh</a>
     </div>
 
   </div><!-- /.nhps-wrap -->
@@ -10316,36 +9762,7 @@ const STATUS_MENUNGGU_KONTRAK          = 'Menunggu Penandatanganan Kontrak';
 // ================================================================
 (function() {
   // [DIUBAH] Override nhpsRenderInputTable agar Penyedia tidak bisa akses tab parse
-  const _origNhpsRenderGiliran = window.nhpsRenderGiliran;
-  if (typeof _origNhpsRenderGiliran === 'function') {
-    window.nhpsRenderGiliran = function() {
-      _origNhpsRenderGiliran.apply(this, arguments);
-      // [DITAMBAHKAN] Sembunyikan tab Input/Parse HPS untuk Penyedia
-      if (currentRole === 'penyedia') {
-        const tabParse = document.querySelector('.nhps-tab[data-tab="parse"]');
-        if (tabParse) tabParse.style.display = 'none';
-        // Jika tab parse aktif, pindahkan ke tabel
-        if (_nhps && _nhps.activeTab === 'parse') nhpsSwitchTab('tabel');
-      }
-    };
-  }
-
-  // [DITAMBAHKAN] Intercept bukaModalNegoHPS agar penyedia langsung ke tab tabel
-  const _origBukaModal = window.bukaModalNegoHPS;
-  if (typeof _origBukaModal === 'function') {
-    window.bukaModalNegoHPS = function(idx) {
-      _origBukaModal.apply(this, arguments);
-      if (currentRole === 'penyedia') {
-        // Sembunyikan tab parse
-        setTimeout(() => {
-          const tabParse = document.querySelector('.nhps-tab[data-tab="parse"]');
-          if (tabParse) tabParse.style.display = 'none';
-          // Aktifkan tab tabel jika tidak sedang di tabel
-          if (_nhps && _nhps.activeTab === 'parse') nhpsSwitchTab('tabel');
-        }, 100);
-      }
-    };
-  }
+  // [Patch lama dihapus: penyedia tidak lagi mengakses modal negosiasi]
 })();
 
 // ================================================================
@@ -10718,8 +10135,7 @@ window.simpanNegoFinal = async function() {
       const all = getSubmissions();
       const selesaiCount = all.filter(s => {
         const n = s.negosiasi;
-        return n && (n.giliran === 'Selesai' ||
-          (typeof n.status === 'string' && n.status.toLowerCase().includes('disetujui')));
+        return n && n.status === 'Final';
       }).length;
       const totalLulus = all.filter(s => s.reviewStatus === 'Memenuhi Syarat').length;
 
