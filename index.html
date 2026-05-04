@@ -802,9 +802,141 @@
     #toastContainer { bottom: 16px; right: 8px; left: 8px; align-items: stretch; }
     .toast { min-width: unset; max-width: unset; }
   }
+
+  /* ===== SESSION TIMEOUT WARNING MODAL ===== */
+  #sessionTimeoutOverlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65); z-index: 99999;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  #sessionTimeoutOverlay.show { display: flex; }
+  #sessionTimeoutModal {
+    background: var(--white); border-radius: 16px;
+    width: min(420px, 92vw); padding: 0; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: modalIn 0.25s cubic-bezier(.175,.885,.32,1.275);
+  }
+  .sto-header {
+    background: linear-gradient(135deg, #856404, #FFC107);
+    padding: 22px 26px 18px; text-align: center; color: white;
+  }
+  .sto-header .sto-icon {
+    font-size: 2.8rem; margin-bottom: 8px; display: block;
+    animation: stoPulse 1s ease-in-out infinite;
+  }
+  @keyframes stoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+  .sto-header h3 { font-size: 1.15rem; font-weight: 800; margin: 0; }
+  .sto-header p { font-size: 0.82rem; opacity: 0.9; margin-top: 4px; }
+  .sto-body { padding: 24px 26px; text-align: center; }
+  .sto-countdown-wrap {
+    background: #FFF8E1; border: 2px solid #FFD54F;
+    border-radius: 12px; padding: 16px; margin-bottom: 18px;
+  }
+  .sto-countdown-label { font-size: 0.78rem; color: #856404; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  #stoCountdownNum {
+    font-size: 2.8rem; font-weight: 900; color: #C0392B;
+    line-height: 1; font-variant-numeric: tabular-nums;
+    transition: color 0.3s;
+  }
+  #stoCountdownNum.urgent { color: #C0392B; animation: stoFlash 0.5s ease-in-out infinite; }
+  @keyframes stoFlash { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .sto-countdown-sub { font-size: 0.78rem; color: #856404; margin-top: 4px; }
+  .sto-desc { font-size: 0.88rem; color: var(--gray-600); line-height: 1.6; margin-bottom: 20px; }
+  .sto-actions { display: flex; gap: 10px; }
+  .sto-btn-continue {
+    flex: 1; padding: 12px; background: var(--blue-700); color: white;
+    border: none; border-radius: 9px; font-size: 0.92rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .sto-btn-continue:hover { background: var(--blue-900); }
+  .sto-btn-logout {
+    padding: 12px 18px; background: #FDEDEC; color: #C0392B;
+    border: 1.5px solid #F5B7B1; border-radius: 9px; font-size: 0.88rem;
+    font-weight: 700; cursor: pointer; transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .sto-btn-logout:hover { background: #FDEDEC; border-color: #C0392B; }
+
+  /* Session expired notification (full screen) */
+  #sessionExpiredOverlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 99999;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  #sessionExpiredOverlay.show { display: flex; }
+  #sessionExpiredModal {
+    background: var(--white); border-radius: 16px;
+    width: min(400px, 92vw); padding: 0; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    animation: modalIn 0.25s cubic-bezier(.175,.885,.32,1.275);
+  }
+  .se-header {
+    background: linear-gradient(135deg, #C0392B, #E74C3C);
+    padding: 26px 26px 20px; text-align: center; color: white;
+  }
+  .se-header .se-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+  .se-header h3 { font-size: 1.2rem; font-weight: 800; }
+  .se-header p { font-size: 0.82rem; opacity: 0.88; margin-top: 4px; }
+  .se-body { padding: 22px 26px 26px; text-align: center; }
+  .se-body p { font-size: 0.88rem; color: var(--gray-600); line-height: 1.65; margin-bottom: 20px; }
+  .se-btn-ok {
+    width: 100%; padding: 12px; background: var(--blue-700); color: white;
+    border: none; border-radius: 9px; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .se-btn-ok:hover { background: var(--blue-900); }
   </style>
 </head>
 <body>
+
+<!-- ===== SESSION TIMEOUT WARNING MODAL ===== -->
+<div id="sessionTimeoutOverlay">
+  <div id="sessionTimeoutModal">
+    <div class="sto-header">
+      <span class="sto-icon">⏰</span>
+      <h3>Sesi Hampir Berakhir</h3>
+      <p>Anda tidak aktif. Sesi akan otomatis berakhir dalam:</p>
+    </div>
+    <div class="sto-body">
+      <div class="sto-countdown-wrap">
+        <div class="sto-countdown-label">Waktu tersisa</div>
+        <div id="stoCountdownNum">2:00</div>
+        <div class="sto-countdown-sub">menit : detik</div>
+      </div>
+      <p class="sto-desc">Klik <strong>"Lanjutkan Sesi"</strong> untuk tetap masuk, atau <strong>"Logout"</strong> jika sudah selesai.</p>
+      <div class="sto-actions">
+        <button class="sto-btn-continue" onclick="sessionContinue()">
+          <i class="fa-solid fa-rotate-right"></i> Lanjutkan Sesi
+        </button>
+        <button class="sto-btn-logout" onclick="doLogout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SESSION EXPIRED NOTIFICATION ===== -->
+<div id="sessionExpiredOverlay">
+  <div id="sessionExpiredModal">
+    <div class="se-header">
+      <span class="se-icon">🔒</span>
+      <h3>Sesi Telah Berakhir</h3>
+      <p>Anda telah logout otomatis</p>
+    </div>
+    <div class="se-body">
+      <p>Sesi Anda telah berakhir karena tidak ada aktivitas selama <strong>10 menit</strong>. Silakan login kembali untuk melanjutkan.</p>
+      <button class="se-btn-ok" onclick="sessionExpiredClose()">
+        <i class="fa-solid fa-right-to-bracket"></i> &nbsp;OK, Mengerti
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Tooltip kalender -->
 <div class="cal-tooltip" id="calTooltip"></div>
@@ -2750,9 +2882,78 @@ function renderDelegasiTable() {
 }
 
 // ── Session persistence: tahan login saat browser di-refresh ──
-// Menggunakan localStorage agar tahan refresh, dengan session timeout 5 menit tidak aktif.
-var SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 menit
+// Menggunakan localStorage agar tahan refresh, dengan session timeout 10 menit tidak aktif.
+var SESSION_TIMEOUT_MS   = 10 * 60 * 1000; // 10 menit
+var SESSION_WARNING_MS   =  2 * 60 * 1000; // Peringatan 2 menit sebelum timeout
 var _sessionTimeoutTimer = null;
+var _stoCountdownTimer   = null;
+var _stoWarningShown     = false;
+
+function _showSessionWarning(remainingMs) {
+  if (_stoWarningShown) return;
+  _stoWarningShown = true;
+  var overlay = document.getElementById('sessionTimeoutOverlay');
+  if (!overlay) return;
+  overlay.classList.add('show');
+  // Mulai countdown
+  var endTime = Date.now() + remainingMs;
+  _runStoCountdown(endTime);
+}
+
+function _runStoCountdown(endTime) {
+  clearInterval(_stoCountdownTimer);
+  var numEl = document.getElementById('stoCountdownNum');
+  function tick() {
+    var left = Math.max(0, endTime - Date.now());
+    var m = Math.floor(left / 60000);
+    var s = Math.floor((left % 60000) / 1000);
+    if (numEl) {
+      numEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+      if (left <= 30000) numEl.classList.add('urgent');
+      else               numEl.classList.remove('urgent');
+    }
+    if (left <= 0) {
+      clearInterval(_stoCountdownTimer);
+      _hideSessionWarning();
+      _triggerSessionExpired();
+    }
+  }
+  tick();
+  _stoCountdownTimer = setInterval(tick, 500);
+}
+
+function _hideSessionWarning() {
+  var overlay = document.getElementById('sessionTimeoutOverlay');
+  if (overlay) overlay.classList.remove('show');
+  clearInterval(_stoCountdownTimer);
+  _stoWarningShown = false;
+}
+
+function _triggerSessionExpired() {
+  clearInterval(_sessionTimeoutTimer);
+  // Jalankan logout diam-diam dulu
+  if (typeof releasePokjaLock === 'function' && currentRole === 'pokja' && currentPokjaUser) releasePokjaLock(currentPokjaUser);
+  currentRole = null; currentPenyedia = null; currentPokjaUser = null;
+  if (typeof _submissions !== 'undefined') _submissions = [];
+  if (typeof saveSession    === 'function') saveSession();
+  if (typeof renderSidebar  === 'function') renderSidebar();
+  if (typeof updateRoleUI   === 'function') updateRoleUI();
+  if (typeof showPage       === 'function') showPage('beranda');
+  // Tampilkan notifikasi sesi berakhir
+  var expired = document.getElementById('sessionExpiredOverlay');
+  if (expired) expired.classList.add('show');
+}
+
+function sessionContinue() {
+  _hideSessionWarning();
+  _updateLastActive();
+}
+
+function sessionExpiredClose() {
+  var expired = document.getElementById('sessionExpiredOverlay');
+  if (expired) expired.classList.remove('show');
+}
+
 
 function saveSession() {
   try {
@@ -2782,18 +2983,29 @@ function _updateLastActive() {
 
 function _startSessionTimeoutWatcher() {
   clearInterval(_sessionTimeoutTimer);
+  _stoWarningShown = false;
   _sessionTimeoutTimer = setInterval(function() {
     if (!currentRole) return;
     try {
-      var last = parseInt(localStorage.getItem('_bpbj_lastActive') || '0', 10);
-      if (last > 0 && (Date.now() - last) >= SESSION_TIMEOUT_MS) {
-        // Session timeout — auto logout
+      var last    = parseInt(localStorage.getItem('_bpbj_lastActive') || '0', 10);
+      if (last <= 0) return;
+      var elapsed = Date.now() - last;
+      var remaining = SESSION_TIMEOUT_MS - elapsed;
+
+      if (remaining <= 0) {
+        // Waktu habis — trigger expired
         clearInterval(_sessionTimeoutTimer);
-        showToast('Sesi Berakhir', 'Anda telah logout otomatis karena tidak aktif selama 5 menit.', 'info');
-        setTimeout(function() { doLogout(); }, 800);
+        _hideSessionWarning();
+        _triggerSessionExpired();
+      } else if (remaining <= SESSION_WARNING_MS && !_stoWarningShown) {
+        // Masuk zona peringatan (≤ 2 menit tersisa) — tampilkan warning
+        _showSessionWarning(remaining);
+      } else if (remaining > SESSION_WARNING_MS && _stoWarningShown) {
+        // User sudah aktif kembali (dari sessionContinue), sembunyikan warning
+        _hideSessionWarning();
       }
     } catch(e) {}
-  }, 30000); // cek tiap 30 detik
+  }, 5000); // cek tiap 5 detik (lebih responsif untuk countdown)
   // Update lastActive setiap ada interaksi pengguna
   ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach(function(evt) {
     document.addEventListener(evt, _updateLastActive, { passive: true });
@@ -2822,6 +3034,7 @@ function restoreSession() {
     currentPokjaUser = localStorage.getItem('_bpbj_pokjauser') || sessionStorage.getItem('_bpbj_pokjauser') || null;
     // Update lastActive agar tidak langsung timeout setelah restore
     localStorage.setItem('_bpbj_lastActive', Date.now().toString());
+    _stoWarningShown = false;
     return true;
   } catch(e) { return false; }
 }
@@ -3047,10 +3260,13 @@ function setRole(role) {
 }
 
 function doLogoutSilent() {
+  _hideSessionWarning();
   if (currentRole === 'pokja' && currentPokjaUser) releasePokjaLock(currentPokjaUser);
   currentRole = null; currentPenyedia = null; currentPokjaUser = null; _submissions = []; saveSession();
 }
 function doLogout() {
+  _hideSessionWarning();
+  clearInterval(_sessionTimeoutTimer);
   if (currentRole === 'pokja' && currentPokjaUser) releasePokjaLock(currentPokjaUser);
   currentRole = null; currentPenyedia = null; currentPokjaUser = null; _submissions = []; saveSession(); renderSidebar(); updateRoleUI(); updateMbnVisibility(); updateUploadFormLock(); showPage('beranda');
 }
