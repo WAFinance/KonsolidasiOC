@@ -1281,7 +1281,7 @@
             <div style="width:40px;height:40px;background:#2D7D17;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
             <div><div style="font-weight:700;color:#1a4a0d;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:#2D7D17;"></i> Dok. Administrasi — File siap dikirim</div><div id="uploadedAnimName_adm" style="font-size:0.78rem;color:#3B6D11;margin-top:2px;"></div></div>
           </div>
-          <div class="form-success" id="uploadSuccess_adm" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Administrasi berhasil dikirim!</strong><span id="uploadSuccessStatusHint_adm" style="font-size:0.85rem;margin-top:6px;display:block;"></span></div>
+          <div class="form-success" id="uploadSuccess_adm" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Administrasi berhasil dikirim!</strong><span id="uploadSuccessStatusHint_adm" style="font-size:0.85rem;margin-top:6px;display:block;"></span><button onclick="resetUploadForm()" style="margin-top:10px;background:var(--blue-700);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-rotate-left"></i> Upload Dokumen Lagi</button></div>
           <div class="form-error" id="uploadError_adm" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_adm"></span></div>
         </div>
       </div>
@@ -1299,7 +1299,7 @@
             <div style="width:40px;height:40px;background:var(--blue-700);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
             <div><div style="font-weight:700;color:#0C447C;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:var(--blue-700);"></i> Dok. Kualifikasi — File siap dikirim</div><div id="uploadedAnimName_kual" style="font-size:0.78rem;color:var(--blue-700);margin-top:2px;"></div></div>
           </div>
-          <div class="form-success" id="uploadSuccess_kual" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Kualifikasi berhasil dikirim!</strong></div>
+          <div class="form-success" id="uploadSuccess_kual" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Kualifikasi berhasil dikirim!</strong><br><button onclick="resetUploadForm()" style="margin-top:10px;background:var(--blue-700);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-rotate-left"></i> Upload Dokumen Lagi</button></div>
           <div class="form-error" id="uploadError_kual" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_kual"></span></div>
         </div>
       </div>
@@ -1317,7 +1317,7 @@
             <div style="width:40px;height:40px;background:#856404;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
             <div><div style="font-weight:700;color:#4a3500;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:#856404;"></i> Dok. Teknis — File siap dikirim</div><div id="uploadedAnimName_tek" style="font-size:0.78rem;color:#856404;margin-top:2px;"></div></div>
           </div>
-          <div class="form-success" id="uploadSuccess_tek" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Teknis berhasil dikirim!</strong></div>
+          <div class="form-success" id="uploadSuccess_tek" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Teknis berhasil dikirim!</strong><br><button onclick="resetUploadForm()" style="margin-top:10px;background:var(--blue-700);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-rotate-left"></i> Upload Dokumen Lagi</button></div>
           <div class="form-error" id="uploadError_tek" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_tek"></span></div>
         </div>
       </div>
@@ -1335,7 +1335,7 @@
             <div style="width:40px;height:40px;background:#C0392B;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pulseCheck 0.5s ease;"><i class="fa-solid fa-check" style="color:white;font-size:1.1rem;"></i></div>
             <div><div style="font-weight:700;color:#7B0D1E;font-size:0.88rem;"><i class="fa-solid fa-file-circle-check" style="color:#C0392B;"></i> Dok. Harga — File siap dikirim</div><div id="uploadedAnimName_harga" style="font-size:0.78rem;color:#C0392B;margin-top:2px;"></div></div>
           </div>
-          <div class="form-success" id="uploadSuccess_harga" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Harga berhasil dikirim!</strong></div>
+          <div class="form-success" id="uploadSuccess_harga" style="display:none;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Dokumen Harga berhasil dikirim!</strong><br><button onclick="resetUploadForm()" style="margin-top:10px;background:var(--blue-700);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-rotate-left"></i> Upload Dokumen Lagi</button></div>
           <div class="form-error" id="uploadError_harga" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="uploadErrorMsg_harga"></span></div>
         </div>
       </div>
@@ -1380,7 +1380,7 @@
       </div>
 
       <!-- Pesan sukses/error global -->
-      <div class="form-success" id="allUploadSuccess" style="display:none;padding:16px 20px;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Semua dokumen berhasil dikirim!</strong><span id="allUploadSuccessHint" style="font-size:0.85rem;margin-top:6px;display:block;"></span></div>
+      <div class="form-success" id="allUploadSuccess" style="display:none;padding:16px 20px;"><i class="fa-solid fa-circle-check"></i>&nbsp;<strong>Semua dokumen berhasil dikirim!</strong><span id="allUploadSuccessHint" style="font-size:0.85rem;margin-top:6px;display:block;"></span><button onclick="resetUploadForm()" style="margin-top:10px;background:var(--blue-700);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-rotate-left"></i> Upload Dokumen Lagi</button></div>
       <div class="form-error" id="allUploadError" style="display:none;"><i class="fa-solid fa-circle-xmark"></i>&nbsp;<strong>Terjadi kesalahan.</strong> <span id="allUploadErrorMsg"></span></div>
 
       <!-- Hidden legacy fields for compatibility -->
@@ -1580,6 +1580,40 @@
               </div>
               <div id="loginTogglePreview" style="background:#FFF3CD;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:10px 14px;font-size:0.80rem;color:#6b5003;margin-bottom:16px;display:none;">
                 <i class="fa-solid fa-lock"></i> <strong>Status Kunci:</strong> <span id="loginTogglePreviewText"></span>
+              </div>
+
+              <!-- ===== TOGGLE KUNCI UPLOAD DOKUMEN ===== -->
+              <hr style="margin:18px 0;border-color:var(--gray-200);">
+              <p style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin-bottom:4px;"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--blue-600);"></i> Pengaturan Upload Dokumen</p>
+              <p style="font-size:0.80rem;color:var(--gray-600);margin-bottom:14px;">Saat dikunci, form upload tidak bisa digunakan oleh Penyedia yang sudah login — muncul banner peringatan dan tombol kirim dinonaktifkan.</p>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#C0392B,#E74C3C);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="color:#fff;font-size:16px;"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:0.88rem;font-weight:700;color:var(--blue-900);">Upload Dokumen Penyedia</div>
+                    <div style="font-size:0.75rem;color:var(--gray-400);">Toggle OFF = terkunci (form diblokir, tombol kirim dinonaktifkan)</div>
+                  </div>
+                </div>
+                <label class="admin-toggle-switch">
+                  <input type="checkbox" id="toggleUploadDokumen" onchange="previewUploadToggle()" checked>
+                  <span class="admin-toggle-slider"></span>
+                </label>
+              </div>
+              <div id="uploadLockMsgConfig" style="display:none;background:#FFF0F0;border:1px solid #FFCDD2;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+                <p style="font-size:0.82rem;font-weight:700;color:#7B0D1E;margin-bottom:10px;"><i class="fa-solid fa-message" style="color:#C0392B;"></i> Pesan yang muncul di form upload saat terkunci</p>
+                <div class="admin-form-group" style="margin-bottom:10px;">
+                  <label style="font-size:0.80rem;">Judul Pesan</label>
+                  <input type="text" id="uploadLockMsgTitle" placeholder="cth: Upload Dokumen Belum Dibuka" style="font-size:0.85rem;" />
+                </div>
+                <div class="admin-form-group" style="margin-bottom:4px;">
+                  <label style="font-size:0.80rem;">Pesan Utama</label>
+                  <input type="text" id="uploadLockMsgBody" placeholder="cth: Silakan tunggu jadwal pemasukan dokumen penawaran." style="font-size:0.85rem;" />
+                </div>
+              </div>
+              <div id="uploadTogglePreview" style="background:#FFF3CD;border:1px solid #FFD54F;border-left:4px solid #856404;border-radius:8px;padding:10px 14px;font-size:0.80rem;color:#6b5003;margin-bottom:16px;display:none;">
+                <i class="fa-solid fa-lock"></i> <strong>Status Upload:</strong> <span id="uploadTogglePreviewText">Upload dokumen dikunci — form diblokir untuk Penyedia.</span>
               </div>
 
               <hr style="margin:18px 0;border-color:var(--gray-200);">
@@ -2446,7 +2480,7 @@ function gcGet(key, def) {
 async function fetchGlobalConfig(silent=false) {
   if (!silent) showSync('Memuat pengaturan global…');
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getConfig&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getConfig'})});
     const data = await res.json();
     if (data.status === 'ok' && data.config) {
       _globalConfig = data.config;
@@ -2503,7 +2537,7 @@ async function loadSubmissionsFromSheet() {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now(), { signal: controller.signal });
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'}), signal: controller.signal});
     clearTimeout(timeout);
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
@@ -2529,8 +2563,7 @@ async function loadStatusPenyedia() {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000); // 15 detik timeout
-    const url = APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email) + '&t=' + Date.now();
-    const res  = await fetch(url, { signal: controller.signal });
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getMySubmissions', email: currentPenyedia.email}), signal: controller.signal});
     clearTimeout(timeout);
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
@@ -2687,7 +2720,7 @@ let _delegasiMap = {}; // key: "npwp||jenisDok" → "Pokja 1" | "Pokja 2" | ...
 // Muat delegasi map dari server (dipanggil saat login pokja/admin)
 async function loadDelegasiMap() {
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=getDelegasiPaket&t=' + Date.now());
+    const res = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getDelegasiPaket'})});
     const data = await res.json();
     if (data.status === 'ok' && data.delegasiMap) {
       _delegasiMap = data.delegasiMap;
@@ -3092,7 +3125,7 @@ async function doLoginPenyedia() {
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   let account = null;
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'loginPenyedia', email, password }) });
     const data = await res.json();
     if (data.status === 'ok' && data.account) {
       account = data.account;
@@ -3128,7 +3161,7 @@ async function doLoginPokja() {
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   let verified = false;
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPokja&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'loginPokja', username, password }) });
     const data = await res.json();
     if (data.status === 'ok') {
       verified = true;
@@ -3200,7 +3233,7 @@ async function doLoginAdmin() {
 
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginAdmin&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'loginAdmin', username, password }) });
     const data = await res.json();
     if (data.status === 'ok') {
       showModalSuccess('loginOverlayAdmin', 'Login admin berhasil! ✓', 1200);
@@ -3686,8 +3719,65 @@ function toggleHistoriUpload(grpId) {
 function updateUploadFormLock() {
   setTimeout(() => {
     const isPenyedia = currentRole === 'penyedia' && currentPenyedia;
+    const uploadTerkunci = gcGet('uploadDokumenTerkunci', false);
+    const uploadLockCfg  = gcGet('uploadLockConfig', {});
+
+    // ── Banner kunci upload (hanya tampil untuk penyedia yang login) ──
+    const existingBanner = document.getElementById('uploadLockBanner');
+    if (existingBanner) existingBanner.remove();
+
+    if (isPenyedia && uploadTerkunci) {
+      const lockTitle = uploadLockCfg.title || 'Upload Dokumen Belum Dibuka';
+      const lockMsg   = uploadLockCfg.msg   || 'Silakan tunggu jadwal pemasukan dokumen penawaran.';
+      const banner = document.createElement('div');
+      banner.id = 'uploadLockBanner';
+      banner.innerHTML = `
+        <div style="background:linear-gradient(135deg,#7B0D1E,#C0392B);color:#fff;border-radius:12px;padding:18px 22px;margin-bottom:22px;display:flex;align-items:flex-start;gap:16px;box-shadow:0 4px 18px rgba(192,57,43,0.25);">
+          <div style="width:44px;height:44px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fa-solid fa-lock" style="font-size:1.3rem;"></i>
+          </div>
+          <div>
+            <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">${lockTitle}</div>
+            <div style="font-size:0.85rem;opacity:0.92;">${lockMsg}</div>
+          </div>
+        </div>`;
+      // Sisipkan sebelum form identitas atau di awal page-upload
+      const uploadPage = document.getElementById('page-upload');
+      const identitasFields = document.getElementById('uploadIdentitasFields');
+      if (uploadPage) {
+        const insertTarget = identitasFields ? identitasFields.closest('.form-card') || identitasFields : uploadPage.querySelector('.form-card') || uploadPage.firstChild;
+        if (insertTarget && insertTarget.parentNode) {
+          insertTarget.parentNode.insertBefore(banner, insertTarget);
+        } else {
+          uploadPage.prepend(banner);
+        }
+      }
+    }
+
+    // ── Disable / enable semua tombol submit & file input ──
+    const submitButtons = ['btnSubmitUpload','btnKirimSemuaDokumen',
+      ...['adm','kual','tek','harga'].map(t => 'btnSubmitUpload_' + t)];
+    const fileInputs = ['fFileDok', ...['adm','kual','tek','harga'].map(t => 'fFileDok_' + t)];
+
+    const shouldDisable = isPenyedia && uploadTerkunci;
+    submitButtons.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.disabled = shouldDisable;
+      el.style.opacity  = shouldDisable ? '0.45' : '';
+      el.style.cursor   = shouldDisable ? 'not-allowed' : '';
+      el.title = shouldDisable ? 'Upload dokumen sedang dikunci oleh Admin' : '';
+    });
+    fileInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.disabled = shouldDisable;
+      el.style.opacity = shouldDisable ? '0.45' : '';
+      el.style.cursor  = shouldDisable ? 'not-allowed' : '';
+    });
+
+    // ── Kunci field identitas jika penyedia login (perilaku lama) ──
     if (isPenyedia) {
-      // Kunci field identitas tunggal
       const namaEl = document.getElementById('fNamaPerusahaan');
       if (namaEl) { namaEl.value=currentPenyedia.nama; namaEl.readOnly=true; namaEl.classList.add('field-locked'); namaEl.setAttribute('autocomplete','off'); }
       const emailEl = document.getElementById('fEmail');
@@ -3848,6 +3938,16 @@ function showPage(pageId) {
   if (activeLink) activeLink.classList.add('active');
   if (pageId === 'upload') {
     updateUploadFormLock();
+    // Jika ada pesan sukses yang masih tampil dari upload sebelumnya, reset form agar mulai dari awal
+    const tabsSukses = ['adm','kual','tek','harga'];
+    const adaSukses = tabsSukses.some(t => {
+      const el = document.getElementById('uploadSuccess_' + t);
+      return el && el.style.display !== 'none';
+    });
+    const globalSukses = document.getElementById('allUploadSuccess');
+    if (adaSukses || (globalSukses && globalSukses.style.display !== 'none')) {
+      resetUploadForm();
+    }
     // Init upload tabs on first show
     if (typeof switchUploadTab === 'function') {
       setTimeout(() => switchUploadTab(_currentUploadTab || 'adm'), 50);
@@ -4449,6 +4549,56 @@ function renderUploadForm(force) {
   updateUploadFormLock();
 }
 
+// Reset seluruh form upload ke kondisi awal (dipanggil saat halaman upload dibuka ulang setelah sukses)
+function resetUploadForm() {
+  const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
+  // Reset semua field teks (termasuk identitas)
+  fields.forEach(f => {
+    if (f.type === 'file') return;
+    const ids = [f.id, ...['adm','kual','tek','harga'].map(t => f.id + '_' + t)];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.readOnly) el.value = '';
+    });
+  });
+  // Reset semua file input, animasi, badge, pesan per kategori
+  ['adm','kual','tek','harga'].forEach(tab => {
+    const fi = document.getElementById('fFileDok_' + tab);
+    if (fi) fi.value = '';
+    const anim = document.getElementById('uploadedAnim_' + tab);
+    if (anim) anim.style.display = 'none';
+    const badge = document.getElementById('uploadStatusBadge_' + tab);
+    if (badge) badge.style.display = 'none';
+    const labels = {adm:'Administrasi',kual:'Kualifikasi',tek:'Teknis',harga:'Harga'};
+    const icons  = {adm:'fa-file-alt',kual:'fa-medal',tek:'fa-screwdriver-wrench',harga:'fa-tag'};
+    const si = document.getElementById('summaryItem_' + tab);
+    if (si) si.innerHTML = '<i class="fa-solid ' + icons[tab] + '"></i> ' + labels[tab] + ': <em>belum dipilih</em>';
+    ['uploadSuccess_','uploadError_'].forEach(p => {
+      const el = document.getElementById(p + tab);
+      if (el) el.style.display = 'none';
+    });
+    const pw = document.getElementById('fUploadProgress_' + tab);
+    const pb = document.getElementById('fProgressBar_' + tab);
+    if (pw) pw.style.display = 'none';
+    if (pb) { pb.style.width = '0%'; pb.style.background = ''; }
+  });
+  // Reset keterangan & file legacy
+  const kEl = document.getElementById('fKeterangan');
+  if (kEl && !kEl.readOnly) kEl.value = '';
+  const legacyFile = document.getElementById('fFileDok');
+  if (legacyFile) legacyFile.value = '';
+  // Sembunyikan pesan global
+  ['uploadSuccess','uploadError','allUploadSuccess','allUploadError'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  // Sembunyikan summary card & progress kirim semua
+  const sc = document.getElementById('uploadSummaryCard');
+  if (sc) sc.style.display = 'none';
+  const ap = document.getElementById('allUploadProgressWrap');
+  if (ap) ap.style.display = 'none';
+}
+
 function renderCustomPages() {
   const menus = gcGet('customMenus', []);
   document.getElementById('customPagesContainer').innerHTML = menus.map(m => `<section class="page" id="custom-page-${m.id}"><h2 class="page-title"><i class="fa-solid ${m.icon||'fa-circle'}"></i> ${m.label}</h2><div class="custom-page-content">${m.content || '<p>Konten belum tersedia.</p>'}</div></section>`).join('');
@@ -4490,6 +4640,16 @@ function renderSidebarVisibilityEditor() {
   const elK = document.getElementById('toggleLoginPokja');
   if (elP) elP.checked = showPenyedia !== false;
   if (elK) elK.checked = showPokja !== false;
+  // Sync toggle upload dokumen
+  const uploadTerkunci = gcGet('uploadDokumenTerkunci', false);
+  const elU = document.getElementById('toggleUploadDokumen');
+  if (elU) elU.checked = !uploadTerkunci;
+  const uploadLockCfg = gcGet('uploadLockConfig', {});
+  const uTitle = document.getElementById('uploadLockMsgTitle');
+  const uBody  = document.getElementById('uploadLockMsgBody');
+  if (uTitle) uTitle.value = uploadLockCfg.title || 'Upload Dokumen Belum Dibuka';
+  if (uBody)  uBody.value  = uploadLockCfg.msg   || 'Silakan tunggu jadwal pemasukan dokumen penawaran.';
+  previewUploadToggle();
   // Sync pesan kunci dari config
   const lockCfg = gcGet('loginLockConfig', {});
   const titleEl = document.getElementById('lockMsgTitle');
@@ -4541,6 +4701,16 @@ function previewLoginToggle() {
   }
 }
 
+function previewUploadToggle() {
+  const elU = document.getElementById('toggleUploadDokumen');
+  const previewBox  = document.getElementById('uploadTogglePreview');
+  const configBox   = document.getElementById('uploadLockMsgConfig');
+  if (!elU) return;
+  const isAktif = elU.checked;
+  if (previewBox) previewBox.style.display = isAktif ? 'none' : 'block';
+  if (configBox)  configBox.style.display  = isAktif ? 'none' : 'block';
+}
+
 function toggleSidebarItem(id, checked) { const items = getSidebarItems(); const item = items.find(it=>it.id===id); if (item) { item.publik = checked; _globalConfig['sidebarItems'] = items; } }
 
 async function saveSidebarConfig() {
@@ -4556,6 +4726,16 @@ async function saveSidebarConfig() {
   await pushConfig('showLoginPokja', showPokja);
   _globalConfig['showLoginPenyedia'] = showPenyedia;
   _globalConfig['showLoginPokja']    = showPokja;
+  // Simpan konfigurasi upload terkunci
+  const uploadAktif  = document.getElementById('toggleUploadDokumen')?.checked !== false;
+  const uploadLockTitle = document.getElementById('uploadLockMsgTitle')?.value.trim() || 'Upload Dokumen Belum Dibuka';
+  const uploadLockMsg   = document.getElementById('uploadLockMsgBody')?.value.trim()  || 'Silakan tunggu jadwal pemasukan dokumen penawaran.';
+  await pushConfig('uploadDokumenTerkunci', !uploadAktif);
+  await pushConfig('uploadLockConfig', { title: uploadLockTitle, msg: uploadLockMsg });
+  _globalConfig['uploadDokumenTerkunci'] = !uploadAktif;
+  _globalConfig['uploadLockConfig'] = { title: uploadLockTitle, msg: uploadLockMsg };
+  // Update tampilan form upload langsung
+  updateUploadFormLock();
   // Simpan konfigurasi pesan kunci
   const lockTitle    = document.getElementById('lockMsgTitle')?.value.trim()  || 'Pendaftaran Belum Dibuka';
   const lockMsg      = document.getElementById('lockMsgBody')?.value.trim()   || 'Menunggu Jadwal Pemasukan Dokumen Penawaran';
@@ -4685,7 +4865,7 @@ async function changeAdminPassword() {
   const cfg=await fetchGlobalConfig(true);
   const adminUser=(cfg&&cfg.adminUsername)?cfg.adminUsername:'admin';
   try {
-    const res=await fetch(APPS_SCRIPT_URL+'?action=loginAdmin&username='+encodeURIComponent(adminUser)+'&password='+encodeURIComponent(oldPass)+'&t='+Date.now());
+    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'loginAdmin',username:adminUser,password:oldPass})});
     const data=await res.json();
     if(data.status!=='ok'){msgEl.style.color='#C0392B';msgEl.textContent='❌ Password lama salah.';return;}
   } catch(e){msgEl.style.color='#C0392B';msgEl.textContent='❌ Gagal menghubungi server.';return;}
@@ -4789,6 +4969,11 @@ function flashMsg(id) { const el=document.getElementById(id); if(!el) return; el
 // SUBMIT UPLOAD
 // =================================================================
 async function submitUpload() {
+  if (gcGet('uploadDokumenTerkunci', false) && currentRole === 'penyedia') {
+    const cfg = gcGet('uploadLockConfig', {});
+    showFormMsg('error', (cfg.title || 'Upload Dokumen Belum Dibuka') + ' — ' + (cfg.msg || 'Silakan tunggu jadwal pemasukan dokumen penawaran.'));
+    return;
+  }
   const fields=gcGet('formFields',DEFAULT_FORM_FIELDS);
   let valid=true; const payload={};
   for(const f of fields){
@@ -4856,8 +5041,11 @@ async function submitUpload() {
     const statusHint=document.getElementById('uploadSuccessStatusHint');
     if(currentRole==='penyedia'&&statusHint){statusHint.style.display='block';statusHint.innerHTML=`<a href="#" onclick="showPage('status');return false;" style="color:var(--green-700);font-weight:700;"><i class="fa-solid fa-clipboard-list"></i> Pantau status pengajuan Anda di halaman Status Pengajuan</a>`;}
     document.getElementById('uploadError').style.display='none';
+    // Reset semua field termasuk identitas
     fields.forEach(f=>{const el=document.getElementById(f.id);if(el&&f.type!=='file'&&!el.readOnly)el.value='';});
     if(fileInput) fileInput.value='';
+    // Reset tampilan sukses agar tombol Upload Lagi tersedia
+    setTimeout(() => resetUploadForm(), 5000);
     setTimeout(()=>{ progressWrap.style.display='none'; progressBar.style.width='0%'; progressBar.style.background=''; },3000);
     if(currentRole==='penyedia') setTimeout(loadStatusPenyedia,3000);
   } catch(err) {
@@ -5002,6 +5190,12 @@ function showFormMsgKategori(tab, type, msg) {
 }
 
 async function submitUploadKategori(tab) {
+  // Guard: tolak jika upload sedang dikunci
+  if (gcGet('uploadDokumenTerkunci', false) && currentRole === 'penyedia') {
+    const cfg = gcGet('uploadLockConfig', {});
+    showFormMsgKategori(tab, 'error', (cfg.title || 'Upload Dokumen Belum Dibuka') + ' — ' + (cfg.msg || 'Silakan tunggu jadwal pemasukan dokumen penawaran.'));
+    return;
+  }
   const kategori = UPLOAD_KATEGORI[tab] || tab;
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
   let valid = true; const payload = {};
@@ -5156,6 +5350,13 @@ function onUploadFileChange(tab) {
 }
 
 async function submitSemuaDokumen() {
+  if (gcGet('uploadDokumenTerkunci', false) && currentRole === 'penyedia') {
+    const cfg = gcGet('uploadLockConfig', {});
+    const errEl = document.getElementById('allUploadError');
+    const errMsg = document.getElementById('allUploadErrorMsg');
+    if (errEl && errMsg) { errMsg.textContent = (cfg.title || 'Upload Dokumen Belum Dibuka') + ' — ' + (cfg.msg || 'Silakan tunggu jadwal pemasukan dokumen penawaran.'); errEl.style.display = 'block'; }
+    return;
+  }
   const TABS = ['adm','kual','tek','harga'];
   const fields = gcGet('formFields', DEFAULT_FORM_FIELDS);
 
@@ -6396,6 +6597,84 @@ let _currentPengumumanAdminTab = null;
 // ── Notif helper functions (dibutuhkan oleh renderPengumumanPublicUI) ──
 const NOTIF_TAB_READ_KEY   = 'bpbj_notif_tab_read';
 
+// ================================================================
+// NOTIFIKASI — State & fungsi inti (dipindah ke sini agar tersedia
+// sebelum renderPengumumanPublicUI dipanggil dari init())
+// ================================================================
+let _notifConfig = null;
+let _notifLastSeenCount = 0;
+const NOTIF_SEEN_KEY       = 'bpbj_notif_seen_count';
+const NOTIF_DISMISSED_KEY  = 'bpbj_notif_dismissed';
+const NOTIF_POPUP_HASH_KEY = 'bpbj_notif_popup_hash';
+
+function getNotifConfig() {
+  return gcGet('notifPengumuman', {
+    badgeAktif: true,
+    badgeSelaluTampil: true,
+    popupAktif: true,
+    popupSelaluMuncul: true,
+    popupJudul: 'Ada Pengumuman Baru!',
+    popupSubtitle: 'Portal Pengadaan Kota Surakarta',
+    popupPesan: 'Terdapat pengumuman baru yang perlu Anda perhatikan. Silakan buka halaman Pengumuman untuk informasi lebih lanjut.',
+    popupWarna: '#185FA5',
+    popupIkon: 'fa-bell',
+    jumlahPengumuman: 0,
+  });
+}
+
+function hitungJumlahPengumuman() {
+  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
+  return tabs.filter(t => {
+    const key = 'pengumuman_' + t.id.replace(/-/g,'_');
+    return gcGet(key,'').trim().length > 0;
+  }).length;
+}
+
+function hitungTabBelumDibaca() {
+  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
+  return tabs.filter(t => _isTabUnread(t.id)).length;
+}
+
+function getNotifConfigLive() {
+  const raw = (typeof _globalConfig !== 'undefined' && _globalConfig && _globalConfig['notifPengumuman'])
+    ? _globalConfig['notifPengumuman']
+    : {};
+  return {
+    badgeAktif:        raw.badgeAktif        !== false,
+    badgeSelaluTampil: raw.badgeSelaluTampil !== false,
+    popupAktif:        raw.popupAktif        !== false,
+    popupSelaluMuncul: raw.popupSelaluMuncul !== false,
+    popupJudul:        raw.popupJudul    || 'Ada Pengumuman Baru!',
+    popupSubtitle:     raw.popupSubtitle || 'Portal Pengadaan Kota Surakarta',
+    popupPesan:        raw.popupPesan    || 'Terdapat pengumuman baru yang perlu Anda perhatikan.',
+    popupWarna:        raw.popupWarna    || '#185FA5',
+    popupIkon:         raw.popupIkon     || 'fa-bell',
+    jumlahPengumuman:  raw.jumlahPengumuman || 0,
+  };
+}
+
+function renderNotifBadgeSidebar() {
+  const cfg = getNotifConfigLive();
+  if (!cfg.badgeAktif) {
+    document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
+    return;
+  }
+  const belumDibaca = hitungTabBelumDibaca();
+  setTimeout(() => {
+    document.querySelectorAll('.nav-link[data-page="pengumuman"]').forEach(link => {
+      const oldBadge = link.querySelector('.notif-sidebar-badge');
+      if (oldBadge) oldBadge.remove();
+      if (belumDibaca <= 0) return;
+      const badge = document.createElement('span');
+      badge.className = 'notif-sidebar-badge';
+      badge.textContent = belumDibaca > 99 ? '99+' : belumDibaca;
+      badge.title = belumDibaca + ' pengumuman belum dibaca';
+      link.appendChild(badge);
+    });
+  }, 80);
+}
+// ================================================================
+
 // Buat hash sederhana dari string (dipakai untuk track perubahan konten)
 function _hashStr(str) {
   let h = 0;
@@ -6754,7 +7033,7 @@ async function autoRefreshSubmissions() {
   // Silent background refresh: tidak ada spinner, tidak reset halaman.
   // Hanya update data di memori + render ulang jika ada perubahan.
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const prevCount = _submissions.length;
@@ -6797,7 +7076,7 @@ async function autoRefreshSubmissions() {
     if (currentRole === 'pokja' || currentRole === 'penyedia') {
       const [, penetapanData] = await Promise.all([
         loadAllNegoStates(),
-        fetch(APPS_SCRIPT_URL + '?action=getPenetapan&t=' + Date.now()).then(r => r.json()).catch(() => null)
+        fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getPenetapan'})}).then(r => r.json()).catch(() => null)
       ]);
       // Sync penetapan ke _submissions
       if (penetapanData && penetapanData.status === 'ok' && Array.isArray(penetapanData.data)) {
@@ -6830,7 +7109,7 @@ async function autoRefreshSubmissions() {
 // Muat jumlah peserta untuk tampilan publik (beranda)
 async function loadPublicPesertaCount() {
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       _submissions = normalizeSubmissions(data.submissions);
@@ -7317,7 +7596,7 @@ async function bukaModalPeserta() {
   // Muat dari server jika belum ada
   if (!_submissions.length) {
     try {
-      const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
+      const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
       const data = await res.json();
       if (data.status === 'ok' && Array.isArray(data.submissions)) {
         _submissions = normalizeSubmissions(data.submissions);
@@ -7416,8 +7695,7 @@ function updateDataTimestamp() {
 
       if (currentRole === 'penyedia' && currentPenyedia) {
         // Ambil data khusus penyedia ini
-        const url = APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email) + '&t=' + Date.now();
-        const res  = await fetch(url);
+        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getMySubmissions', email: currentPenyedia.email})});
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           const emailLower = currentPenyedia.email.toLowerCase();
@@ -7426,7 +7704,7 @@ function updateDataTimestamp() {
         }
       } else {
         // Pokja / admin / publik: ambil semua
-        const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
+        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           newSubs = normalizeSubmissions(data.submissions);
@@ -7781,7 +8059,7 @@ function bukaModalNegoFinal(idx) {
     (async () => {
       try {
         const qs  = new URLSearchParams({ action: 'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
-        const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
+        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
         const json = await res.json();
         if (json.status === 'ok' && json.negosiasi) {
           // Simpan ke submissions agar tersedia untuk berikutnya
@@ -8027,7 +8305,7 @@ let _penetapanCacheTs = 0;
 async function fetchPenetapanData() {
   // Ambil data dari sheet Penetapan via action getPenetapan (GET)
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getPenetapan&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getPenetapan'})});
     const json = await res.json();
     if (json.status === 'ok' && Array.isArray(json.data)) {
       _penetapanDataCache = json.data;
@@ -8960,7 +9238,7 @@ async function nhpsLoadFromServer() {
       npwp           : _nhps.subData.npwp || '',
       namaPerusahaan : _nhps.subData.namaPerusahaan || ''
     });
-    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
     const json = await res.json();
     if (json.status === 'ok' && json.negosiasi) {
       _nhps.negoState = json.negosiasi;
@@ -9350,7 +9628,7 @@ const _negoStateCache = {};
 // ── Fetch semua state negosiasi dari server (BATCH — 1 request) ──────────
 async function loadAllNegoStates() {
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getAllNegosiasi&t=' + Date.now());
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getAllNegosiasi'})});
     const json = await res.json();
     if (json.status === 'ok' && json.negosiasi) {
       const negoMap = json.negosiasi;
@@ -9586,7 +9864,7 @@ async function bukaRiwayatNego(idx) {
   // Fetch data
   try {
     const qs  = new URLSearchParams({ action:'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
-    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
     const json = await res.json();
     const s    = (json.status === 'ok' && json.negosiasi) ? json.negosiasi : null;
     renderRiwayatNegoModal(s, d.namaPerusahaan);
@@ -9992,7 +10270,7 @@ const STATUS_MENUNGGU_KONTRAK          = 'Menunggu Penandatanganan Kontrak';
     window.bukaModalNegoFinal = async function(idx) {
       // Cek validasi ke server (tanpa bergantung pada event.target)
       try {
-        const res  = await fetch(APPS_SCRIPT_URL + '?action=getStatusNegosiasi&t=' + Date.now());
+        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getStatusNegosiasi'})});
         const json = await res.json();
         if (json.status === 'ok' && json.totalPenyedia > 0 && !json.semuaSelesai) {
           const belum = Array.isArray(json.belumSelesai) ? json.belumSelesai : [];
@@ -10488,7 +10766,7 @@ window.simpanNegoFinal = async function() {
               npwp: mySub.npwp || '',
               namaPerusahaan: mySub.namaPerusahaan || ''
             });
-            const res  = await fetch(APPS_SCRIPT_URL + '?' + qs + '&t=' + Date.now());
+            const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
             const json = await res.json();
             if (json.status === 'ok' && json.tersedia && json.data) {
               // Sync ke semua submissions milik penyedia ini
@@ -10785,93 +11063,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // NOTIFIKASI PENGUMUMAN — Badge Sidebar + Pop-out
 // ================================================================
 
-// --- State ---
-let _notifConfig = null;
-let _notifLastSeenCount = 0;
-
-// Key localStorage
-const NOTIF_SEEN_KEY       = 'bpbj_notif_seen_count';
-const NOTIF_DISMISSED_KEY  = 'bpbj_notif_dismissed';
-// Key hash konten: popup HANYA muncul lagi jika konten pengumuman berubah
-const NOTIF_POPUP_HASH_KEY = 'bpbj_notif_popup_hash';
-// [dipindah ke atas — lihat sebelum renderPengumumanPublicUI]
-
-// Ambil config notifikasi dari globalConfig
-function getNotifConfig() {
-  return gcGet('notifPengumuman', {
-    badgeAktif: true,
-    badgeSelaluTampil: true,   // true=selalu tampil, false=hilang setelah dilihat
-    popupAktif: true,
-    popupSelaluMuncul: true,   // true=muncul tiap buka halaman, false=tidak lagi setelah ditutup
-    popupJudul: 'Ada Pengumuman Baru!',
-    popupSubtitle: 'Portal Pengadaan Kota Surakarta',
-    popupPesan: 'Terdapat pengumuman baru yang perlu Anda perhatikan. Silakan buka halaman Pengumuman untuk informasi lebih lanjut.',
-    popupWarna: '#185FA5',
-    popupIkon: 'fa-bell',
-    jumlahPengumuman: 0,
-  });
-}
-
-// Hitung tab pengumuman yang ada isinya (total)
-function hitungJumlahPengumuman() {
-  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
-  return tabs.filter(t => {
-    const key = 'pengumuman_' + t.id.replace(/-/g,'_');
-    return gcGet(key,'').trim().length > 0;
-  }).length;
-}
-
-// Hitung tab yang ada konten DAN belum dibaca (untuk badge sidebar)
-function hitungTabBelumDibaca() {
-  const tabs = gcGet('pengumuman_tabs', DEFAULT_PENGUMUMAN_TABS || []);
-  return tabs.filter(t => _isTabUnread(t.id)).length;
-}
-
-// Render badge di link pengumuman di sidebar
-// Baca config notif langsung dari _globalConfig (bukan cache gcGet)
-// agar perubahan toggle di Admin langsung efektif tanpa reload
-function getNotifConfigLive() {
-  const raw = (typeof _globalConfig !== 'undefined' && _globalConfig && _globalConfig['notifPengumuman'])
-    ? _globalConfig['notifPengumuman']
-    : {};
-  return {
-    badgeAktif:        raw.badgeAktif        !== false,
-    badgeSelaluTampil: raw.badgeSelaluTampil !== false,
-    popupAktif:        raw.popupAktif        !== false,
-    popupSelaluMuncul: raw.popupSelaluMuncul !== false,
-    popupJudul:        raw.popupJudul    || 'Ada Pengumuman Baru!',
-    popupSubtitle:     raw.popupSubtitle || 'Portal Pengadaan Kota Surakarta',
-    popupPesan:        raw.popupPesan    || 'Terdapat pengumuman baru yang perlu Anda perhatikan.',
-    popupWarna:        raw.popupWarna    || '#185FA5',
-    popupIkon:         raw.popupIkon     || 'fa-bell',
-    jumlahPengumuman:  raw.jumlahPengumuman || 0,
-  };
-}
-
-function renderNotifBadgeSidebar() {
-  const cfg = getNotifConfigLive();
-  if (!cfg.badgeAktif) {
-    document.querySelectorAll('.notif-sidebar-badge').forEach(b => b.remove());
-    return;
-  }
-
-  // Selalu pakai hitungTabBelumDibaca() — badge hanya tampil jika ada konten yang belum dibaca
-  const belumDibaca = hitungTabBelumDibaca();
-
-  setTimeout(() => {
-    document.querySelectorAll('.nav-link[data-page="pengumuman"]').forEach(link => {
-      const oldBadge = link.querySelector('.notif-sidebar-badge');
-      if (oldBadge) oldBadge.remove();
-      if (belumDibaca <= 0) return;
-
-      const badge = document.createElement('span');
-      badge.className = 'notif-sidebar-badge';
-      badge.textContent = belumDibaca > 99 ? '99+' : belumDibaca;
-      badge.title = belumDibaca + ' pengumuman belum dibaca';
-      link.appendChild(badge);
-    });
-  }, 80);
-}
+// [State & fungsi inti notif sudah dipindah ke blok script pertama,
+//  sebelum renderPengumumanPublicUI — lihat sekitar baris 6396]
 
 // Dipanggil saat pengunjung membuka halaman pengumuman
 // Tidak langsung tandai semua — tab baru ditandai saat diklik (lihat switchPengumumanTab)
@@ -12053,9 +12246,7 @@ async function _chatPollMessages() {
     const lastId = _chatMessages.length > 0
       ? Math.max(..._chatMessages.map(m => Number(m.id) || 0))
       : 0;
-    const url = APPS_SCRIPT_URL + '?action=getPesanChat&roomId=' + encodeURIComponent(_chatRoomId)
-              + '&since=' + lastId + '&t=' + Date.now();
-    const res  = await fetch(url);
+    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getPesanChat', roomId: _chatRoomId, since: lastId})});
     const data = await res.json();
     if (data.status !== 'ok' || !data.msgs || !data.msgs.length) return;
 
