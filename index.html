@@ -2410,7 +2410,7 @@
 
 
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9KXLf1J8LIJ5fAYFITe3Lwb5Vd90KikTTn82_YIpSFYyReAZhHOffCkYT3wd8KLEr/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsSp1S3IpQPgQ_nJDNEzWm-G9A4JS_JZ_W-MgplS2dcYwQuLeBmD14MH9uc52kxhOZ/exec';
 const DRIVE_FOLDER_ID  = '1VU5sAih4H9g7zW42vme5Egp46kys9j1VtruFUa1TbPtGBR6a0eS8hDIehu6_6B-1WJUXL8fn';
 
 const DEFAULT_JADWAL = [
@@ -2478,17 +2478,21 @@ function gcGet(key, def) {
 // APPS SCRIPT API
 // =================================================================
 async function fetchGlobalConfig(silent=false) {
+  if (_isFetchingConfig) return _globalConfig || null; // cegah double-fetch
+  _isFetchingConfig = true;
   if (!silent) showSync('Memuat pengaturan global…');
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getConfig', {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getConfig', {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok' && data.config) {
       _globalConfig = data.config;
       if (!silent) hideSync();
+      _isFetchingConfig = false;
       return data.config;
     }
   } catch(e) {}
   if (!silent) hideSync();
+  _isFetchingConfig = false;
   return null;
 }
 
@@ -2533,16 +2537,16 @@ function hideSync() { document.getElementById('syncIndicator').className=''; }
 // SUBMISSIONS
 // =================================================================
 async function loadSubmissionsFromSheet() {
+  if (_isLoadingSubmissions) return; // cegah double-fetch
+  _isLoadingSubmissions = true;
   showSync('Memuat data submisi…');
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET', signal:controller.signal});
-    clearTimeout(timeout);
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       _submissions = normalizeSubmissions(data.submissions);
-      document.getElementById('statPeserta').textContent = _submissions.length || '–';
+      const statEl = document.getElementById('statPeserta');
+      if (statEl) statEl.textContent = _submissions.length || '–';
       if (currentRole === 'pokja' || currentRole === 'admin') renderPokjaTable();
       if (currentRole === 'penyedia') renderStatusPenyedia();
       renderPokjaStats();
@@ -2552,6 +2556,8 @@ async function loadSubmissionsFromSheet() {
     hideSync();
     showSync('⚠ Gagal memuat data submisi', 'error');
     setTimeout(hideSync, 3000);
+  } finally {
+    _isLoadingSubmissions = false;
   }
 }
 
@@ -2561,10 +2567,7 @@ async function loadStatusPenyedia() {
   if (wrap) wrap.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--gray-400);"><i class="fa-solid fa-rotate fa-spin" style="font-size:28px;display:block;margin-bottom:14px;"></i><p style="font-size:0.85rem;">Memuat status pengajuan…</p></div>`;
   showSync('Memuat status pengajuan…');
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); // 15 detik timeout
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email), {method:'GET', signal:controller.signal});
-    clearTimeout(timeout);
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email), {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const emailLower = currentPenyedia.email.toLowerCase();
@@ -2716,11 +2719,13 @@ const POKJA_DELEGASI_LABEL = {
 
 // ── State delegasi paket (diisi saat load submissions) ──
 let _delegasiMap = {}; // key: "npwp||jenisDok" → "Pokja 1" | "Pokja 2" | ...
+let _isLoadingSubmissions = false; // guard agar tidak double-fetch getSubmissions
+let _isFetchingConfig = false;     // guard agar tidak double-fetch getConfig
 
 // Muat delegasi map dari server (dipanggil saat login pokja/admin)
 async function loadDelegasiMap() {
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=getDelegasiPaket', {method:'GET'});
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getDelegasiPaket', {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok' && data.delegasiMap) {
       _delegasiMap = data.delegasiMap;
@@ -3125,7 +3130,7 @@ async function doLoginPenyedia() {
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   let account = null;
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password), {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password), {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok' && data.account) {
       account = data.account;
@@ -3161,7 +3166,7 @@ async function doLoginPokja() {
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   let verified = false;
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPokja&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password), {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPokja&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password), {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok') {
       verified = true;
@@ -3233,7 +3238,7 @@ async function doLoginAdmin() {
 
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginAdmin&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password), {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginAdmin&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password), {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok') {
       showModalSuccess('loginOverlayAdmin', 'Login admin berhasil! ✓', 1200);
@@ -3273,7 +3278,7 @@ function setRole(role) {
   updateRoleUI();
   updateMbnVisibility();
   if (role === 'pokja' || role === 'admin') {
-    loadDelegasiMap().then(() => loadSubmissionsFromSheet());
+    loadDelegasiMap().catch(() => {}).then(() => loadSubmissionsFromSheet());
   }
   if (role === 'admin') loadAdminForms();
   if (role === 'pokja') showPage('pokja');
@@ -4865,7 +4870,7 @@ async function changeAdminPassword() {
   const cfg=await fetchGlobalConfig(true);
   const adminUser=(cfg&&cfg.adminUsername)?cfg.adminUsername:'admin';
   try {
-    const res=await fetch(APPS_SCRIPT_URL + '?action=loginAdmin&username=' + encodeURIComponent(adminUser) + '&password=' + encodeURIComponent(oldPass), {method:'GET'});
+    const res=await fetch(APPS_SCRIPT_URL + '?action=loginAdmin&username=' + encodeURIComponent(adminUser) + '&password=' + encodeURIComponent(oldPass), {method:'GET', mode:'cors', redirect:'follow'});
     const data=await res.json();
     if(data.status!=='ok'){msgEl.style.color='#C0392B';msgEl.textContent='❌ Password lama salah.';return;}
   } catch(e){msgEl.style.color='#C0392B';msgEl.textContent='❌ Gagal menghubungi server.';return;}
@@ -6977,7 +6982,7 @@ async function init() {
     updateUploadFormLock();
     if (currentRole === 'pokja' || currentRole === 'admin') {
       // Muat delegasiMap dulu SEBELUM submissions agar cekAkseDelegasiFrontend sudah punya data
-      loadDelegasiMap().then(() => loadSubmissionsFromSheet());
+      loadDelegasiMap().catch(() => {}).then(() => loadSubmissionsFromSheet().then(() => loadPublicPesertaCount()));
       if (currentRole === 'admin') loadAdminForms();
       showPage(currentRole);
     }
@@ -6994,7 +6999,7 @@ async function init() {
     }
   }
   // Muat jumlah peserta publik tanpa perlu login
-  loadPublicPesertaCount();
+  if (!currentRole) loadPublicPesertaCount();
   // Auto-refresh data submisi setiap 20 detik (data saja, tidak render ulang UI)
   setInterval(autoRefreshSubmissions, 60000); // Auto-refresh setiap 60 detik
   // Tampilkan waktu load pertama
@@ -7040,11 +7045,15 @@ async function init() {
 async function autoRefreshSubmissions() {
   // Jangan refresh jika tab sedang tidak aktif (hemat kuota GAS)
   if (document.visibilityState === 'hidden') return;
+  // Jangan refresh jika masih ada request getSubmissions yang sedang berjalan
+  if (_isLoadingSubmissions) return;
   // Silent background refresh: tidak ada spinner, tidak reset halaman.
   // Hanya update data di memori + render ulang jika ada perubahan.
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET'});
+    _isLoadingSubmissions = true;
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
+    _isLoadingSubmissions = false;
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const prevCount = _submissions.length;
       // Hash mencakup: status, tanggal, jumlah klarifikasi, dan ada/tidaknya balasanPenyedia
@@ -7079,14 +7088,14 @@ async function autoRefreshSubmissions() {
         }
       }
     }
-  } catch(e) {}
+  } catch(e) { _isLoadingSubmissions = false; }
 
   // Auto-refresh data negosiasi & penetapan juga (tanpa spinner)
   try {
     if (currentRole === 'pokja' || currentRole === 'penyedia') {
       const [, penetapanData] = await Promise.all([
         loadAllNegoStates(),
-        fetch(APPS_SCRIPT_URL + '?action=getPenetapan', {method:'GET'}).then(r => r.json()).catch(() => null)
+        fetch(APPS_SCRIPT_URL + '?action=getPenetapan', {method:'GET', mode:'cors', redirect:'follow'}).then(r => r.json()).catch(() => null)
       ]);
       // Sync penetapan ke _submissions
       if (penetapanData && penetapanData.status === 'ok' && Array.isArray(penetapanData.data)) {
@@ -7118,8 +7127,21 @@ async function autoRefreshSubmissions() {
 
 // Muat jumlah peserta untuk tampilan publik (beranda)
 async function loadPublicPesertaCount() {
+  // Jika sudah ada role (admin/pokja/penyedia), data akan dimuat oleh loadSubmissionsFromSheet
+  // — jangan fetch ulang agar tidak terjadi double request ke GAS
+  if (currentRole) {
+    updateDataTimestamp();
+    return;
+  }
+  // Hanya untuk pengunjung publik (belum login)
+  if (_submissions && _submissions.length > 0) {
+    const el = document.getElementById('statPeserta');
+    if (el) el.textContent = _submissions.length || '0';
+    updateDataTimestamp();
+    return;
+  }
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       _submissions = normalizeSubmissions(data.submissions);
@@ -7606,7 +7628,7 @@ async function bukaModalPeserta() {
   // Muat dari server jika belum ada
   if (!_submissions.length) {
     try {
-      const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET'});
+      const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET', mode:'cors', redirect:'follow'});
       const data = await res.json();
       if (data.status === 'ok' && Array.isArray(data.submissions)) {
         _submissions = normalizeSubmissions(data.submissions);
@@ -7700,12 +7722,13 @@ function updateDataTimestamp() {
 (function() {
   // Refresh diam-diam: tidak ada spinner, tidak reset halaman, hanya update data & UI jika ada perubahan
   async function silentRefresh() {
+    if (_isLoadingSubmissions || _isFetchingConfig) return; // jangan refresh saat ada request aktif
     try {
       let newSubs = null;
 
       if (currentRole === 'penyedia' && currentPenyedia) {
         // Ambil data khusus penyedia ini
-        const res  = await fetch(APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email), {method:'GET'});
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email), {method:'GET', mode:'cors', redirect:'follow'});
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           const emailLower = currentPenyedia.email.toLowerCase();
@@ -7714,7 +7737,7 @@ function updateDataTimestamp() {
         }
       } else {
         // Pokja / admin / publik: ambil semua
-        const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET'});
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval', {method:'GET', mode:'cors', redirect:'follow'});
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           newSubs = normalizeSubmissions(data.submissions);
@@ -7813,8 +7836,8 @@ function cacheSetTimestamp(key, ts) {
     // Jika ada cache dan belum expired → langsung pakai, lalu cek server diam-diam
     if (cached && (now - lastFetch) < CACHE_TTL_MS) {
       _globalConfig = Object.assign({}, _globalConfig, cached);
-      // Background refresh
-      _orig.call(this, true).then(freshCfg => {
+      // Background refresh (hanya jika tidak ada request aktif lain)
+      if (!_isFetchingConfig) _orig.call(this, true).then(freshCfg => {
         if (freshCfg) {
           const hashOld = JSON.stringify(cached);
           const hashNew = JSON.stringify(freshCfg);
@@ -8068,7 +8091,7 @@ function bukaModalNegoFinal(idx) {
     (async () => {
       try {
         const qs  = new URLSearchParams({ action: 'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
-        const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET'});
+        const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET', mode:'cors', redirect:'follow'});
         const json = await res.json();
         if (json.status === 'ok' && json.negosiasi) {
           // Simpan ke submissions agar tersedia untuk berikutnya
@@ -8314,7 +8337,7 @@ let _penetapanCacheTs = 0;
 async function fetchPenetapanData() {
   // Ambil data dari sheet Penetapan via action getPenetapan (GET)
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getPenetapan', {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getPenetapan', {method:'GET', mode:'cors', redirect:'follow'});
     const json = await res.json();
     if (json.status === 'ok' && Array.isArray(json.data)) {
       _penetapanDataCache = json.data;
@@ -9247,7 +9270,7 @@ async function nhpsLoadFromServer() {
       npwp           : _nhps.subData.npwp || '',
       namaPerusahaan : _nhps.subData.namaPerusahaan || ''
     });
-    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET', mode:'cors', redirect:'follow'});
     const json = await res.json();
     if (json.status === 'ok' && json.negosiasi) {
       _nhps.negoState = json.negosiasi;
@@ -9637,7 +9660,7 @@ const _negoStateCache = {};
 // ── Fetch semua state negosiasi dari server (BATCH — 1 request) ──────────
 async function loadAllNegoStates() {
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getAllNegosiasi', {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getAllNegosiasi', {method:'GET', mode:'cors', redirect:'follow'});
     const json = await res.json();
     if (json.status === 'ok' && json.negosiasi) {
       const negoMap = json.negosiasi;
@@ -9873,7 +9896,7 @@ async function bukaRiwayatNego(idx) {
   // Fetch data
   try {
     const qs  = new URLSearchParams({ action:'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
-    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET', mode:'cors', redirect:'follow'});
     const json = await res.json();
     const s    = (json.status === 'ok' && json.negosiasi) ? json.negosiasi : null;
     renderRiwayatNegoModal(s, d.namaPerusahaan);
@@ -10279,7 +10302,7 @@ const STATUS_MENUNGGU_KONTRAK          = 'Menunggu Penandatanganan Kontrak';
     window.bukaModalNegoFinal = async function(idx) {
       // Cek validasi ke server (tanpa bergantung pada event.target)
       try {
-        const res  = await fetch(APPS_SCRIPT_URL + '?action=getStatusNegosiasi', {method:'GET'});
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getStatusNegosiasi', {method:'GET', mode:'cors', redirect:'follow'});
         const json = await res.json();
         if (json.status === 'ok' && json.totalPenyedia > 0 && !json.semuaSelesai) {
           const belum = Array.isArray(json.belumSelesai) ? json.belumSelesai : [];
@@ -10775,7 +10798,7 @@ window.simpanNegoFinal = async function() {
               npwp: mySub.npwp || '',
               namaPerusahaan: mySub.namaPerusahaan || ''
             });
-            const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET'});
+            const res  = await fetch(APPS_SCRIPT_URL + '?' + qs.toString(), {method:'GET', mode:'cors', redirect:'follow'});
             const json = await res.json();
             if (json.status === 'ok' && json.tersedia && json.data) {
               // Sync ke semua submissions milik penyedia ini
@@ -12255,7 +12278,7 @@ async function _chatPollMessages() {
     const lastId = _chatMessages.length > 0
       ? Math.max(..._chatMessages.map(m => Number(m.id) || 0))
       : 0;
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getPesanChat&roomId=' + encodeURIComponent(_chatRoomId||'') + '&since=' + encodeURIComponent(lastId||''), {method:'GET'});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getPesanChat&roomId=' + encodeURIComponent(_chatRoomId||'') + '&since=' + encodeURIComponent(lastId||''), {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status !== 'ok' || !data.msgs || !data.msgs.length) return;
 
@@ -12508,6 +12531,7 @@ function _chatRefreshAdminInbox() {
 function _startAdminChatPoll() {
   clearInterval(_adminChatPollTimer);
   _adminChatPollTimer = setInterval(async () => {
+    if (_isLoadingSubmissions || _isFetchingConfig) return;
     if (currentRole !== 'admin') return;
     try {
       // Cek apakah panel admin chat sedang terbuka untuk menentukan polling agresif
@@ -12940,6 +12964,7 @@ function _afcStartPoll() {
   clearInterval(_afcPollTimer);
   _afcPollTimer = setInterval(async () => {
     if (currentRole !== 'admin') return;
+    if (_isLoadingSubmissions || _isFetchingConfig) return; // jangan poll saat ada request aktif
     try {
       const panel = document.getElementById('adminFloatChatPanel');
       const isOpen = panel && panel.classList.contains('open');
