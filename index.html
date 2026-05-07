@@ -2480,7 +2480,7 @@ function gcGet(key, def) {
 async function fetchGlobalConfig(silent=false) {
   if (!silent) showSync('Memuat pengaturan global…');
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getConfig'})});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getConfig&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && data.config) {
       _globalConfig = data.config;
@@ -2537,7 +2537,7 @@ async function loadSubmissionsFromSheet() {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'}), signal: controller.signal});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now(), { signal: controller.signal });
     clearTimeout(timeout);
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
@@ -2563,7 +2563,8 @@ async function loadStatusPenyedia() {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000); // 15 detik timeout
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getMySubmissions', email: currentPenyedia.email}), signal: controller.signal});
+    const url = APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email) + '&t=' + Date.now();
+    const res  = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
@@ -2720,7 +2721,7 @@ let _delegasiMap = {}; // key: "npwp||jenisDok" → "Pokja 1" | "Pokja 2" | ...
 // Muat delegasi map dari server (dipanggil saat login pokja/admin)
 async function loadDelegasiMap() {
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getDelegasiPaket'})});
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getDelegasiPaket&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && data.delegasiMap) {
       _delegasiMap = data.delegasiMap;
@@ -3125,7 +3126,7 @@ async function doLoginPenyedia() {
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   let account = null;
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'loginPenyedia', email, password }) });
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && data.account) {
       account = data.account;
@@ -3161,7 +3162,7 @@ async function doLoginPokja() {
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   let verified = false;
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'loginPokja', username, password }) });
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPokja&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok') {
       verified = true;
@@ -3233,7 +3234,7 @@ async function doLoginAdmin() {
 
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'loginAdmin', username, password }) });
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=loginAdmin&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok') {
       showModalSuccess('loginOverlayAdmin', 'Login admin berhasil! ✓', 1200);
@@ -4865,7 +4866,7 @@ async function changeAdminPassword() {
   const cfg=await fetchGlobalConfig(true);
   const adminUser=(cfg&&cfg.adminUsername)?cfg.adminUsername:'admin';
   try {
-    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'loginAdmin',username:adminUser,password:oldPass})});
+    const res=await fetch(APPS_SCRIPT_URL+'?action=loginAdmin&username='+encodeURIComponent(adminUser)+'&password='+encodeURIComponent(oldPass)+'&t='+Date.now());
     const data=await res.json();
     if(data.status!=='ok'){msgEl.style.color='#C0392B';msgEl.textContent='❌ Password lama salah.';return;}
   } catch(e){msgEl.style.color='#C0392B';msgEl.textContent='❌ Gagal menghubungi server.';return;}
@@ -6988,7 +6989,7 @@ async function init() {
   // Muat jumlah peserta publik tanpa perlu login
   loadPublicPesertaCount();
   // Auto-refresh data submisi setiap 20 detik (data saja, tidak render ulang UI)
-  setInterval(autoRefreshSubmissions, 10000); // Auto-refresh setiap 10 detik
+  setInterval(autoRefreshSubmissions, 60000); // Auto-refresh setiap 60 detik
   // Tampilkan waktu load pertama
   updateDataTimestamp();
 
@@ -7030,10 +7031,12 @@ async function init() {
 
 // Auto-refresh submissions setiap 20 detik – update data & tampilan secara diam-diam
 async function autoRefreshSubmissions() {
+  // Jangan refresh jika tab sedang tidak aktif (hemat kuota GAS)
+  if (document.visibilityState === 'hidden') return;
   // Silent background refresh: tidak ada spinner, tidak reset halaman.
   // Hanya update data di memori + render ulang jika ada perubahan.
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       const prevCount = _submissions.length;
@@ -7076,7 +7079,7 @@ async function autoRefreshSubmissions() {
     if (currentRole === 'pokja' || currentRole === 'penyedia') {
       const [, penetapanData] = await Promise.all([
         loadAllNegoStates(),
-        fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getPenetapan'})}).then(r => r.json()).catch(() => null)
+        fetch(APPS_SCRIPT_URL + '?action=getPenetapan&t=' + Date.now()).then(r => r.json()).catch(() => null)
       ]);
       // Sync penetapan ke _submissions
       if (penetapanData && penetapanData.status === 'ok' && Array.isArray(penetapanData.data)) {
@@ -7109,7 +7112,7 @@ async function autoRefreshSubmissions() {
 // Muat jumlah peserta untuk tampilan publik (beranda)
 async function loadPublicPesertaCount() {
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && Array.isArray(data.submissions)) {
       _submissions = normalizeSubmissions(data.submissions);
@@ -7596,7 +7599,7 @@ async function bukaModalPeserta() {
   // Muat dari server jika belum ada
   if (!_submissions.length) {
     try {
-      const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
+      const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
       const data = await res.json();
       if (data.status === 'ok' && Array.isArray(data.submissions)) {
         _submissions = normalizeSubmissions(data.submissions);
@@ -7695,7 +7698,8 @@ function updateDataTimestamp() {
 
       if (currentRole === 'penyedia' && currentPenyedia) {
         // Ambil data khusus penyedia ini
-        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getMySubmissions', email: currentPenyedia.email})});
+        const url = APPS_SCRIPT_URL + '?action=getMySubmissions&email=' + encodeURIComponent(currentPenyedia.email) + '&t=' + Date.now();
+        const res  = await fetch(url);
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           const emailLower = currentPenyedia.email.toLowerCase();
@@ -7704,7 +7708,7 @@ function updateDataTimestamp() {
         }
       } else {
         // Pokja / admin / publik: ambil semua
-        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getSubmissions', mode:'eval'})});
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getSubmissions&mode=eval&t=' + Date.now());
         const data = await res.json();
         if (data.status === 'ok' && Array.isArray(data.submissions)) {
           newSubs = normalizeSubmissions(data.submissions);
@@ -7748,14 +7752,13 @@ function updateDataTimestamp() {
     } catch(e) {}
   }
 
-  function attachMarqueeRefresh() {
-    const marquee = document.getElementById('marqueeText');
-    if (!marquee) return;
-    marquee.addEventListener('animationiteration', silentRefresh);
-  }
-
-  document.addEventListener('DOMContentLoaded', attachMarqueeRefresh);
-  setTimeout(attachMarqueeRefresh, 2000);
+  // silentRefresh: interval mandiri 90 detik (tidak lagi terikat animasi marquee)
+  // Marquee animationiteration dihapus karena terlalu sering memicu request ke GAS
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      setInterval(silentRefresh, 90000);
+    }, 30000); // mulai setelah 30 detik agar tidak bentrok dengan load awal
+  });
 })();
 
 // =================================================================
@@ -8059,7 +8062,7 @@ function bukaModalNegoFinal(idx) {
     (async () => {
       try {
         const qs  = new URLSearchParams({ action: 'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
-        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
+        const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
         const json = await res.json();
         if (json.status === 'ok' && json.negosiasi) {
           // Simpan ke submissions agar tersedia untuk berikutnya
@@ -8305,7 +8308,7 @@ let _penetapanCacheTs = 0;
 async function fetchPenetapanData() {
   // Ambil data dari sheet Penetapan via action getPenetapan (GET)
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getPenetapan'})});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getPenetapan&t=' + Date.now());
     const json = await res.json();
     if (json.status === 'ok' && Array.isArray(json.data)) {
       _penetapanDataCache = json.data;
@@ -9238,7 +9241,7 @@ async function nhpsLoadFromServer() {
       npwp           : _nhps.subData.npwp || '',
       namaPerusahaan : _nhps.subData.namaPerusahaan || ''
     });
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
+    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
     const json = await res.json();
     if (json.status === 'ok' && json.negosiasi) {
       _nhps.negoState = json.negosiasi;
@@ -9628,7 +9631,7 @@ const _negoStateCache = {};
 // ── Fetch semua state negosiasi dari server (BATCH — 1 request) ──────────
 async function loadAllNegoStates() {
   try {
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getAllNegosiasi'})});
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getAllNegosiasi&t=' + Date.now());
     const json = await res.json();
     if (json.status === 'ok' && json.negosiasi) {
       const negoMap = json.negosiasi;
@@ -9864,7 +9867,7 @@ async function bukaRiwayatNego(idx) {
   // Fetch data
   try {
     const qs  = new URLSearchParams({ action:'getNegosiasi', npwp: d.npwp||'', namaPerusahaan: d.namaPerusahaan||'' });
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
+    const res  = await fetch(APPS_SCRIPT_URL + '?' + qs);
     const json = await res.json();
     const s    = (json.status === 'ok' && json.negosiasi) ? json.negosiasi : null;
     renderRiwayatNegoModal(s, d.namaPerusahaan);
@@ -10270,7 +10273,7 @@ const STATUS_MENUNGGU_KONTRAK          = 'Menunggu Penandatanganan Kontrak';
     window.bukaModalNegoFinal = async function(idx) {
       // Cek validasi ke server (tanpa bergantung pada event.target)
       try {
-        const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getStatusNegosiasi'})});
+        const res  = await fetch(APPS_SCRIPT_URL + '?action=getStatusNegosiasi&t=' + Date.now());
         const json = await res.json();
         if (json.status === 'ok' && json.totalPenyedia > 0 && !json.semuaSelesai) {
           const belum = Array.isArray(json.belumSelesai) ? json.belumSelesai : [];
@@ -10766,7 +10769,7 @@ window.simpanNegoFinal = async function() {
               npwp: mySub.npwp || '',
               namaPerusahaan: mySub.namaPerusahaan || ''
             });
-            const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(Object.fromEntries(qs))});
+            const res  = await fetch(APPS_SCRIPT_URL + '?' + qs + '&t=' + Date.now());
             const json = await res.json();
             if (json.status === 'ok' && json.tersedia && json.data) {
               // Sync ke semua submissions milik penyedia ini
@@ -12246,7 +12249,9 @@ async function _chatPollMessages() {
     const lastId = _chatMessages.length > 0
       ? Math.max(..._chatMessages.map(m => Number(m.id) || 0))
       : 0;
-    const res  = await fetch(APPS_SCRIPT_URL, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'getPesanChat', roomId: _chatRoomId, since: lastId})});
+    const url = APPS_SCRIPT_URL + '?action=getPesanChat&roomId=' + encodeURIComponent(_chatRoomId)
+              + '&since=' + lastId + '&t=' + Date.now();
+    const res  = await fetch(url);
     const data = await res.json();
     if (data.status !== 'ok' || !data.msgs || !data.msgs.length) return;
 
