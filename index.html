@@ -5032,7 +5032,9 @@ async function submitUpload() {
     await new Promise(r=>setTimeout(r,400));
     progressBar.style.width='60%'; progressText.textContent='Mengunggah ke Google Drive…';
     const fullPayload={...payload,fileName:file.name,fileType:file.type,fileData:base64,namaPerusahaan:payload.fNamaPerusahaan,npwp:payload.fNpwp,alamat:payload.fAlamat,namaDirektur:payload.fNamaDirektur,telp:payload.fTelp,email:payload.fEmail,jenisDok:payload.fJenisDok,keterangan:payload.fKeterangan};
-    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(fullPayload)});
+    const _res3 = await fetch(APPS_SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify(fullPayload)});
+    const _json3 = await _res3.json();
+    if (_json3.status !== 'ok') throw new Error(_json3.message || 'Server menolak upload.');
     progressBar.style.width='100%'; progressText.textContent='✓ Berhasil dikirim!';
     progressBar.style.background='linear-gradient(90deg,#3B6D11,#56ab2f)';
     showToast('Dokumen Berhasil Disimpan', 'File tersimpan di Google Drive BPBJ dan siap direview Pokja.', 'success', 4000);
@@ -5263,11 +5265,13 @@ async function submitUploadKategori(tab) {
       uploadType: uploadType
     };
 
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
+    const _res1 = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(fullPayload)
     });
+    const _json1 = await _res1.json();
+    if (_json1.status !== 'ok') throw new Error(_json1.message || 'Server menolak upload.');
 
     if (progressBar) { progressBar.style.width = '100%'; progressBar.style.background = 'linear-gradient(90deg,#3B6D11,#56ab2f)'; }
     if (progressText) progressText.textContent = '✓ Berhasil dikirim!';
@@ -5459,11 +5463,13 @@ async function submitSemuaDokumen() {
         uploadType: uploadType
       };
 
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST', mode: 'no-cors',
+      const _res2 = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST', redirect: 'follow',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(fullPayload)
       });
+      const _json2 = await _res2.json();
+      if (_json2.status !== 'ok') throw new Error(_json2.message || 'Server menolak upload.');
 
       successCount++;
       if (iconEl) iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#2D7D17;"></i>';
@@ -5636,12 +5642,14 @@ async function submitRevisiCepat() {
         kategoriDok:    item.kat,
       };
 
-      await fetch(APPS_SCRIPT_URL, {
+      const _res4 = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors',
+        redirect: 'follow',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(revisiPayload)
       });
+      const _json4 = await _res4.json();
+      if (_json4.status !== 'ok') throw new Error('Gagal upload ' + item.label + ': ' + (_json4.message || 'Error server'));
 
       await new Promise(r => setTimeout(r, 300));
     }
