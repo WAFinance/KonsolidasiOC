@@ -9722,6 +9722,8 @@ function refreshNegoData() {
 // Helper: cek apakah reviewStatus termasuk "lulus"
 function _isReviewLulus(status) {
   const s = (status || '').toLowerCase().trim();
+  // Pastikan "tidak memenuhi syarat" tidak ikut lolos karena includes('memenuhi syarat') juga cocok dengan "tidak memenuhi syarat"
+  if (s.startsWith('tidak') || s.includes('tidak memenuhi')) return false;
   return s === 'memenuhi syarat' ||
          s === 'lulus / memenuhi syarat' ||
          s === 'lulus' ||
@@ -9885,7 +9887,17 @@ function renderNegosiasiPage() {
             ${s.telp  ? ` &nbsp;·&nbsp; <i class="fa-solid fa-phone"></i> ${s.telp}`  : ''}
           </div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Lulus / Memenuhi Syarat</span>
+            ${(()=>{
+              const rs = s.reviewStatus || '';
+              const isTidakMemenuhi = rs === 'Tidak Memenuhi Syarat';
+              if (isTidakMemenuhi) {
+                return `<span style="background:#FDEDEC;color:#C0392B;border:1px solid #F5B7B1;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-xmark"></i> Tidak Memenuhi Syarat (dari Evaluasi)</span>`;
+              } else if (rs === 'Memenuhi Syarat' || rs === 'Lulus / Memenuhi Syarat') {
+                return `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> ${rs}</span>`;
+              } else {
+                return `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:5px;padding:2px 10px;font-size:0.75rem;font-weight:600;"><i class="fa-solid fa-circle-check"></i> ${rs||'Lulus / Memenuhi Syarat'}</span>`;
+              }
+            })()}
             ${negoBadge}
           </div>
         </div>
@@ -9899,6 +9911,156 @@ function renderNegosiasiPage() {
 
   wrap.innerHTML = infoBar + cards;
 }
+
+// ── Fungsi Modal Undangan Negosiasi (bukaModalUndangan / tutupModalUndangan / kirimUndanganPembuktian) ──
+// Fungsi-fungsi ini dipanggil dari tombol "Kirim Undangan" pada kartu penyedia di halaman Negosiasi
+let _undanganNegoIdx = null;
+
+function bukaModalUndangan(idx) {
+  _undanganNegoIdx = idx;
+  const all = getSubmissions();
+  const d   = all[idx];
+  if (!d) return;
+
+  const modal = document.getElementById('modalUndangan');
+  if (!modal) return;
+
+  // Isi info box
+  const infoBox = document.getElementById('undanganInfoBox');
+  if (infoBox) {
+    infoBox.innerHTML = `<strong><i class="fa-solid fa-building"></i> ${d.namaPerusahaan||'-'}</strong>
+      <br><span style="font-size:0.80rem;">NPWP: ${d.npwp||'-'}
+      ${d.email ? `&nbsp;·&nbsp;<i class="fa-solid fa-envelope"></i> ${d.email}` : ''}
+      ${d.telp  ? `&nbsp;·&nbsp;<i class="fa-solid fa-phone"></i> ${d.telp}`  : ''}</span>`;
+  }
+
+  // Isi nilai tersimpan (jika ada)
+  const saved = d.undanganPembuktian || {};
+  const tanggalEl = document.getElementById('undanganTanggal');
+  const lokasiEl  = document.getElementById('undanganLokasi');
+  const pesanEl   = document.getElementById('undanganPesan');
+  if (tanggalEl) tanggalEl.value = saved.tanggal || '';
+  if (lokasiEl)  lokasiEl.value  = saved.lokasi  || '';
+  if (pesanEl)   pesanEl.value   = saved.pesan   || '';
+
+  // Reset pesan
+  const msgEl = document.getElementById('undanganMsg');
+  if (msgEl) { msgEl.style.display='none'; msgEl.innerHTML=''; }
+
+  modal.style.display = 'flex';
+}
+
+function tutupModalUndangan() {
+  const modal = document.getElementById('modalUndangan');
+  if (modal) modal.style.display = 'none';
+  _undanganNegoIdx = null;
+}
+
+async function kirimUndanganPembuktian() {
+  if (_undanganNegoIdx === null) return;
+  const all = getSubmissions();
+  const d   = all[_undanganNegoIdx];
+  if (!d) return;
+
+  const tanggal = (document.getElementById('undanganTanggal')||{}).value || '';
+  const lokasi  = (document.getElementById('undanganLokasi') ||{}).value || '';
+  const pesan   = (document.getElementById('undanganPesan')  ||{}).value || '';
+
+  if (!pesan.trim()) {
+    const msgEl = document.getElementById('undanganMsg');
+    if (msgEl) {
+      msgEl.style.cssText='display:block;background:#FDEDEC;color:#922B21;border:1px solid #F5B7B1;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+      msgEl.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> Pesan undangan tidak boleh kosong.';
+    }
+    return;
+  }
+
+  const btn = document.getElementById('btnKirimUndangan');
+  if (btn) { btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan…'; }
+
+  // Simpan ke data lokal
+  const now     = new Date();
+  const tglNow  = now.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) + ' ' + now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  const pokjaNama = currentPokjaUser || 'pokja';
+  d.undanganPembuktian = { tanggal, lokasi, pesan, dikirimOleh: pokjaNama, dikirimTgl: tglNow };
+
+  // Kirim ke server
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'undanganPembuktian', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, tanggal, lokasi, pesan, dikirimOleh:pokjaNama, dikirimTgl:tglNow })
+    });
+  } catch(e) {}
+
+  // Kirim WhatsApp / Email sesuai preferensi yang tersedia
+  const telp  = String(d.telp||'').trim();
+  const email = d.email || '';
+  const paketNama = (gcGet('judulConfig',{})).headerTitle || 'Konsolidasi Jasa Tenaga Alih Daya 2026';
+  const fonnteConfig = gcGet('fonnteConfig',{});
+  const hasFonnte    = fonnteConfig.token && fonnteConfig.token.trim() !== '';
+
+  const waMsg = `Yth. ${d.namaPerusahaan||'-'},
+
+Kami mengundang perusahaan Anda untuk hadir dalam Pembuktian Kualifikasi paket *${paketNama}*.${tanggal ? `
+
+📅 Tanggal: ${tanggal}` : ''}${lokasi ? `
+📍 Lokasi: ${lokasi}` : ''}
+
+${pesan}
+
+Hormat kami,
+Pokja ${pokjaNama.toUpperCase()}`;
+
+  if (telp) {
+    const waNum = telp.replace(/\D/g,'').replace(/^0/,'62');
+    if (hasFonnte) {
+      try {
+        await fetch('https://api.fonnte.com/send',{
+          method:'POST',
+          headers:{'Authorization':fonnteConfig.token,'Content-Type':'application/json'},
+          body: JSON.stringify({target:waNum, message:waMsg, countryCode:'62'})
+        });
+      } catch(e) {}
+    } else {
+      window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`,'_blank');
+    }
+  }
+
+  if (email) {
+    const subjek = `[Undangan Pembuktian] ${d.namaPerusahaan||'-'} – ${paketNama}`;
+    if (hasFonnte) {
+      try {
+        await fetch(APPS_SCRIPT_URL,{
+          method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({action:'sendEmail', to:email, subject:subjek, body:waMsg, replyTo:fonnteConfig.replyTo||'', senderName:fonnteConfig.senderName||'Pokja Pemilihan BPBJ'})
+        });
+      } catch(e) {}
+    } else if (!telp) {
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subjek)}&body=${encodeURIComponent(waMsg)}`;
+      window.open(gmailUrl,'_blank');
+    }
+  }
+
+  if (btn) { btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-paper-plane"></i> Kirim Undangan'; }
+
+  const msgEl = document.getElementById('undanganMsg');
+  if (msgEl) {
+    msgEl.style.cssText='display:block;background:#EAF3DE;color:#3B6D11;border:1px solid #B6DBA0;border-radius:7px;padding:10px 14px;font-size:0.85rem;margin-bottom:12px;';
+    msgEl.innerHTML=`<i class="fa-solid fa-circle-check"></i> <strong>Undangan berhasil disimpan${(telp||email)?' dan dikirim':''}!</strong>`;
+  }
+
+  setTimeout(() => {
+    tutupModalUndangan();
+    showToast('Undangan Dikirim', `Undangan pembuktian untuk ${d.namaPerusahaan||'-'} telah disiapkan.`, 'success', 3500);
+    renderNegosiasiPage();
+  }, 800);
+}
+
+// Tutup modal undangan jika klik backdrop
+document.addEventListener('DOMContentLoaded', function() {
+  const mu = document.getElementById('modalUndangan');
+  if (mu) mu.addEventListener('click', function(e){ if(e.target===this) tutupModalUndangan(); });
+});
 
 // ── Buka Modal Riwayat Nego — terpisah dari modal utama ──────────────
 let _riwayatNegoIdx = null;
