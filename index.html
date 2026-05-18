@@ -5691,8 +5691,9 @@ let currentReviewIdx=null;
 let currentReviewKey=null; // [FIX] key stabil: npwp||nama + '||' + jenisDok
 
 // Buat key unik stabil untuk sebuah submission
+// [FIX] Key harus konsisten dengan renderPokjaTable groupMap yang memakai email + jenisDok
 function makeSubKey(d) {
-  return ((d.npwp||d.namaPerusahaan||'').toString().trim()) + '||' + (d.jenisDok||'').trim();
+  return ((d.email||d.namaPerusahaan||'').toLowerCase().trim()) + '||' + (d.jenisDok||'').trim();
 }
 
 // Cari index di _submissions berdasarkan key (aman meski urutan berubah)
@@ -6081,7 +6082,7 @@ async function saveCatatanInline(idx) {
   const btn=document.querySelector(`#catatan-edit-${idx} button`);
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';}
   try {
-    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,reviewStatus:d.reviewStatus||'Menunggu Evaluasi',catatanPokja:newCatatan,reviewTanggal:new Date().toISOString(),reviewedBy:currentPokjaUser||'pokja'})});
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateReview',namaPerusahaan:d.namaPerusahaan,npwp:d.npwp,jenisDok:d.jenisDok||'',reviewStatus:d.reviewStatus||'Menunggu Evaluasi',catatanPokja:newCatatan,reviewTanggal:new Date().toISOString(),reviewedBy:currentPokjaUser||'pokja'})});
   } catch(e){}
   d.catatanPokja=newCatatan;
   // Update tampilan tanpa full re-render
@@ -6336,7 +6337,7 @@ async function simpanReview() {
     await fetch(APPS_SCRIPT_URL,{
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ action:'updateReview', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, reviewStatus:status, catatanPokja:catatan, reviewTanggal:new Date().toISOString(), reviewedBy: currentPokjaUser || 'pokja' })
+      body:JSON.stringify({ action:'updateReview', namaPerusahaan:d.namaPerusahaan, npwp:d.npwp, jenisDok:d.jenisDok||'', reviewStatus:status, catatanPokja:catatan, reviewTanggal:new Date().toISOString(), reviewedBy: currentPokjaUser || 'pokja' })
     });
   } catch(e) {}
 
