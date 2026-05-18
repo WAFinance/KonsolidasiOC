@@ -1457,6 +1457,7 @@
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
               <div class="admin-form-group" style="flex:2;min-width:180px;margin-bottom:0;"><input type="text" id="pokjaSearch" placeholder="🔍 Cari nama perusahaan, NPWP, jenis dokumen…" oninput="renderPokjaTable()" /></div>
               <div class="admin-form-group" style="flex:1;min-width:150px;margin-bottom:0;"><select id="pokjaFilterStatus" onchange="renderPokjaTable()"><option value="">Semua Status</option><option value="Menunggu Evaluasi">⏳ Menunggu Evaluasi</option><option value="Memenuhi Syarat">✅ Memenuhi Syarat</option><option value="Tidak Memenuhi Syarat">❌ Tidak Memenuhi Syarat</option><option value="Revisi / Belum Lengkap">🔄 Revisi / Belum Lengkap</option><option value="Klarifikasi / Pembuktian Kualifikasi">🔍 Klarifikasi / Pembuktian</option></select></div>
+              <div class="admin-form-group" style="flex:1;min-width:140px;margin-bottom:0;"><select id="pokjaFilterDelegasi" onchange="renderPokjaTable()" style="font-size:0.83rem;"><option value="">Semua Delegasi</option><option value="__belum__">⏳ Belum Assign</option><option value="Pokja 1">👤 Pokja 1</option><option value="Pokja 2">👤 Pokja 2</option><option value="Pokja 3">👤 Pokja 3</option><option value="Pokja 4">👤 Pokja 4</option></select></div>
               <div class="admin-form-group" style="flex:1;min-width:160px;margin-bottom:0;"><select id="pokjaSort" onchange="renderPokjaTable()" style="font-size:0.83rem;"><option value="asc">⬆ Pengajuan Terlama</option><option value="desc" selected>⬇ Pengajuan Terbaru</option></select></div>
             </div>
             <div style="overflow-x:auto;">
@@ -2547,7 +2548,15 @@ async function loadSubmissionsFromSheet() {
       _submissions = normalizeSubmissions(data.submissions);
       const statEl = document.getElementById('statPeserta');
       if (statEl) statEl.textContent = _submissions.length || '–';
-      if (currentRole === 'pokja' || currentRole === 'admin') renderPokjaTable();
+      if (currentRole === 'pokja' || currentRole === 'admin') {
+        // Pastikan filter delegasi sudah ter-set untuk pokja sebelum render
+        if (currentRole === 'pokja' && currentPokjaUser) {
+          const loginLabel = POKJA_DELEGASI_LABEL[currentPokjaUser] || null;
+          const fDlgEl = document.getElementById('pokjaFilterDelegasi');
+          if (fDlgEl && loginLabel && !fDlgEl.value) fDlgEl.value = loginLabel;
+        }
+        renderPokjaTable();
+      }
       if (currentRole === 'penyedia') renderStatusPenyedia();
       renderPokjaStats();
       hideSync();
@@ -3327,6 +3336,9 @@ function updateRoleUI() {
     if (currentRole==='admin') {
       badge.className='role-badge role-admin'; badge.innerHTML='<i class="fa-solid fa-gear"></i> Admin';
       if (delegasiBanner) delegasiBanner.classList.remove('show');
+      // Reset filter delegasi untuk admin (lihat semua)
+      const fDlgElAdm = document.getElementById('pokjaFilterDelegasi');
+      if (fDlgElAdm) fDlgElAdm.value = '';
     }
     else if (currentRole==='pokja') {
       badge.className='role-badge role-pokja'; badge.innerHTML=`<i class="fa-solid fa-shield-halved"></i> ${getPokjaDisplayName()}`;
@@ -3337,8 +3349,14 @@ function updateRoleUI() {
           delegasiBanner.classList.add('show');
           const infoText = document.getElementById('delegasiInfoText');
           if (infoText) infoText.textContent = `Login sebagai ${currentPokjaUser.toUpperCase()} — hanya dapat memproses paket yang didelegasikan ke ${loginLabel}`;
+          // Auto-set filter delegasi ke pokja yang sedang login
+          const fDlgEl = document.getElementById('pokjaFilterDelegasi');
+          if (fDlgEl && loginLabel) fDlgEl.value = loginLabel;
         } else {
           delegasiBanner.classList.remove('show');
+          // Reset filter delegasi jika bukan pokja1-4
+          const fDlgEl = document.getElementById('pokjaFilterDelegasi');
+          if (fDlgEl) fDlgEl.value = '';
         }
       }
     }
@@ -5733,6 +5751,7 @@ function renderPokjaTable() {
   const data=getSubmissions();
   const q=(document.getElementById('pokjaSearch')?.value||'').toLowerCase();
   const fStat=document.getElementById('pokjaFilterStatus')?.value;
+  const fDlg=document.getElementById('pokjaFilterDelegasi')?.value;
   const sortDir=(document.getElementById('pokjaSort')?.value)||'desc';
   const tbody=document.getElementById('pokjaTableBody');
 
@@ -5752,7 +5771,11 @@ function renderPokjaTable() {
     const d = grp[grp.length-1].d;
     const matchQ=!q||(d.namaPerusahaan||'').toLowerCase().includes(q)||String(d.npwp||'').includes(q)||(d.jenisDok||'').toLowerCase().includes(q);
     const matchS=!fStat||(d.reviewStatus||'Menunggu Evaluasi')===fStat;
-    return matchQ&&matchS;
+    // Filter delegasi: ambil nilai delegasi dari _delegasiMap
+    const paketKey=(d.namaPerusahaan||d.npwp||'')+'||'+(d.jenisDok||'');
+    const dlgVal=_delegasiMap[paketKey]||'';
+    const matchD=!fDlg||(fDlg==='__belum__'?!dlgVal:dlgVal===fDlg);
+    return matchQ&&matchS&&matchD;
   });
   groups.sort((ga,gb)=>{
     const tA=ga[ga.length-1].d.tanggal?new Date(ga[ga.length-1].d.tanggal).getTime():0;
