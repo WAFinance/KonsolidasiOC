@@ -3560,16 +3560,32 @@ function renderStatusPenyedia() {
     const prevRevLinks = revLinks.slice(0, -1); // revisi lama (bukan terbaru)
     const lastRevLink  = revLinks.length ? revLinks[revLinks.length - 1] : null;
 
+    // Helper: cari timestamp dari logUpload* berdasarkan tipe dan slot (1-based)
+    const _getTglFromLog = (logArr, tipe, slotNo) => {
+      if (!Array.isArray(logArr)) return null;
+      const entry = logArr.find(e => e.tipe === tipe && Number(e.slot) === slotNo);
+      return entry ? entry.tgl : null;
+    };
+
     // Render kartu dokumen per kategori
     const katHtml = katMeta.filter(c => (c.link && c.link.startsWith('http')) || c.tmbs.length > 0).map(c => {
       const nmShort = c.nm ? (c.nm.length > 38 ? c.nm.substring(0,36)+'…' : c.nm) : '(tanpa nama)';
+
+      // Log array untuk kategori ini
+      const logMap = { 'Administrasi': latest.logUploadAdm, 'Kualifikasi': latest.logUploadKual, 'Teknis': latest.logUploadTek, 'Harga': latest.logUploadHarga };
+      const logArr = logMap[c.label] || [];
+
       const tmbItems = c.tmbs.map((t, ti) => {
         const tnm = t.namaFile ? (t.namaFile.length > 35 ? t.namaFile.substring(0,33)+'…' : t.namaFile) : '(tanpa nama)';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;background:#fff;border:1px solid #E0E0E0;margin-top:5px;">
-          <span style="background:${c.tmbColor};color:#fff;border-radius:4px;padding:2px 7px;font-size:0.67rem;font-weight:700;flex-shrink:0;white-space:nowrap;">Tmb ${ti+1}</span>
-          <span style="flex:1;font-size:0.75rem;color:var(--gray-600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.namaFile||''}">${tnm}</span>
-          <a href="${t.link}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:5px;padding:3px 9px;font-size:0.70rem;font-weight:600;text-decoration:none;flex-shrink:0;"><i class="fa-solid fa-eye"></i> Lihat</a>
-          <a href="${t.link}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:5px;text-decoration:none;flex-shrink:0;font-size:0.68rem;"><i class="fa-solid fa-download"></i></a>
+        const tglTmb = _getTglFromLog(logArr, 'tambahan', ti + 1);
+        return `<div style="display:flex;flex-direction:column;gap:3px;padding:7px 10px;border-radius:7px;background:#fff;border:1px solid #E0E0E0;margin-top:5px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="background:${c.tmbColor};color:#fff;border-radius:4px;padding:2px 7px;font-size:0.67rem;font-weight:700;flex-shrink:0;white-space:nowrap;">Tmb ${ti+1}</span>
+            <span style="flex:1;font-size:0.75rem;color:var(--gray-600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.namaFile||''}">${tnm}</span>
+            <a href="${t.link}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:5px;padding:3px 9px;font-size:0.70rem;font-weight:600;text-decoration:none;flex-shrink:0;"><i class="fa-solid fa-eye"></i> Lihat</a>
+            <a href="${t.link}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:5px;text-decoration:none;flex-shrink:0;font-size:0.68rem;"><i class="fa-solid fa-download"></i></a>
+          </div>
+          ${tglTmb ? `<div style="font-size:0.65rem;color:${c.tmbColor};opacity:0.85;padding-left:2px;display:flex;align-items:center;gap:3px;"><i class="fa-regular fa-clock" style="font-size:0.60rem;"></i> ${tglTmb}</div>` : ''}
         </div>`;
       }).join('');
 
@@ -3591,19 +3607,41 @@ function renderStatusPenyedia() {
       </div>`;
     }).join('');
 
-    // Revisi lintas-kategori (jika ada, tampilkan rapi)
-    const revHtml = hasRevLinks ? (() => {
+    // Revisi per-kategori (dengan timestamp)
+    const _revKatMeta = [
+      { revs: Array.isArray(latest.revisiAdm)   ? latest.revisiAdm.filter(r=>r&&r.link&&r.link.startsWith('http'))   : [], label:'Administrasi', color:'#1B5E20', icon:'fa-file-alt',          logArr: latest.logUploadAdm   },
+      { revs: Array.isArray(latest.revisiKual)  ? latest.revisiKual.filter(r=>r&&r.link&&r.link.startsWith('http'))  : [], label:'Kualifikasi',  color:'#0D47A1', icon:'fa-medal',              logArr: latest.logUploadKual  },
+      { revs: Array.isArray(latest.revisiTek)   ? latest.revisiTek.filter(r=>r&&r.link&&r.link.startsWith('http'))   : [], label:'Teknis',       color:'#E65100', icon:'fa-screwdriver-wrench', logArr: latest.logUploadTek   },
+      { revs: Array.isArray(latest.revisiHarga) ? latest.revisiHarga.filter(r=>r&&r.link&&r.link.startsWith('http')) : [], label:'Harga',        color:'#880E4F', icon:'fa-tag',                logArr: latest.logUploadHarga },
+    ].filter(c => c.revs.length > 0);
+    const totalRevKat = _revKatMeta.reduce((s,c) => s + c.revs.length, 0);
+
+    const revHtml = totalRevKat > 0 ? (() => {
       const revPanelId = 'revHist-' + grpId;
-      const allRevRows = revLinks.map((rv, ri) => {
-        const url = getRevUrl(rv);
-        const nm  = getRevNama(rv);
-        const nmShort = nm ? (nm.length > 40 ? nm.substring(0,38)+'…' : nm) : '(tanpa nama)';
-        const isLatest = ri === revLinks.length - 1;
-        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;background:${isLatest?'#E8EAF6':'#fff'};border:1px solid ${isLatest?'#7986CB44':'#E0E0E0'};margin-bottom:5px;">
-          <span style="background:${isLatest?'#3949AB':'#78909C'};color:#fff;border-radius:4px;padding:2px 7px;font-size:0.67rem;font-weight:700;flex-shrink:0;white-space:nowrap;">Rev ${ri+1}${isLatest?' ★':''}</span>
-          <span style="flex:1;font-size:0.75rem;color:var(--gray-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${nm}">${nmShort}</span>
-          <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:5px;padding:3px 9px;font-size:0.70rem;font-weight:600;text-decoration:none;flex-shrink:0;"><i class="fa-solid fa-eye"></i> Lihat</a>
-          <a href="${url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:5px;text-decoration:none;flex-shrink:0;font-size:0.68rem;"><i class="fa-solid fa-download"></i></a>
+      const allRevRows = _revKatMeta.map(c => {
+        const rows = c.revs.map((rv, ri) => {
+          const url = rv.link || '';
+          const nm  = rv.namaFile || '';
+          const nmShort = nm ? (nm.length > 38 ? nm.substring(0,36)+'…' : nm) : '(tanpa nama)';
+          const isLatest = ri === c.revs.length - 1;
+          const tglRev = _getTglFromLog(c.logArr, 'revisi', ri + 1);
+          return `<div style="display:flex;flex-direction:column;gap:3px;padding:7px 10px;border-radius:7px;
+                              background:${isLatest?'#E8EAF6':'#fff'};border:1px solid ${isLatest?'#7986CB44':'#E0E0E0'};margin-bottom:4px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="background:${isLatest?'#3949AB':'#78909C'};color:#fff;border-radius:4px;padding:2px 7px;font-size:0.67rem;font-weight:700;flex-shrink:0;white-space:nowrap;">Rev ${ri+1}${isLatest?' ★':''}</span>
+              <span style="flex:1;font-size:0.75rem;color:var(--gray-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${nm}">${nmShort}</span>
+              <a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:5px;padding:3px 9px;font-size:0.70rem;font-weight:600;text-decoration:none;flex-shrink:0;"><i class="fa-solid fa-eye"></i> Lihat</a>
+              <a href="${url}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:5px;text-decoration:none;flex-shrink:0;font-size:0.68rem;"><i class="fa-solid fa-download"></i></a>
+            </div>
+            ${tglRev ? `<div style="font-size:0.65rem;color:#3949AB;opacity:0.85;padding-left:2px;display:flex;align-items:center;gap:3px;"><i class="fa-regular fa-clock" style="font-size:0.60rem;"></i> ${tglRev}</div>` : ''}
+          </div>`;
+        }).join('');
+        return `<div style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
+            <i class="fa-solid ${c.icon}" style="color:${c.color};font-size:0.72rem;"></i>
+            <span style="font-size:0.72rem;font-weight:700;color:${c.color};">${c.label}</span>
+          </div>
+          ${rows}
         </div>`;
       }).join('');
 
@@ -3611,7 +3649,7 @@ function renderStatusPenyedia() {
         <button id="revHistBtn-${grpId}" onclick="toggleRevHistPanel('${grpId}')"
           style="display:inline-flex;align-items:center;gap:6px;background:#F3F0FF;border:1px solid #D1C4E9;color:#4527A0;border-radius:6px;padding:5px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;margin-bottom:8px;transition:background 0.15s;">
           <i class="fa-solid fa-rotate" style="font-size:0.72rem;"></i>
-          <span>${revLinks.length} Revisi Dokumen</span>
+          <span>${totalRevKat} Revisi Dokumen</span>
           <i id="revHistIcon-${grpId}" class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
         </button>
         <div id="${revPanelId}" style="display:none;">${allRevRows}</div>
@@ -5836,16 +5874,22 @@ function renderPokjaTable() {
     const _tglUpTek   = _getLastUploadTglPokja(d.logUploadTek);
     const _tglUpHarga = _getLastUploadTglPokja(d.logUploadHarga);
 
+    // Helper: cari timestamp dari logUpload* berdasarkan tipe dan slot (1-based) — Pokja
+    const _getTglFromLogPkj = (logArr, tipe, slotNo) => {
+      if (!Array.isArray(logArr)) return null;
+      const entry = logArr.find(e => e.tipe === tipe && Number(e.slot) === slotNo);
+      return entry ? entry.tgl : null;
+    };
+
     // Definisi kategori (utama + badge revisi + badge tambahan)
     const _katMeta = [
-      { link: _lAdm,   revs: _revAdm,   tmbs: _tmbAdm,   nm: d.namaFileAdm||'',   label:'Adm',   labelFull:'Administrasi', color:'#1B5E20', tmbColor:'#2E7D32', icon:'fa-file-alt',            tglUpload: _tglUpAdm   },
-      { link: _lKual,  revs: _revKual,  tmbs: _tmbKual,  nm: d.namaFileKual||'',  label:'Kual',  labelFull:'Kualifikasi',  color:'#0D47A1', tmbColor:'#1565C0', icon:'fa-medal',                tglUpload: _tglUpKual  },
-      { link: _lTek,   revs: _revTek,   tmbs: _tmbTek,   nm: d.namaFileTek||'',   label:'Tek',   labelFull:'Teknis',       color:'#E65100', tmbColor:'#BF360C', icon:'fa-screwdriver-wrench',   tglUpload: _tglUpTek   },
-      { link: _lHarga, revs: _revHarga, tmbs: _tmbHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', tmbColor:'#6A1042', icon:'fa-tag',                  tglUpload: _tglUpHarga },
+      { link: _lAdm,   revs: _revAdm,   tmbs: _tmbAdm,   nm: d.namaFileAdm||'',   label:'Adm',   labelFull:'Administrasi', color:'#1B5E20', tmbColor:'#2E7D32', icon:'fa-file-alt',            tglUpload: _tglUpAdm,   logArr: d.logUploadAdm   },
+      { link: _lKual,  revs: _revKual,  tmbs: _tmbKual,  nm: d.namaFileKual||'',  label:'Kual',  labelFull:'Kualifikasi',  color:'#0D47A1', tmbColor:'#1565C0', icon:'fa-medal',                tglUpload: _tglUpKual,  logArr: d.logUploadKual  },
+      { link: _lTek,   revs: _revTek,   tmbs: _tmbTek,   nm: d.namaFileTek||'',   label:'Tek',   labelFull:'Teknis',       color:'#E65100', tmbColor:'#BF360C', icon:'fa-screwdriver-wrench',   tglUpload: _tglUpTek,   logArr: d.logUploadTek   },
+      { link: _lHarga, revs: _revHarga, tmbs: _tmbHarga, nm: d.namaFileHarga||'', label:'Harga', labelFull:'Harga',        color:'#880E4F', tmbColor:'#6A1042', icon:'fa-tag',                  tglUpload: _tglUpHarga, logArr: d.logUploadHarga },
     ];
 
-    // ── fileCell: HANYA dokumen awal (upload pertama) per kategori ──
-    // Revisi & tambahan TIDAK ditampilkan di sini — mereka masuk kolom Revisi
+    // ── fileCell: dokumen utama per kategori (tanpa log panel) ──
     let fileCell = '<span style="color:var(--gray-400);font-size:0.78rem;">–</span>';
     const _catAwal = _katMeta.filter(c => c.link && c.link.startsWith('http'));
     if (_catAwal.length) {
@@ -5872,48 +5916,50 @@ function renderPokjaTable() {
       }).join('')}</div>`;
     }
 
-    // ── revisiCol: Revisi (Rev 1,2,…) + Tambahan (Tmb 1,2,…) per kategori ──
+    // ── revisiCol: Revisi (Rev 1,2,…) + Tambahan (Tmb 1,2,…) per kategori — dengan timestamp ──
     const totalDokExtra = totalRevisi + totalTmbPokja;
     let revisiCol = '';
     if (totalDokExtra > 0) {
       const revPanelId = 'revPanel-' + origIdx;
       const revBtnId   = 'revBtn-' + origIdx;
 
-      // Kelompokkan per kategori: revisi lalu tambahan
+      // Kelompokkan per kategori: revisi lalu tambahan, tiap item dengan timestamp
       const panelHtml = _katMeta.map(c => {
-        const rows = [
-          ...c.revs.map((rv, ri) => ({ type:'Rev', idx: ri+1, url: rv.link, nm: rv.namaFile||'', color: c.color })),
-          ...c.tmbs.map((t,  ti) => ({ type:'Tmb', idx: ti+1, url: t.link,  nm: t.namaFile||'', color: c.tmbColor })),
-        ];
-        if (!rows.length) return '';
+        if (!c.revs.length && !c.tmbs.length) return '';
+        const revRows = c.revs.map((rv, ri) => {
+          const tglR = _getTglFromLogPkj(c.logArr, 'revisi', ri + 1);
+          return `<div style="display:flex;flex-direction:column;gap:2px;padding:5px 8px;margin-bottom:3px;
+                               background:#FAFAFA;border:1px solid #E0E0E0;border-left:3px solid ${c.color};border-radius:6px;">
+            <div style="display:flex;align-items:center;gap:4px;font-size:0.72rem;">
+              <span style="background:${c.color};color:#fff;border-radius:4px;padding:1px 6px;font-size:0.67rem;font-weight:700;flex-shrink:0;">Rev ${ri+1}</span>
+              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-600);" title="${rv.namaFile||''}">${rv.namaFile||'(tanpa nama)'}</span>
+              <a href="${rv.link}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:2px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 7px;font-size:0.68rem;font-weight:600;text-decoration:none;flex-shrink:0;"><i class="fa-solid fa-eye"></i> Lihat</a>
+              <a href="${rv.link}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;text-decoration:none;flex-shrink:0;font-size:0.68rem;"><i class="fa-solid fa-download"></i></a>
+            </div>
+            ${tglR ? `<div style="font-size:0.62rem;color:#3949AB;opacity:0.85;padding-left:2px;display:flex;align-items:center;gap:3px;"><i class="fa-regular fa-clock" style="font-size:0.58rem;"></i> ${tglR}</div>` : ''}
+          </div>`;
+        }).join('');
+        const tmbRows = c.tmbs.map((t, ti) => {
+          const tglT = _getTglFromLogPkj(c.logArr, 'tambahan', ti + 1);
+          return `<div style="display:flex;flex-direction:column;gap:2px;padding:5px 8px;margin-bottom:3px;
+                               background:#FAFAFA;border:1px solid #E0E0E0;border-left:3px solid ${c.tmbColor};border-radius:6px;">
+            <div style="display:flex;align-items:center;gap:4px;font-size:0.72rem;">
+              <span style="background:${c.tmbColor};color:#fff;border-radius:4px;padding:1px 6px;font-size:0.67rem;font-weight:700;flex-shrink:0;">Tmb ${ti+1}</span>
+              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-600);" title="${t.namaFile||''}">${t.namaFile||'(tanpa nama)'}</span>
+              <a href="${t.link}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:2px;background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;padding:2px 7px;font-size:0.68rem;font-weight:600;text-decoration:none;flex-shrink:0;"><i class="fa-solid fa-eye"></i> Lihat</a>
+              <a href="${t.link}" download target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;border-radius:4px;text-decoration:none;flex-shrink:0;font-size:0.68rem;"><i class="fa-solid fa-download"></i></a>
+            </div>
+            ${tglT ? `<div style="font-size:0.62rem;color:${c.tmbColor};opacity:0.85;padding-left:2px;display:flex;align-items:center;gap:3px;"><i class="fa-regular fa-clock" style="font-size:0.58rem;"></i> ${tglT}</div>` : ''}
+          </div>`;
+        }).join('');
+        const totalKat = c.revs.length + c.tmbs.length;
         return `<div style="margin-bottom:8px;">
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
             <i class="fa-solid ${c.icon}" style="color:${c.color};font-size:0.75rem;"></i>
             <span style="font-size:0.72rem;font-weight:700;color:${c.color};">${c.labelFull}</span>
-            <span style="font-size:0.67rem;background:${c.color}18;color:${c.color};border:1px solid ${c.color}40;
-                         border-radius:10px;padding:1px 6px;font-weight:600;">${rows.length} dok</span>
+            <span style="font-size:0.67rem;background:${c.color}18;color:${c.color};border:1px solid ${c.color}40;border-radius:10px;padding:1px 6px;font-weight:600;">${totalKat} dok</span>
           </div>
-          ${rows.map(rv => `
-            <div style="display:flex;align-items:center;gap:4px;padding:4px 8px;margin-bottom:3px;
-                         background:#FAFAFA;border:1px solid #E0E0E0;border-left:3px solid ${rv.color};
-                         border-radius:6px;font-size:0.72rem;">
-              <span style="background:${rv.color};color:#fff;border-radius:4px;padding:1px 6px;
-                           font-size:0.67rem;font-weight:700;flex-shrink:0;">${rv.type} ${rv.idx}</span>
-              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-600);"
-                    title="${rv.nm}">${rv.nm || '(tanpa nama)'}</span>
-              <a href="${rv.url}" target="_blank" rel="noopener"
-                style="display:inline-flex;align-items:center;gap:2px;background:var(--blue-50);
-                       color:var(--blue-700);border:1px solid var(--blue-100);border-radius:4px;
-                       padding:2px 7px;font-size:0.68rem;font-weight:600;text-decoration:none;flex-shrink:0;">
-                <i class="fa-solid fa-eye"></i> Lihat
-              </a>
-              <a href="${rv.url}" download target="_blank" rel="noopener"
-                style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-                       background:#EAF3DE;color:var(--green-700);border:1px solid #B6DBA0;
-                       border-radius:4px;text-decoration:none;flex-shrink:0;font-size:0.68rem;">
-                <i class="fa-solid fa-download"></i>
-              </a>
-            </div>`).join('')}
+          ${revRows}${tmbRows}
         </div>`;
       }).filter(Boolean).join('');
 
