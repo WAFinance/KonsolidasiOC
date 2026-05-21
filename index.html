@@ -5793,14 +5793,22 @@ function renderPokjaTable() {
   const sortDir=(document.getElementById('pokjaSort')?.value)||'desc';
   const tbody=document.getElementById('pokjaTableBody');
 
-  // ── Kelompokkan semua data per penyedia (email) + jenisDok ──
+  // ── Kelompokkan semua data per penyedia (NPWP prioritas, nama fallback) + jenisDok ──
+  // Menggunakan NPWP sebagai kunci utama agar konsisten dengan logika backend (code.gs).
+  // Normalisasi jenisDok: samakan dash dan spasi agar data lama & baru masuk grup yang sama.
+  const _normJenisDokFE = s => (s||'').toLowerCase()
+    .replace(/[–—\-]/g, '-').replace(/\s+/g, ' ').replace(/[≥]/g, '>=').trim();
+
   const groupMap = new Map();
   data.forEach((d, origIdx) => {
-    const key = ((d.email||d.namaPerusahaan||'').toLowerCase()) + '||' + (d.jenisDok||'').trim();
+    const penyediaKey = (d.npwp||'').toString().trim()
+      || (d.namaPerusahaan||'').toLowerCase().trim();
+    const paketKey = _normJenisDokFE(d.jenisDok);
+    const key = penyediaKey + '||' + paketKey;
     if (!groupMap.has(key)) groupMap.set(key, []);
     groupMap.get(key).push({d, origIdx});
   });
-  // Urutkan tiap grup: lama → baru
+  // Urutkan tiap grup: lama → baru (yang paling awal jadi induk, terbaru jadi latest)
   groupMap.forEach(grp => grp.sort((a,b)=>(a.d.tanggal||'')<(b.d.tanggal||'')?-1:1));
 
   // Ambil satu wakil per grup (dokumen terbaru = last item) lalu filter + sort
@@ -5837,10 +5845,64 @@ function renderPokjaTable() {
   let rowNum=0;
   tbody.innerHTML=groups.map(grp=>{
     rowNum++;
-    const latest  = grp[grp.length-1];
-    const history = grp.slice(0, -1); // versi sebelumnya
-    const d       = latest.d;
-    const origIdx = latest.origIdx;
+    // Baris PERTAMA (terlama) = induk → punya status review, catatan pokja, delegasi
+    // Baris TERBARU = latest → punya dokumen yang paling baru diupload
+    // Kita gabungkan: status/catatan dari induk, dokumen dari latest,
+    // dokumen tambahan di-merge dari semua baris dalam grup
+    const primary  = grp[0];           // induk (paling lama = row asli di spreadsheet)
+    const latest   = grp[grp.length-1];// terbaru (dokumen terkini)
+    const history  = grp.slice(0, -1); // versi sebelumnya (untuk info historis)
+
+    // Gabungkan data: preferensikan primary untuk metadata, latest untuk file link
+    const d = Object.assign({}, primary.d, {
+      // Dokumen utama: ambil dari latest jika ada, fallback ke primary
+      linkAdm  : (latest.d.linkAdm   || '').trim() || (primary.d.linkAdm   || '').trim(),
+      linkKual : (latest.d.linkKual  || '').trim() || (primary.d.linkKual  || '').trim(),
+      linkTek  : (latest.d.linkTek   || '').trim() || (primary.d.linkTek   || '').trim(),
+      linkHarga: (latest.d.linkHarga || '').trim() || (primary.d.linkHarga || '').trim(),
+      namaFileAdm  : latest.d.namaFileAdm   || primary.d.namaFileAdm   || '',
+      namaFileKual : latest.d.namaFileKual  || primary.d.namaFileKual  || '',
+      namaFileTek  : latest.d.namaFileTek   || primary.d.namaFileTek   || '',
+      namaFileHarga: latest.d.namaFileHarga || primary.d.namaFileHarga || '',
+      // Log upload: gabungkan dari semua baris
+      logUploadAdm  : [...(primary.d.logUploadAdm   ||[]), ...(latest === primary ? [] : (latest.d.logUploadAdm   ||[]))],
+      logUploadKual : [...(primary.d.logUploadKual  ||[]), ...(latest === primary ? [] : (latest.d.logUploadKual  ||[]))],
+      logUploadTek  : [...(primary.d.logUploadTek   ||[]), ...(latest === primary ? [] : (latest.d.logUploadTek   ||[]))],
+      logUploadHarga: [...(primary.d.logUploadHarga ||[]), ...(latest === primary ? [] : (latest.d.logUploadHarga ||[]))],
+      // Tambahan: gabungkan dari semua baris dalam grup
+      tambahanAdm  : [
+        ...(primary.d.tambahanAdm   ||[]),
+        ...grp.slice(1).flatMap(g => g.d.tambahanAdm   ||[]),
+        // Jika baris terbaru punya link utama yang berbeda dari primary, masukkan sebagai tambahan
+        ...(latest !== primary && (latest.d.linkAdm||'').startsWith('http') && latest.d.linkAdm !== primary.d.linkAdm
+            ? [{ namaFile: latest.d.namaFileAdm||latest.d.linkAdm, link: latest.d.linkAdm }] : [])
+      ],
+      tambahanKual : [
+        ...(primary.d.tambahanKual  ||[]),
+        ...grp.slice(1).flatMap(g => g.d.tambahanKual  ||[]),
+        ...(latest !== primary && (latest.d.linkKual||'').startsWith('http') && latest.d.linkKual !== primary.d.linkKual
+            ? [{ namaFile: latest.d.namaFileKual||latest.d.linkKual, link: latest.d.linkKual }] : [])
+      ],
+      tambahanTek  : [
+        ...(primary.d.tambahanTek   ||[]),
+        ...grp.slice(1).flatMap(g => g.d.tambahanTek   ||[]),
+        ...(latest !== primary && (latest.d.linkTek||'').startsWith('http') && latest.d.linkTek !== primary.d.linkTek
+            ? [{ namaFile: latest.d.namaFileTek||latest.d.linkTek, link: latest.d.linkTek }] : [])
+      ],
+      tambahanHarga: [
+        ...(primary.d.tambahanHarga ||[]),
+        ...grp.slice(1).flatMap(g => g.d.tambahanHarga ||[]),
+        ...(latest !== primary && (latest.d.linkHarga||'').startsWith('http') && latest.d.linkHarga !== primary.d.linkHarga
+            ? [{ namaFile: latest.d.namaFileHarga||latest.d.linkHarga, link: latest.d.linkHarga }] : [])
+      ],
+      // Status, catatan, delegasi: dari induk (primary)
+      reviewStatus  : primary.d.reviewStatus   || 'Menunggu Evaluasi',
+      catatanPokja  : primary.d.catatanPokja   || '',
+      delegasiPokja : primary.d.delegasiPokja  || '',
+      // Tampilkan tanggal upload terbaru
+      tanggal: latest.d.tanggal || primary.d.tanggal
+    });
+    const origIdx = primary.origIdx;
 
     const tgl=d.tanggal?new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-';
 
