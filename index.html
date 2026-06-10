@@ -1558,6 +1558,38 @@
                     <span class="admin-toggle-slider"></span>
                   </label>
                 </div>
+                <!-- Toggle Sembunyikan Tab Daftar Penyedia -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#7B3FA0,#5B2D80);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <i class="fa-solid fa-user-plus" style="color:#fff;font-size:16px;"></i>
+                    </div>
+                    <div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue-900);">Tab Daftar Penyedia</div>
+                      <div style="font-size:0.75rem;color:var(--gray-400);">Toggle OFF = tab "Daftar Baru" disembunyikan di modal login penyedia</div>
+                    </div>
+                  </div>
+                  <label class="admin-toggle-switch">
+                    <input type="checkbox" id="toggleShowDaftarPenyedia" onchange="previewLoginToggle()" checked>
+                    <span class="admin-toggle-slider"></span>
+                  </label>
+                </div>
+                <!-- Toggle Sembunyikan Login Admin -->
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#856404,#A07800);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <i class="fa-solid fa-gear" style="color:#fff;font-size:16px;"></i>
+                    </div>
+                    <div>
+                      <div style="font-size:0.88rem;font-weight:700;color:var(--blue-900);">Login Admin (Klik Logo)</div>
+                      <div style="font-size:0.75rem;color:var(--gray-400);">Toggle OFF = klik logo 3× tidak membuka modal login admin (nonaktif untuk publik)</div>
+                    </div>
+                  </div>
+                  <label class="admin-toggle-switch">
+                    <input type="checkbox" id="toggleShowLoginAdmin" onchange="previewLoginToggle()" checked>
+                    <span class="admin-toggle-slider"></span>
+                  </label>
+                </div>
               </div>
 
               <!-- Konfigurasi pesan kunci -->
@@ -1792,6 +1824,26 @@
                   </div>
                   <div style="margin-top:8px;font-size:0.8rem;min-height:20px;" id="msgAkunPokja"></div>
                 </div>
+              </div>
+
+              <!-- Manajemen Akun Penyedia -->
+              <div class="timeline-editor-item" style="margin-top:16px;">
+                <div class="tei-head"><i class="fa-solid fa-building-user" style="color:var(--teal-600);"></i> Manajemen Akun Penyedia</div>
+                <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:7px;padding:10px 14px;font-size:0.81rem;color:#856404;margin-bottom:14px;">
+                  <i class="fa-solid fa-circle-info"></i> Kunci akun penyedia agar tidak bisa login ke portal. Akun yang dikunci akan menerima pesan error saat mencoba masuk.
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                  <input type="text" id="penyediaSearchAkun" placeholder="Cari nama perusahaan atau email…"
+                    oninput="renderPenyediaAccountsTable()"
+                    style="flex:1;min-width:200px;padding:7px 12px;border:1px solid var(--gray-200);border-radius:7px;font-size:0.84rem;outline:none;" />
+                  <button onclick="loadPenyediaAccountsAdmin()" style="background:var(--blue-600);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                    <i class="fa-solid fa-rotate"></i> Refresh
+                  </button>
+                </div>
+                <div id="penyediaAccountsTable" style="overflow-x:auto;">
+                  <div style="text-align:center;padding:24px;color:var(--gray-400);font-size:0.84rem;"><i class="fa-solid fa-spinner fa-spin"></i> Belum dimuat — klik Refresh</div>
+                </div>
+                <div style="margin-top:8px;font-size:0.78rem;min-height:18px;" id="msgAkunPenyedia"></div>
               </div>
             </div>
 
@@ -3092,11 +3144,19 @@ function closeAllLoginOverlays() {
 }
 
 function switchPenyediaTab(tab) {
+  // Cek apakah tab Daftar boleh ditampilkan
+  const showDaftar = gcGet('showDaftarPenyedia', true) !== false;
+  const tabDaftarBtn = document.getElementById('tabDaftarPenyedia');
+  if (tabDaftarBtn) tabDaftarBtn.style.display = showDaftar ? '' : 'none';
+  // Jika daftar disembunyikan dan dipaksa ke tab daftar, paksa ke masuk
+  if (!showDaftar && tab === 'daftar') tab = 'masuk';
   const isMasuk = tab === 'masuk';
   document.getElementById('formMasukPenyedia').style.display  = isMasuk ? 'block' : 'none';
   document.getElementById('formDaftarPenyedia').style.display = isMasuk ? 'none'  : 'block';
   document.getElementById('tabMasukPenyedia').style.cssText   = isMasuk ? 'flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;' : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
-  document.getElementById('tabDaftarPenyedia').style.cssText  = !isMasuk ? 'flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;' : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
+  if (showDaftar) {
+    document.getElementById('tabDaftarPenyedia').style.cssText  = !isMasuk ? 'flex:1;padding:8px;border-radius:8px;border:1.5px solid #0C6E6E;background:#E0F4F4;color:#0C6E6E;font-size:0.85rem;font-weight:700;cursor:pointer;' : 'flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--gray-50);color:var(--gray-600);font-size:0.85rem;font-weight:600;cursor:pointer;';
+  }
 }
 
 async function doRegisterPenyedia() {
@@ -3138,15 +3198,24 @@ async function doLoginPenyedia() {
 
   // Verifikasi ke server — sumber kebenaran adalah sheet Akun
   let account = null;
+  let isLockedByServer = false;
   try {
     const res  = await fetch(APPS_SCRIPT_URL + '?action=loginPenyedia&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password), {method:'GET', mode:'cors', redirect:'follow'});
     const data = await res.json();
     if (data.status === 'ok' && data.account) {
       account = data.account;
+    } else if (data.locked) {
+      isLockedByServer = true;
     }
   } catch(e) {
     setButtonLoading('btnDoLoginPenyedia', false);
     errEl.textContent = '❌ Gagal menghubungi server. Periksa koneksi internet.';
+    shakeModal('loginOverlayPenyedia');
+    return;
+  }
+  if (isLockedByServer) {
+    setButtonLoading('btnDoLoginPenyedia', false);
+    errEl.innerHTML = '🔒 <strong>Akun Anda telah dikunci oleh Administrator.</strong> Hubungi panitia pengadaan BPBJ Kota Surakarta untuk informasi lebih lanjut.';
     shakeModal('loginOverlayPenyedia');
     return;
   }
@@ -3272,6 +3341,9 @@ function initAuth() {
     adminClickTimer = setTimeout(() => adminClickCount = 0, 700);
     if (adminClickCount >= 3) {
       adminClickCount = 0;
+      // Cek apakah login admin diizinkan oleh config
+      const showAdminLogin = gcGet('showLoginAdmin', true) !== false;
+      if (!showAdminLogin) return; // login admin disembunyikan oleh admin
       document.getElementById('adminUsernameInput').value = '';
       document.getElementById('adminPasswordInput').value = '';
       document.getElementById('errorLoginAdmin').textContent = '';
@@ -4695,12 +4767,18 @@ function renderSidebarVisibilityEditor() {
   if (custom.length) { html += `<div style="font-size:0.85rem;font-weight:700;color:var(--blue-900);margin:14px 0 8px;">Menu Custom</div>`; custom.forEach((m, i) => { html += `<div class="sidebar-toggle-row"><label><i class="fa-solid ${m.icon||'fa-circle'}" style="color:var(--blue-600);"></i> ${m.label}</label><button class="btn-danger-sm" onclick="removeCustomMenu(${i})"><i class="fa-solid fa-trash"></i></button></div>`; }); }
   document.getElementById('sidebarVisibilityEditor').innerHTML = html;
   // Sync toggle status login dari config
-  const showPenyedia = gcGet('showLoginPenyedia', true);
-  const showPokja    = gcGet('showLoginPokja', true);
+  const showPenyedia      = gcGet('showLoginPenyedia', true);
+  const showPokja         = gcGet('showLoginPokja', true);
+  const showDaftarPenyedia = gcGet('showDaftarPenyedia', true);
+  const showLoginAdmin    = gcGet('showLoginAdmin', true);
   const elP = document.getElementById('toggleLoginPenyedia');
   const elK = document.getElementById('toggleLoginPokja');
+  const elD = document.getElementById('toggleShowDaftarPenyedia');
+  const elA = document.getElementById('toggleShowLoginAdmin');
   if (elP) elP.checked = showPenyedia !== false;
   if (elK) elK.checked = showPokja !== false;
+  if (elD) elD.checked = showDaftarPenyedia !== false;
+  if (elA) elA.checked = showLoginAdmin !== false;
   // Sync toggle upload dokumen
   const uploadTerkunci = gcGet('uploadDokumenTerkunci', false);
   const elU = document.getElementById('toggleUploadDokumen');
@@ -4740,19 +4818,25 @@ function _syncJadwalSourceDropdown(selectedIdx) {
 function previewLoginToggle() {
   const elP = document.getElementById('toggleLoginPenyedia');
   const elK = document.getElementById('toggleLoginPokja');
+  const elD = document.getElementById('toggleShowDaftarPenyedia');
+  const elA = document.getElementById('toggleShowLoginAdmin');
   const previewBox   = document.getElementById('loginTogglePreview');
   const previewText  = document.getElementById('loginTogglePreviewText');
   const lockCfgBox   = document.getElementById('lockMsgConfig');
   if (!elP || !elK || !previewBox || !previewText) return;
   const pOn = elP.checked;
   const kOn = elK.checked;
-  if (!pOn || !kOn) {
+  const dOn = elD ? elD.checked : true;
+  const aOn = elA ? elA.checked : true;
+  if (!pOn || !kOn || !dOn || !aOn) {
     previewBox.style.display = 'block';
-    if (lockCfgBox) lockCfgBox.style.display = 'block';
+    if (lockCfgBox) lockCfgBox.style.display = (!pOn || !kOn) ? 'block' : 'none';
     const dikunci = [];
     if (!pOn) dikunci.push('<strong>Login Penyedia</strong>');
     if (!kOn) dikunci.push('<strong>Login Pokja</strong>');
-    previewText.innerHTML = dikunci.join(' dan ') + ' dikunci — tampil abu-abu di sidebar, klik = muncul pesan jadwal. Klik <em>Simpan & Sync</em> untuk menerapkan.';
+    if (!dOn) dikunci.push('<strong>Tab Daftar Penyedia</strong> (tersembunyi)');
+    if (!aOn) dikunci.push('<strong>Login Admin via logo</strong> (dinonaktifkan)');
+    previewText.innerHTML = dikunci.join(', ') + ' — Klik <em>Simpan & Sync</em> untuk menerapkan.';
     // Refresh dropdown jadwal setiap kali toggle berubah
     const lockCfg = gcGet('loginLockConfig', {});
     _syncJadwalSourceDropdown(lockCfg.jadwalIdx);
@@ -4781,12 +4865,18 @@ async function saveSidebarConfig() {
   await pushConfig('sidebarItems', baseItems);
   await pushConfig('customMenus', customMenus);
   // Simpan status toggle login
-  const showPenyedia = document.getElementById('toggleLoginPenyedia')?.checked !== false;
-  const showPokja    = document.getElementById('toggleLoginPokja')?.checked !== false;
+  const showPenyedia      = document.getElementById('toggleLoginPenyedia')?.checked !== false;
+  const showPokja         = document.getElementById('toggleLoginPokja')?.checked !== false;
+  const showDaftarPenyedia = document.getElementById('toggleShowDaftarPenyedia')?.checked !== false;
+  const showLoginAdmin    = document.getElementById('toggleShowLoginAdmin')?.checked !== false;
   await pushConfig('showLoginPenyedia', showPenyedia);
   await pushConfig('showLoginPokja', showPokja);
-  _globalConfig['showLoginPenyedia'] = showPenyedia;
-  _globalConfig['showLoginPokja']    = showPokja;
+  await pushConfig('showDaftarPenyedia', showDaftarPenyedia);
+  await pushConfig('showLoginAdmin', showLoginAdmin);
+  _globalConfig['showLoginPenyedia']   = showPenyedia;
+  _globalConfig['showLoginPokja']      = showPokja;
+  _globalConfig['showDaftarPenyedia']  = showDaftarPenyedia;
+  _globalConfig['showLoginAdmin']      = showLoginAdmin;
   // Simpan konfigurasi upload terkunci
   const uploadAktif  = document.getElementById('toggleUploadDokumen')?.checked !== false;
   const uploadLockTitle = document.getElementById('uploadLockMsgTitle')?.value.trim() || 'Upload Dokumen Belum Dibuka';
@@ -4998,6 +5088,118 @@ function renderPokjaAccountsTable() {
   </table>`;
 }
 async function syncAccountToSheet(role,username,password) { try { await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateAccount',role,username,password})}); } catch(e){} }
+
+// =================================================================
+// MANAJEMEN AKUN PENYEDIA (ADMIN)
+// =================================================================
+async function loadPenyediaAccountsAdmin() {
+  const el = document.getElementById('penyediaAccountsTable');
+  if (el) el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--gray-400);font-size:0.84rem;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat akun penyedia…</div>`;
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getAccounts', {method:'GET', mode:'cors', redirect:'follow'});
+    const data = await res.json();
+    if (data.status === 'ok' && Array.isArray(data.accounts)) {
+      // Filter hanya role penyedia
+      _adminPenyediaAccounts = data.accounts
+        .filter(a => (a.role||'').toLowerCase() === 'penyedia')
+        .map(a => ({
+          nama  : a.nama || a.username || '',
+          email : (a.username||'').toLowerCase(),
+          locked: (a.status||'aktif').toLowerCase() === 'terkunci'
+        }));
+      renderPenyediaAccountsTable();
+    } else {
+      if (el) el.innerHTML = `<div style="color:#C0392B;padding:16px;font-size:0.83rem;"><i class="fa-solid fa-triangle-exclamation"></i> Gagal memuat dari server.</div>`;
+    }
+  } catch(e) {
+    if (el) el.innerHTML = `<div style="color:#C0392B;padding:16px;font-size:0.83rem;"><i class="fa-solid fa-triangle-exclamation"></i> Tidak dapat menghubungi server.</div>`;
+  }
+}
+
+let _adminPenyediaAccounts = [];
+
+function renderPenyediaAccountsTable() {
+  const el = document.getElementById('penyediaAccountsTable');
+  if (!el) return;
+  const q = (document.getElementById('penyediaSearchAkun')?.value || '').toLowerCase();
+  let list = _adminPenyediaAccounts;
+
+  if (q) list = list.filter(a =>
+    (a.nama||'').toLowerCase().includes(q) || (a.email||'').toLowerCase().includes(q)
+  );
+
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;padding:32px;color:var(--gray-400);font-size:0.84rem;"><i class="fa-solid fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>Tidak ada akun penyedia${q ? ' yang cocok' : ''}.</div>`;
+    return;
+  }
+
+  const rows = list.map((a, i) => {
+    const email  = (a.email||'').toLowerCase();
+    const isLocked = a.locked === true;
+    const statusBadge = isLocked
+      ? `<span style="background:#C0392B;color:#fff;border-radius:4px;padding:2px 8px;font-size:0.71rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;"><i class="fa-solid fa-lock"></i> TERKUNCI</span>`
+      : `<span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:4px;padding:2px 8px;font-size:0.71rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;"><i class="fa-solid fa-lock-open"></i> Aktif</span>`;
+    const actionBtn = isLocked
+      ? `<button onclick="toggleLockPenyedia('${escapeHtml(email)}', false)" style="background:#2D7D17;color:#fff;border:none;border-radius:5px;padding:4px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;"><i class="fa-solid fa-lock-open"></i> Buka Kunci</button>`
+      : `<button onclick="toggleLockPenyedia('${escapeHtml(email)}', true)" style="background:#C0392B;color:#fff;border:none;border-radius:5px;padding:4px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;"><i class="fa-solid fa-lock"></i> Kunci Akun</button>`;
+    return `<tr style="border-bottom:1px solid var(--gray-100);${isLocked ? 'background:#FFF5F5;' : ''}">
+      <td style="padding:9px 10px;font-size:0.78rem;color:var(--gray-400);text-align:center;">${i+1}</td>
+      <td style="padding:9px 10px;">
+        <div style="font-weight:700;font-size:0.85rem;color:var(--blue-900);">${escapeHtml(a.nama||'-')}</div>
+        <div style="font-size:0.72rem;color:var(--gray-400);">${escapeHtml(a.email||'-')}</div>
+      </td>
+      <td style="padding:9px 10px;">${statusBadge}</td>
+      <td style="padding:9px 10px;">${actionBtn}</td>
+    </tr>`;
+  }).join('');
+
+  const lockedCount = list.filter(a => a.locked === true).length;
+  el.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+      <span style="background:var(--blue-50);color:var(--blue-700);border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700;">Total: ${list.length} akun</span>
+      <span style="background:#FFF5F5;color:#C0392B;border:1px solid #FFBDBD;border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700;">Terkunci: ${lockedCount}</span>
+      <span style="background:#EAF3DE;color:#2D7D17;border:1px solid #B6DBA0;border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700;">Aktif: ${list.length - lockedCount}</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+      <thead><tr style="background:var(--blue-50);">
+        <th style="padding:8px 10px;text-align:center;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);width:36px;">#</th>
+        <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Nama / Email</th>
+        <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Status</th>
+        <th style="padding:8px 10px;text-align:left;font-weight:700;color:var(--blue-900);border-bottom:2px solid var(--blue-100);">Aksi</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function toggleLockPenyedia(email, lock) {
+  const label = lock ? 'mengunci' : 'membuka kunci';
+  if (!confirm(`Yakin ingin ${label} akun ${email}?`)) return;
+
+  const msgEl = document.getElementById('msgAkunPenyedia');
+  if (msgEl) { msgEl.style.color = '#856404'; msgEl.textContent = `⏳ Menyimpan perubahan…`; }
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'lockAccount', email: email, lock: lock })
+    });
+  } catch(e) {
+    // no-cors tidak bisa baca response — anggap berhasil jika tidak throw
+  }
+
+  // Update data lokal langsung (tidak perlu reload dari server karena no-cors)
+  _adminPenyediaAccounts = _adminPenyediaAccounts.map(a =>
+    (a.email||'').toLowerCase() === email.toLowerCase() ? {...a, locked: lock} : a
+  );
+  renderPenyediaAccountsTable();
+  if (msgEl) {
+    msgEl.style.color = lock ? '#C0392B' : '#2D7D17';
+    msgEl.textContent = lock ? `✓ Akun ${email} berhasil dikunci.` : `✓ Akun ${email} berhasil dibuka.`;
+    setTimeout(() => { msgEl.textContent = ''; }, 3500);
+  }
+  showToast(lock ? 'Akun Dikunci' : 'Akun Dibuka', `${email} ${lock ? 'tidak dapat login.' : 'kini dapat login kembali.'}`, lock ? 'error' : 'success', 3500);
+}
 
 function loadAdminForms() {
   renderJadwalEditor(); renderDownloadEditor(); renderDownloadEditorBA(); renderSidebarVisibilityEditor(); renderFormFieldList();
