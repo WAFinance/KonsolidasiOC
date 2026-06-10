@@ -7781,7 +7781,6 @@ function renderPesertaList(list) {
   }
   countEl.textContent = `${list.length} peserta`;
   listWrap.innerHTML = list.map((d, i) => {
-    const tgl = d.tanggal ? new Date(d.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : '-';
     const statusInfo = {
       'Memenuhi Syarat': { cls:'sb-lulus',   icon:'fa-circle-check',  label:'Lulus' },
       'Tidak Memenuhi Syarat':   { cls:'sb-tolak',   icon:'fa-circle-xmark',  label:'Tidak Memenuhi Syarat' },
@@ -7792,7 +7791,7 @@ function renderPesertaList(list) {
       <div style="width:32px;height:32px;background:var(--blue-50);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:var(--blue-700);">${i+1}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:0.88rem;color:var(--blue-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.namaPerusahaan||'–'}</div>
-        <div style="font-size:0.73rem;color:var(--gray-400);margin-top:2px;">Terdaftar: ${tgl} &nbsp;·&nbsp; ${d.jenisDok||'-'}</div>
+        <div style="font-size:0.73rem;color:var(--gray-400);margin-top:2px;">${d.jenisDok||'-'}</div>
       </div>
       ${sm ? `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:0.72rem;font-weight:700;" class="status-badge-lg ${sm.cls}"><i class="fa-solid ${sm.icon}"></i> ${sm.label}</span>` : ''}
     </div>`;
