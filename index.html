@@ -2501,7 +2501,6 @@ const DEFAULT_FORM_FIELDS = [
   { id:'fJenisDok', label:'Jenis Dokumen yang Diunggah', type:'select', required:true, fixed:true, options:[
     { group:'1. Tenaga Kebersihan', items:['Tenaga Kebersihan – Fasilitas Olahraga/Objek Wisata','Tenaga Kebersihan – Gedung Kantor','Tenaga Kebersihan – Pertamanan Kota','Tenaga Kebersihan – Persampahan Kota','Tenaga Kebersihan – Lingkungan Kelurahan'] },
     { group:'2. Tenaga Keamanan',   items:['Tenaga Keamanan – Ketua Regu','Tenaga Keamanan – Anggota'] },
-    { group:'3. Tenaga Pengemudi',  items:['Tenaga Pengemudi – Kendaraan Berat <3500 kg','Tenaga Pengemudi – Kendaraan Berat ≥3500 kg'] },
   ]},
   { id:'fFileDok', label:'Upload Dokumen', type:'file', hint:'PDF, ZIP, atau RAR – maks. 30 MB', required:true, fixed:true },
   { id:'fKeterangan', label:'Keterangan Tambahan', type:'textarea', placeholder:'Isi jika ada catatan khusus (opsional)…', required:false, fixed:true },
@@ -4968,9 +4967,22 @@ function renderJadwalEditor() {
 function addJadwalItem() { const data=gcGet('jadwal',DEFAULT_JADWAL); data.push({label:'Tahapan Baru',sub:'',mulai:'',selesai:''}); _globalConfig['jadwal']=data; renderJadwalEditor(); }
 function removeJadwalItem(i) { const data=gcGet('jadwal',DEFAULT_JADWAL); data.splice(i,1); _globalConfig['jadwal']=data; renderJadwalEditor(); }
 async function saveJadwal() {
-  const data=gcGet('jadwal',DEFAULT_JADWAL);
-  data.forEach((item,i)=>{ item.label=document.getElementById(`tj-label-${i}`).value; item.mulai=document.getElementById(`tj-mulai-${i}`).value; item.selesai=document.getElementById(`tj-selesai-${i}`).value; item.sub=document.getElementById(`tj-sub-${i}`).value; });
-  await pushConfig('jadwal',data); renderCalendar(); flashMsg('msgJadwal');
+  // Rebuild array dari input yang ada di DOM — lebih aman daripada mutasi gcGet
+  const newData = [];
+  let i = 0;
+  while (true) {
+    const elLabel = document.getElementById(`tj-label-${i}`);
+    if (!elLabel) break; // tidak ada elemen lagi
+    newData.push({
+      label   : elLabel.value.trim(),
+      mulai   : (document.getElementById(`tj-mulai-${i}`)   || {}).value || '',
+      selesai : (document.getElementById(`tj-selesai-${i}`) || {}).value || '',
+      sub     : (document.getElementById(`tj-sub-${i}`)     || {}).value || '',
+    });
+    i++;
+  }
+  _globalConfig['jadwal'] = newData;
+  await pushConfig('jadwal', newData); renderCalendar(); flashMsg('msgJadwal');
 }
 
 function renderDownloadEditor() {
