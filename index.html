@@ -3654,7 +3654,9 @@ function renderStatusPenyedia() {
     const totalTambahan = tambahanAdm.length + tambahanKual.length + tambahanTek.length + tambahanHarga.length;
 
     const jumlahKatUtama = [linkAdm, linkKual, linkTek, linkHarga].filter(l => l && l.startsWith('http')).length;
-    const totalVersi = jumlahKatUtama + revLinks.length + totalTambahan;
+    // totalVersi = berapa kali penyedia submit (grp.length) + revisi lintas-kategori
+    // BUKAN jumlah file/kategori — upload pertama dengan 4 kategori tetap = 1 versi
+    const totalVersi = grp.length + revLinks.length;
 
     // ── Kategori dokumen utama (awal) ──
     const katMeta = [
@@ -13168,10 +13170,11 @@ function _startAdminChatPoll() {
       const isVisible  = (chatPanel && chatPanel.classList.contains('open')) ||
                          (chatTabActive && chatTabActive.classList.contains('active'));
 
-      // Poll semua room dari GAS sheet via getChatAll (bukan getConfig — chat sudah dipisah)
-      const serverMsgs = await fetchChatMessages().catch(() => ({}));
-      if (serverMsgs && Object.keys(serverMsgs).length > 0 && typeof _globalConfig !== 'undefined') {
-        const localMsgs = gcGet('chatMessages', {});
+      // Poll semua room dari GAS sheet
+      const cfg = await fetchGlobalConfig(true);
+      if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
+        const serverMsgs = cfg.chatMessages || {};
+        const localMsgs  = gcGet('chatMessages', {});
         const merged = {};
         const allRooms = new Set([...Object.keys(serverMsgs), ...Object.keys(localMsgs)]);
         allRooms.forEach(room => {
