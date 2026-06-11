@@ -2558,6 +2558,9 @@ async function fetchGlobalConfig(silent=false) {
     const data = await res.json();
     if (data.status === 'ok' && data.config) {
       _globalConfig = data.config;
+      // chatMessages TIDAK lagi dibundel di getConfig (dipisah ke getChatAll)
+      // agar payload lebih ringan dan page load lebih cepat.
+      // Chat dimuat via fetchChatMessages() hanya saat tab Chat dibuka.
       if (!silent) hideSync();
       _isFetchingConfig = false;
       return data.config;
@@ -2566,6 +2569,22 @@ async function fetchGlobalConfig(silent=false) {
   if (!silent) hideSync();
   _isFetchingConfig = false;
   return null;
+}
+
+// fetchChatMessages — muat semua room chat dari endpoint terpisah.
+// Dipanggil hanya saat tab Chat / panel admin chat dibuka.
+async function fetchChatMessages() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getChatAll', {method:'GET', mode:'cors', redirect:'follow'});
+    const data = await res.json();
+    if (data.status === 'ok' && data.chatMessages) {
+      if (typeof _globalConfig !== 'undefined') {
+        _globalConfig['chatMessages'] = data.chatMessages;
+      }
+      return data.chatMessages;
+    }
+  } catch(e) {}
+  return {};
 }
 
 async function pushConfig(key, value) {
@@ -12693,6 +12712,13 @@ function toggleChatWidget() {
   if (panel.classList.contains('open')) { closeChatWidget(); }
   else {
     panel.classList.add('open');
+    // Muat chat data dari server jika belum ada (lazy load, bukan di getConfig)
+    if (!_globalConfig || !_globalConfig['chatMessages'] || Object.keys(_globalConfig['chatMessages']).length === 0) {
+      fetchChatMessages().then(() => {
+        _chatMessages = _chatGetMessages(_chatRoomId);
+        renderChatMessages();
+      }).catch(() => {});
+    }
     // Reset badge unread
     _chatUnread = 0;
     _chatUpdateBadge();
@@ -13127,6 +13153,10 @@ function _chatRefreshAdminInbox() {
 // ── Auto-poll admin inbox ──
 // Interval: 5 detik saat panel admin chat terbuka, 20 detik saat latar
 function _startAdminChatPoll() {
+  // Lazy load chat data saat admin pertama kali buka panel chat
+  if (!_globalConfig || !_globalConfig['chatMessages'] || Object.keys(_globalConfig['chatMessages']).length === 0) {
+    fetchChatMessages().then(() => renderChatAdminTab()).catch(() => {});
+  }
   clearInterval(_adminChatPollTimer);
   _adminChatPollTimer = setInterval(async () => {
     if (_isLoadingSubmissions || _isFetchingConfig) return;
@@ -13138,11 +13168,10 @@ function _startAdminChatPoll() {
       const isVisible  = (chatPanel && chatPanel.classList.contains('open')) ||
                          (chatTabActive && chatTabActive.classList.contains('active'));
 
-      // Poll semua room dari GAS sheet
-      const cfg = await fetchGlobalConfig(true);
-      if (cfg && cfg.chatMessages && typeof _globalConfig !== 'undefined') {
-        const serverMsgs = cfg.chatMessages || {};
-        const localMsgs  = gcGet('chatMessages', {});
+      // Poll semua room dari GAS sheet via getChatAll (bukan getConfig — chat sudah dipisah)
+      const serverMsgs = await fetchChatMessages().catch(() => ({}));
+      if (serverMsgs && Object.keys(serverMsgs).length > 0 && typeof _globalConfig !== 'undefined') {
+        const localMsgs = gcGet('chatMessages', {});
         const merged = {};
         const allRooms = new Set([...Object.keys(serverMsgs), ...Object.keys(localMsgs)]);
         allRooms.forEach(room => {
