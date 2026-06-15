@@ -6012,11 +6012,16 @@ function renderPokjaStats() {
   const latestList = Array.from(groupMap.values()).map(grp =>
     grp.sort((a,b)=>(a.tanggal||'')<(b.tanggal||'')?-1:1)[grp.length-1]
   );
-  document.getElementById('pokjaTotalDok').textContent=latestList.length;
-  document.getElementById('pokjaLulus').textContent=latestList.filter(d=>d.reviewStatus==='Memenuhi Syarat'||d.reviewStatus==='Lulus / Memenuhi Syarat').length;
-  document.getElementById('pokjaTolak').textContent=latestList.filter(d=>d.reviewStatus==='Tidak Memenuhi Syarat').length;
-  document.getElementById('pokjaPending').textContent=latestList.filter(d=>!d.reviewStatus||d.reviewStatus==='Menunggu Review'||d.reviewStatus==='Menunggu Evaluasi').length;
-  document.getElementById('statPeserta').textContent=latestList.length||'–';
+  const _elTotalDok = document.getElementById('pokjaTotalDok');
+  const _elLulus    = document.getElementById('pokjaLulus');
+  const _elTolak    = document.getElementById('pokjaTolak');
+  const _elPending  = document.getElementById('pokjaPending');
+  const _elPeserta  = document.getElementById('statPeserta');
+  if (_elTotalDok) _elTotalDok.textContent = latestList.length;
+  if (_elLulus)    _elLulus.textContent    = latestList.filter(d=>d.reviewStatus==='Memenuhi Syarat'||d.reviewStatus==='Lulus / Memenuhi Syarat').length;
+  if (_elTolak)    _elTolak.textContent    = latestList.filter(d=>d.reviewStatus==='Tidak Memenuhi Syarat').length;
+  if (_elPending)  _elPending.textContent  = latestList.filter(d=>!d.reviewStatus||d.reviewStatus==='Menunggu Review'||d.reviewStatus==='Menunggu Evaluasi').length;
+  if (_elPeserta)  _elPeserta.textContent  = latestList.length||'–';
 }
 
 function renderPokjaTable() {
