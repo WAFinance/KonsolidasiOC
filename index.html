@@ -7345,6 +7345,13 @@ async function init() {
   if(cfg){hideSync();}
   else{showSync('⚠ Tidak dapat terhubung ke server, menggunakan default.','error');setTimeout(hideSync,3000);}
   renderAll();
+  // ── Notif Pengumuman: tampilkan badge & popup SETELAH config benar-benar
+  //    selesai dimuat dari server (bukan pakai timer tetap yang rawan race
+  //    condition jika koneksi ke Apps Script lambat) ──
+  if (typeof renderNotifBadgeSidebar === 'function') renderNotifBadgeSidebar();
+  if (typeof tampilkanNotifPopup === 'function') {
+    setTimeout(() => tampilkanNotifPopup(), 400);
+  }
   // ── Selesaikan inisialisasi berdasarkan role yang sudah di-restore ──
   if (sessionRestored) {
     renderSidebar();
@@ -11819,16 +11826,18 @@ function darkenColor(hex, amount) {
   document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
       _initAdminNotifTab();
-      _initNotifSystem();
     }, 600);
   });
 })();
 
+// Catatan: pemicu popup notifikasi (tampilkanNotifPopup) DIPINDAH ke dalam
+// fungsi init() — dipanggil setelah fetchGlobalConfig() selesai, bukan lagi
+// memakai timer tetap di sini. Timer tetap rawan race condition: jika
+// koneksi ke Apps Script lambat (>2 detik), _globalConfig masih kosong saat
+// timer ini jalan sehingga popup gagal muncul meski admin sudah mengaktifkannya.
 function _initNotifSystem() {
-  // Tampilkan popup setelah halaman load selesai (delay 1.5 detik)
-  setTimeout(function() {
-    tampilkanNotifPopup();
-  }, 1500);
+  // Disimpan untuk kompatibilitas jika dipanggil manual dari tempat lain.
+  if (typeof tampilkanNotifPopup === 'function') tampilkanNotifPopup();
 }
 
 function _initAdminNotifTab() {
