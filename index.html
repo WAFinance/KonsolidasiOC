@@ -11729,18 +11729,26 @@ function tampilkanNotifPopup() {
   const cfg = getNotifConfigLive();
   if (!cfg.popupAktif) return;
 
-  // Hitung berapa tab yang belum dibaca
+  // Total tab yang punya konten sama sekali (terlepas status sudah/belum dibaca)
+  const totalPengumuman = hitungJumlahPengumuman();
+  if (totalPengumuman <= 0) return; // tidak ada pengumuman sama sekali, tidak perlu popup
+
+  // Hitung berapa tab yang belum dibaca (status ini tersimpan permanen di
+  // localStorage browser pengunjung, tidak hilang walau halaman di-reload)
   const belumDibaca = hitungTabBelumDibaca();
-  if (belumDibaca <= 0) return; // semua sudah dibaca, tidak perlu popup
 
-  // Cek apakah konten pengumuman sudah berubah sejak terakhir di-dismiss
-  const currentHash = _getPengumumanContentHash();
-  const dismissedHash = localStorage.getItem(NOTIF_POPUP_HASH_KEY);
-
-  // Popup TIDAK muncul jika:
-  // - hash sama (konten tidak berubah sejak terakhir diabaikan), DAN
-  // - popupSelaluMuncul tidak aktif
-  if (!cfg.popupSelaluMuncul && dismissedHash === currentHash) return;
+  if (cfg.popupSelaluMuncul) {
+    // "Selalu Muncul" aktif → tampilkan SETIAP kali halaman dibuka selama
+    // masih ada minimal satu pengumuman berisi, TANPA peduli status
+    // sudah-dibaca / sudah-di-dismiss sebelumnya.
+  } else {
+    // Mode normal: hanya tampilkan jika ada yang belum dibaca DAN belum
+    // pernah di-dismiss untuk konten dengan isi yang sama persis.
+    if (belumDibaca <= 0) return; // semua sudah dibaca, tidak perlu popup
+    const currentHash   = _getPengumumanContentHash();
+    const dismissedHash = localStorage.getItem(NOTIF_POPUP_HASH_KEY);
+    if (dismissedHash === currentHash) return;
+  }
 
   const warna = cfg.popupWarna || '#185FA5';
   const ikon  = cfg.popupIkon  || 'fa-bell';
@@ -11752,9 +11760,10 @@ function tampilkanNotifPopup() {
   document.getElementById('notifPopupMessage').innerHTML = cfg.popupPesan;
   document.getElementById('notifPopupBtnLihat').style.background = `linear-gradient(135deg, ${warna}, ${darkenColor(warna, 0.3)})`;
 
+  const jumlahTampil = belumDibaca > 0 ? belumDibaca : totalPengumuman;
   const countEl = document.getElementById('notifPopupCount');
   countEl.style.display = 'inline-flex';
-  document.getElementById('notifPopupCountText').textContent = belumDibaca + ' pengumuman baru';
+  document.getElementById('notifPopupCountText').textContent = jumlahTampil + ' pengumuman baru';
 
   document.getElementById('notifPopupOverlay').classList.add('show');
 }
@@ -12053,6 +12062,12 @@ function resetNotifSeen() {
   // Re-render tab pengumuman agar badge ! muncul kembali
   renderPengumumanPublicUI && renderPengumumanPublicUI();
   if (typeof showToast === 'function') showToast('Status notifikasi direset. Popup dan badge akan muncul kembali.', 'info');
+  // Langsung tampilkan popup sekarang juga (sebelumnya cuma hapus flag,
+  // tidak pernah benar-benar memanggil tampilkanNotifPopup() sehingga admin
+  // harus reload halaman dulu baru popup muncul).
+  if (typeof tampilkanNotifPopup === 'function') {
+    setTimeout(() => tampilkanNotifPopup(), 150);
+  }
 }
 
 async function saveNotifPengumumanConfig() {
